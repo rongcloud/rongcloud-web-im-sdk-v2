@@ -1,0 +1,26 @@
+{
+  "name": "web-sdk-v2",
+  "version": "2.0.0",
+  "authors": [
+    "Ariel Yang <arielyang@gmail.com>"
+  ],
+  "description": "RongCloud Web SDK.",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "RongCloud",
+    "IM",
+    "Web",
+    "SDK"
+  ],
+  "license": "MIT",
+  "homepage": "http://rong.io",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

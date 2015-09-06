@@ -1,0 +1,53 @@
+{
+    "version": "1.5.3",
+    "compilerOptions": {
+        "target": "es3",
+        "module": "commonjs",
+        "isolatedModules": false,
+        "jsx": "react",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "./**/*.tsx",
+        "!./node_modules/**/*"
+    ],
+    "files": [
+        "./src/callback.ts",
+        "./src/enum.ts",
+        "./src/extensions/amr.ts",
+        "./src/extensions/emoji.ts",
+        "./src/extensions/image_uploader.ts",
+        "./src/imclient.ts",
+        "./src/internal/md5.ts",
+        "./src/internal/navi.ts",
+        "./src/internal/notification.ts",
+        "./src/internal/protobuf.ts",
+        "./src/internal/rmtp.ts",
+        "./src/internal/storage.ts",
+        "./src/internal/transportation.ts",
+        "./src/listener.ts",
+        "./src/message_base.ts",
+        "./src/message_misc.ts",
+        "./src/message_notification.ts",
+        "./src/message_primary.ts",
+        "./src/model.ts",
+        "./src/providers/notification/web_notification.ts",
+        "./src/providers/storage/cookie.ts",
+        "./src/providers/storage/indexdb.ts",
+        "./src/providers/transportation/swfobject.ts",
+        "./src/providers/transportation/websocket.ts",
+        "./src/providers/transportation/xhrpolling.ts",
+        "./src/util/feature_detection.ts",
+        "./src/util/script_loader.ts"
+    ],
+    "compileOnSave": false,
+    "buildOnSave": false
+}
