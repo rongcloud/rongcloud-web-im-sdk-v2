@@ -5,7 +5,7 @@ module.exports = (config) ->
   config.set
 
     # base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: ''
+    basePath: 'test'
 
 
     # frameworks to use
@@ -16,7 +16,8 @@ module.exports = (config) ->
     # list of files / patterns to load in the browser
     files: [
       'test-main.coffee',
-      {pattern: 'test/**/*Spec.js', included: false}
+      '../dist/RongIMLib.js',
+      {pattern: '**/*Spec.coffee', included: false}
     ]
 
 
@@ -27,8 +28,16 @@ module.exports = (config) ->
 
     # preprocess matching files before serving them to the browser
     # available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-    preprocessors: {
-    }
+    preprocessors:
+      '**/*.coffee': 'coffee'
+
+
+    # coffeePreprocessor:
+    #   options:
+    #     bare: true,
+    #     sourceMap: false
+    #   transformPath: (path) ->
+    #     path.replace(/\.coffee$/, '.js')
 
 
     # test results reporter to use
@@ -61,7 +70,8 @@ module.exports = (config) ->
 
     # start these browsers
     # available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome', 'Firefox', 'Safari', 'PhantomJS', 'IE']
+    browsers: ['PhantomJS']
+    #browsers: ['Chrome', 'Firefox', 'Safari', 'PhantomJS', 'IE']
 
 
     # Continuous Integration mode
