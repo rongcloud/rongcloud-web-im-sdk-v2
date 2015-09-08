@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <script src="/dist/RongIMLib.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      RongIMLib.RongIMClient.init("aaaa", RongIMLib.ConnectionChannel.XHR_POLLING);
+
+      var client = RongIMLib.RongIMClient.getInstance();
+
+      console.log(client.getConnectionChannel().toString());
+    </script>
+  </body>
+</html>

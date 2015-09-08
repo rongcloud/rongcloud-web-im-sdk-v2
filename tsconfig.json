@@ -34,7 +34,6 @@
         "./src/internal/protobuf.ts",
         "./src/internal/rmtp.ts",
         "./src/internal/transportation.ts",
-        "./src/internal/transportation/swfobject.ts",
         "./src/internal/transportation/websocket.ts",
         "./src/internal/transportation/xhrpolling.ts",
         "./src/listener.ts",
