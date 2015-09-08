@@ -1,7 +1,7 @@
 {
   "name": "rongcloud-web-sdk-v2",
   "version": "2.0.0",
-  "description": "RongCloud Web SDK",
+  "description": "RongCloud Web SDK v2.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,10 +16,10 @@
     "SDK"
   ],
   "author": [
+    "yuhongda",
+    "Ariel Yang <arielyang@gmail.com>",
     "limiao",
     "zhangyatao",
-    "Ariel Yang <arielyang@gmail.com>",
-    "yuhongda",
     "yangchuan"
   ],
   "license": "MIT",
