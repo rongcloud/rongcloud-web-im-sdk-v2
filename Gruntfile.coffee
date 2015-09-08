@@ -40,7 +40,6 @@ module.exports = (grunt) ->
         files: 'src/**/*.ts'
         tasks: [
           'clean'
-          'concat'
           'typescript'
         ]
 
@@ -79,10 +78,16 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-typedoc'
   grunt.loadNpmTasks 'grunt-typescript'
 
-  # Compile all ts file.
-  grunt.registerTask 'compile', [
+  # Build for dev.
+  grunt.registerTask 'build', [
+    'clean'
+    'typescript'
+    'watch'
+  ]
+
+  # Build for release.
+  grunt.registerTask 'build-release', [
     'clean'
     'typescript'
     'uglify'
-    'watch'
   ]
