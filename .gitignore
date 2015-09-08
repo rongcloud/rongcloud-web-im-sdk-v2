@@ -2,3 +2,5 @@ node_modules
 bower_components
 .tscache
 *.log
+docs/**/*.*
+dist/**/*.*

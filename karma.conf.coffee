@@ -5,7 +5,7 @@ module.exports = (config) ->
   config.set
 
     # base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: 'test'
+    basePath: ''
 
 
     # frameworks to use
@@ -15,9 +15,9 @@ module.exports = (config) ->
 
     # list of files / patterns to load in the browser
     files: [
-      'test-main.coffee',
-      '../dist/RongIMLib.js',
-      {pattern: '**/*Spec.coffee', included: false}
+      'test/test-main.coffee',
+      'dist/RongIMLib.js',
+      {pattern: 'test/**/*Spec.coffee', included: false}
     ]
 
 
@@ -29,7 +29,7 @@ module.exports = (config) ->
     # preprocess matching files before serving them to the browser
     # available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors:
-      '**/*.coffee': 'coffee'
+      'test/**/*.coffee': 'coffee'
 
 
     # coffeePreprocessor:
