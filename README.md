@@ -35,7 +35,7 @@ grunt build
 ### 发布正式代码
 
 ```
-grunt build-release
+grunt release
 ```
 
 ### 启动本地服务器

@@ -18,6 +18,7 @@
         "out": "./dist/RongIMLib.js"
     },
     "filesGlob": [
+        "./dist/*.ts"
         "./**/*.ts",
         "./**/*.tsx",
         "!./node_modules/**/*"
@@ -51,9 +52,10 @@
         "./src/providers/storage/indexdb.ts",
         "./src/providers/storage/localstorage.ts",
         "./src/providers/storage_provider.ts",
-        "./src/util/feature_detection.ts",
-        "./src/util/feature_patch.ts",
-        "./src/util/script_loader.ts"
+        "./src/util/feature_detector.ts",
+        "./src/util/feature_patcher.ts",
+        "./src/util/script_loader.ts",
+        "./typings/tsd.d.ts"
     ],
     "compileOnSave": false,
     "buildOnSave": false

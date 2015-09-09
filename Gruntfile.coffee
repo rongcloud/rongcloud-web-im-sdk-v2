@@ -22,7 +22,7 @@ module.exports = (grunt) ->
       server:
         options:
           keepalive: true
-          port: 8080
+          port: 8282
           base: '.'
 
     uglify:
@@ -37,7 +37,10 @@ module.exports = (grunt) ->
         spawn: false
         livereload: true
       compile:
-        files: 'src/**/*.ts'
+        files: [
+          './src/**/*.ts'
+          './src/**/*.js'
+        ]
         tasks: [
           'clean'
           'typescript'
@@ -86,7 +89,7 @@ module.exports = (grunt) ->
   ]
 
   # Build for release.
-  grunt.registerTask 'build-release', [
+  grunt.registerTask 'release', [
     'clean'
     'typescript'
     'uglify'
