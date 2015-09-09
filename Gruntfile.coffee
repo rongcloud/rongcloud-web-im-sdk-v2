@@ -44,6 +44,7 @@ module.exports = (grunt) ->
         tasks: [
           'clean'
           'typescript'
+          'uglify'
         ]
 
     karma:
@@ -85,6 +86,7 @@ module.exports = (grunt) ->
   grunt.registerTask 'build', [
     'clean'
     'typescript'
+    'uglify'
     'watch'
   ]
 

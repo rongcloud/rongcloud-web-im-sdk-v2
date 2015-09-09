@@ -151,14 +151,14 @@ var RongIMLib;
 (function (RongIMLib) {
     var RongIMClient = (function () {
         function RongIMClient() {
-            console.log('constructor');
+            console.log("constructor");
         }
         RongIMClient.getInstance = function () {
-            console.log('getInstance');
+            console.log("getInstance");
             return RongIMClient._instance;
         };
         RongIMClient.init = function (appKey, forceConnectionChannel, forceLocalStorageProvider) {
-            console.log('init');
+            console.log("init");
             if (!RongIMClient._instance) {
                 RongIMClient._instance = new RongIMClient();
             }
@@ -648,5 +648,63 @@ var RongIMLib;
         return DataAccessProviderBase;
     })();
     RongIMLib.DataAccessProviderBase = DataAccessProviderBase;
+})(RongIMLib || (RongIMLib = {}));
+var RongIMLib;
+(function (RongIMLib) {
+    var FeatureDectector = (function () {
+        function FeatureDectector() {
+        }
+        FeatureDectector.prototype.supportWebSocket = function () {
+            return true;
+        };
+        FeatureDectector.prototype.supportXHRPolling = function () {
+            return true;
+        };
+        FeatureDectector.prototype.supportIndexedDB = function () {
+            return true;
+        };
+        FeatureDectector.prototype.supportWebStorage = function () {
+            return true;
+        };
+        FeatureDectector.prototype.supportWebNotification = function () {
+            return true;
+        };
+        FeatureDectector.prototype.isCookieEnabled = function () {
+            return true;
+        };
+        return FeatureDectector;
+    })();
+})(RongIMLib || (RongIMLib = {}));
+var RongIMLib;
+(function (RongIMLib) {
+    var FeatureDPatcher = (function () {
+        function FeatureDPatcher() {
+        }
+        FeatureDPatcher.prototype.patch = function () {
+        };
+        FeatureDPatcher.prototype.patchJSON = function () {
+        };
+        return FeatureDPatcher;
+    })();
+})(RongIMLib || (RongIMLib = {}));
+var RongIMLib;
+(function (RongIMLib) {
+    var ScriptLoader = (function () {
+        function ScriptLoader() {
+        }
+        ScriptLoader.prototype.load = function (src, onLoad, onError) {
+            var scriptElement = document.createElement("script");
+            scriptElement.async = true;
+            if (onLoad) {
+                scriptElement.onload = onLoad;
+            }
+            if (onLoad) {
+                scriptElement.onerror = onError;
+            }
+            (document.head || document.getElementsByTagName("head")[0]).appendChild(scriptElement);
+            scriptElement.src = src;
+        };
+        return ScriptLoader;
+    })();
 })(RongIMLib || (RongIMLib = {}));
 //# sourceMappingURL=RongIMLib.js.map

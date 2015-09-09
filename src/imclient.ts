@@ -18,7 +18,7 @@ module RongIMLib {
      * 请使用 RongIMClient.getInstrance() 获取 RongIMClient 实例。
      */
     constructor() {
-      console.log('constructor');
+      console.log("constructor");
 
     }
 
@@ -27,7 +27,7 @@ module RongIMLib {
      * 需在执行 init 方法初始化 SDK 后再获取，否则返回 null 值。
      */
     static getInstance(): RongIMClient {
-      console.log('getInstance');
+      console.log("getInstance");
       return RongIMClient._instance;
     }
 
@@ -37,7 +37,7 @@ module RongIMLib {
      * @param appKey    开发者后台申请的 AppKey，用来标识应用。
      */
     static init(appKey: string, forceConnectionChannel?: ConnectionChannel, forceLocalStorageProvider?: StorageProvider): void {
-      console.log('init');
+      console.log("init");
       if (!RongIMClient._instance) {
         RongIMClient._instance = new RongIMClient();
       }
@@ -73,7 +73,7 @@ module RongIMLib {
      * @param msgTag      操作成功或者失败的回调。
      */
     static registerMessageType(objectName: string, msgTag: MessageTag): void {
-
+      // TODO: Do something.
     }
 
     /**
@@ -82,7 +82,7 @@ module RongIMLib {
      * @param listener  连接状态变化的监听器。
      */
     static setConnectionStatusListener(listener: ConnectionStatusListener): void {
-
+      // TODO: Do something.
     }
 
     /**
@@ -91,14 +91,14 @@ module RongIMLib {
      * @param listener  接收消息的监听器。
      */
     static setOnReceiveMessageListener(listener: OnReceiveMessageListener): void {
-
+      // TODO: Do something.
     }
 
     /**
      * 断开连接，但是保留当前用户与设备的登录关系，继续接收推送（Push）消息。
      */
     disconnect(): void {
-
+      // TODO: Do something.
     }
 
     /**
@@ -108,7 +108,7 @@ module RongIMLib {
      * @param callback  操作成功或者失败的回调。
      */
     logout(callback: OperationCallback): void {
-
+      // TODO: Do something.
     }
 
     /**
@@ -143,7 +143,7 @@ module RongIMLib {
      * 获取当前连接用户的信息。
      */
     getCurrentUserInfo(callback: ResultCallback<UserInfo>) {
-
+      // TODO: Do something.
     }
 
     /**
@@ -153,7 +153,7 @@ module RongIMLib {
      * @param callback  操作成功或者失败的回调。
      */
     syncUserData(userData: UserData, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     /**
@@ -162,7 +162,7 @@ module RongIMLib {
      * @param callback  获取的回调，返回时间差值。
      */
     getDeltaTime(callback: ResultCallback<number>) {
-
+      // TODO: Do something.
     }
 
     // #region Message
@@ -176,11 +176,11 @@ module RongIMLib {
     }
 
     deleteMessages(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
-
+      // TODO: Do something.
     }
 
     sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
-
+      // TODO: Do something.
     }
 
     // sendMessage(message: Message, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
@@ -188,52 +188,52 @@ module RongIMLib {
     // }
 
     sendStatusMessage(message: Message, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>) {
-
+      // TODO: Do something.
     }
 
     sendTextMessage() {
-
+      // TODO: Do something.
     }
 
     insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
-
+      // TODO: Do something.
     }
 
     getHistoryMessages(conversationType: ConversationType, targetId: string, oldestMessageId: number, count: number, callback: ResultCallback<Message[]>, objectName?: string) {
-
+      // TODO: Do something.
     }
 
     // TODO: Date or Number ?
     getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, dateTime: Date, count: number, callback: ResultCallback<Message[]>) {
-
+      // TODO: Do something.
     }
 
     hasUnreadMessages(appkey: string, token: string, callback: ConnectCallback) {
-
+      // TODO: Do something.
     }
 
     getTotalUnreadCount(callback: ResultCallback<number>) {
-
+      // TODO: Do something.
     }
 
     getConversationUnreadCount(callback: ResultCallback<number>, ...conversationTypes: ConversationType[]) {
-
+      // TODO: Do something.
     }
 
     getUnreadCount(conversationType: ConversationType, targetId: string) {
-
+      // TODO: Do something.
     }
 
     setMessageExtra(messageId: number, value: string, callback: ResultCallback<boolean>) {
-
+      // TODO: Do something.
     }
 
     setMessageReceivedStatus(messageId: number, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
-
+      // TODO: Do something.
     }
 
     setMessageSentStatus(messageId: number, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
-
+      // TODO: Do something.
     }
 
     // #endregion Message
@@ -241,15 +241,15 @@ module RongIMLib {
     // #region TextMessage Draft
 
     clearTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-
+      // TODO: Do something.
     }
 
     getTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<string>) {
-
+      // TODO: Do something.
     }
 
     saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string, callback: ResultCallback<boolean>) {
-
+      // TODO: Do something.
     }
 
     // #endregion TextMessage Draft
@@ -264,19 +264,19 @@ module RongIMLib {
     }
 
     getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>) {
-
+      // TODO: Do something.
     }
 
     getConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
-
+      // TODO: Do something.
     }
 
     removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-
+      // TODO: Do something.
     }
 
     setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>) {
-
+      // TODO: Do something.
     }
 
     // #endregion Conversation
@@ -284,23 +284,23 @@ module RongIMLib {
     // #region Notifications
 
     getConversationNotificationStatus(conversationType: ConversationType, targetId: string, callback: ResultCallback<ConversationNotificationStatus>) {
-
+      // TODO: Do something.
     }
 
     setConversationNotificationStatus(conversationType: ConversationType, targetId: string, notificationStatus: ConversationNotificationStatus, callback: ResultCallback<ConversationNotificationStatus>) {
-
+      // TODO: Do something.
     }
 
     getNotificationQuietHours(callback: GetNotificationQuietHoursCallback) {
-
+      // TODO: Do something.
     }
 
     removeNotificationQuietHours(callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     setNotificationQuietHours(startTime: string, spanMinutes: number, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     // #endregion Notifications
@@ -308,30 +308,31 @@ module RongIMLib {
     // #region Discussion
 
     addMemberToDiscussion(discussionId: string, userIdList: string[], callback: OperationCallback) {
+      // TODO: Do something.
     }
 
     createDiscussion(name: string, userIdList: string[], callback: CreateDiscussionCallback) {
-
+      // TODO: Do something.
     }
 
     getDiscussion(discussionId: string, callback: ResultCallback<Discussion>) {
-
+      // TODO: Do something.
     }
 
     quitDiscussion(discussionId: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     removeMemberFromDiscussion(discussionId: string, userId: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     setDiscussionInviteStatus(discussionId: string, status: DiscussionInviteStatus, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     setDiscussionName(discussionId: string, name: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     // #endregion Discussion
@@ -339,15 +340,15 @@ module RongIMLib {
     // #region Group
 
     joinGroup(groupId: string, groupName: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     quitGroup(groupId: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     syncGroup(groups: Group[], callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     // #endregion Group
@@ -355,11 +356,11 @@ module RongIMLib {
     // #region ChatRoom
 
     joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     quitChatRoom(chatroomId: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     // #endregion ChatRoom
@@ -367,27 +368,27 @@ module RongIMLib {
     // #region Public Service
 
     getPublicServiceList(callback: ResultCallback<PublicServiceProfile[]>) {
-
+      // TODO: Do something.
     }
 
     getPublicServiceProfile(publicServiceType: PublicServiceType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
-
+      // TODO: Do something.
     }
 
     searchPublicService(searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
-
+      // TODO: Do something.
     }
 
     searchPublicServiceByType(publicServiceType: PublicServiceType, searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
-
+      // TODO: Do something.
     }
 
     subscribePublicService(publicServiceType: PublicServiceType, publicServiceId: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     unsubscribePublicService(publicServiceType: PublicServiceType, publicServiceId: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     // #endregion Public Service
@@ -395,19 +396,19 @@ module RongIMLib {
     // #region Blacklist
 
     addToBlacklist(userId: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     getBlacklist(callback: GetBlacklistCallback) {
-
+      // TODO: Do something.
     }
 
     getBlacklistStatus(userId: string, callback: ResultCallback<BlacklistStatus>) {
-
+      // TODO: Do something.
     }
 
     removeFromBlacklist(userId: string, callback: OperationCallback) {
-
+      // TODO: Do something.
     }
 
     // #endregion Blacklist
@@ -415,35 +416,35 @@ module RongIMLib {
     // #region Real-time Location Service
 
     addRealTimeLocationListener(conversationType: ConversationType, targetId: string, listener: RealTimeLocationListener) {
-
+      // TODO: Do something.
     }
 
     getRealTimeLocation(conversationType: ConversationType, targetId: string) {
-
+      // TODO: Do something.
     }
 
     getRealTimeLocationCurrentState(conversationType: ConversationType, targetId: string) {
-
+      // TODO: Do something.
     }
 
     getRealTimeLocationParticipants(conversationType: ConversationType, targetId: string) {
-
+      // TODO: Do something.
     }
 
     joinRealTimeLocation(conversationType: ConversationType, targetId: string) {
-
+      // TODO: Do something.
     }
 
     quitRealTimeLocation(conversationType: ConversationType, targetId: string) {
-
+      // TODO: Do something.
     }
 
     startRealTimeLocation(conversationType: ConversationType, targetId: string) {
-
+      // TODO: Do something.
     }
 
     updateRealTimeLocationStatus(conversationType: ConversationType, targetId: string, latitude: number, longitude: number) {
-
+      // TODO: Do something.
     }
 
     // #endregion Real-time Location Service
