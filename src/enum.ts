@@ -15,9 +15,9 @@ module RongIMLib {
   }
 
   export enum ConnectionChannel {
-    XHR_POLLING,
-    FLASH,
-    WEBSOCKET
+    XHR_POLLING=0,
+    FLASH=1,
+    WEBSOCKET=2
   }
 
   export enum ConnectionStatus {
