@@ -87,5 +87,11 @@ module RongIMLib {
             var xmlRequest = new XMLHttpRequest();
             return xmlRequest.withCredentials !== undefined;
         }
+        disconnect():void{
+
+        }
+        reconnect():void{
+
+        }
     }
 }

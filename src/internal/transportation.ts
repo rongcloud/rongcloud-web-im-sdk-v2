@@ -12,5 +12,9 @@ module RongIMLib {
         onError(error:any):void;
         //绑定事件
         addEvent():void;
+        //断开连接
+        disconnect():void;
+        //重新连接
+        reconnect():void;
     }
 }
