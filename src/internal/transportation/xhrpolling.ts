@@ -1,18 +1,20 @@
 module RongIMLib {
-    export class XHRPolling implements Transportation {
+    export class PollingTransportation implements Transportation {
         url: string;
-        connectStatus: string;
         polling: any;
         allowWithCrendentials: boolean;
         isXHR: boolean = true;
         empty: Function = new Function;
         method: string = "GET";
         supportArrayBuffer: boolean = typeof window['Int8Array'] === "function";
-        data: any;
+        //连接状态 true:已连接 false:未连接
+        connected: boolean = false;
+        //是否关闭： true:已关闭 false：未关闭
+        isClose: boolean = false;
+        queue: Array<any> = [];
         //构造函数传入参数
-        constructor(url: string, data: any) {
+        constructor(url: string) {
             this.url = "http://" + url;
-            this.data = data;
         }
         //创建通道
         createTransport(): any {
@@ -20,10 +22,16 @@ module RongIMLib {
             this.polling = request;
             this.polling.open(this.method, this.url);
             this.addEvent();
-            this.send(this.data);
+            return this.polling;
         }
         //传送消息流
         send(data: any): any {
+            if (this.isClose) {
+                throw new Error("The Connection is closed,Please open the Connection!!!");
+            }
+            if (!this.connected && !this.isClose) {
+                this.queue.push(data);
+            }
             this.polling.send(data);
         }
         //接收服务器返回消息
@@ -34,7 +42,6 @@ module RongIMLib {
         }
         //处理通道关闭操作
         onClose(): any {
-            this.connectStatus = "close";
             this.polling = this.empty;
         }
         //通道异常操作
@@ -87,10 +94,16 @@ module RongIMLib {
             var xmlRequest = new XMLHttpRequest();
             return xmlRequest.withCredentials !== undefined;
         }
-        disconnect():void{
+        doQueue():void{
+            var self = this;
+            for (let i = 0,len = self.queue.length; i < len; i++) {
+                self.send(self.queue[i]);
+            }
+        }
+        disconnect(): void {
 
         }
-        reconnect():void{
+        reconnect(): void {
 
         }
     }
