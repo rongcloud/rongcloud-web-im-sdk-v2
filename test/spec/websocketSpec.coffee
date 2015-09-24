@@ -5,8 +5,10 @@
 #3、验证：可互相收发消息为测试通过（通道畅通），后续完善细节
 #PS:
 #若其他机器测试，需要修改URL中所有内容
-# 119.254.108.75:8203/websocket?messageid=43&header=82&sessionid=6e75790f-6743-4804-b4fa-00f668304a5d&topic=pullMsg&targetid=zhangsan
-# 119.254.108.75:8203/pullmsg.js?sessionid=6e75790f-6743-4804-b4fa-00f668304a5d
+#
+#XHR-Polling 测试
+#URL:119.254.108.75:8203/websocket?messageid=24&header=50&sessionid=aead2cb4-8354-46ce-994f-c15395c6dbfe&topic=ppMsgP&targetid=lisi
+##data:{"sessionId":0,"classname":"RC:TxtMsg","content":"{\"content\":\"ssss\",\"extra\":\"\"}"}
 
 # describe 'just checking', ->
 #   it 'Test Socket zhangsan', ->
@@ -30,5 +32,6 @@
 #     ), 7000
 describe 'just checking',->
   it 'Test Socket zhangsan',->
-    polling = new RongIMLib.PollingTransportation "119.254.108.75:8203/websocket?messageid=43&header=82&sessionid=6e75790f-6743-4804-b4fa-00f668304a5d&topic=pullMsg&targetid=zhangsan"
-    polling.createTransport();
+    xhrTransport = new RongIMLib.PollingTransportation "119.254.108.75:8203/websocket?messageid=24&header=50&sessionid=aead2cb4-8354-46ce-994f-c15395c6dbfe&topic=ppMsgP&targetid=lisi"
+    polling = xhrTransport.createTransport();
+    polling.send({"sessionId":0,"classname":"RC:TxtMsg","content":"{\"content\":\"yuhongda121212\",\"extra\":\"\"}"}+"")

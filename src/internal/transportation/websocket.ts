@@ -16,6 +16,7 @@ module RongIMLib {
          * @param  {string} url [连接地址：包含token、version]
          */
         constructor(url: string) {
+            if(!url) throw new Error("Url or method is empty,Please check it!");
             this.url = url;
             return this;
         }
