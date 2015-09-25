@@ -1,9 +1,9 @@
 module RongIMLib {
     export interface Transportation {
         //创建通道
-        createTransport():any;
+        createTransport(url:string,method:string):any;
         //传送消息流
-        send(data:any):any;
+        send(data:any,url?:string,method?:string):any;
         //接收服务器返回消息
         onData(data?:any):string;
         //处理通道关闭操作
@@ -14,7 +14,5 @@ module RongIMLib {
         addEvent():void;
         //断开连接
         disconnect():void;
-        //重新连接
-        reconnect():void;
     }
 }

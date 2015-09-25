@@ -15,17 +15,16 @@ module RongIMLib {
          * [constructor]
          * @param  {string} url [连接地址：包含token、version]
          */
-        constructor(url: string) {
-            if(!url) throw new Error("Url or method is empty,Please check it!");
-            this.url = url;
+        constructor() {
             return this;
         }
         /**
          * [createTransport 创建WebScoket对象]
          * @return {WebScoket} [返回WebSockt对象]
          */
-        createTransport(): any {
-            this.socket = new WebSocket("ws://" + this.url);
+        createTransport(url:string): any {
+            this.url = url;
+            this.socket = new WebSocket("ws://" +url);
             this.socket.binaryType = 'arraybuffer';
             this.addEvent();
             return this.socket;
@@ -113,7 +112,7 @@ module RongIMLib {
          */
         reconnect(): void {
             this.disconnect();
-            this.createTransport();
+            this.createTransport(this.url);
         }
     }
 }
