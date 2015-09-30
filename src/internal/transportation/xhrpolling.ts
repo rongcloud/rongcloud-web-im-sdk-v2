@@ -32,6 +32,7 @@ module RongIMLib {
             this.requestParams[this.connectPollingKey]["url"] = url;
             this.requestParams[this.connectPollingKey]["method"] = method;
             this.createPolling(this.requestParams[this.connectPollingKey]["url"], this.requestParams[this.connectPollingKey]["method"], this.connectPollingKey);
+            this.requests[this.connectPollingKey].send();
             return this;
         }
         /**
@@ -58,6 +59,8 @@ module RongIMLib {
         //接收服务器返回消息
         onData(data?: any): string {
             //TODO 转换数据，触发事件，告知client，将数据回显
+            console.log(data)
+            console.log("==========================")
             return "";
         }
         onClose(isrecon?: boolean): any {

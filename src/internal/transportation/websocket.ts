@@ -23,6 +23,7 @@ module RongIMLib {
          * @return {WebScoket} [返回WebSockt对象]
          */
         createTransport(url:string): any {
+            if (!url) throw new Error("URL can't be empty");
             this.url = url;
             this.socket = new WebSocket("ws://" +url);
             this.socket.binaryType = 'arraybuffer';
@@ -43,7 +44,6 @@ module RongIMLib {
                 throw new Error("The Connection is closed,Please open the Connection!!!");
             }
             this.socket.send(data.buffer);
-            console.log("send successfuly")
         }
         /**
          * [onData 通道返回数据时调用的方法，用来想上层传递服务器返回的二进制消息流]

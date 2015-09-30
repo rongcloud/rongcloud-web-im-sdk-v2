@@ -4,13 +4,14 @@ TEST_REGEXP = /(spec|test)(\.coffee)?(\.js)?$/i
 # Get a list of all the test files to include
 # IE8 没有Object.keys方法，一下代码适配IE8及FF、Chrome等浏览器等
 if Object.keys
-  Object.keys(window.__karma__.files).forEach (file) ->
-
-  if TEST_REGEXP.test(file)
-    # Normalize paths to RequireJS module names.
-    # If you require sub-dependencies of test files to be loaded as-is (requiring file extension)
-    # then do not normalize the paths
-    allTestFiles.push file.replace(/^\/base\/|\.js$/g, '')
+    importFiles = Object.keys(window.__karma__.files)
+    j=0
+    filesLength = importFiles.length
+    while j<filesLength
+      file = importFiles[j]
+      if TEST_REGEXP.test(file)
+        allTestFiles.push file.replace(/^\/base\/|\.js$/g, '')
+      j++
 else
    hasOwnProperty = Object::hasOwnProperty
    hasDontEnumBug = not (toString: null).propertyIsEnumerable("toString")
@@ -26,17 +27,16 @@ else
       while i < dontEnumsLength
         result.push dontEnums[i]  if hasOwnProperty.call(obj, dontEnums[i])
         i++
-    result
-
-  importFiles = OwnKeys(window.__karma__.files);
+    result;
+if OwnKeys
+  importFiles = OwnKeys(window.__karma__.files)
   j=0
-  filesLength = importFiles.length;
+  filesLength = importFiles.length
   while j<filesLength
     file = importFiles[j]
     if TEST_REGEXP.test(file)
       allTestFiles.push file.replace(/^\/base\/|\.js$/g, '')
     j++
-
 require.config
   # Karma serves files under /base, which is the basePath from your config file
   baseUrl: "/base"
