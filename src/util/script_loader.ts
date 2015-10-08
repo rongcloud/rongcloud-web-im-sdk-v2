@@ -1,16 +1,38 @@
 module RongIMLib {
   class ScriptLoader {
-    load(src: string, onLoad?: any, onError?: any): void {
-      var scriptElement = document.createElement("script");
+    load(src: string, onLoad?: ScriptLoaderCallback, onError?: ScriptLoaderCallback): void {
+      var script: any = document.createElement("script");
 
-      scriptElement.async = true;
+      script.async = true;
 
-      if (onLoad) { scriptElement.onload = onLoad; }
-      if (onLoad) { scriptElement.onerror = onError; }
+      if (onLoad) {
+        if (script.addEventListener) {
+          script.addEventListener("load", function(event: Event): any {
+            var target: any = event.target || event.srcElement;
+            onLoad(target.src);
+          }, false);
+        } else if (script.readyState) {
+          script.onreadystatechange = function(event: Event) {
+            var target: any = event.srcElement;
+            onLoad(target.src);
+          }
+        }
+      }
 
-      (document.head || document.getElementsByTagName("head")[0]).appendChild(scriptElement);
+      if (onError) {
+        script.onerror = function(event: ErrorEvent): any {
+          var target: any = event.target || event.srcElement;
+          onError(target.src);
+        };
+      }
 
-      scriptElement.src = src;
+      (document.head || document.getElementsByTagName("head")[0]).appendChild(script);
+
+      script.src = src;
     }
+  }
+
+  interface ScriptLoaderCallback {
+    (src: string): void;
   }
 }

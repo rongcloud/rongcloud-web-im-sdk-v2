@@ -73,7 +73,7 @@ module RongIMLib {
      * @param msgTag      操作成功或者失败的回调。
      */
     static registerMessageType(objectName: string, msgTag: MessageTag): void {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     /**
@@ -82,7 +82,7 @@ module RongIMLib {
      * @param listener  连接状态变化的监听器。
      */
     static setConnectionStatusListener(listener: ConnectionStatusListener): void {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     /**
@@ -91,14 +91,14 @@ module RongIMLib {
      * @param listener  接收消息的监听器。
      */
     static setOnReceiveMessageListener(listener: OnReceiveMessageListener): void {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     /**
      * 断开连接，但是保留当前用户与设备的登录关系，继续接收推送（Push）消息。
      */
     disconnect(): void {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     /**
@@ -108,7 +108,7 @@ module RongIMLib {
      * @param callback  操作成功或者失败的回调。
      */
     logout(callback: OperationCallback): void {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     /**
@@ -143,7 +143,7 @@ module RongIMLib {
      * 获取当前连接用户的信息。
      */
     getCurrentUserInfo(callback: ResultCallback<UserInfo>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     /**
@@ -153,7 +153,7 @@ module RongIMLib {
      * @param callback  操作成功或者失败的回调。
      */
     syncUserData(userData: UserData, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     /**
@@ -162,7 +162,7 @@ module RongIMLib {
      * @param callback  获取的回调，返回时间差值。
      */
     getDeltaTime(callback: ResultCallback<number>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #region Message
@@ -176,11 +176,11 @@ module RongIMLib {
     }
 
     deleteMessages(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // sendMessage(message: Message, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
@@ -188,52 +188,52 @@ module RongIMLib {
     // }
 
     sendStatusMessage(message: Message, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     sendTextMessage() {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getHistoryMessages(conversationType: ConversationType, targetId: string, oldestMessageId: number, count: number, callback: ResultCallback<Message[]>, objectName?: string) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // TODO: Date or Number ?
     getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, dateTime: Date, count: number, callback: ResultCallback<Message[]>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     hasUnreadMessages(appkey: string, token: string, callback: ConnectCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getTotalUnreadCount(callback: ResultCallback<number>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getConversationUnreadCount(callback: ResultCallback<number>, ...conversationTypes: ConversationType[]) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getUnreadCount(conversationType: ConversationType, targetId: string) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     setMessageExtra(messageId: number, value: string, callback: ResultCallback<boolean>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     setMessageReceivedStatus(messageId: number, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     setMessageSentStatus(messageId: number, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion Message
@@ -241,15 +241,15 @@ module RongIMLib {
     // #region TextMessage Draft
 
     clearTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<string>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string, callback: ResultCallback<boolean>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion TextMessage Draft
@@ -264,19 +264,19 @@ module RongIMLib {
     }
 
     getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion Conversation
@@ -284,23 +284,23 @@ module RongIMLib {
     // #region Notifications
 
     getConversationNotificationStatus(conversationType: ConversationType, targetId: string, callback: ResultCallback<ConversationNotificationStatus>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     setConversationNotificationStatus(conversationType: ConversationType, targetId: string, notificationStatus: ConversationNotificationStatus, callback: ResultCallback<ConversationNotificationStatus>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getNotificationQuietHours(callback: GetNotificationQuietHoursCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     removeNotificationQuietHours(callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     setNotificationQuietHours(startTime: string, spanMinutes: number, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion Notifications
@@ -308,31 +308,31 @@ module RongIMLib {
     // #region Discussion
 
     addMemberToDiscussion(discussionId: string, userIdList: string[], callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     createDiscussion(name: string, userIdList: string[], callback: CreateDiscussionCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getDiscussion(discussionId: string, callback: ResultCallback<Discussion>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     quitDiscussion(discussionId: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     removeMemberFromDiscussion(discussionId: string, userId: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     setDiscussionInviteStatus(discussionId: string, status: DiscussionInviteStatus, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     setDiscussionName(discussionId: string, name: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion Discussion
@@ -340,15 +340,15 @@ module RongIMLib {
     // #region Group
 
     joinGroup(groupId: string, groupName: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     quitGroup(groupId: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     syncGroup(groups: Group[], callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion Group
@@ -356,11 +356,11 @@ module RongIMLib {
     // #region ChatRoom
 
     joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     quitChatRoom(chatroomId: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion ChatRoom
@@ -368,27 +368,27 @@ module RongIMLib {
     // #region Public Service
 
     getPublicServiceList(callback: ResultCallback<PublicServiceProfile[]>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getPublicServiceProfile(publicServiceType: PublicServiceType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     searchPublicService(searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     searchPublicServiceByType(publicServiceType: PublicServiceType, searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     subscribePublicService(publicServiceType: PublicServiceType, publicServiceId: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     unsubscribePublicService(publicServiceType: PublicServiceType, publicServiceId: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion Public Service
@@ -396,19 +396,19 @@ module RongIMLib {
     // #region Blacklist
 
     addToBlacklist(userId: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getBlacklist(callback: GetBlacklistCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getBlacklistStatus(userId: string, callback: ResultCallback<BlacklistStatus>) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     removeFromBlacklist(userId: string, callback: OperationCallback) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion Blacklist
@@ -416,35 +416,35 @@ module RongIMLib {
     // #region Real-time Location Service
 
     addRealTimeLocationListener(conversationType: ConversationType, targetId: string, listener: RealTimeLocationListener) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getRealTimeLocation(conversationType: ConversationType, targetId: string) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getRealTimeLocationCurrentState(conversationType: ConversationType, targetId: string) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     getRealTimeLocationParticipants(conversationType: ConversationType, targetId: string) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     joinRealTimeLocation(conversationType: ConversationType, targetId: string) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     quitRealTimeLocation(conversationType: ConversationType, targetId: string) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     startRealTimeLocation(conversationType: ConversationType, targetId: string) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     updateRealTimeLocationStatus(conversationType: ConversationType, targetId: string, latitude: number, longitude: number) {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
 
     // #endregion Real-time Location Service

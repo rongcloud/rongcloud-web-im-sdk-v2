@@ -6,17 +6,23 @@ module.exports = (grunt) ->
 
     # Task configuration.
     clean:
-      ts:
+      build:
+        src: [
+          './build/*'
+          './build/.*'
+          './build/*.*'
+        ]
+      release:
         src: [
           './dist/*'
           './dist/.*'
           './dist/*.*'
         ]
 
-    concat:
-      dist:
-        src: './src/**/*.ts'
-        dest: './dist/RongIMLib.ts'
+    # concat:
+    #   dist:
+    #     src: './src/**/*.ts'
+    #     dest: './dist/RongIMLib.ts'
 
     connect:
       server:
@@ -26,7 +32,7 @@ module.exports = (grunt) ->
           base: '.'
 
     uglify:
-      default:
+      release:
         options:
           sourceMap: true
         src: './dist/RongIMLib.js'
@@ -42,9 +48,8 @@ module.exports = (grunt) ->
           './src/**/*.js'
         ]
         tasks: [
-          'clean'
-          'typescript'
-          'uglify'
+          'clean:build'
+          'typescript:build'
         ]
 
     karma:
@@ -52,7 +57,7 @@ module.exports = (grunt) ->
         configFile: 'karma.conf.coffee'
 
     typedoc:
-      build:
+      release:
         options:
           module: 'commonjs'
           out: './docs'
@@ -61,7 +66,17 @@ module.exports = (grunt) ->
         src: ['./src/**/*.ts']
 
     typescript:
-      default:
+      build:
+        options:
+          module: 'amd'
+          noImplicitAny: true
+          removeComments: true
+          sourceMap: true
+          suppressImplicitAnyIndexErrors: false
+          target: 'es3'
+        src: './src/**/*.ts'
+        dest: './build'
+      release:
         options:
           module: 'amd'
           noImplicitAny: true
@@ -84,15 +99,15 @@ module.exports = (grunt) ->
 
   # Build for dev.
   grunt.registerTask 'build', [
-    'clean'
-    'typescript'
-    'uglify'
+    'clean:build'
+    'typescript:build'
     'watch'
   ]
 
   # Build for release.
   grunt.registerTask 'release', [
-    'clean'
-    'typescript'
-    'uglify'
+    'clean:release'
+    'typescript:release'
+    'uglify:release'
+    'typedoc:release'
   ]

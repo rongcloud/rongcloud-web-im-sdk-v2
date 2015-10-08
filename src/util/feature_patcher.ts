@@ -1,12 +1,12 @@
 module RongIMLib {
-  class FeatureDPatcher {
+  class FeaturePatcher {
     patch(): void {
-      // TODO: Do something.
-      // Patch JSON?
+      throw new Error("Not implemented yet");
+      this.patchJSON();
     }
 
     patchJSON(): void {
-      // TODO: Do something.
+      throw new Error("Not implemented yet");
     }
   }
 }

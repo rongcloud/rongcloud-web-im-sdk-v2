@@ -16,7 +16,7 @@ require.config
   baseUrl: "/base"
 
   paths:
-    'RongIMLib': 'dist/RongIMLib',
+    'RongIMLib': 'dist/RongIMLib'
 
   # dynamically load all test files
   deps: allTestFiles

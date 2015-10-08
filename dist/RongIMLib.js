@@ -176,14 +176,19 @@ var RongIMLib;
             return RongIMClient._instance;
         };
         RongIMClient.registerMessageType = function (objectName, msgTag) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.setConnectionStatusListener = function (listener) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.setOnReceiveMessageListener = function (listener) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.disconnect = function () {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.logout = function (callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getCurrentConnectionStatus = function () {
             return null;
@@ -198,10 +203,13 @@ var RongIMLib;
             return this._currentUserId;
         };
         RongIMClient.prototype.getCurrentUserInfo = function (callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.syncUserData = function (userData, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getDeltaTime = function (callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.clearMessages = function (conversationType, targetId, callback) {
             RongIMClient._dataAccessProvider.clearMessages(conversationType, targetId);
@@ -210,42 +218,59 @@ var RongIMLib;
             RongIMClient._dataAccessProvider.updateMessages(conversationType, targetId, "readStatus", false);
         };
         RongIMClient.prototype.deleteMessages = function (conversationType, targetId, messageIds, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.sendMessage = function (conversationType, targetId, messageContent, sendCallback, resultCallback, pushContent, pushData) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.sendStatusMessage = function (message, sendCallback, resultCallback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.sendTextMessage = function () {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.insertMessage = function (conversationType, targetId, senderUserId, content, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getHistoryMessages = function (conversationType, targetId, oldestMessageId, count, callback, objectName) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getRemoteHistoryMessages = function (conversationType, targetId, dateTime, count, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.hasUnreadMessages = function (appkey, token, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getTotalUnreadCount = function (callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getConversationUnreadCount = function (callback) {
             var conversationTypes = [];
             for (var _i = 1; _i < arguments.length; _i++) {
                 conversationTypes[_i - 1] = arguments[_i];
             }
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getUnreadCount = function (conversationType, targetId) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.setMessageExtra = function (messageId, value, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.setMessageReceivedStatus = function (messageId, receivedStatus, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.setMessageSentStatus = function (messageId, sentStatus, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.clearTextMessageDraft = function (conversationType, targetId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getTextMessageDraft = function (conversationType, targetId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.saveTextMessageDraft = function (conversationType, targetId, value, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.clearConversations = function (callback) {
             var conversationTypes = [];
@@ -257,90 +282,138 @@ var RongIMLib;
             });
         };
         RongIMClient.prototype.getConversation = function (conversationType, targetId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getConversationList = function (callback) {
             var conversationTypes = [];
             for (var _i = 1; _i < arguments.length; _i++) {
                 conversationTypes[_i - 1] = arguments[_i];
             }
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.removeConversation = function (conversationType, targetId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.setConversationToTop = function (conversationType, targetId, isTop, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getConversationNotificationStatus = function (conversationType, targetId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.setConversationNotificationStatus = function (conversationType, targetId, notificationStatus, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getNotificationQuietHours = function (callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.removeNotificationQuietHours = function (callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.setNotificationQuietHours = function (startTime, spanMinutes, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.addMemberToDiscussion = function (discussionId, userIdList, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.createDiscussion = function (name, userIdList, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getDiscussion = function (discussionId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.quitDiscussion = function (discussionId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.removeMemberFromDiscussion = function (discussionId, userId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.setDiscussionInviteStatus = function (discussionId, status, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.setDiscussionName = function (discussionId, name, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.joinGroup = function (groupId, groupName, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.quitGroup = function (groupId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.syncGroup = function (groups, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.joinChatRoom = function (chatroomId, messageCount, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.quitChatRoom = function (chatroomId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getPublicServiceList = function (callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getPublicServiceProfile = function (publicServiceType, publicServiceId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.searchPublicService = function (searchType, keywords, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.searchPublicServiceByType = function (publicServiceType, searchType, keywords, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.subscribePublicService = function (publicServiceType, publicServiceId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.unsubscribePublicService = function (publicServiceType, publicServiceId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.addToBlacklist = function (userId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getBlacklist = function (callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getBlacklistStatus = function (userId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.removeFromBlacklist = function (userId, callback) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.addRealTimeLocationListener = function (conversationType, targetId, listener) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getRealTimeLocation = function (conversationType, targetId) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getRealTimeLocationCurrentState = function (conversationType, targetId) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.getRealTimeLocationParticipants = function (conversationType, targetId) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.joinRealTimeLocation = function (conversationType, targetId) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.quitRealTimeLocation = function (conversationType, targetId) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.startRealTimeLocation = function (conversationType, targetId) {
+            throw new Error("Not implemented yet");
         };
         RongIMClient.prototype.updateRealTimeLocationStatus = function (conversationType, targetId, latitude, longitude) {
+            throw new Error("Not implemented yet");
         };
         return RongIMClient;
     })();
     RongIMLib.RongIMClient = RongIMClient;
+})(RongIMLib || (RongIMLib = {}));
+var RongIMLib;
+(function (RongIMLib) {
+    var ServerAPIInvoker = (function () {
+        function ServerAPIInvoker(token) {
+            throw new Error("Not implemented yet");
+        }
+        return ServerAPIInvoker;
+    })();
 })(RongIMLib || (RongIMLib = {}));
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -677,14 +750,64 @@ var RongIMLib;
 })(RongIMLib || (RongIMLib = {}));
 var RongIMLib;
 (function (RongIMLib) {
-    var FeatureDPatcher = (function () {
-        function FeatureDPatcher() {
+    var FeaturePatcher = (function () {
+        function FeaturePatcher() {
         }
-        FeatureDPatcher.prototype.patch = function () {
+        FeaturePatcher.prototype.patch = function () {
+            throw new Error("Not implemented yet");
+            this.patchJSON();
         };
-        FeatureDPatcher.prototype.patchJSON = function () {
+        FeaturePatcher.prototype.patchJSON = function () {
+            throw new Error("Not implemented yet");
         };
-        return FeatureDPatcher;
+        return FeaturePatcher;
+    })();
+})(RongIMLib || (RongIMLib = {}));
+var RongIMLib;
+(function (RongIMLib) {
+    var HTTPClient = (function () {
+        function HTTPClient() {
+        }
+        HTTPClient.prototype.post = function (url, headers, callback) {
+        };
+        HTTPClient.prototype.get = function (url, headers, callback) {
+        };
+        HTTPClient.prototype.getXHR = function () {
+            if (XMLHttpRequest && (!location || "file:" != location.protocol
+                || ActiveXObject)) {
+                return new XMLHttpRequest;
+            }
+            else {
+                try {
+                    return new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                catch (e) {
+                }
+                try {
+                    return new ActiveXObject("Msxml2.XMLHTTP.6.0");
+                }
+                catch (e) {
+                }
+                try {
+                    return new ActiveXObject("Msxml2.XMLHTTP.3.0");
+                }
+                catch (e) {
+                }
+                try {
+                    return new ActiveXObject("Msxml2.XMLHTTP");
+                }
+                catch (e) {
+                }
+            }
+            return null;
+        };
+        ;
+        return HTTPClient;
+    })();
+    var HTTPResponse = (function () {
+        function HTTPResponse() {
+        }
+        return HTTPResponse;
     })();
 })(RongIMLib || (RongIMLib = {}));
 var RongIMLib;
@@ -693,16 +816,30 @@ var RongIMLib;
         function ScriptLoader() {
         }
         ScriptLoader.prototype.load = function (src, onLoad, onError) {
-            var scriptElement = document.createElement("script");
-            scriptElement.async = true;
+            var script = document.createElement("script");
+            script.async = true;
             if (onLoad) {
-                scriptElement.onload = onLoad;
+                if (script.addEventListener) {
+                    script.addEventListener("load", function (event) {
+                        var target = event.target || event.srcElement;
+                        onLoad(target.src);
+                    }, false);
+                }
+                else if (script.readyState) {
+                    script.onreadystatechange = function (event) {
+                        var target = event.srcElement;
+                        onLoad(target.src);
+                    };
+                }
             }
-            if (onLoad) {
-                scriptElement.onerror = onError;
+            if (onError) {
+                script.onerror = function (event) {
+                    var target = event.target || event.srcElement;
+                    onError(target.src);
+                };
             }
-            (document.head || document.getElementsByTagName("head")[0]).appendChild(scriptElement);
-            scriptElement.src = src;
+            (document.head || document.getElementsByTagName("head")[0]).appendChild(script);
+            script.src = src;
         };
         return ScriptLoader;
     })();

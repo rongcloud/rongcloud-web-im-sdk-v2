@@ -18,7 +18,7 @@
         "out": "./dist/RongIMLib.js"
     },
     "filesGlob": [
-        "./dist/*.ts"
+        "./dist/*.ts",
         "./**/*.ts",
         "./**/*.tsx",
         "!./node_modules/**/*"
@@ -30,6 +30,7 @@
         "./src/extensions/emoji.ts",
         "./src/extensions/image_uploader.ts",
         "./src/imclient.ts",
+        "./src/internal/http.ts",
         "./src/internal/md5.ts",
         "./src/internal/navi.ts",
         "./src/internal/protobuf.ts",
@@ -54,6 +55,7 @@
         "./src/providers/storage_provider.ts",
         "./src/util/feature_detector.ts",
         "./src/util/feature_patcher.ts",
+        "./src/util/http_client.ts",
         "./src/util/script_loader.ts",
         "./typings/tsd.d.ts"
     ],
