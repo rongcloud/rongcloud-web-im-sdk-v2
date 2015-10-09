@@ -109,18 +109,6 @@ module RongIMLib {
         }
     }
     /**
-     * 工具类
-     */
-    export class MessageUtil {
-        ArrayForm(typearray: any): Array<any> {
-            if (Object.prototype.toString.call(typearray) == "[object ArrayBuffer]") {
-                var arr = new Uint8Array(typearray);
-                return [].splice.call(arr);
-            }
-            return typearray;
-        }
-    }
-    /**
      * 二进制帮助对象
      */
     export class BinaryHelper {
@@ -135,7 +123,7 @@ module RongIMLib {
         }
 
         writeUTF(str: string, isGetBytes?: any): any {
-            var back = [], byteSize = 0;
+            var back:any = [], byteSize = 0;
             for (let i = 0, len = str.length; i < len; i++) {
                 var code = str.charCodeAt(i);
                 if (code >= 0 && code <= 127) {

@@ -6,14 +6,17 @@ module RongIMLib {
         _name = "BaseMessage";
         _header: Header;
         _headerCode: any;
-        lengthSize = 0;
+        lengthSize: any = 0;
         ConnectMessage: ConnectMessage;
         PublishMessage: PublishMessage;
         QueryMessage: QueryMessage;
         PingReqMessage: PingReqMessage;
         PingRespMessage: PingRespMessage;
         DisconnectMessage: DisconnectMessage;
-        constructor(argu) {
+        ConnAckMessage: ConnAckMessage;
+        RetryableMessage: RetryableMessage;
+        QueryAckMessage:QueryAckMessage;
+        constructor(argu: any) {
             if (argu instanceof Header) {
                 this._header = argu
             } else {
@@ -40,18 +43,15 @@ module RongIMLib {
         toBytes() {
             return this.write([]).getBytesArray();
         }
-        setRetained(retain: any) {
-            this._header.retain = retain;
-        }
         isRetained() {
             return this._header.retain
         }
-        setQos(qos) {
+        setRetained(retain: any) {
+            this._header.retain = retain;
+        }
+        setQos(qos: any) {
             //this._header.qos = qos instanceof Qos ? qos : Qos.setValue(qos);
             //TODO 枚举setValue()方法未实现
-        }
-        getQos() {
-            return this._header.qos;
         }
         setDup(dup: boolean) {
             this._header.dup = dup;
@@ -62,6 +62,9 @@ module RongIMLib {
         getType() {
             return this._header.type
         }
+        getQos() {
+            return this._header.qos;
+        }
         messageLength() {
             return 0;
         }
@@ -70,16 +73,27 @@ module RongIMLib {
         readMessage(In: any, length: number) {
         }
         init(args: any) {
-            var valName: string, nana: any;
+            var valName: any, nana: any;
             for (nana in args) {
                 if (!args.hasOwnProperty(nana))
                     continue;
-                valName = nana.replace(/^\w/, function(x) {
+                valName = nana.replace(/^\w/, function(x: any) {
                     var tt = x.charCodeAt(0);
                     return 'set' + (tt >= 0x61 ? String.fromCharCode(tt & ~32) : x)
                 });
                 if (valName in this) {
-                    this[valName](args[nana])
+                    //    this[valName](args[nana]);
+                    switch (valName) {
+                        case "setRetained":
+                            this.setRetained(args[nana]);
+                            break;
+                        case "setQos":
+                            this.setQos(args[nana]);
+                            break;
+                        case "setDup":
+                            this.setDup(args[nana]);
+                            break;
+                    }
                 }
             }
         }
@@ -165,7 +179,7 @@ module RongIMLib {
             }
             return stream
         }
-        writeMessage(out) {
+        writeMessage(out: any) {
             var stream = this.binaryHelper.convertStream(out);
             stream.writeUTF(this.protocolId);
             stream.write(this.protocolVersion);
@@ -192,13 +206,90 @@ module RongIMLib {
         }
     }
     /**
-     *
+     *服务器响应信令
      */
     export class ConnAckMessage {
-        constructor(header: RongIMLib.Header) {
-
+        _name: string = "ConnAckMessage";
+        status: any;
+        userId: string;
+        MESSAGE_LENGTH = 2;
+        binaryHelper: BinaryHelper = new BinaryHelper();
+        constructor(header: any) {
+            switch (arguments.length) {
+                case 0:
+                    Message.call(this, Type.CONNACK);
+                    break;
+                case 1:
+                    if (arguments[0] instanceof Header) {
+                        Message.call(this, arguments[0])
+                    } else {
+                        if (arguments[0] in ConnectionState) {
+                            Message.call(this, Type.CONNACK);
+                            if (arguments[0] == null) {
+                                throw new Error("ConnAckMessage:The status of ConnAskMessage can't be null")
+                            }
+                            status = arguments[0]
+                        }
+                    }
+            }
+            BaseMessage.prototype.ConnAckMessage = this;
         }
-
+        messageLength(): number {
+            var length = this.MESSAGE_LENGTH;
+            if (this.userId) {
+                length += this.binaryHelper.toMQttString(this.userId).length
+            }
+            return length;
+        }
+        readMessage(In: any, msglength: number) {
+            var stream = this.binaryHelper.convertStream(In);
+            stream.read();
+            var result = +stream.read();
+            if (result >= 0 && result <= 9) {
+                this.setStatus(result);
+            } else {
+                throw new Error("Unsupported CONNACK code:" + result)
+            }
+            if (msglength > this.MESSAGE_LENGTH) {
+                this.setUserId(stream.readUTF())
+            }
+        }
+        writeMessage(out: any) {
+            var stream = this.binaryHelper.convertStream(out);
+            stream.write(128);
+            switch (+status) {
+                case 0:
+                case 1:
+                case 2:
+                case 5:
+                case 6:
+                    stream.write(+status);
+                    break;
+                case 3:
+                case 4:
+                    stream.write(3);
+                    break;
+                default:
+                    throw new Error("Unsupported CONNACK code:" + status);
+            }
+            if (this.userId) {
+                stream.writeUTF(this.userId)
+            }
+            return stream
+        }
+        setStatus(x: any) {
+            //此处有问题---Problem
+            this.status = x in ConnectionState ? x : ConnectionState[x];
+        }
+        setUserId(_userId: string) {
+            this.userId = _userId;
+        }
+        getStatus() {
+            return this.status;
+        }
+        getUserId() {
+            return this.userId;
+        }
     }
     /**
      *断开消息信令
@@ -223,7 +314,7 @@ module RongIMLib {
         messageLength(): number {
             return this.MESSAGE_LENGTH;
         }
-        readMessage = function(In) {
+        readMessage(In: any) {
             var _in = this.binaryHelper.convertStream(In);
             _in.read();
             var result = +_in.read();
@@ -233,7 +324,7 @@ module RongIMLib {
                 throw new Error("Unsupported CONNACK code:" + result)
             }
         }
-        writeMessage(Out) {
+        writeMessage(Out: any) {
             var out = this.binaryHelper.convertStream(Out);
             out.write(0);
             if (+status >= 1 && +status <= 3) {
@@ -242,7 +333,7 @@ module RongIMLib {
                 throw new Error("Unsupported CONNACK code:" + status)
             }
         }
-        setStatus(x) {
+        setStatus(x: any) {
             //TODO
             //status = x instanceof DisconnectionStatus ? x : DisconnectionStatus.setValue(x);
         };
@@ -279,15 +370,42 @@ module RongIMLib {
         }
     }
     /**
-     *
+     *封装MesssageId
      */
     export class RetryableMessage {
-        constructor(header: RongIMLib.Header) {
-
+        _name: string = "RetryableMessage";
+        messageId: any;
+        binaryHelper: BinaryHelper = new BinaryHelper();
+        constructor(argu: any) {
+            BaseMessage.call(this, argu)
+            BaseMessage.prototype.RetryableMessage = this;
+        }
+        messageLength(): number {
+            return 2;
+        }
+        writeMessage(Out: any) {
+            var out = this.binaryHelper.convertStream(Out),
+                Id = this.getMessageId(),
+                lsb = Id & 255,
+                msb = (Id & 65280) >> 8;
+            out.write(msb);
+            out.write(lsb);
+            return out
+        }
+        readMessage(In: any) {
+            var _in = this.binaryHelper.convertStream(In),
+                msgId = _in.read() * 256 + _in.read();
+            this.setMessageId(parseInt(msgId, 10));
+        }
+        setMessageId(_messageId: any) {
+            this.messageId = _messageId
+        };
+        getMessageId = function() {
+            return this.messageId
         }
     }
     /**
-     *
+     *推送回应信令
      */
     export class PubAckMessage {
         constructor(header: RongIMLib.Header) {
@@ -374,7 +492,7 @@ module RongIMLib {
         data: any;
         targetId: any;
         binaryHelper: BinaryHelper = new BinaryHelper();
-        constructor(header: RongIMLib.Header, two?:any, three?:any) {
+        constructor(header: RongIMLib.Header, two?: any, three?: any) {
             if (header instanceof Header) {
                 RetryableMessage.call(this, header);
             } else {
@@ -394,14 +512,14 @@ module RongIMLib {
             length += this.data.length;
             return length
         }
-        writeMessage(Out) {
+        writeMessage(Out: any) {
             var out = this.binaryHelper.convertStream(Out);
             out.writeUTF(this.topic);
             out.writeUTF(this.targetId);
             this.constructor.prototype.writeMessage.call(this, out);
             out.write(this.data)
         }
-        readMessage = function(In, msgLength) {
+        readMessage(In: any, msgLength: number) {
             var pos = 0, _in = this.binaryHelper.convertStream(In);
             this.topic = _in.readUTF();
             this.targetId = _in.readUTF();
@@ -412,13 +530,13 @@ module RongIMLib {
             this.data = new Array(msgLength - pos);
             _in.read(this.data)
         }
-        setTopic(x) {
+        setTopic(x: any) {
             this.topic = x;
         }
-        setData(x) {
+        setData(x: any) {
             this.data = x;
         }
-        setTargetId(x) {
+        setTargetId(x: any) {
             this.targetId = x;
         }
         getTopic() {
@@ -435,16 +553,56 @@ module RongIMLib {
      *
      */
     export class QueryConMessage {
-        constructor(header: RongIMLib.Header) {
-
+        constructor(messageId: any) {
+            if (messageId instanceof Header) {
+                RetryableMessage.call(this, messageId)
+            } else {
+                var self: any = RetryableMessage.call(this, Type.QUERYCON);
+                self.setMessageId(messageId);
+            }
         }
     }
     /**
-     *
+     *查询消息返回信息--信令
      */
     export class QueryAckMessage {
+        _name: string = "QueryAckMessage";
+        data: any;
+        status: any;
+        date: any;
+        binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(header: RongIMLib.Header) {
+            RetryableMessage.call(this, header);
+            BaseMessage.prototype.QueryAckMessage = this;
+        }
+        readMessage(In: any, msgLength: number) {
+            var _in = this.binaryHelper.convertStream(In);
+            QueryAckMessage.prototype.readMessage.call(this, _in);
+            this.date = _in.readUint();
+            status = _in.read() * 256 + _in.read();
+            if (msgLength > 0) {
+                this.data = new Array(msgLength - 8);
+                _in.read(this.data)
+            }
+        }
+        getData(): any {
+            return this.data;
+        }
+        getStatus(): any {
+            return this.status;
+        }
+        getDate(): any {
+            return this.date;
+        }
 
+        setDate(x: any) {
+            this.date = x;
+        }
+        setStatus(x: any) {
+            this.status = x;
+        }
+        setData(x: any) {
+            this.data = x;
         }
     }
 }

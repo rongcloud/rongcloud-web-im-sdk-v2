@@ -19,10 +19,10 @@ module.exports = (grunt) ->
           './dist/*.*'
         ]
 
-    # concat:
-    #   dist:
-    #     src: './src/**/*.ts'
-    #     dest: './dist/RongIMLib.ts'
+    concat:
+      dist:
+        src: './src/**/*.ts'
+        dest: './dist/RongIMLib.ts'
 
     connect:
       server:
