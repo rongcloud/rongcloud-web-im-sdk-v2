@@ -17,8 +17,6 @@ module.exports = (config) ->
     files: [
       'test/test-main.coffee',
       'dist/RongIMLib.js',
-      'src/internal/transportation/websocket.js',
-      'src/internal/transportation/xhrpolling.js'
       {pattern: 'test/**/*Spec.coffee', included: false}
     ]
 

@@ -15,7 +15,7 @@ module RongIMLib {
 
   export interface UserInfoAttachedMessage {
     userInfo: UserInfo;
-  }
+  } 
 
   export interface ExtraAttachedMessage {
     extra: string;

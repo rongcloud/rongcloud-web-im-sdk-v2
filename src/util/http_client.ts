@@ -4,12 +4,12 @@ module RongIMLib {
       this.request("POST", url, headers, callback);
     }
 
-    get(url: string, headers: any, callback: HttpRequestCallback): void {
+    get(url: string, headers:any, callback: HttpRequestCallback): void {
       this.request("GET", url, headers, callback);
     }
 
     request(method: string, url: string, headers: any, callback: HttpRequestCallback): void {
-      var xhr: any = getXHR();
+      var xhr: any = this.getXHR();
       xhr.get(method, url);
       xhr.send()
     }
@@ -32,6 +32,6 @@ module RongIMLib {
   }
 
   interface HttpRequestCallback {
-    (response: HTTPResponse): void;
+    (response: HttpResponse): void;
   }
 }

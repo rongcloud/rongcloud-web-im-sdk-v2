@@ -9,7 +9,7 @@ module RongIMLib {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead.");
             }
         }
-
+ 
         static obtain(content: string): TextMessage {
             var message = new TextMessage();
 
