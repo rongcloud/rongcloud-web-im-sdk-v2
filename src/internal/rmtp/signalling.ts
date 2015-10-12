@@ -7,15 +7,6 @@ module RongIMLib {
         _header: Header;
         _headerCode: any;
         lengthSize: any = 0;
-        ConnectMessage: ConnectMessage;
-        PublishMessage: PublishMessage;
-        QueryMessage: QueryMessage;
-        PingReqMessage: PingReqMessage;
-        PingRespMessage: PingRespMessage;
-        DisconnectMessage: DisconnectMessage;
-        ConnAckMessage: ConnAckMessage;
-        RetryableMessage: RetryableMessage;
-        QueryAckMessage:QueryAckMessage;
         constructor(argu: any) {
             if (argu instanceof Header) {
                 this._header = argu
@@ -68,10 +59,8 @@ module RongIMLib {
         messageLength() {
             return 0;
         }
-        writeMessage(out: any) {
-        }
-        readMessage(In: any, length: number) {
-        }
+        writeMessage(out: any) {}
+        readMessage(In: any, length: number) {}
         init(args: any) {
             var valName: any, nana: any;
             for (nana in args) {
@@ -100,9 +89,9 @@ module RongIMLib {
 
     }
     /**
-     *连接消息信令
+     *连接消息类型
      */
-    export class ConnectMessage {
+    export class ConnectMessage extends BaseMessage{
         _name: string = "ConnectMessage";
         CONNECT_HEADER_SIZE = 12;
         protocolId = "RCloud";
@@ -121,6 +110,7 @@ module RongIMLib {
         hasToken: any;
         hasWill: any;
         constructor(header: RongIMLib.Header) {
+            super(header);
             switch (arguments.length) {
                 case 0:
                     Message.call(this, Type.CONNECT);
@@ -138,7 +128,6 @@ module RongIMLib {
                     this.keepAlive = arguments[2];
                     break;
             }
-            BaseMessage.prototype.ConnectMessage = this;
         }
         messageLength(): number {
             var payloadSize = this.binaryHelper.toMQttString(this.clientId).length;
@@ -206,7 +195,7 @@ module RongIMLib {
         }
     }
     /**
-     *服务器响应信令
+     *连接应答类型
      */
     export class ConnAckMessage {
         _name: string = "ConnAckMessage";
@@ -232,7 +221,6 @@ module RongIMLib {
                         }
                     }
             }
-            BaseMessage.prototype.ConnAckMessage = this;
         }
         messageLength(): number {
             var length = this.MESSAGE_LENGTH;
@@ -292,7 +280,7 @@ module RongIMLib {
         }
     }
     /**
-     *断开消息信令
+     *断开消息类型
      */
     export class DisconnectMessage {
         _name: string = "DisconnectMessage"
@@ -309,7 +297,6 @@ module RongIMLib {
                 //     this.status = header
                 // }
             }
-            BaseMessage.prototype.DisconnectMessage = this;
         }
         messageLength(): number {
             return this.MESSAGE_LENGTH;
@@ -352,7 +339,6 @@ module RongIMLib {
             } else {
                 Message.call(this, Type.PINGREQ)
             }
-            BaseMessage.prototype.PingReqMessage = this;
         }
     }
     /**
@@ -366,7 +352,6 @@ module RongIMLib {
             } else {
                 Message.call(this, Type.PINGRESP);
             }
-            BaseMessage.prototype.PingRespMessage = this;
         }
     }
     /**
@@ -378,7 +363,6 @@ module RongIMLib {
         binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(argu: any) {
             BaseMessage.call(this, argu)
-            BaseMessage.prototype.RetryableMessage = this;
         }
         messageLength(): number {
             return 2;
@@ -405,15 +389,47 @@ module RongIMLib {
         }
     }
     /**
-     *推送回应信令
+     *发送消息应答（双向）
+     *qos为1必须给出应答（所有消息类型一样）
      */
     export class PubAckMessage {
+        status: any
+        msgLen: number = 2
+        date: number = 0;
+        binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(header: RongIMLib.Header) {
-
+            if (header instanceof Header) {
+                RetryableMessage.call(this, header)
+            } else {
+                var self: any = RetryableMessage.call(this, Type.PUBACK);
+                self.setMessageId(header);
+            }
+        }
+        messageLength(): number {
+            return this.msgLen;
+        }
+        writeMessage(Out: any) {
+            var out = this.binaryHelper.convertStream(Out);
+            PubAckMessage.prototype.writeMessage.call(this, out)
+        }
+        readMessage(In: any) {
+            var _in = this.binaryHelper.convertStream(In);
+            PubAckMessage.prototype.readMessage.call(this, _in);
+            this.date = _in.readUint();
+            status = _in.read() * 256 + _in.read()
+        }
+        setStatus = function(x: any) {
+            this.status = x;
+        }
+        getStatus(): any {
+            return this.status;
+        }
+        getDate(): number {
+            return this.date;
         }
     }
     /**
-     *发送消息信令
+     *发布消息
      */
     export class PublishMessage {
         _name = "PublishMessage";
@@ -433,7 +449,6 @@ module RongIMLib {
                     this.data = typeof two == "string" ? this.binaryHelper.toMQttString(two) : two;
                 }
             }
-            BaseMessage.prototype.PublishMessage = this;
         }
         messageLength() {
             var length = 10;
@@ -485,7 +500,7 @@ module RongIMLib {
         }
     }
     /**
-     *查询消息信令
+     *请求查询
      */
     export class QueryMessage {
         topic: any;
@@ -550,7 +565,7 @@ module RongIMLib {
         }
     }
     /**
-     *
+     *请求查询确认
      */
     export class QueryConMessage {
         constructor(messageId: any) {
@@ -563,7 +578,7 @@ module RongIMLib {
         }
     }
     /**
-     *查询消息返回信息--信令
+     *请求查询应答
      */
     export class QueryAckMessage {
         _name: string = "QueryAckMessage";
@@ -573,7 +588,6 @@ module RongIMLib {
         binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(header: RongIMLib.Header) {
             RetryableMessage.call(this, header);
-            BaseMessage.prototype.QueryAckMessage = this;
         }
         readMessage(In: any, msgLength: number) {
             var _in = this.binaryHelper.convertStream(In);

@@ -5,6 +5,9 @@ module RongIMLib {
     // Business properties.
     private _currentUserId: string;
 
+    //token
+    static _token:string;
+
     // Static properties.
     private static _instance: RongIMClient;
     private static _appKey: string;

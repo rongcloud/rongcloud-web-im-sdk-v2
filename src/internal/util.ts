@@ -3,7 +3,7 @@ module RongIMLib {
      * 通道标识类
      */
     export class Transports {
-            static _TransportType:string = "WebSocket";
+        static _TransportType: string = "WebSocket";
     }
     /**
      * 工具类
@@ -49,6 +49,7 @@ module RongIMLib {
     export class CookieHelper {
         static obj: any;
         static old: any;
+        static _host: string;
         static createStorage(): any {
             if (window.FORCE_LOCAL_STORAGE === true) {
                 this.old = localStorage.setItem;
@@ -65,4 +66,5 @@ module RongIMLib {
             return this.obj;
         }
     }
+
 }

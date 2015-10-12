@@ -17,6 +17,7 @@ module.exports = (config) ->
     files: [
       'test/test-main.coffee',
       'dist/RongIMLib.js',
+      'src/internal/MD5.js',
       {pattern: 'test/**/*Spec.coffee', included: false}
     ]
 

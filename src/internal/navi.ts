@@ -1,31 +1,33 @@
 module RongIMLib {
-    export class Client {
-        static Endpoint: any = new Object;
+    export class Navigate {
+        static Endpoint: any = new Object
         constructor() {
             window.getServerEndpoint = function(x: any) {
-                //把导航返回的server字段赋值给RongBinaryHelper.__host，因为flash widget需要使用
-                CookieHelper.createStorage().__host = Client.Endpoint.host = x["server"];
-                Client.Endpoint.userId = x.userId;
+                //把导航返回的server字段赋值给CookieHelper._host，因为flash widget需要使用
+                CookieHelper._host = Navigate.Endpoint.host = x["server"];
+                Navigate.Endpoint.userId = x.userId;
                 //替换本地存储的导航信息
                 var temp = document.cookie.match(new RegExp("(^| )navi\\w+?=([^;]*)(;|$)"));
                 temp !== null && CookieHelper.createStorage().removeItem(temp[0].split("=")[0].replace(/^\s/, ""));
-                //TODO 此处传入的TOKEN需要重定义
-                CookieHelper.createStorage().setItem("navi" + MD5("").slice(8, 16), x["server"] + "," + (x.userId || ""));
+                CookieHelper.createStorage().setItem("navi" + MD5("0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==").slice(8, 16), x["server"] + "," + (x.userId || ""));
             }
         }
-        connect(appId: string, token: string, callback?: any) {
+        connect(appId?: string, token?: string, callback?: any) {
             var oldAppId = CookieHelper.createStorage().getItem("appId");
             //如果appid和本地存储的不一样，清空所有本地存储数据
             if (oldAppId && oldAppId != appId) {
                 CookieHelper.createStorage().clear();
                 CookieHelper.createStorage().setItem("appId", appId);
             }
-            var client = new Client();
-
-            //TODO
-            // this.getServerEndpoint(token, appId, function() {
-            //
-            // })
+            if (!oldAppId) {
+                CookieHelper.createStorage().setItem("appId", appId);
+            }
+            var client = new Navigate();
+            var me = this;
+            this.getServerEndpoint(token, appId, function() {
+                //TODO
+                //调用连接服务器方法
+            }, callback.OnError, true)
             return client;
         }
         getServerEndpoint(_token: string, _appId: string, _onsuccess?: any, _onerror?: any, unignore?: any) {
@@ -38,8 +40,8 @@ module RongIMLib {
                 if (_old == _new && _new !== null && CookieHelper.createStorage().getItem("rongSDK") == Transports._TransportType) {
                     var obj = unescape(_old).split(",");
                     setTimeout(function() {
-                        CookieHelper.createStorage().__host = Client.Endpoint.host = obj[0];
-                        Client.Endpoint.userId = obj[1];
+                        CookieHelper._host = Navigate.Endpoint.host = obj[0];
+                        Navigate.Endpoint.userId = obj[1];
                         _onsuccess();
                     }, 500);
                     return;
@@ -48,7 +50,7 @@ module RongIMLib {
             //导航信息，切换Url对象的key进行线上线下测试操作
             var Url: any = {
                 //测试环境
-                "navUrl-Debug": "http://nav.sunquan.rongcloud.net:9001/",
+                "navUrl-Debug": "http://119.254.111.49:9100/",
                 //线上环境
                 "navUrl-Release": "http://nav.cn.rong.io/"
             }, xss = document.createElement("script");
