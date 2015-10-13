@@ -41,8 +41,7 @@ module RongIMLib {
             this._header.retain = retain;
         }
         setQos(qos: any) {
-            //this._header.qos = qos instanceof Qos ? qos : Qos.setValue(qos);
-            //TODO 枚举setValue()方法未实现
+            this._header.qos = Object.prototype.toString.call(qos) == '[object Object]' ? qos : Qos[qos]
         }
         setDup(dup: boolean) {
             this._header.dup = dup;
@@ -59,8 +58,8 @@ module RongIMLib {
         messageLength() {
             return 0;
         }
-        writeMessage(out: any) {}
-        readMessage(In: any, length: number) {}
+        writeMessage(out: any) { }
+        readMessage(In: any, length: number) { }
         init(args: any) {
             var valName: any, nana: any;
             for (nana in args) {
@@ -91,7 +90,7 @@ module RongIMLib {
     /**
      *连接消息类型
      */
-    export class ConnectMessage extends BaseMessage{
+    export class ConnectMessage extends BaseMessage {
         _name: string = "ConnectMessage";
         CONNECT_HEADER_SIZE = 12;
         protocolId = "RCloud";
@@ -110,16 +109,11 @@ module RongIMLib {
         hasToken: any;
         hasWill: any;
         constructor(header: RongIMLib.Header) {
-            super(header);
+            super(arguments.length == 0 || arguments.length == 3 ? Type.CONNECT : arguments[0]);
             switch (arguments.length) {
                 case 0:
-                    Message.call(this, Type.CONNECT);
-                    break;
                 case 1:
-                    Message.call(this, arguments[0]);
-                    break;
                 case 3:
-                    Message.call(this, Type.CONNECT);
                     if (!arguments[0] || arguments[0].length > 64) {
                         throw new Error("ConnectMessage:Client Id cannot be null and must be at most 64 characters long: " + arguments[0])
                     }
@@ -197,29 +191,26 @@ module RongIMLib {
     /**
      *连接应答类型
      */
-    export class ConnAckMessage {
+    export class ConnAckMessage extends BaseMessage {
         _name: string = "ConnAckMessage";
         status: any;
         userId: string;
         MESSAGE_LENGTH = 2;
         binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(header: any) {
+            super(arguments.length == 0 ? Type.CONNECT : arguments.length == 1 ? arguments[0] instanceof Header ? arguments[0] : Type.CONNECT : null)
             switch (arguments.length) {
                 case 0:
-                    Message.call(this, Type.CONNACK);
-                    break;
                 case 1:
-                    if (arguments[0] instanceof Header) {
-                        Message.call(this, arguments[0])
-                    } else {
+                    if (!(arguments[0] instanceof Header)) {
                         if (arguments[0] in ConnectionState) {
-                            Message.call(this, Type.CONNACK);
                             if (arguments[0] == null) {
                                 throw new Error("ConnAckMessage:The status of ConnAskMessage can't be null")
                             }
-                            status = arguments[0]
+                            this.status = arguments[0]
                         }
                     }
+                    break;
             }
         }
         messageLength(): number {
@@ -282,20 +273,17 @@ module RongIMLib {
     /**
      *断开消息类型
      */
-    export class DisconnectMessage {
+    export class DisconnectMessage extends BaseMessage {
         _name: string = "DisconnectMessage"
         status: any;
         MESSAGE_LENGTH: number = 2;
         binaryHelper: BinaryHelper = new BinaryHelper();
-        constructor(header: RongIMLib.Header) {
-            if (header instanceof Header) {
-                Message.call(this, header)
-            } else {
-                Message.call(this, Type.DISCONNECT);
-                // TODO
-                // if (header instanceof RongIMLib.DisconnectionStatus) {
-                //     this.status = header
-                // }
+        constructor(header: any) {
+            super(header instanceof Header ? header : Type.DISCONNECT);
+            if (!(header instanceof Header)) {
+                if (header in RongIMLib.DisconnectionStatus) {
+                    this.status = header
+                }
             }
         }
         messageLength(): number {
@@ -331,43 +319,35 @@ module RongIMLib {
     /**
      *请求消息信令
      */
-    export class PingReqMessage {
+    export class PingReqMessage extends BaseMessage {
         _name: string = "PingReqMessage";
         constructor(header?: RongIMLib.Header) {
-            if (header && header instanceof Header) {
-                Message.call(this, header)
-            } else {
-                Message.call(this, Type.PINGREQ)
-            }
+            super((header && header instanceof Header) ? header : Type.PINGREQ);
         }
     }
     /**
      *响应消息信令
      */
-    export class PingRespMessage {
+    export class PingRespMessage extends BaseMessage {
         _name: string = "PingRespMessage";
         constructor(header: RongIMLib.Header) {
-            if (header && header instanceof Header) {
-                Message.call(this, header);
-            } else {
-                Message.call(this, Type.PINGRESP);
-            }
+            super((header && header instanceof Header) ? header : Type.PINGRESP);
         }
     }
     /**
      *封装MesssageId
      */
-    export class RetryableMessage {
+    export class RetryableMessage extends BaseMessage {
         _name: string = "RetryableMessage";
         messageId: any;
         binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(argu: any) {
-            BaseMessage.call(this, argu)
+            super(argu);
         }
         messageLength(): number {
             return 2;
         }
-        writeMessage(Out: any) {
+        writeMessage(Out: any):any{
             var out = this.binaryHelper.convertStream(Out),
                 Id = this.getMessageId(),
                 lsb = Id & 255,
@@ -376,15 +356,15 @@ module RongIMLib {
             out.write(lsb);
             return out
         }
-        readMessage(In: any) {
+        readMessage(In: any, msgLength?: number) {
             var _in = this.binaryHelper.convertStream(In),
                 msgId = _in.read() * 256 + _in.read();
             this.setMessageId(parseInt(msgId, 10));
         }
-        setMessageId(_messageId: any) {
+        setMessageId(_messageId: number) {
             this.messageId = _messageId
         };
-        getMessageId = function() {
+        getMessageId() :any{
             return this.messageId
         }
     }
@@ -392,12 +372,12 @@ module RongIMLib {
      *发送消息应答（双向）
      *qos为1必须给出应答（所有消息类型一样）
      */
-    export class PubAckMessage {
+    export class PubAckMessage{
         status: any
         msgLen: number = 2
         date: number = 0;
         binaryHelper: BinaryHelper = new BinaryHelper();
-        constructor(header: RongIMLib.Header) {
+        constructor(header:any) {
             if (header instanceof Header) {
                 RetryableMessage.call(this, header)
             } else {
@@ -412,7 +392,7 @@ module RongIMLib {
             var out = this.binaryHelper.convertStream(Out);
             PubAckMessage.prototype.writeMessage.call(this, out)
         }
-        readMessage(In: any) {
+        readMessage(In: any, msgLength: number) {
             var _in = this.binaryHelper.convertStream(In);
             PubAckMessage.prototype.readMessage.call(this, _in);
             this.date = _in.readUint();
@@ -431,26 +411,25 @@ module RongIMLib {
     /**
      *发布消息
      */
-    export class PublishMessage {
+    export class PublishMessage extends RetryableMessage{
         _name = "PublishMessage";
         topic: any;
         data: any;
         targetId: string;
         date: any;
         binaryHelper: BinaryHelper = new BinaryHelper();
-        constructor(header: RongIMLib.Header, two?: any, three?: any) {
+        constructor(header: any, two?: any, three?: any) {
+            super(header);
             if (arguments.length == 1 && header instanceof Header) {
                 RetryableMessage.call(this, header)
-            } else {
-                if (arguments.length == 3) {
+            } else if (arguments.length == 3){
                     RetryableMessage.call(this, Type.PUBLISH);
                     this.topic = header;
                     this.targetId = three;
                     this.data = typeof two == "string" ? this.binaryHelper.toMQttString(two) : two;
-                }
             }
         }
-        messageLength() {
+        messageLength() :number{
             var length = 10;
             length += this.binaryHelper.toMQttString(this.topic).length;
             length += this.binaryHelper.toMQttString(this.targetId).length;
@@ -465,8 +444,7 @@ module RongIMLib {
             out.write(this.data)
         };
         readMessage(In: any, msgLength: number) {
-            var pos = 6,
-                _in = this.binaryHelper.convertStream(In);
+            var pos = 6,_in = this.binaryHelper.convertStream(In);
             this.date = _in.readUint();
             this.topic = _in.readUTF();
             pos += this.binaryHelper.toMQttString(this.topic).length;
@@ -502,7 +480,7 @@ module RongIMLib {
     /**
      *请求查询
      */
-    export class QueryMessage {
+    export class QueryMessage{
         topic: any;
         data: any;
         targetId: any;
@@ -567,7 +545,7 @@ module RongIMLib {
     /**
      *请求查询确认
      */
-    export class QueryConMessage {
+    export class QueryConMessage{
         constructor(messageId: any) {
             if (messageId instanceof Header) {
                 RetryableMessage.call(this, messageId)
@@ -580,7 +558,7 @@ module RongIMLib {
     /**
      *请求查询应答
      */
-    export class QueryAckMessage {
+    export class QueryAckMessage{
         _name: string = "QueryAckMessage";
         data: any;
         status: any;

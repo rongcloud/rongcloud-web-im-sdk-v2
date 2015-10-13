@@ -8,144 +8,134 @@ module RongIMLib {
         //是否关闭： true:已关闭 ,false：未关闭
         isClose: boolean = false;
         //存放请求连接对象
-        requests: any;
-        sendPollingKey: string = "send";
-        connectPollingKey: string = "connect";
         requestParams: any;
         queue: Array<any>;
-        constructor() {
-            this.requests = new Object;
-            this.requestParams = new Object;
-            this.requestParams[this.connectPollingKey] = new Object;
-            this.requestParams[this.sendPollingKey] = new Object;
+        _sendXhr: any;
+        _xhr: any;
+        _socket:Socket;
+        constructor(socket:Socket) {
             this.queue = [];
+            this._socket = socket;
             return this;
         }
         /**
          * [createTransport 创建Polling，打开请求连接]
          * @return {PollingTransportation} [此处与websocket略有区别，此处不返回Polling对象]
          */
-        createTransport(url: string, method: string): any {
-            if (!url || !method) throw new Error("Url or method is empty,Please check them!");
-            var request = this.XmlHtppRequest();
-            this.requests[this.connectPollingKey] = request;
-            this.requestParams[this.connectPollingKey]["url"] = url;
-            this.requestParams[this.connectPollingKey]["method"] = method;
-            this.createPolling(this.requestParams[this.connectPollingKey]["url"], this.requestParams[this.connectPollingKey]["method"], this.connectPollingKey);
-            this.requests[this.connectPollingKey].send();
+        createTransport(url: string, method?: string): any {
+            if (!url) throw new Error("Url is empty,Please check it!");
+            var sid = CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId");
+            if (sid) {
+                setTimeout(function() {
+                    this.onPollingSuccess("{\"status\":0,\"userId\":\"" + Navigate.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
+                    this.connected = true;
+                }, 500);
+                return this;
+            }
+            this._get(url);
             return this;
+        }
+        _request(url: string, method: string, multipart?: boolean) {
+            var req = this.XmlHtppRequest();
+            if (multipart) req.multipart = true;
+            req.open(method || 'GET', "http://" + url);
+            if (method == 'POST' && 'setRequestHeader' in req) {
+                req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=utf-8');
+            }
+            return req;
+        }
+        _get(url: string, args?: any) {
+            this._xhr = this._request(url, "GET");
+            if ("onload" in this._xhr) {
+                this._xhr.onload = function() {
+                    this.onload = this.empty;
+                    if (this.responseText == 'lost params') {
+                        // status['400'](self);
+                    } else {
+                        // status['200'](self, this.responseText, arg);
+                    }
+                };
+                this._xhr.onerror = function() {
+                    this.disconnect();
+                }
+            } else {
+                this._xhr.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        this.onreadystatechange = this.empty;
+                        if (/^(200|202)$/.test(this.status)) {
+                            //   status['200'](self, this.responseText, arg);
+                        } else if (/^(400|403)$/.test(this.status)) {
+                            //   status['400'](self);
+                        } else {
+                            this.disconnect();
+                        }
+
+                    }
+                }
+            }
+            this._xhr.send();
         }
         /**
          * [send 发送消息，Method:POST]
          * queue 为消息队列，待通道可用发送所有等待消息
          * @param  {string} data [需要传入comet格式数据，此处只负责通讯通道，数据转换在外层处理]
          */
-        send(data: any, url: string, method: string): void {
+        send(data: any, url?: string, method?: string): void {
             if (!this.connected) this.queue.push(data);
             if (this.isClose) throw new Error("The Connection is closed,Please open the Connection!!!");
-            var request = this.XmlHtppRequest();
-            this.requests[this.sendPollingKey] = request;
-            this.requestParams[this.sendPollingKey]["url"] = url;
-            this.requestParams[this.sendPollingKey]["method"] = method;
-            this.createPolling(this.requestParams[this.sendPollingKey]["url"], this.requestParams[this.sendPollingKey]["method"], this.sendPollingKey);
-            if ('setRequestHeader' in this.requests[this.sendPollingKey]) {
-                this.requests[this.sendPollingKey].setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=utf-8');
+            this._sendXhr = this._request(Navigate.Endpoint.host + "/websocket" + data.url, 'POST');
+            if ("onload" in this._sendXhr) {
+                this._sendXhr.onload = function() {
+                    this.onload = this.empty;
+                    this.onData(this.responseText);
+                };
+                this._sendXhr.onerror = function() {
+                    this.onerror = this.empty;
+                };
+            } else {
+                this._sendXhr.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        this.onreadystatechange = this.empty;
+                        if (/^(202|200)$/.test(this.status)) {
+                            this.onData(this.responseText);
+                        }
+                    }
+                };
             }
-            var self = this;
-            setTimeout(function(){
-                self.requests[self.sendPollingKey].send(data);
-            },2000)
+
+            this._sendXhr.send(JSON.stringify(data.data));
         }
         //接收服务器返回消息
-        onData(data?: any): string {
-            //TODO 转换数据，触发事件，告知client，将数据回显
-            console.log(data)
-            console.log("==========================")
+        onData(data?: any, header?: any): string {
+            if (!data || data == "lost params") {
+                return;
+            }
+            if (header) {
+                CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId") || CookieHelper.createStorage().setItem(Navigate.Endpoint.userId + "sId", header);
+            }
+            var self = this, val = JSON.parse(data);
+            if (!MessageUtil.isArray(val)) {
+                val = [val];
+            }
+            MessageUtil.forEach(val, function(x: any) {
+                this._socket.fire("message", new MessageInputStream(x, true).readMessage());
+            });
             return "";
         }
         onClose(isrecon?: boolean): any {
-            if (this.isXHR) {
-                //connect-request
-                if (this.requests[this.connectPollingKey]) {
-                    this.requests[this.connectPollingKey].onreadystatechange = this.requests[this.connectPollingKey].onload = this.empty;
-                    this.requests[this.connectPollingKey].abort();
-                    delete this.requests[this.connectPollingKey];
-                    if (!isrecon) {
-                        this.requestParams[this.connectPollingKey] = "";
-                        this.requestParams[this.sendPollingKey] = "";
-                    }
-                }
-                //send-request
-                if (this.requests[this.sendPollingKey]) {
-                    this.requests[this.sendPollingKey].onreadystatechange = this.requests[this.sendPollingKey].onload = this.empty;
-                    this.requests[this.sendPollingKey].abort();
-                    delete this.requests[this.sendPollingKey];
-                    if (!isrecon) {
-                        this.resetParams();
-                    }
-                }
-            } else {
-                if (this.requests[this.connectPollingKey]) {
-                    this.requests[this.connectPollingKey].onload = this.requests[this.connectPollingKey].onload = this.empty;
-                    this.requests[this.connectPollingKey].abort();
-                    delete this.requests[this.connectPollingKey];
-                    if (!isrecon) {
-                        this.requestParams[this.connectPollingKey] = "";
-                        this.requestParams[this.sendPollingKey] = "";
-                    }
-                }
-                //send-request
-                if (this.requests[this.sendPollingKey]) {
-                    this.requests[this.sendPollingKey].onload = this.requests[this.sendPollingKey].onload = this.empty;
-                    this.requests[this.sendPollingKey].abort();
-                    delete this.requests[this.sendPollingKey];
-                    if (!isrecon) {
-                        this.resetParams();
-                    }
-                }
+            if (this._xhr) {
+                this._xhr.onreadystatechange = this._xhr.onload = this.empty;
+                this._xhr.abort();
+                this._xhr = null;
             }
-        }
-        resetParams(): void {
-            this.requestParams[this.connectPollingKey] = "";
-            this.requestParams[this.sendPollingKey] = "";
+            if (this._sendXhr) {
+                this._sendXhr.onreadystatechange = this._sendXhr.onload = this.empty;
+                this._sendXhr.abort();
+                this._sendXhr = null;
+            }
         }
         onError(error: any): void {
             throw new Error(error);
-        }
-        addEvent(key?: string): void {
-            var self = this, polling = self.requests[key];
-            if (self.isXHR) {
-                polling.onreadystatechange = function() {
-                    //readyState=1：A request has been opened, but the send method has not been called.
-                    //readyState=4: All the data has been received.
-                    if (polling.readyState == 1) {
-                        self.connected = true;
-                        //发送消息队列中未发送的消息
-                        self.doQueue(key);
-                    }
-                    if (4 != polling.readyState) return;
-                    //204为错误状态码，在IE原生的XHR会被转换成200，而在IE的ActiveX版本中会被转换为1223,所以此处判断200 和 1223
-                    if (200 == polling.status || 1223 == polling.status) {
-                        self.onPollingSuccess(key);
-                    } else if (/^(400|403)$/.test(polling.status)) {
-                        self.onPollingError();
-                    } else {
-                        self.onError(polling.status);
-                    }
-                }
-            } else {
-                polling.onload = function() {
-                    this.onload = self.empty;
-                    if (this.responseText == 'lost params') {
-                        self.onPollingError();
-                    } else {
-                        self.onPollingSuccess(key);
-                    }
-                };
-                polling.onerror = function() {
-                    self.onError(polling.responseText);
-                };
-            }
         }
         XmlHtppRequest(): any {
             var hasCORS = typeof XMLHttpRequest !== 'undefined' && 'withCredentials' in new XMLHttpRequest(), self = this;
@@ -159,10 +149,6 @@ module RongIMLib {
             } else {
                 return new Function;
             }
-        }
-        createPolling(url: string, method: string, key: string) {
-            this.requests[key].open(method, url);
-            this.addEvent(key);
         }
         checkWithCredentials(): boolean {
             if (!('XMLHttpRequest' in window)) return false;
@@ -180,18 +166,31 @@ module RongIMLib {
             this.onClose(false);
         }
         reconnect(): void {
-            this.onClose(true);
-            this.createTransport(this.requestParams[this.connectPollingKey]["url"], this.requestParams[this.connectPollingKey]["method"]);
+
         }
-        onPollingSuccess(key?: string): void {
+        onPollingSuccess(a: any, b: any): void {
             //把数据返回，随后判断状态是否开启下次请求
-            var responseText = this.requests[key].responseText;
-            this.onData(responseText);
-            if (/"headerCode":-32,/.test(responseText)) return;
-            this.createTransport(this.requestParams[key].url, this.requestParams[key].method);
+            this.onData(a, b);
+            if (/"headerCode":-32,/.test(a)) return;
+            this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId"), true)
         }
         onPollingError(): void {
             this.disconnect();
+        }
+        addEvent() {
+
+        }
+        status200(text: string, arg: any) {
+            var txt = text.match(/"sessionid":"\S+?(?=")/);
+            this.onPollingSuccess(text, txt ? txt[0].slice(13) : void 0);
+            arg || this.disconnect();
+        }
+        status400(self: any) {
+            CookieHelper.createStorage().removeItem(Navigate.Endpoint.userId + "sId");
+            self._onDisconnect(true);
+            this.connected = false;
+            this.isClose = true;
+            this._xhr.connect(null, null);
         }
     }
 }

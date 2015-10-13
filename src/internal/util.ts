@@ -3,7 +3,7 @@ module RongIMLib {
      * 通道标识类
      */
     export class Transports {
-        static _TransportType: string = "WebSocket";
+        static _TransportType: string = Socket.WEBSOCKET;
     }
     /**
      * 工具类
@@ -15,6 +15,31 @@ module RongIMLib {
                 return [].slice.call(arr);
             }
             return typearray;
+        }
+        static indexOf(arr?: any, item?: any, from?: any): number {
+            for (var l = arr.length, i = (from < 0) ? Math.max(0, +from) : from || 0; i < l; i++) {
+                if (arr[i] == item) {
+                    return i
+                }
+            }
+            return -1
+        }
+        static isArray(obj: any) {
+            return Object.prototype.toString.call(obj) == "[object Array]";
+        }
+        //遍历，只能遍历数组
+        static forEach(arr: any, func: any) {
+            if ([].forEach) {
+                return function(arr: any, func: any) {
+                    [].forEach.call(arr, func)
+                }
+            } else {
+                return function(arr: any, func: any) {
+                    for (var i = 0; i < arr.length; i++) {
+                        func.call(arr, arr[i], i, arr)
+                    }
+                }
+            }
         }
     }
     class UserCookie {
@@ -66,5 +91,32 @@ module RongIMLib {
             return this.obj;
         }
     }
-
+    export class MessageIdHandler {
+        messageId: number = 0;
+        isXHR: boolean = Transports._TransportType === Socket.XHR_POLLING;
+        constructor() {
+            this.isXHR && this.init();
+        }
+        init() {
+            this.messageId = +(CookieHelper.createStorage().getItem("msgId") || CookieHelper.createStorage().setItem("msgId", 0) || 0);
+        }
+        messageIdPlus(method: any):any {
+            this.isXHR && this.init();
+            if (this.messageId >= 65535) {
+                method();
+                return false;
+            }
+            this.messageId++;
+            this.isXHR && CookieHelper.createStorage().setItem("msgId", this.messageId);
+            return this.messageId;
+        }
+        clearMessageId() {
+            this.messageId = 0;
+            this.isXHR && CookieHelper.createStorage().setItem("msgId", this.messageId);
+        }
+        getMessageId() {
+            this.isXHR && this.init();
+            return this.messageId;
+        }
+    }
 }

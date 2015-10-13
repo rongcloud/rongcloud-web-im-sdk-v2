@@ -41,4 +41,8 @@ module RongIMLib {
     export interface SendMessageCallback {
 
     }
+
+    export interface PublishCallback {
+
+    }
 }

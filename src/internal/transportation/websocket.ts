@@ -11,18 +11,20 @@ module RongIMLib {
         //存放消息队列的临时变量
         queue: Array<any> = [];
         empty: any = new Function;
+        _socket:Socket;
         /**
          * [constructor]
          * @param  {string} url [连接地址：包含token、version]
          */
-        constructor() {
+        constructor(_socket:Socket) {
+            this._socket = _socket;
             return this;
         }
         /**
          * [createTransport 创建WebScoket对象]
          * @return {WebScoket} [返回WebSockt对象]
          */
-        createTransport(url:string): any {
+        createTransport(url:string,method?:string): any {
             if (!url) throw new Error("URL can't be empty");
             this.url = url;
             this.socket = new WebSocket("ws://" +url);
