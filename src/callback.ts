@@ -41,8 +41,13 @@ module RongIMLib {
     export interface SendMessageCallback {
 
     }
+    export interface InFMessageCallback {
 
-    export interface PublishCallback {
+    }
+    export interface InFPublishCallback {
+
+    }
+    export interface InFQueryCallback {
 
     }
 }

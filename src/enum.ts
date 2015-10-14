@@ -87,10 +87,11 @@ module RongIMLib {
     }
 
     export enum ErrorCode {
+        TIMEOUT = -1,
         /**
          * 未知原因失败。
          */
-        UNKNOWN = -1,
+        UNKNOWN = -2,
 
         /**
          * 连接成功。

@@ -22,11 +22,10 @@ module RongIMLib {
             if (!oldAppId) {
                 CookieHelper.createStorage().setItem("appId", appId);
             }
-            var client = new Navigate();
+            var client = new Client(token,appId);
             var me = this;
             this.getServerEndpoint(token, appId, function() {
-                //TODO
-                //调用连接服务器方法
+                client.connect(callback);
             }, callback.OnError, true)
             return client;
         }

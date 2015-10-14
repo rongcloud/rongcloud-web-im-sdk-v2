@@ -9,7 +9,7 @@ module RongIMLib {
      * 工具类
      */
     export class MessageUtil {
-        ArrayForm(typearray: any): Array<any> {
+        static ArrayForm(typearray: any): Array<any> {
             if (Object.prototype.toString.call(typearray) == "[object ArrayBuffer]") {
                 var arr = new Uint8Array(typearray);
                 return [].slice.call(arr);
@@ -40,6 +40,21 @@ module RongIMLib {
                     }
                 }
             }
+        }
+        static int64ToTimestamp(obj: any, isDate?: boolean) {
+            if (obj.low === undefined) {
+                return obj;
+            }
+            var low = obj.low;
+            if (low < 0) {
+                low += 0xffffffff + 1;
+            }
+            low = low.toString(16);
+            var timestamp = parseInt(obj.high.toString(16) + "00000000".replace(new RegExp('0{' + low.length + '}$'), low), 16);
+            if (isDate) {
+                return new Date(timestamp)
+            }
+            return timestamp;
         }
     }
     class UserCookie {
@@ -100,7 +115,7 @@ module RongIMLib {
         init() {
             this.messageId = +(CookieHelper.createStorage().getItem("msgId") || CookieHelper.createStorage().setItem("msgId", 0) || 0);
         }
-        messageIdPlus(method: any):any {
+        messageIdPlus(method: any): any {
             this.isXHR && this.init();
             if (this.messageId >= 65535) {
                 method();

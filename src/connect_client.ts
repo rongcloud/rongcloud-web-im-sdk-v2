@@ -1,8 +1,12 @@
 //用于连接通道
 module RongIMLib {
+    var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
+        ["chatMsg", "pcMsgP", "pdMsgP", "pgMsgP", "ppMsgP"], "pdOpen", "rename", "uGcmpr", "qnTkn", 'destroyChrm',
+        'createChrm', 'exitChrm', 'queryChrm', 'joinChrm', "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", 'qryRelation', 'delRelation'];
     export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
+        static _ReceiveMessageListener: any;
         url: string;
         self: any;
         constructor(address: any, cb: any, self: Client) {
@@ -41,7 +45,7 @@ module RongIMLib {
                 this.self.reconnectObj = callback;
             }
         }
-        disconnect(x: any) {
+        disconnect(x?: any) {
             this.socket.disconnect(x);
         }
     }
@@ -94,7 +98,7 @@ module RongIMLib {
                 }
             }
         }
-        disconnect(callback: any) {
+        disconnect(callback?: any) {
             if (callback) {
                 this.fire("StatusChanged", callback)
             }
@@ -159,6 +163,7 @@ module RongIMLib {
             };
         }
     }
+    //连接端消息累
     export class Client {
         timeoutMillis: number = 100000;
         timeout_: number = 0;
@@ -172,6 +177,13 @@ module RongIMLib {
         reconnectObj: any = {};
         heartbeat: any = 0;
         chatroomId: string = '';
+        static userInfoMapping: any = {};
+        SyncTimeQueue: any;
+        constructor(token: string, appId: string) {
+            this.token = token;
+            this.appId = appId;
+            this.SyncTimeQueue.state = "complete";
+        }
         resumeTimer() {
             if (!this.timeout_) {
                 this.timeout_ = setTimeout(function() {
@@ -244,27 +256,132 @@ module RongIMLib {
             msg.setMessageId(msgId);
             if (_callback) {
                 msg.setQos(Qos.AT_LEAST_ONCE);
-                //this.handler.putCallback(new PublishCallback(_callback.onSuccess, _callback.onError), msg.getMessageId(), _msg)
-                //TODO
+                this.handler.putCallback(new PublishCallback(_callback.onSuccess, _callback.onError), msg.getMessageId(), _msg)
             } else {
                 msg.setQos(Qos.AT_MOST_ONCE);
             }
             this.channel.writeAndFlush(msg);
 
         }
-        queryMessage() {
-
-
+        queryMessage(_topic: string, _data: any, _targetId: string, _qos: any, _callback: any, pbtype: any) {
+            if (_topic == "userInf") {
+                if (Client.userInfoMapping[_targetId]) {
+                    _callback.onSuccess(Client.userInfoMapping[_targetId]);
+                    return;
+                }
+            }
+            var msgId = new MessageIdHandler().messageIdPlus(this.channel.reconnect);
+            if (!msgId) {
+                return;
+            }
+            var msg = new QueryMessage(_topic, _data, _targetId);
+            msg.setMessageId(msgId);
+            msg.setQos(_qos);
+            this.handler.putCallback(new QueryCallback(_callback.onSuccess, _callback.onError), msg.getMessageId(), pbtype);
+            this.channel.writeAndFlush(msg)
         }
         invoke() {
-
-
-
-
+            var time: string, modules: any, str: string, target: string, temp: any = this.SyncTimeQueue.shift();
+            if (temp == undefined) {
+                return;
+            }
+            this.SyncTimeQueue.state = "pending";
+            if (temp.type != 2) {
+                //普通消息
+                time = CookieHelper.createStorage().getItem(this.userId) || 0;
+                modules = new Modules.SyncRequestMsg();
+                modules.setIspolling(false);
+                str = 'pullMsg';
+                target = this.userId;
+            } else {
+                //聊天室消息
+                time = CookieHelper.createStorage().getItem(this.userId + "CST") || 0;
+                modules = new Modules.ChrmPullMsg();
+                modules.setCount(0);
+                str = 'chrmPull';
+                if (this.chatroomId === '') {
+                    //受到聊天室消息，但是本地没有加入聊天室就手动抛出一个错误
+                    throw new Error("syncTime:Received messages of chatroom but was not init");
+                }
+                target = this.chatroomId;
+            }
+            //判断服务器给的时间是否消息本地存储的时间，小于的话不执行拉取操作，进行一下步队列操作
+            if (temp.pulltime <= time) {
+                this.SyncTimeQueue.state = "complete";
+                this.invoke();
+                return;
+            }
+            modules.setSyncTime(time);
+            //发送queryMessage请求
+            this.queryMessage(str, MessageUtil.ArrayForm(modules.toArrayBuffer()), target, Qos.AT_LEAST_ONCE, {
+                onSuccess: function(collection: any) {
+                    var sync = MessageUtil.int64ToTimestamp(collection.syncTime),
+                        symbol = this.userId;
+                    if (str == "chrmPull") {
+                        symbol += 'CST';
+                    }
+                    //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
+                    CookieHelper.createStorage().setItem(symbol, sync);
+                    //把拉取到的消息逐条传给消息监听器
+                    var list = collection.list;
+                    for (var i = 0; i < list.length; i++) {
+                        // bridge._client.handler.onReceived(list[i])
+                        // TODO
+                    }
+                    this.SyncTimeQueue.state = "complete";
+                    this.invoke();
+                },
+                onError: function() {
+                    this.SyncTimeQueue.state = "complete";
+                    this.invoke();
+                }
+            }, "DownStreamMessages");
         }
-        syncTime() {
-
-
+        syncTime(_type: any, pullTime: any) {
+            this.SyncTimeQueue.push({ type: _type, pulltime: pullTime });
+            //如果队列中只有一个成员并且状态已经完成就执行invoke方法
+            if (this.SyncTimeQueue.length == 1 && this.SyncTimeQueue.state == "complete") {
+                this.invoke()
+            }
+        }
+    }
+    //连接类，实现imclient与connect_client的连接
+    export class Bridge {
+        static _client: Client;
+        static getInstance(): Bridge {
+            return new Bridge();
+        }
+        //连接服务器
+        connect(appKey: string, token: string, callback: any): Client {
+            Bridge._client = new Navigate().connect(appKey, token, callback);
+            return Bridge._client;
+        }
+        setListener(_changer: any): void {
+            if (typeof _changer == "object") {
+                if (typeof _changer.onChanged == 'function') {
+                    Channel._ConnectionStatusListener = _changer;
+                } else if (typeof _changer.onReceived == 'function') {
+                    Channel._ReceiveMessageListener = _changer;
+                }
+            }
+        }
+        reConnect(callabck: any): void {
+            Bridge._client.channel.reconnect(callabck);
+        }
+        disConnect() {
+            Bridge._client.clearHeartbeat();
+            Bridge._client.channel.disconnect()
+        }
+        //执行queryMessage请求
+        queryMsg(topic: string, content: string, targetId: string, callback: any, pbname: string): void {
+            if (typeof topic != "string") {
+                topic = _topic[topic]
+            }
+            Bridge._client.queryMessage(topic, content, targetId, Qos.AT_MOST_ONCE, callback, pbname);
+        }
+        //发送消息 执行publishMessage 请求
+        pubMsg(topic: string, content: string, targetId: string, callback: any, msg: any): void {
+            Bridge._client.publishMessage(_topic[10][topic], content, targetId, callback, msg)
         }
     }
 }

@@ -1,3 +1,4 @@
+/// <reference path="../../dts/util.d.ts"/>
 module RongIMLib {
     /**
      * 把消息对象写入流中

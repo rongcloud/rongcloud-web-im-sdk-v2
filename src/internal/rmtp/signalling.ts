@@ -347,7 +347,7 @@ module RongIMLib {
         messageLength(): number {
             return 2;
         }
-        writeMessage(Out: any):any{
+        writeMessage(Out: any): any {
             var out = this.binaryHelper.convertStream(Out),
                 Id = this.getMessageId(),
                 lsb = Id & 255,
@@ -364,7 +364,7 @@ module RongIMLib {
         setMessageId(_messageId: number) {
             this.messageId = _messageId
         };
-        getMessageId() :any{
+        getMessageId(): any {
             return this.messageId
         }
     }
@@ -372,12 +372,12 @@ module RongIMLib {
      *发送消息应答（双向）
      *qos为1必须给出应答（所有消息类型一样）
      */
-    export class PubAckMessage{
+    export class PubAckMessage {
         status: any
         msgLen: number = 2
         date: number = 0;
         binaryHelper: BinaryHelper = new BinaryHelper();
-        constructor(header:any) {
+        constructor(header: any) {
             if (header instanceof Header) {
                 RetryableMessage.call(this, header)
             } else {
@@ -411,7 +411,7 @@ module RongIMLib {
     /**
      *发布消息
      */
-    export class PublishMessage extends RetryableMessage{
+    export class PublishMessage extends RetryableMessage {
         _name = "PublishMessage";
         topic: any;
         data: any;
@@ -422,14 +422,14 @@ module RongIMLib {
             super(header);
             if (arguments.length == 1 && header instanceof Header) {
                 RetryableMessage.call(this, header)
-            } else if (arguments.length == 3){
-                    RetryableMessage.call(this, Type.PUBLISH);
-                    this.topic = header;
-                    this.targetId = three;
-                    this.data = typeof two == "string" ? this.binaryHelper.toMQttString(two) : two;
+            } else if (arguments.length == 3) {
+                RetryableMessage.call(this, Type.PUBLISH);
+                this.topic = header;
+                this.targetId = three;
+                this.data = typeof two == "string" ? this.binaryHelper.toMQttString(two) : two;
             }
         }
-        messageLength() :number{
+        messageLength(): number {
             var length = 10;
             length += this.binaryHelper.toMQttString(this.topic).length;
             length += this.binaryHelper.toMQttString(this.targetId).length;
@@ -444,7 +444,7 @@ module RongIMLib {
             out.write(this.data)
         };
         readMessage(In: any, msgLength: number) {
-            var pos = 6,_in = this.binaryHelper.convertStream(In);
+            var pos = 6, _in = this.binaryHelper.convertStream(In);
             this.date = _in.readUint();
             this.topic = _in.readUTF();
             pos += this.binaryHelper.toMQttString(this.topic).length;
@@ -480,21 +480,17 @@ module RongIMLib {
     /**
      *请求查询
      */
-    export class QueryMessage{
+    export class QueryMessage extends RetryableMessage {
         topic: any;
         data: any;
         targetId: any;
         binaryHelper: BinaryHelper = new BinaryHelper();
-        constructor(header: RongIMLib.Header, two?: any, three?: any) {
-            if (header instanceof Header) {
-                RetryableMessage.call(this, header);
-            } else {
-                if (arguments.length == 3) {
-                    RetryableMessage.call(this, Type.QUERY);
-                    this.data = typeof two == "string" ? this.binaryHelper.toMQttString(two) : two;
-                    this.topic = header;
-                    this.targetId = three;
-                }
+        constructor(header: any, two?: any, three?: any) {
+            super(header instanceof Header ? header : arguments.length == 3 ? Type.QUERY : null);
+            if (arguments.length == 3) {
+                this.data = typeof two == "string" ? this.binaryHelper.toMQttString(two) : two;
+                this.topic = header;
+                this.targetId = three;
             }
         }
         messageLength(): number {
@@ -545,7 +541,7 @@ module RongIMLib {
     /**
      *请求查询确认
      */
-    export class QueryConMessage{
+    export class QueryConMessage {
         constructor(messageId: any) {
             if (messageId instanceof Header) {
                 RetryableMessage.call(this, messageId)
@@ -558,7 +554,7 @@ module RongIMLib {
     /**
      *请求查询应答
      */
-    export class QueryAckMessage{
+    export class QueryAckMessage {
         _name: string = "QueryAckMessage";
         data: any;
         status: any;
