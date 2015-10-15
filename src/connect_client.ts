@@ -178,7 +178,7 @@ module RongIMLib {
         heartbeat: any = 0;
         chatroomId: string = '';
         static userInfoMapping: any = {};
-        SyncTimeQueue: any;
+        SyncTimeQueue: any = { state: "" };
         constructor(token: string, appId: string) {
             this.token = token;
             this.appId = appId;
@@ -344,6 +344,9 @@ module RongIMLib {
                 this.invoke()
             }
         }
+        __init(f: any) {
+            this.channel = new Channel(Navigate.Endpoint, f, this);
+        }
     }
     //连接类，实现imclient与connect_client的连接
     export class Bridge {
@@ -382,6 +385,108 @@ module RongIMLib {
         //发送消息 执行publishMessage 请求
         pubMsg(topic: string, content: string, targetId: string, callback: any, msg: any): void {
             Bridge._client.publishMessage(_topic[10][topic], content, targetId, callback, msg)
+        }
+    }
+    export class MessageHandler implements InFMessageHandler {
+        map: any = {};
+        _onReceived: any;
+        connectCallback: any = null;
+        _client: Client;
+        constructor(client: Client) {
+            if (!Channel._ReceiveMessageListener) {
+                throw new Error("please set onReceiveMessageListener");
+            }
+            this._onReceived = Channel._ConnectionStatusListener.onReceived;
+            this._client = client;
+        }
+        //把对象推入回调对象队列中，并启动定时器
+        putCallback(callbackObj: any, _publishMessageId: any, _msg: any): any {
+            var item: any = {
+                Callback: callbackObj,
+                Message: _msg
+            };
+            item.Callback.resumeTimer();
+            this.map[_publishMessageId] = item;
+        }
+        //设置连接回调对象，启动定时器
+        setConnectCallback(_connectCallback: any): void {
+            if (_connectCallback) {
+                this.connectCallback = new ConnectAck(_connectCallback.onSuccess, _connectCallback.onError, this._client);
+                this.connectCallback.resumeTimer();
+            }
+        }
+
+        onReceived(msg: any): void {
+            //实体对象
+            var entity: any,
+                //解析完成的消息对象
+                message: any,
+                //会话对象
+                con: any;
+            if (msg.constructor._name != "PublishMessage") {
+                entity = msg;
+                CookieHelper.createStorage().setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
+            } else {
+                if (msg.getTopic() == "s_ntf") {
+                    entity = Modules.NotifyMsg.decode(msg.getData());
+                    this._client.syncTime(entity.type, MessageUtil.int64ToTimestamp(entity.time));
+                    return;
+                } else if (msg.getTopic() == "s_msg") {
+                    entity = Modules.DownStreamMessage.decode(msg.getData());
+                    CookieHelper.createStorage().setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
+                } else {
+                    if (Bridge._client.sdkVer && Bridge._client.sdkVer == '1.0.0') {
+                        return;
+                    }
+                    entity = Modules.UpStreamMessage.decode(msg.getData());
+                    var tmpTopic = msg.getTopic();
+                    var tmpType = tmpTopic.substr(0, 2);
+                    //复用字段，targetId 以此为准
+                    entity.groupId = msg.getTargetId();
+                    if (tmpType == "pp") {
+                        entity.type = 1;
+                    } else if (tmpType == "pd") {
+                        entity.type = 2;
+                    } else if (tmpType == "pg") {
+                        entity.type = 3;
+                    } else if (tmpType == "chat") {
+                        entity.type = 4;
+                    }
+                    entity.fromUserId = this._client.userId;
+                    entity.dataTime = Date.parse(new Date().toString());
+                }
+                if (!entity) {
+                    return;
+                }
+            }
+            //解析实体对象为消息对象。
+            message = MessageUtil.messageParser(entity, this._onReceived);
+            if (message === null) {
+                return;
+            }
+            // //创建会话对象 TODO
+            // con = RongIMClient.getInstance().getConversationList().get(message.getConversationType(), message.getTargetId());
+            // if (!con) {
+            //     con = RongIMClient.getInstance().createConversation(message.getConversationType(), message.getTargetId(), "");
+            // }
+            // //根据messageTag判断是否进行消息数累加
+            // if (/ISCOUNTED/.test(message.getMessageTag())) {
+            //     con.getConversationType() != 0 && con.setUnreadMessageCount(con.getUnreadMessageCount() + 1);
+            // }
+            // con.setReceivedTime((new Date).getTime());
+            // con.setReceivedStatus(ReceivedStatus.READ);
+            // con.setSenderUserId(message.getSenderUserId());
+            // con.setObjectName(message.getObjectName());
+            // con.setNotificationStatus(ConversationNotificationStatus.DO_NOT_DISTURB);
+            // con.setLatestMessageId(message.getMessageId());
+            // con.setLatestMessage(message);
+            // con.setTop();
+            //把消息传递给消息监听器
+            this._onReceived(message);
+        }
+
+        handleMessage(msg: any): void {
+
         }
     }
 }

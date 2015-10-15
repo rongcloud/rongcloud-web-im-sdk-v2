@@ -23,8 +23,8 @@ module RongIMLib {
         constructor() {
             Transports._TransportType = Socket.WEBSOCKET;
             if ("WebSocket" in this.global && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !this.global.WEB_SOCKET_FORCE_FLASH && !this.global.WEB_XHR_POLLING) {
-
-                this.script.src = "http://res.websdk.rongcloud.cn/protobuf-0.2.min.js";
+            //http://res.websdk.rongcloud.cn/protobuf-0.2.min.js
+                this.script.src = "http://localhost:9876/base/src/internal/protobuf.js";
 
             } else if (!/opera/i.test(navigator.userAgent) && !this.global.WEB_XHR_POLLING && (function() {
                 if ('navigator' in this.global && 'plugins' in navigator && navigator.plugins['Shockwave Flash']) {

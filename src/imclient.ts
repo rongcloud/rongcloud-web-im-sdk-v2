@@ -15,7 +15,9 @@ module RongIMLib {
         private static _storageProvider: StorageProvider;
         private static _dataAccessProvider: DataAccessProvider;
         //桥连接类
-        private static bridge: Bridge;
+        static bridge: Bridge;
+        //存放监听数组
+        static listenerList: Array<any> = [];
 
 
         /**
@@ -33,7 +35,9 @@ module RongIMLib {
          * 需在执行 init 方法初始化 SDK 后再获取，否则返回 null 值。
          */
         static getInstance(): RongIMClient {
-            console.log("getInstance");
+            if (!RongIMClient._appKey) {
+                throw new Error("Not yet instantiated RongIMClient");
+            }
             return RongIMClient._instance;
         }
 
@@ -43,7 +47,6 @@ module RongIMLib {
          * @param appKey    开发者后台申请的 AppKey，用来标识应用。
          */
         static init(appKey: string, forceConnectionChannel?: ConnectionChannel, forceLocalStorageProvider?: StorageProvider): void {
-            console.log("init");
             if (!RongIMClient._instance) {
                 RongIMClient._instance = new RongIMClient();
             }
@@ -57,8 +60,7 @@ module RongIMLib {
             } else {
                 // Use default provider by browser engine and version.
             }
-
-            RongIMClient.registerMessageType("RC:TxtMsg", MessageTag.ISPERSISTED | MessageTag.ISCOUNTED);
+            // RongIMClient.registerMessageType("RC:TxtMsg", MessageTag.ISPERSISTED | MessageTag.ISCOUNTED);
         }
 
         /**
@@ -68,8 +70,14 @@ module RongIMLib {
          * @param callback  连接回调，返回连接的成功或者失败状态。
          */
         static connect(token: string, callback: ConnectCallback): RongIMClient {
-            // this.bridge = Bridge.getInstance();
-            //TODO
+            CheckParam.getInstance().check(["string", "object"], true, "connect")
+            RongIMClient.bridge = Bridge.getInstance();
+            RongIMClient.bridge.connect(RongIMClient._appKey, token, callback);
+            //循环设置监听事件，追加之后清空存放事件数据
+            for (let i = 0, len = RongIMClient.listenerList.length; i < len; i++) {
+                RongIMClient.bridge["setListener"](RongIMClient.listenerList[i]);
+            }
+            RongIMClient.listenerList.length = 0;
             return RongIMClient._instance;
         }
 
@@ -90,7 +98,11 @@ module RongIMLib {
          * @param listener  连接状态变化的监听器。
          */
         static setConnectionStatusListener(listener: ConnectionStatusListener): void {
-            throw new Error("Not implemented yet");
+            if (RongIMClient.bridge) {
+                RongIMClient.bridge.setListener(listener);
+            } else {
+                RongIMClient.listenerList.push(listener);
+            }
         }
 
         /**
@@ -106,7 +118,7 @@ module RongIMLib {
          * 断开连接，但是保留当前用户与设备的登录关系，继续接收推送（Push）消息。
          */
         disconnect(): void {
-            throw new Error("Not implemented yet");
+            RongIMClient.bridge.disConnect();
         }
 
         /**

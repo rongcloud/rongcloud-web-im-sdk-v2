@@ -25,7 +25,9 @@
     ],
     "files": [
         "src/callback.ts",
-        "src/dts/m1d5.d.ts",
+        "src/callbackImpl.ts",
+        "src/connect_client.ts",
+        "src/dts/util.d.ts",
         "src/enum.ts",
         "src/extensions/amr.ts",
         "src/extensions/emoji.ts",

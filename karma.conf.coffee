@@ -18,6 +18,7 @@ module.exports = (config) ->
       'test/test-main.coffee',
       'dist/RongIMLib.js',
       'src/internal/MD5.js',
+      'src/internal/protobuf.js'
       {pattern: 'test/**/*Spec.coffee', included: false}
     ]
 
@@ -71,7 +72,7 @@ module.exports = (config) ->
 
     # start these browsers
     # available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['PhantomJS','Chrome']
+    browsers: ['Chrome']
     #browsers: ['Chrome', 'Firefox', 'Safari', 'PhantomJS', 'IE']
 
 

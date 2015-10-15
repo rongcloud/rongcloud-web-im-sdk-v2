@@ -1,4 +1,30 @@
 module RongIMLib {
+    var mapping: any = {
+        "1": 4,
+        "2": 2,
+        "3": 3,
+        "4": 0,
+        "5": 1,
+        "6": 5
+    },
+        //objectname映射
+        typeMapping: { [s: string]: any } = {
+            "RC:TxtMsg": "TextMessage",
+            "RC:ImgMsg": "ImageMessage",
+            "RC:VcMsg": "VoiceMessage",
+            "RC:ImgTextMsg": "RichContentMessage",
+            "RC:LBSMsg": "LocationMessage"
+        },
+        //通知类型映射
+        sysNtf: { [s: string]: any } = {
+            "RC:InfoNtf": "InformationNotificationMessage",
+            "RC:ContactNtf": "ContactNotificationMessage",
+            "RC:ProfileNtf": "ProfileNotificationMessage",
+            "RC:CmdNtf": "CommandNotificationMessage",
+            "RC:DizNtf": "DiscussionNotificationMessage"
+        },
+        //自定义消息类型
+        registerMessageTypeMapping: { [s: string]: any } = {}
     /**
      * 通道标识类
      */
@@ -55,6 +81,53 @@ module RongIMLib {
                 return new Date(timestamp)
             }
             return timestamp;
+        }
+        //消息转换方法
+        static messageParser(entity: any, onReceived: any): any {
+            var message: any, content: any = entity.content, de: any, objectName: string = entity.classname;
+            try {
+                de = JSON.parse(new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content))
+            } catch (ex) {
+                console.log(ex + " -> postion:messageParset")
+                return null;
+            }
+            //处理表情 TODO
+            // if ("Expression" in RongIMClient && "RC:TxtMsg" == objectName && de.content) {
+            //     de.content = de.content.replace(/[\uf000-\uf700]/g, function(x) {
+            //         return RongIMClient.Expression.calcUTF(x) || x;
+            //     })
+            // }
+            //映射为具体消息对象
+            if (objectName in typeMapping) {
+                message = new typeMapping[objectName](de);
+            } else if (objectName in sysNtf) {
+                message = new sysNtf[objectName](de);
+            } else if (objectName in registerMessageTypeMapping) {
+                //自定义消息
+                message = new registerMessageTypeMapping[objectName](de);
+            } else {
+                //未知消息
+                message = new UnknownMessage(de, objectName);
+            }
+            //根据实体对象设置message对象
+            message.setSentTime(MessageUtil.int64ToTimestamp(entity.dataTime));
+            message.setSenderUserId(entity.fromUserId);
+            message.setConversationType(mapping[entity.type]);
+            if (entity.fromUserId == Bridge._client.userId) {
+                //复用字段
+                message.setTargetId(entity.groupId);
+            } else {
+                message.setTargetId(/^[234]$/.test(entity.type || entity.getType()) ? entity.groupId : message.getSenderUserId());
+            }
+            if (entity.fromUserId == Bridge._client.userId) {
+                message.setMessageDirection(MessageDirection.SEND);
+            } else {
+                message.setMessageDirection(MessageDirection.RECEIVE);
+            }
+            message.setReceivedTime((new Date).getTime());
+            message.setMessageId(message.getConversationType() + "_" + ~~(Math.random() * 0xffffff));
+            message.setReceivedStatus(ReceivedStatus);
+            return message;
         }
     }
     class UserCookie {
@@ -132,6 +205,27 @@ module RongIMLib {
         getMessageId() {
             this.isXHR && this.init();
             return this.messageId;
+        }
+    }
+    export class CheckParam {
+        static getInstance(): CheckParam {
+            return new CheckParam();
+        }
+        check(f: any, d: any, position: string) {
+            var c = arguments.callee.caller;
+            if ('_client' in Bridge || d) {
+                for (var g = 0, e = c.arguments.length; g < e; g++) {
+                    if (!new RegExp(this.getType(c.arguments[g])).test(f[g])) {
+                        throw new Error("The index of " + g + " parameter was wrong type " + this.getType(c.arguments[g]) + " [" + f[g] + "] -> position:" + position)
+                    }
+                }
+            } else {
+                throw new Error("The parameter is incorrect or was not yet instantiated RongIMClient -> position:" + position)
+            }
+        }
+        getType(str: string): string {
+            var temp = Object.prototype.toString.call(str).toLowerCase();
+            return temp.slice(8, temp.length - 1);
         }
     }
 }

@@ -47,7 +47,7 @@ module RongIMLib {
                     return userInfo;
                 case "GetQNupTokenOutput":
                     return {
-                        deadline:MessageUtil.int64ToTimestamp(entity.deadline),
+                        deadline: MessageUtil.int64ToTimestamp(entity.deadline),
                         token: entity.token
                     };
                 case "GetQNdownloadUrlOutput":
@@ -100,7 +100,7 @@ module RongIMLib {
         _cb: any;
         _timeout: any;
         constructor(_cb: any, _timeout: any) {
-        super(_timeout);
+            super(_timeout);
             this._cb = _cb;
             this._timeout = _timeout;
         }
@@ -108,7 +108,7 @@ module RongIMLib {
             this.readTimeOut();
             if (pbtype && data && status == 0) {
                 try {
-                        data = CallbackMapping.getInstance().mapping(Modules[pbtype].decode(data), pbtype);
+                    data = CallbackMapping.getInstance().mapping(Modules[pbtype].decode(data), pbtype);
                 } catch (e) {
                     this._timeout(ErrorCode.UNKNOWN);
                     return;
@@ -124,6 +124,63 @@ module RongIMLib {
         }
         readTimeOut(x?: any) {
             QueryCallback.prototype.readTimeOut.call(this, x);
+        }
+    }
+    export class ConnectAck extends MessageCallback {
+        _client: Client;
+        _cb: any;
+        _timeout: any;
+        constructor(_cb: any, _timeout: any, client: Client) {
+            super(_timeout);
+            this._client = client;
+            this._cb = _cb;
+            this._timeout = _timeout;
+        }
+        process(status: number, userId: string) {
+            this.readTimeOut();
+            if (status == 0) {
+                var naviStr = CookieHelper.createStorage().getItem("navi\\w+?");
+                var arrNavi = document.cookie.match(new RegExp("(^| )(navi\\w+?)=.*"));
+                var naviKey = arrNavi[2];
+
+                var arr = unescape(naviStr).split(",");
+                if (!arr[1]) {
+                    naviStr = unescape(naviStr) + userId;
+                    CookieHelper.createStorage().setItem(naviKey, naviStr);
+                }
+
+                this._client.userId = userId;
+                // if (!RongIMClient.isNotPullMsg) {
+                //     self.syncTime();
+                // }
+                if (this._client.reconnectObj.onSuccess) {
+                    this._client.reconnectObj.onSuccess(userId);
+                    delete this._client.reconnectObj.onSuccess;
+                } else {
+                    this._cb(userId);
+                }
+                Socket.getInstance().fire("StatusChanged", 0);
+            } else if (status == 6) {
+                //重定向
+                var x: any = {};
+                new Navigate().getServerEndpoint(this._client.token, this._client.appId, function() {
+                    this._client.clearHeartbeat();
+                    new Client(this._client.token, this._client.appId).__init.call(x, function() {
+                        Transports._TransportType == "websocket" && this._client.keepLive()
+                    });
+                    this._client.channel.socket.fire("StatusChanged", 2);
+                }, this._timeout, false)
+            } else {
+                if (this._client.reconnectObj.onError) {
+                    this._client.reconnectObj.onError(status);
+                    delete this._client.reconnectObj.onError;
+                } else {
+                    this._timeout(status)
+                }
+            }
+        }
+        readTimeOut(x?: any) {
+            ConnectAck.prototype.readTimeOut.call(this, x)
         }
     }
 }
