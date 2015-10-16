@@ -468,5 +468,16 @@ module RongIMLib {
         }
 
         // #endregion Real-time Location Service
+        //
+    }
+    //兼容AMD CMD
+    if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
+        module.exports = RongIMClient
+    } else if ("function" === typeof define && define.amd) {
+        define('RongIMLib', [], function () {
+            return RongIMClient;
+        });
+    } else {
+        window.RongIMClient = RongIMClient;
     }
 }

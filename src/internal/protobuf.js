@@ -4140,16 +4140,13 @@
             RongIMClient.getInstance().connect(RongIMClient.connect.token, RongIMClient.connect.callback);
         }
     } else {
-        require(['src/internal/protobuf'], function (k) {
-        //    g.Modules = k.loadProtoFile().build("Modules").probuf;
-    console.log(k)
+        require(['ProtoBuf'], function (k) {
+        g.Modules = k.loadProtoFile().build("Modules").probuf;
 });
-        //../bin/RongIMClient
-        require(["./RongIMLib"], function (r) {
-            console.log(r)
-            // if (r.connect.token) {
-            //     r.getInstance().connect(r.connect.token, r.connect.callback);
-            // }
+        require(["RongIMLib"], function (r) {
+                if (r.connect.token) {
+                    r.getInstance().connect(r.connect.token, r.connect.callback);
+                }
         })
     }
 
