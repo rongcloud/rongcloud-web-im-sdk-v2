@@ -13,9 +13,10 @@ module RongIMLib {
             }
         }
         resumeTimer() {
+            var me: MessageCallback = this;
             if (this.timeoutMillis > 0 && !this.timeout) {
                 this.timeout = setTimeout(function() {
-                    this.readTimeOut(true);
+                    me.readTimeOut(true);
                 }, this.timeoutMillis)
             }
         }
@@ -159,7 +160,7 @@ module RongIMLib {
                 } else {
                     this._cb(userId);
                 }
-                Socket.getInstance().fire("StatusChanged", 0);
+                RongIMLib.Bridge._client.channel.socket.fire("StatusChanged", 0);
             } else if (status == 6) {
                 //重定向
                 var x: any = {};
@@ -180,7 +181,7 @@ module RongIMLib {
             }
         }
         readTimeOut(x?: any) {
-            ConnectAck.prototype.readTimeOut.call(this, x)
+            MessageCallback.prototype.readTimeOut.call(this, x)
         }
     }
 }

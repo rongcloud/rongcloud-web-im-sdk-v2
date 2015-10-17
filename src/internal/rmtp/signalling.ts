@@ -419,11 +419,8 @@ module RongIMLib {
         date: any;
         binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(header: any, two?: any, three?: any) {
-            super(header);
-            if (arguments.length == 1 && header instanceof Header) {
-                RetryableMessage.call(this, header)
-            } else if (arguments.length == 3) {
-                RetryableMessage.call(this, Type.PUBLISH);
+            super((arguments.length == 1 && header instanceof Header)?header:arguments.length == 3?Type.PUBLISH:0);
+            if (arguments.length == 3) {
                 this.topic = header;
                 this.targetId = three;
                 this.data = typeof two == "string" ? this.binaryHelper.toMQttString(two) : two;
@@ -440,7 +437,7 @@ module RongIMLib {
             var out = this.binaryHelper.convertStream(Out);
             out.writeUTF(this.topic);
             out.writeUTF(this.targetId);
-            PublishMessage.prototype.writeMessage.apply(this, arguments);
+            RetryableMessage.prototype.writeMessage.apply(this, arguments);
             out.write(this.data)
         };
         readMessage(In: any, msgLength: number) {
@@ -448,7 +445,7 @@ module RongIMLib {
             this.date = _in.readUint();
             this.topic = _in.readUTF();
             pos += this.binaryHelper.toMQttString(this.topic).length;
-            PublishMessage.prototype.readMessage.apply(this, arguments);
+            RetryableMessage.prototype.readMessage.apply(this, arguments);
             this.data = new Array(msgLength - pos);
             _in.read(this.data)
         };

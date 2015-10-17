@@ -18,7 +18,7 @@ module RongIMLib {
             if (typeof Channel._ConnectionStatusListener == "object" && "onChanged" in Channel._ConnectionStatusListener) {
                 this.socket.on("StatusChanged", function(code: any) {
                     //如果参数为DisconnectionStatus，就停止心跳，其他的不停止心跳。每3min连接一次服务器
-                    if (code in DisconnectionStatus) {
+                    if (code === ConnectionStatus.DISCONNECTED) {
                         Channel._ConnectionStatusListener.onChanged(ConnectionStatus.DISCONNECTED);
                         self.clearHeartbeat();
                         return;
@@ -56,9 +56,7 @@ module RongIMLib {
         socket: any = null;
         _events: any = {};
         currentURL: string;
-        constructor() {
-            throw "Not implemented yet";
-        }
+        constructor() { }
         static getInstance(): Socket {
             return new Socket();
         }
@@ -83,9 +81,9 @@ module RongIMLib {
         }
         getTransport(transportType: string): any {
             if (transportType == Socket.XHR_POLLING) {
-                this.socket = new SocketTransportation(this);
-            } else if (transportType == Socket.WEBSOCKET) {
                 this.socket = new PollingTransportation(this);
+            } else if (transportType == Socket.WEBSOCKET) {
+                this.socket = new SocketTransportation(this);
             }
             return this;
         }
@@ -97,6 +95,9 @@ module RongIMLib {
                     this.socket.send(this._encode(data));
                 }
             }
+        }
+        onMessage(data: any) {
+            this.fire("message", data);
         }
         disconnect(callback?: any) {
             if (callback) {
@@ -218,7 +219,7 @@ module RongIMLib {
                     'loadFlashPolicyFile' in WebSocket && WebSocket.loadFlashPolicyFile();
                 }
                 //实例消息处理类
-                // this.handler = new MessageHandler(this);TODO
+                this.handler = new MessageHandler(this);
                 //设置连接回调
                 this.handler.setConnectCallback(_callback);
                 //实例通道类型
@@ -423,7 +424,7 @@ module RongIMLib {
                 message: any,
                 //会话对象
                 con: any;
-            if (msg.constructor._name != "PublishMessage") {
+            if (msg._name != "PublishMessage") {
                 entity = msg;
                 CookieHelper.createStorage().setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
             } else {
@@ -486,7 +487,47 @@ module RongIMLib {
         }
 
         handleMessage(msg: any): void {
-
+            if (!msg) {
+                return
+            }
+            switch (msg._name) {
+                case "ConnAckMessage":
+                    Bridge._client.handler.connectCallback.process(msg.getStatus(), msg.getUserId());
+                    break;
+                case "PublishMessage":
+                    if (msg.getQos() != 0) {
+                        Bridge._client.channel.writeAndFlush(new PubAckMessage(msg.getMessageId()));
+                    }
+                    //如果是PublishMessage就把该对象给onReceived方法执行处理
+                    Bridge._client.handler.onReceived(msg);
+                    break;
+                case "QueryAckMessage":
+                    if (msg.getQos() != 0) {
+                        this._client.channel.writeAndFlush(new QueryConMessage(msg.getMessageId()))
+                    }
+                    var temp = this.map[msg.getMessageId()];
+                    if (temp) {
+                        //执行回调操作
+                        temp.Callback.process(msg.getStatus(), msg.getData(), msg.getDate(), temp.Message);
+                        delete this.map[msg.getMessageId()];
+                    }
+                    break;
+                case "PubAckMessage":
+                    var item = this.map[msg.getMessageId()];
+                    if (item) {
+                        //执行回调操作
+                        item.Callback.process(msg.getStatus() || 0, msg.getDate(), item.Message);
+                        delete this.map[msg.getMessageId()];
+                    }
+                    break;
+                case "PingRespMessage":
+                    this._client.pauseTimer();
+                    break;
+                case "DisconnectMessage":
+                    this._client.channel.disconnect(msg.getStatus());
+                    break;
+                default:
+            }
         }
     }
 }

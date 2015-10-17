@@ -14,6 +14,13 @@
 #         console.log RongIMLib.Navigate.Endpoint.host
 #         done();
 #     ,1000)
-describe "Test",->
+describe "RongIMClient",->
     it "T",->
-      expect(true).toBe(true)
+    RongIMLib.RongIMClient.init "cpj2xarlj5cdn"
+    RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
+      console.log message
+    RongIMLib.RongIMClient.setConnectionStatusListener onChanged: (status) ->
+      console.log status
+    RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcE",
+            onSuccess:(userId)->
+                console.log(userId)

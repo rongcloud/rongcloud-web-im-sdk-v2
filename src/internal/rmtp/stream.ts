@@ -27,7 +27,7 @@ module RongIMLib {
         isPolling: boolean;
         In: any;
         _in: any;
-        constructor(In: any, isPolling: boolean) {
+        constructor(In: any, isPolling?: boolean) {
             if (!isPolling) {
                 var _in = new RongIMLib.BinaryHelper().convertStream(In);
                 this.flags = _in.readByte();
@@ -92,8 +92,17 @@ module RongIMLib {
         qos: any = Qos.AT_LEAST_ONCE;
         dup: boolean = false;
         constructor(_type: any, _retain?: any, _qos?: any, _dup?: any) {
-            //TODO
-            //枚举对象，setValue方法没有实现
+            if (_type && +_type == _type && arguments.length == 1) {
+                this.retain = (_type & 1) > 0;
+                this.qos = (_type & 6) >> 1;
+                this.dup = (_type & 8) > 0;
+                this.type = (_type >> 4) & 15;
+            } else {
+                this.type = _type;
+                this.retain = _retain;
+                this.qos = _qos;
+                this.dup = _dup;
+            }
         }
         getType(): number {
             return this.type;
@@ -124,7 +133,7 @@ module RongIMLib {
         }
 
         writeUTF(str: string, isGetBytes?: any): any {
-            var back:any = [], byteSize = 0;
+            var back: any = [], byteSize = 0;
             for (let i = 0, len = str.length; i < len; i++) {
                 var code = str.charCodeAt(i);
                 if (code >= 0 && code <= 127) {
@@ -174,6 +183,7 @@ module RongIMLib {
                     UTF += String.fromCharCode(_arr[i])
                 }
             }
+            return UTF;
         }
         /**
          * [convertStream 将参数x转化为RongIMStream对象]
@@ -260,7 +270,7 @@ module RongIMLib {
             }
             return b
         }
-        writeChar(v:any): any {
+        writeChar(v: any): any {
             if (+v != v) {
                 throw new Error("writeChar:arguments type is error")
             }

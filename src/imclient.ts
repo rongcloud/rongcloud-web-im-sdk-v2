@@ -111,7 +111,11 @@ module RongIMLib {
          * @param listener  接收消息的监听器。
          */
         static setOnReceiveMessageListener(listener: OnReceiveMessageListener): void {
-            throw new Error("Not implemented yet");
+            if (RongIMClient.bridge) {
+                RongIMClient.bridge.setListener(listener);
+            } else {
+                RongIMClient.listenerList.push(listener);
+            }
         }
 
         /**

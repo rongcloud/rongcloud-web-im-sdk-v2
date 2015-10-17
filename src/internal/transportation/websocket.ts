@@ -53,7 +53,7 @@ module RongIMLib {
          * @return {string}      [description]
          */
         onData(data: any): string {
-            //TODO 转换数据，将消息流传送至类对象中
+            this._socket.onMessage(new MessageInputStream(MessageUtil.ArrayForm(data)).readMessage())
             return "";
         }
         /**
