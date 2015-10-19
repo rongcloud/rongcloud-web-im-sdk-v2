@@ -397,7 +397,7 @@ module RongIMLib {
             if (!Channel._ReceiveMessageListener) {
                 throw new Error("please set onReceiveMessageListener");
             }
-            this._onReceived = Channel._ConnectionStatusListener.onReceived;
+            this._onReceived = Channel._ReceiveMessageListener.onReceived;
             this._client = client;
         }
         //把对象推入回调对象队列中，并启动定时器
@@ -428,7 +428,7 @@ module RongIMLib {
                 entity = msg;
                 CookieHelper.createStorage().setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
             } else {
-                if (msg.getTopic() == "s_ntf") {
+                if (msg.getTopic() == "") {
                     entity = Modules.NotifyMsg.decode(msg.getData());
                     this._client.syncTime(entity.type, MessageUtil.int64ToTimestamp(entity.time));
                     return;
@@ -524,7 +524,7 @@ module RongIMLib {
                     this._client.pauseTimer();
                     break;
                 case "DisconnectMessage":
-                    this._client.channel.disconnect(msg.getStatus());
+                    Bridge._client.channel.disconnect(msg.getStatus());
                     break;
                 default:
             }

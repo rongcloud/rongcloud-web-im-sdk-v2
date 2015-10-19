@@ -1,30 +1,30 @@
-module RongIMLib {
-    var mapping: any = {
-        "1": 4,
-        "2": 2,
-        "3": 3,
-        "4": 0,
-        "5": 1,
-        "6": 5
+var mapping: any = {
+    "1": 4,
+    "2": 2,
+    "3": 3,
+    "4": 0,
+    "5": 1,
+    "6": 5
+},
+    //objectname映射
+    typeMapping: { [s: string]: any } = {
+        "RC:TxtMsg": "TextMessage",
+        "RC:ImgMsg": "ImageMessage",
+        "RC:VcMsg": "VoiceMessage",
+        "RC:ImgTextMsg": "RichContentMessage",
+        "RC:LBSMsg": "LocationMessage"
     },
-        //objectname映射
-        typeMapping: { [s: string]: any } = {
-            "RC:TxtMsg": "TextMessage",
-            "RC:ImgMsg": "ImageMessage",
-            "RC:VcMsg": "VoiceMessage",
-            "RC:ImgTextMsg": "RichContentMessage",
-            "RC:LBSMsg": "LocationMessage"
-        },
-        //通知类型映射
-        sysNtf: { [s: string]: any } = {
-            "RC:InfoNtf": "InformationNotificationMessage",
-            "RC:ContactNtf": "ContactNotificationMessage",
-            "RC:ProfileNtf": "ProfileNotificationMessage",
-            "RC:CmdNtf": "CommandNotificationMessage",
-            "RC:DizNtf": "DiscussionNotificationMessage"
-        },
-        //自定义消息类型
-        registerMessageTypeMapping: { [s: string]: any } = {}
+    //通知类型映射
+    sysNtf: { [s: string]: any } = {
+        "RC:InfoNtf": "InformationNotificationMessage",
+        "RC:ContactNtf": "ContactNotificationMessage",
+        "RC:ProfileNtf": "ProfileNotificationMessage",
+        "RC:CmdNtf": "CommandNotificationMessage",
+        "RC:DizNtf": "DiscussionNotificationMessage"
+    },
+    //自定义消息类型
+    registerMessageTypeMapping: { [s: string]: any } = {}
+module RongIMLib {
     /**
      * 通道标识类
      */
@@ -37,7 +37,7 @@ module RongIMLib {
     export class MessageUtil {
         static ArrayForm(typearray: any): Array<any> {
             if (Object.prototype.toString.call(typearray) == "[object ArrayBuffer]") {
-                var arr = new Uint8Array(typearray);
+                var arr = new Int8Array(typearray);
                 return [].slice.call(arr);
             }
             return typearray;
@@ -99,7 +99,8 @@ module RongIMLib {
             // }
             //映射为具体消息对象
             if (objectName in typeMapping) {
-                message = new typeMapping[objectName](de);
+                var str = "new RongIMLib." + typeMapping[objectName] + "(de)";
+                message = eval(str);
             } else if (objectName in sysNtf) {
                 message = new sysNtf[objectName](de);
             } else if (objectName in registerMessageTypeMapping) {

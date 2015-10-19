@@ -372,17 +372,15 @@ module RongIMLib {
      *发送消息应答（双向）
      *qos为1必须给出应答（所有消息类型一样）
      */
-    export class PubAckMessage {
+    export class PubAckMessage extends RetryableMessage {
         status: any
         msgLen: number = 2
         date: number = 0;
         binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(header: any) {
-            if (header instanceof Header) {
-                RetryableMessage.call(this, header)
-            } else {
-                var self: any = RetryableMessage.call(this, Type.PUBACK);
-                self.setMessageId(header);
+            super((header instanceof Header) ? header : Type.PUBACK);
+            if (!(header instanceof Header)) {
+                super.setMessageId(header);
             }
         }
         messageLength(): number {
@@ -395,7 +393,7 @@ module RongIMLib {
         readMessage(In: any, msgLength: number) {
             var _in = this.binaryHelper.convertStream(In);
             PubAckMessage.prototype.readMessage.call(this, _in);
-            this.date = _in.readUint();
+            this.date = _in.readInt();
             status = _in.read() * 256 + _in.read()
         }
         setStatus = function(x: any) {
@@ -419,7 +417,7 @@ module RongIMLib {
         date: any;
         binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(header: any, two?: any, three?: any) {
-            super((arguments.length == 1 && header instanceof Header)?header:arguments.length == 3?Type.PUBLISH:0);
+            super((arguments.length == 1 && header instanceof Header) ? header : arguments.length == 3 ? Type.PUBLISH : 0);
             if (arguments.length == 3) {
                 this.topic = header;
                 this.targetId = three;
@@ -442,7 +440,7 @@ module RongIMLib {
         };
         readMessage(In: any, msgLength: number) {
             var pos = 6, _in = this.binaryHelper.convertStream(In);
-            this.date = _in.readUint();
+            this.date = _in.readInt();
             this.topic = _in.readUTF();
             pos += this.binaryHelper.toMQttString(this.topic).length;
             RetryableMessage.prototype.readMessage.apply(this, arguments);
@@ -551,19 +549,19 @@ module RongIMLib {
     /**
      *请求查询应答
      */
-    export class QueryAckMessage {
+    export class QueryAckMessage extends RetryableMessage {
         _name: string = "QueryAckMessage";
         data: any;
         status: any;
         date: any;
         binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(header: RongIMLib.Header) {
-            RetryableMessage.call(this, header);
+            super(header)
         }
         readMessage(In: any, msgLength: number) {
             var _in = this.binaryHelper.convertStream(In);
             QueryAckMessage.prototype.readMessage.call(this, _in);
-            this.date = _in.readUint();
+            this.date = _in.readInt();
             status = _in.read() * 256 + _in.read();
             if (msgLength > 0) {
                 this.data = new Array(msgLength - 8);

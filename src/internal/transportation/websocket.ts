@@ -11,12 +11,12 @@ module RongIMLib {
         //存放消息队列的临时变量
         queue: Array<any> = [];
         empty: any = new Function;
-        _socket:Socket;
+        _socket: Socket;
         /**
          * [constructor]
          * @param  {string} url [连接地址：包含token、version]
          */
-        constructor(_socket:Socket) {
+        constructor(_socket: Socket) {
             this._socket = _socket;
             return this;
         }
@@ -24,10 +24,10 @@ module RongIMLib {
          * [createTransport 创建WebScoket对象]
          * @return {WebScoket} [返回WebSockt对象]
          */
-        createTransport(url:string,method?:string): any {
+        createTransport(url: string, method?: string): any {
             if (!url) throw new Error("URL can't be empty");
             this.url = url;
-            this.socket = new WebSocket("ws://" +url);
+            this.socket = new WebSocket("ws://" + url);
             this.socket.binaryType = 'arraybuffer';
             this.addEvent();
             return this.socket;
@@ -53,7 +53,12 @@ module RongIMLib {
          * @return {string}      [description]
          */
         onData(data: any): string {
-            this._socket.onMessage(new MessageInputStream(MessageUtil.ArrayForm(data)).readMessage())
+            if (MessageUtil.isArray(data)) {
+                this._socket.onMessage(new MessageInputStream(data).readMessage());
+            } else {
+                this._socket.onMessage(new MessageInputStream(MessageUtil.ArrayForm(data)).readMessage())
+            }
+
             return "";
         }
         /**
@@ -82,7 +87,12 @@ module RongIMLib {
                 self.doQueue();
             }
             self.socket.onmessage = function(ev) {
-                self.onData(ev.data);
+                //判断数据是不是字符串，如果是字符串那么就是flash传过来的。
+                if (typeof ev.data == "string") {
+                    self.onData(ev.data.split(","))
+                } else {
+                    self.onData(ev.data)
+                }
             }
             self.socket.onerror = function(ev) {
                 self.onError(ev);

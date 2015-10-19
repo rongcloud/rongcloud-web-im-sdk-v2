@@ -221,7 +221,7 @@ module RongIMLib {
             }
             return t
         }
-        readUint(): any {
+        readInt(): any {
             if (this.check()) {
                 return -1
             }
