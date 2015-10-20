@@ -45,7 +45,12 @@ module RongIMLib {
             if (this.isClose) {
                 throw new Error("The Connection is closed,Please open the Connection!!!");
             }
-            this.socket.send(data.buffer);
+            var stream:RongIMStream = new RongIMStream([]),msg:MessageOutputStream = new MessageOutputStream(stream);
+            msg.writeMessage(data);
+            var val = stream.getBytesArray(true);
+            var binary = new Int8Array(val);
+            this.socket.send(binary.buffer);
+            return this;
         }
         /**
          * [onData 通道返回数据时调用的方法，用来想上层传递服务器返回的二进制消息流]
@@ -85,6 +90,7 @@ module RongIMLib {
                 self.isClose = false;
                 //通道可以用后，调用发送队列方法，把所有等得发送的消息发出
                 self.doQueue();
+                self._socket.fire("connect")
             }
             self.socket.onmessage = function(ev) {
                 //判断数据是不是字符串，如果是字符串那么就是flash传过来的。

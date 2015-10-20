@@ -15,5 +15,8 @@ module RongIMLib {
         encode(): string {
             return undefined;
         }
+        getMessage():any {
+
+        }
     }
 }

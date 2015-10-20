@@ -32,7 +32,7 @@ module RongIMLib {
             this.socket.on("message", self.handler.handleMessage);
             //注册断开连接观察者
             this.socket.on("disconnect", function() {
-                self.channel.socket.fire("StatusChanged", 4);
+                self.channel.socket.fire("StatusChanged", 2);
             })
         }
         writeAndFlush(val: any) {
@@ -104,6 +104,7 @@ module RongIMLib {
                 this.fire("StatusChanged", callback)
             }
             this.socket.disconnect();
+            this.fire("disconnect");
             return this;
         }
         reconnect(): any {
@@ -124,7 +125,7 @@ module RongIMLib {
             }
             return Transports._TransportType;
         }
-        fire(x: any, args: any) {
+        fire(x: any, args?: any) {
             if (x in this._events) {
                 for (var i = 0, ii = this._events[x].length; i < ii; i++) {
                     this._events[x][i](args);
@@ -170,7 +171,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "1.1.0";
+        sdkVer: string = "1.1.1";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
@@ -179,7 +180,7 @@ module RongIMLib {
         heartbeat: any = 0;
         chatroomId: string = '';
         static userInfoMapping: any = {};
-        SyncTimeQueue: any = { state: "" };
+        SyncTimeQueue: any = [];
         constructor(token: string, appId: string) {
             this.token = token;
             this.appId = appId;
@@ -223,8 +224,9 @@ module RongIMLib {
                 //设置连接回调
                 this.handler.setConnectCallback(_callback);
                 //实例通道类型
+                var me = this;
                 this.channel = new Channel(Navigate.Endpoint, function() {
-                    Transports._TransportType == Socket.WEBSOCKET && this.keepLive()
+                    Transports._TransportType == Socket.WEBSOCKET && me.keepLive()
                 }, this);
                 //触发状态改变观察者
                 this.channel.socket.fire("StatusChanged", 1)
@@ -237,10 +239,11 @@ module RongIMLib {
             if (this.heartbeat > 0) {
                 clearInterval(this.heartbeat);
             }
+            var me = this;
             this.heartbeat = setInterval(function() {
-                this.resumeTimer();
-                this.channel.writeAndFlush(new PingReqMessage());
-                console.log("keep live pingReqMessage sending appId " + this.appId);
+                me.resumeTimer();
+                me.channel.writeAndFlush(new PingReqMessage());
+                console.log("keep live pingReqMessage sending appId " + me.appId);
             }, 180000);
         }
         clearHeartbeat() {
@@ -282,7 +285,7 @@ module RongIMLib {
             this.channel.writeAndFlush(msg)
         }
         invoke() {
-            var time: string, modules: any, str: string, target: string, temp: any = this.SyncTimeQueue.shift();
+            var time: string, modules: any, str: string,me=this, target: string, temp: any = this.SyncTimeQueue.shift();
             if (temp == undefined) {
                 return;
             }
@@ -326,19 +329,18 @@ module RongIMLib {
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
                     for (var i = 0; i < list.length; i++) {
-                        // bridge._client.handler.onReceived(list[i])
-                        // TODO
+                        Bridge._client.handler.onReceived(list[i])
                     }
                     this.SyncTimeQueue.state = "complete";
                     this.invoke();
                 },
                 onError: function() {
-                    this.SyncTimeQueue.state = "complete";
-                    this.invoke();
+                    me.SyncTimeQueue.state = "complete";
+                    me.invoke();
                 }
             }, "DownStreamMessages");
         }
-        syncTime(_type: any, pullTime: any) {
+        syncTime(_type?: any, pullTime?: any) {
             this.SyncTimeQueue.push({ type: _type, pulltime: pullTime });
             //如果队列中只有一个成员并且状态已经完成就执行invoke方法
             if (this.SyncTimeQueue.length == 1 && this.SyncTimeQueue.state == "complete") {
@@ -384,7 +386,7 @@ module RongIMLib {
             Bridge._client.queryMessage(topic, content, targetId, Qos.AT_MOST_ONCE, callback, pbname);
         }
         //发送消息 执行publishMessage 请求
-        pubMsg(topic: string, content: string, targetId: string, callback: any, msg: any): void {
+        pubMsg(topic: number, content: string, targetId: string, callback: any, msg: any): void {
             Bridge._client.publishMessage(_topic[10][topic], content, targetId, callback, msg)
         }
     }
@@ -503,7 +505,7 @@ module RongIMLib {
                     break;
                 case "QueryAckMessage":
                     if (msg.getQos() != 0) {
-                        this._client.channel.writeAndFlush(new QueryConMessage(msg.getMessageId()))
+                        Bridge._client.channel.writeAndFlush(new QueryConMessage(msg.getMessageId()))
                     }
                     var temp = this.map[msg.getMessageId()];
                     if (temp) {
@@ -521,7 +523,7 @@ module RongIMLib {
                     }
                     break;
                 case "PingRespMessage":
-                    this._client.pauseTimer();
+                    Bridge._client.pauseTimer();
                     break;
                 case "DisconnectMessage":
                     Bridge._client.channel.disconnect(msg.getStatus());

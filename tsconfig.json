@@ -35,7 +35,6 @@
         "src/imclient.ts",
         "src/internal/http.ts",
         "src/internal/navi.ts",
-        "src/internal/protobuf.ts",
         "src/internal/rmtp/signalling.ts",
         "src/internal/rmtp/stream.ts",
         "src/internal/transportation.ts",

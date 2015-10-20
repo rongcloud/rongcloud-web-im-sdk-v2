@@ -212,7 +212,7 @@ module RongIMLib {
         static getInstance(): CheckParam {
             return new CheckParam();
         }
-        check(f: any, d: any, position: string) {
+        check(f: any, position: string, d?: any) {
             var c = arguments.callee.caller;
             if ('_client' in Bridge || d) {
                 for (var g = 0, e = c.arguments.length; g < e; g++) {

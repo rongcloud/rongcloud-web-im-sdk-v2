@@ -94,7 +94,7 @@ module RongIMLib {
             }
         }
         readTimeOut(x?: any) {
-            PublishCallback.prototype.readTimeOut.call(this, x);
+            MessageCallback.prototype.readTimeOut.call(this, x);
         }
     }
     export class QueryCallback extends MessageCallback implements InFQueryCallback {
@@ -124,7 +124,7 @@ module RongIMLib {
             }
         }
         readTimeOut(x?: any) {
-            QueryCallback.prototype.readTimeOut.call(this, x);
+            MessageCallback.prototype.readTimeOut.call(this, x);
         }
     }
     export class ConnectAck extends MessageCallback {
@@ -151,9 +151,9 @@ module RongIMLib {
                 }
 
                 this._client.userId = userId;
-                // if (!RongIMClient.isNotPullMsg) {
-                //     self.syncTime();
-                // }
+                if (!RongIMClient.isNotPullMsg) {
+                    this._client.syncTime();
+                }
                 if (this._client.reconnectObj.onSuccess) {
                     this._client.reconnectObj.onSuccess(userId);
                     delete this._client.reconnectObj.onSuccess;
@@ -184,4 +184,5 @@ module RongIMLib {
             MessageCallback.prototype.readTimeOut.call(this, x)
         }
     }
+
 }

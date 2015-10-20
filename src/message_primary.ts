@@ -125,21 +125,38 @@ module RongIMLib {
     }
     export class TextMessage extends RongIMMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
         userInfo: UserInfo;
-        extra: string;
-        content: string;
-        constructor(data?: string) {
-            super(data);
+        //此处直接赋值对象为以后添加扩展属性埋下伏笔
+        static message: any;
+        constructor(message?: any) {
+            super(message);
             if (!TextMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead.");
             }
-            this.content = data;
+            if (typeof message == "string") {
+                message.content = this.message;
+            } else {
+                if (!("content" in message)) throw new Error("content attribute does not exist position:sendMessage");
+                this.message = message;
+            }
+            super.setObjectName("RC:TxtMsg");
         }
         static obtain(content: string): TextMessage {
-            var message = new TextMessage(content);
-            return message;
+            TextMessage.message = new TextMessage(content);
+            return TextMessage.message;
         }
-        encode(): string {
-            return JSON.stringify(this);
+        encode(): any {
+            var c = new Modules.UpStreamMessage();
+            c.setSessionId(0);
+            c.setClassname(TextMessage.message.getObjectName());
+            c.setContent(JSON.stringify(TextMessage.message.getDetail()));
+            var val = c.toArrayBuffer();
+            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
+                return [].slice.call(new Int8Array(val))
+            }
+            return val
+        }
+        getMessage(): TextMessage {
+            return TextMessage.message;
         }
     }
 
@@ -168,6 +185,9 @@ module RongIMLib {
         encode(): string {
             return JSON.stringify(this);
         }
+        getMessage(): RongIMMessage {
+            return this.message;
+        }
     }
 
     export class ImageMessage extends RongIMMessage implements MessageContent, UserInfoAttachedMessage {
@@ -184,6 +204,9 @@ module RongIMLib {
 
         encode(): string {
             return JSON.stringify(this);
+        }
+        getMessage(): RongIMMessage {
+            return this.message;
         }
     }
 
@@ -206,6 +229,9 @@ module RongIMLib {
         encode(): string {
             return JSON.stringify(this);
         }
+        getMessage(): RongIMMessage {
+            return this.message;
+        }
     }
 
     export class UnknownMessage extends RongIMMessage implements MessageContent {
@@ -215,6 +241,9 @@ module RongIMLib {
 
         encode(): string {
             return JSON.stringify(this);
+        }
+        getMessage(): RongIMMessage {
+            return this.message;
         }
     }
 }

@@ -388,11 +388,11 @@ module RongIMLib {
         }
         writeMessage(Out: any) {
             var out = this.binaryHelper.convertStream(Out);
-            PubAckMessage.prototype.writeMessage.call(this, out)
+            RetryableMessage.prototype.writeMessage.call(this, out)
         }
         readMessage(In: any, msgLength: number) {
             var _in = this.binaryHelper.convertStream(In);
-            PubAckMessage.prototype.readMessage.call(this, _in);
+            RetryableMessage.prototype.readMessage.call(this, _in);
             this.date = _in.readInt();
             status = _in.read() * 256 + _in.read()
         }
@@ -443,6 +443,8 @@ module RongIMLib {
             this.date = _in.readInt();
             this.topic = _in.readUTF();
             pos += this.binaryHelper.toMQttString(this.topic).length;
+            this.targetId = _in.readUTF();
+            pos += this.binaryHelper.toMQttString(this.targetId).length;
             RetryableMessage.prototype.readMessage.apply(this, arguments);
             this.data = new Array(msgLength - pos);
             _in.read(this.data)
@@ -480,6 +482,7 @@ module RongIMLib {
         data: any;
         targetId: any;
         binaryHelper: BinaryHelper = new BinaryHelper();
+        _name = "QueryMessage";
         constructor(header: any, two?: any, three?: any) {
             super(header instanceof Header ? header : arguments.length == 3 ? Type.QUERY : null);
             if (arguments.length == 3) {
@@ -500,7 +503,7 @@ module RongIMLib {
             var out = this.binaryHelper.convertStream(Out);
             out.writeUTF(this.topic);
             out.writeUTF(this.targetId);
-            this.constructor.prototype.writeMessage.call(this, out);
+            BaseMessage.prototype.writeMessage.call(this, out);
             out.write(this.data)
         }
         readMessage(In: any, msgLength: number) {
@@ -509,7 +512,7 @@ module RongIMLib {
             this.targetId = _in.readUTF();
             pos += this.binaryHelper.toMQttString(this.topic).length;
             pos += this.binaryHelper.toMQttString(this.targetId).length;
-            this.constructor.prototype.readMessage.apply(this, arguments);
+            this.readMessage.apply(this, arguments);
             pos += 2;
             this.data = new Array(msgLength - pos);
             _in.read(this.data)
@@ -536,13 +539,11 @@ module RongIMLib {
     /**
      *请求查询确认
      */
-    export class QueryConMessage {
+    export class QueryConMessage extends RetryableMessage{
         constructor(messageId: any) {
-            if (messageId instanceof Header) {
-                RetryableMessage.call(this, messageId)
-            } else {
-                var self: any = RetryableMessage.call(this, Type.QUERYCON);
-                self.setMessageId(messageId);
+            super((messageId instanceof Header)?messageId:Type.QUERYCON);
+            if (!(messageId instanceof Header)) {
+                super.setMessageId(messageId);
             }
         }
     }
@@ -560,7 +561,7 @@ module RongIMLib {
         }
         readMessage(In: any, msgLength: number) {
             var _in = this.binaryHelper.convertStream(In);
-            QueryAckMessage.prototype.readMessage.call(this, _in);
+            RetryableMessage.prototype.readMessage.call(this, _in);
             this.date = _in.readInt();
             status = _in.read() * 256 + _in.read();
             if (msgLength > 0) {

@@ -15,12 +15,28 @@
 #         done();
 #     ,1000)
 describe "RongIMClient",->
-    it "T",->
+    it "Connect&SendMessage",->
     RongIMLib.RongIMClient.init "cpj2xarlj5cdn"
     RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
       console.log message.getContent()
     RongIMLib.RongIMClient.setConnectionStatusListener onChanged: (status) ->
-      console.log status
+      switch status
+          when RongIMLib.ConnectionStatus.CONNECTED
+            console.log "链接成功"
+          when RongIMLib.ConnectionStatus.CONNECTING
+            console.log "正在链接"
+          when RongIMLib.ConnectionStatus.DISCONNECTED
+            console.log "断开连接"
+          else console.log "状态为解析:"+status
     RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcE",
             onSuccess:(userId)->
-                console.log(userId)
+                console.log("loginSuccess,userId."+userId)
+
+    setTimeout(->
+        message = RongIMLib.TextMessage.obtain("my name is zhangsan!")
+        RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "lisi", message,null,
+          onSuccess: (data)->
+                console.log "Send Successfully"
+          onError: (errorcode)->
+                console.log errorcode
+    ,1000)

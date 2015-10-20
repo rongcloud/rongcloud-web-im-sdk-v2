@@ -1,13 +1,15 @@
 module RongIMLib {
     export abstract class MessageContent {
-        constructor(data?: string) {
+        constructor(data?:any) {
             throw new Error("This method is abstract, you must implement this method in inherited class.");
         }
         static obtain(): MessageContent {
             throw new Error("This method is abstract, you must implement this method in inherited class.");
         }
 
-        abstract encode(): string;
+        abstract encode(): any;
+
+        abstract getMessage():RongIMMessage;
     }
     export abstract class NotificationMessage extends MessageContent { }
 
@@ -18,7 +20,7 @@ module RongIMLib {
     }
 
     export interface ExtraAttachedMessage {
-        extra: string;
+
     }
 
     export interface InFMessageHandler {

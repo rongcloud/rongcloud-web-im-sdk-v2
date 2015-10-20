@@ -3,9 +3,11 @@ module RongIMLib {
         constructor(data: string) {
 
         }
-
         encode(): string {
             return undefined;
+        }
+        getMessage(): any {
+
         }
     }
 
@@ -13,9 +15,11 @@ module RongIMLib {
         constructor(data: string) {
 
         }
-
         encode(): string {
             return undefined;
+        }
+        getMessage(): any {
+
         }
     }
 
@@ -23,9 +27,11 @@ module RongIMLib {
         constructor(data: string) {
 
         }
-
         encode(): string {
             return undefined;
+        }
+        getMessage(): any {
+
         }
     }
 }

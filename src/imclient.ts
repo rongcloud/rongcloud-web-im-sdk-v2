@@ -7,7 +7,8 @@ module RongIMLib {
 
         //token
         static _token: string;
-
+        //判断是否推送消息
+        static isNotPullMsg: boolean = false;
         // Static properties.
         private static _instance: RongIMClient;
         private static _appKey: string;
@@ -70,7 +71,7 @@ module RongIMLib {
          * @param callback  连接回调，返回连接的成功或者失败状态。
          */
         static connect(token: string, callback: ConnectCallback): RongIMClient {
-            CheckParam.getInstance().check(["string", "object"], true, "connect")
+            CheckParam.getInstance().check(["string", "object"], "connect",true)
             RongIMClient.bridge = Bridge.getInstance();
             RongIMClient.bridge.connect(RongIMClient._appKey, token, callback);
             //循环设置监听事件，追加之后清空存放事件数据
@@ -204,7 +205,27 @@ module RongIMLib {
         }
 
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["number", "string", "object", "null", "object"], "sendMessage");
+            if (!Bridge._client.channel.socket.socket.connected) {
+                resultCallback.onError(ErrorCode.TIMEOUT);
+                throw new Error("connect is timeout! postion:sendMessage")
+            }
+            if (!(messageContent instanceof RongIMMessage)) {
+                //TODO 自定义消息类型如何处理 MessageContent 不许new
+                throw new Error("wrong parameter! postion:sendMessage")
+            }
+            var content: any = messageContent.encode(), msg: RongIMMessage = messageContent.getMessage(), j: any;
+            msg.setConversationType(conversationType);
+            msg.setMessageDirection(MessageDirection.SEND);
+            if (!msg.getMessageId()) msg.setMessageId(conversationType + "_" + ~~(Math.random() * 0xffffff));
+            msg.setSentStatus(SentStatus.SENDING);
+            msg.setSenderUserId(Bridge._client.userId);
+            msg.setSentTime((new Date()).getTime());
+            msg.setTargetId(targetId);
+            if (/ISCOUNTED/.test(msg.getMessageTag())) {
+                //TODO
+            }
+            RongIMClient.bridge.pubMsg(conversationType.valueOf(),content,targetId,resultCallback,msg);
         }
 
         // sendMessage(message: Message, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
@@ -478,7 +499,7 @@ module RongIMLib {
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
         module.exports = RongIMClient
     } else if ("function" === typeof define && define.amd) {
-        define('RongIMLib', [], function () {
+        define('RongIMLib', [], function() {
             return RongIMClient;
         });
     } else {
