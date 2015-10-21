@@ -44,7 +44,7 @@ module RongIMLib {
                 //如果上述条件都不支持则执行comet逻辑
                 Transports._TransportType = "xhr-polling";
                 //加载comet帮助库
-                this.script.src = "http://res.websdk.rongcloud.cn/xhrpolling-0.2.min.js";
+                this.script.src = "http://localhost:9876/base/src/internal/xhrpolling.js";
             }
             this.head.appendChild(this.script);
         }

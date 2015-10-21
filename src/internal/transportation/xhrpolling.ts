@@ -12,8 +12,8 @@ module RongIMLib {
         queue: Array<any>;
         _sendXhr: any;
         _xhr: any;
-        _socket:Socket;
-        constructor(socket:Socket) {
+        _socket: Socket;
+        constructor(socket: Socket) {
             this.queue = [];
             this._socket = socket;
             return this;
@@ -24,11 +24,11 @@ module RongIMLib {
          */
         createTransport(url: string, method?: string): any {
             if (!url) throw new Error("Url is empty,Please check it!");
-            var sid = CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId");
+            var sid = CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId"), me = this;
             if (sid) {
                 setTimeout(function() {
-                    this.onPollingSuccess("{\"status\":0,\"userId\":\"" + Navigate.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
-                    this.connected = true;
+                    me.onPollingSuccess("{\"status\":0,\"userId\":\"" + Navigate.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
+                    me.connected = true;
                 }, 500);
                 return this;
             }
@@ -45,14 +45,15 @@ module RongIMLib {
             return req;
         }
         _get(url: string, args?: any) {
+            var me = this;
             this._xhr = this._request(url, "GET");
             if ("onload" in this._xhr) {
                 this._xhr.onload = function() {
                     this.onload = this.empty;
                     if (this.responseText == 'lost params') {
-                        // status['400'](self);
+                        me.status400(me);
                     } else {
-                        // status['200'](self, this.responseText, arg);
+                        me.status200(this.responseText, args);
                     }
                 };
                 this._xhr.onerror = function() {
@@ -63,9 +64,9 @@ module RongIMLib {
                     if (this.readyState == 4) {
                         this.onreadystatechange = this.empty;
                         if (/^(200|202)$/.test(this.status)) {
-                            //   status['200'](self, this.responseText, arg);
+                            me.status200(this.responseText, args);
                         } else if (/^(400|403)$/.test(this.status)) {
-                            //   status['400'](self);
+                            me.status400(me);
                         } else {
                             this.disconnect();
                         }
@@ -81,13 +82,14 @@ module RongIMLib {
          * @param  {string} data [需要传入comet格式数据，此处只负责通讯通道，数据转换在外层处理]
          */
         send(data: any, url?: string, method?: string): void {
+            var me: PollingTransportation = this;
             if (!this.connected) this.queue.push(data);
             if (this.isClose) throw new Error("The Connection is closed,Please open the Connection!!!");
             this._sendXhr = this._request(Navigate.Endpoint.host + "/websocket" + data.url, 'POST');
             if ("onload" in this._sendXhr) {
                 this._sendXhr.onload = function() {
                     this.onload = this.empty;
-                    this.onData(this.responseText);
+                    me.onData(this.responseText);
                 };
                 this._sendXhr.onerror = function() {
                     this.onerror = this.empty;
@@ -97,7 +99,7 @@ module RongIMLib {
                     if (this.readyState == 4) {
                         this.onreadystatechange = this.empty;
                         if (/^(202|200)$/.test(this.status)) {
-                            this.onData(this.responseText);
+                            me.onData(this.responseText);
                         }
                     }
                 };
@@ -110,15 +112,16 @@ module RongIMLib {
             if (!data || data == "lost params") {
                 return;
             }
+            var self = this, val = JSON.parse(data);
+            Navigate.Endpoint.userId = val.userId;
             if (header) {
                 CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId") || CookieHelper.createStorage().setItem(Navigate.Endpoint.userId + "sId", header);
             }
-            var self = this, val = JSON.parse(data);
             if (!MessageUtil.isArray(val)) {
                 val = [val];
             }
-            MessageUtil.forEach(val, function(x: any) {
-                this._socket.fire("message", new MessageInputStream(x, true).readMessage());
+            [].forEach.call(val, function(x: any) {
+                self._socket.fire("message", new RongIMLib.MessageInputStream(x, true).readMessage());
             });
             return "";
         }
@@ -168,7 +171,7 @@ module RongIMLib {
         reconnect(): void {
 
         }
-        onPollingSuccess(a: any, b: any): void {
+        onPollingSuccess(a: any, b?: any): void {
             //把数据返回，随后判断状态是否开启下次请求
             this.onData(a, b);
             if (/"headerCode":-32,/.test(a)) return;
@@ -183,11 +186,12 @@ module RongIMLib {
         status200(text: string, arg: any) {
             var txt = text.match(/"sessionid":"\S+?(?=")/);
             this.onPollingSuccess(text, txt ? txt[0].slice(13) : void 0);
-            arg || this.disconnect();
+            arg || this._socket.fire("connect");
         }
         status400(self: any) {
             CookieHelper.createStorage().removeItem(Navigate.Endpoint.userId + "sId");
-            self._onDisconnect(true);
+            this.disconnect();
+            this._socket.fire("disconnect");
             this.connected = false;
             this.isClose = true;
             this._xhr.connect(null, null);

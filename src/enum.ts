@@ -63,15 +63,15 @@ module RongIMLib {
     }
 
     export enum ConversationType {
-        NONE = 0,
-        PRIVATE = 1,
+        NONE = -1,
+        CHATROOM = 0,
+        CUSTOMER_SERVICE = 1,
         DISCUSSION = 2,
         GROUP = 3,
-        CHATROOM = 4,
-        CUSTOMER_SERVICE = 5,
-        SYSTEM = 6,
-        APP_PUBLIC_SERVICE = 7,
-        PUBLIC_SERVICE = 8
+        PRIVATE = 4,
+        SYSTEM = 5,
+        APP_PUBLIC_SERVICE = 6,
+        PUBLIC_SERVICE = 7
     }
 
     export enum DiscussionInviteStatus {

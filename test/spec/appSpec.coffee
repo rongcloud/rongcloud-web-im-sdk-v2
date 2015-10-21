@@ -16,6 +16,7 @@
 #     ,1000)
 describe "RongIMClient",->
     it "Connect&SendMessage",->
+    window["WEB_XHR_POLLING"] = true;
     RongIMLib.RongIMClient.init "cpj2xarlj5cdn"
     RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
       console.log message.getContent()
@@ -31,21 +32,23 @@ describe "RongIMClient",->
     RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcE",
             onSuccess:(userId)->
                 console.log("loginSuccess,userId."+userId)
+            onError:(error)->
+                console.log("loginError,errorcode:"+error)
 
-    setTimeout(->
-        message = RongIMLib.TextMessage.obtain("益达")
-        RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
-          onSuccess: (data)->
-                console.log "Send Successfully"
-          onError: (errorcode)->
-                console.log errorcode
-    ,1000)
-
-    setTimeout(->
-            message = RongIMLib.TextMessage.obtain("田娃")
-            RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
-              onSuccess: ()->
-                    console.log "Send Successfully"
-              onError: (errorcode)->
-                    console.log errorcode
-    ,5000)
+    # setTimeout(->
+    #     message = RongIMLib.TextMessage.obtain("RongIM")
+    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "lisi", message,null,
+    #       onSuccess: (data)->
+    #             console.log "Send Successfully"
+    #       onError: (errorcode)->
+    #             console.log errorcode
+    # ,1000)
+    #
+    # setTimeout(->
+    #         message = RongIMLib.TextMessage.obtain("Cocal")
+    #         RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
+    #           onSuccess: ()->
+    #                 console.log "Send Successfully"
+    #           onError: (errorcode)->
+    #                 console.log errorcode
+    # ,3000)

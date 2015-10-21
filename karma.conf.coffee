@@ -18,7 +18,8 @@ module.exports = (config) ->
       'test/test-main.coffee',
       'dist/RongIMLib.js',
       'src/internal/MD5.js',
-      'src/internal/protobuf.js'
+      'src/internal/protobuf.js',
+      'src/internal/xhrpolling.js',
       {pattern: 'test/**/*Spec.coffee', included: false}
     ]
 
