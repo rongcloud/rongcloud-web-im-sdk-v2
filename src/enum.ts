@@ -563,4 +563,32 @@ module RongIMLib {
 
         DEVICE_ERROR = 11
     }
+    export enum MessageType {
+
+        DiscussionNotificationMessage = 0,
+
+        TextMessage = 1,
+
+        ImageMessage = 2,
+
+        VoiceMessage = 3,
+
+        RichContentMessage = 4,
+
+        HandshakeMessage = 5,
+
+        UnknownMessage = 6,
+
+        SuspendMessage = 7,
+
+        LocationMessage = 8,
+
+        InformationNotificationMessage = 9,
+
+        ContactNotificationMessage = 10,
+
+        ProfileNotificationMessage = 11,
+
+        CommandNotificationMessage = 12
+    }
 }

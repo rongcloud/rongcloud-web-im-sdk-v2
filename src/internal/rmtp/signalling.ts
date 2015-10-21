@@ -377,6 +377,7 @@ module RongIMLib {
         msgLen: number = 2
         date: number = 0;
         binaryHelper: BinaryHelper = new BinaryHelper();
+        _name:string="PubAckMessage";
         constructor(header: any) {
             super((header instanceof Header) ? header : Type.PUBACK);
             if (!(header instanceof Header)) {

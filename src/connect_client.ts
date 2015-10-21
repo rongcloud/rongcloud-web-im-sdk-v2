@@ -507,19 +507,19 @@ module RongIMLib {
                     if (msg.getQos() != 0) {
                         Bridge._client.channel.writeAndFlush(new QueryConMessage(msg.getMessageId()))
                     }
-                    var temp = this.map[msg.getMessageId()];
+                    var temp = Bridge._client.handler.map[msg.getMessageId()];
                     if (temp) {
                         //执行回调操作
                         temp.Callback.process(msg.getStatus(), msg.getData(), msg.getDate(), temp.Message);
-                        delete this.map[msg.getMessageId()];
+                        delete Bridge._client.handler.map[msg.getMessageId()];
                     }
                     break;
                 case "PubAckMessage":
-                    var item = this.map[msg.getMessageId()];
+                    var item = Bridge._client.handler.map[msg.getMessageId()];
                     if (item) {
                         //执行回调操作
                         item.Callback.process(msg.getStatus() || 0, msg.getDate(), item.Message);
-                        delete this.map[msg.getMessageId()];
+                        delete Bridge._client.handler.map[msg.getMessageId()];
                     }
                     break;
                 case "PingRespMessage":

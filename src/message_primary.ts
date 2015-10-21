@@ -127,21 +127,16 @@ module RongIMLib {
         userInfo: UserInfo;
         //此处直接赋值对象为以后添加扩展属性埋下伏笔
         static message: any;
-        constructor(message?: any) {
+        constructor(message: any) {
             super(message);
             if (!TextMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead.");
             }
-            if (typeof message == "string") {
-                message.content = this.message;
-            } else {
-                if (!("content" in message)) throw new Error("content attribute does not exist position:sendMessage");
-                this.message = message;
-            }
             super.setObjectName("RC:TxtMsg");
+            super.setMessageType(MessageType[1]);
         }
-        static obtain(content: string): TextMessage {
-            TextMessage.message = new TextMessage(content);
+        static obtain(text: string): TextMessage {
+            TextMessage.message = new TextMessage({extra:"",content:text});
             return TextMessage.message;
         }
         encode(): any {

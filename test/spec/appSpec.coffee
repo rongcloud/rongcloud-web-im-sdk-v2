@@ -33,10 +33,19 @@ describe "RongIMClient",->
                 console.log("loginSuccess,userId."+userId)
 
     setTimeout(->
-        message = RongIMLib.TextMessage.obtain("my name is zhangsan!")
-        RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "lisi", message,null,
+        message = RongIMLib.TextMessage.obtain("益达")
+        RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
           onSuccess: (data)->
                 console.log "Send Successfully"
           onError: (errorcode)->
                 console.log errorcode
     ,1000)
+
+    setTimeout(->
+            message = RongIMLib.TextMessage.obtain("田娃")
+            RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
+              onSuccess: ()->
+                    console.log "Send Successfully"
+              onError: (errorcode)->
+                    console.log errorcode
+    ,5000)

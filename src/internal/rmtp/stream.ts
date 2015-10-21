@@ -265,7 +265,7 @@ module RongIMLib {
                         b &= 255;
                     }
                     this.pool.push(b);
-                    this.writen++
+                    this.writen++;
                 }
             }
             return b
