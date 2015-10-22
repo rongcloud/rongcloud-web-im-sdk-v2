@@ -35,6 +35,7 @@ module RongIMLib {
      * 工具类
      */
     export class MessageUtil {
+        static schemeArrs: Array<any> = [["http", "ws"], ["https", "wss"]];
         static ArrayForm(typearray: any): Array<any> {
             if (Object.prototype.toString.call(typearray) == "[object ArrayBuffer]") {
                 var arr = new Int8Array(typearray);
@@ -102,10 +103,12 @@ module RongIMLib {
                 var str = "new RongIMLib." + typeMapping[objectName] + "(de)";
                 message = eval(str);
             } else if (objectName in sysNtf) {
-                message = new sysNtf[objectName](de);
+                var str = "new RongIMLib." + sysNtf[objectName] + "(de)";
+                message = eval(str);
             } else if (objectName in registerMessageTypeMapping) {
                 //自定义消息
-                message = new registerMessageTypeMapping[objectName](de);
+                var str = "new RongIMLib." + registerMessageTypeMapping[objectName] + "(de)";
+                message = eval(str);
             } else {
                 //未知消息
                 message = new UnknownMessage(de, objectName);

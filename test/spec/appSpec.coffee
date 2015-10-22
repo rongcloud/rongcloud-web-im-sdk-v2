@@ -17,6 +17,8 @@
 describe "RongIMClient",->
     it "Connect&SendMessage",->
     # window["WEB_XHR_POLLING"] = true;
+    # RongIMLib.RongIMClient.schemeType = RongIMLib.SchemeType.SSL
+    RongIMLib.RongIMClient.web_xhr_polling = true
     RongIMLib.RongIMClient.init "cpj2xarlj5cdn"
     RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
       console.log message.getContent()

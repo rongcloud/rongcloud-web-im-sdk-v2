@@ -38,7 +38,7 @@ module RongIMLib {
         _request(url: string, method: string, multipart?: boolean) {
             var req = this.XmlHtppRequest();
             if (multipart) req.multipart = true;
-            req.open(method || 'GET', "http://" + url);
+            req.open(method || 'GET', MessageUtil.schemeArrs[RongIMClient.schemeType][SchemeType.XHR]+"://" + url);
             if (method == 'POST' && 'setRequestHeader' in req) {
                 req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=utf-8');
             }

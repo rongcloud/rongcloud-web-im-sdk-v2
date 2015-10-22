@@ -9,6 +9,14 @@ module RongIMLib {
         static _token: string;
         //判断是否推送消息
         static isNotPullMsg: boolean = false;
+        /**
+         * [schemeType 选择连接方式]
+         * SSL需要设置schemeType为SchemeType.SSL
+         * HTTP或WS需要设置 schemeType为SchemeType.HSL(默认)
+         * 若改变连接方式此属性必须在RongIMClient.init之前赋值
+         * @type {number}
+         */
+        static schemeType: number = SchemeType.HSL;
         // Static properties.
         private static _instance: RongIMClient;
         private static _appKey: string;
@@ -71,7 +79,7 @@ module RongIMLib {
          * @param callback  连接回调，返回连接的成功或者失败状态。
          */
         static connect(token: string, callback: ConnectCallback): RongIMClient {
-            CheckParam.getInstance().check(["string", "object"], "connect",true)
+            CheckParam.getInstance().check(["string", "object"], "connect", true)
             RongIMClient.bridge = Bridge.getInstance();
             RongIMClient.bridge.connect(RongIMClient._appKey, token, callback);
             //循环设置监听事件，追加之后清空存放事件数据
@@ -225,7 +233,7 @@ module RongIMLib {
             if (/ISCOUNTED/.test(msg.getMessageTag())) {
                 //TODO
             }
-            RongIMClient.bridge.pubMsg(conversationType.valueOf(),content,targetId,resultCallback,msg);
+            RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, resultCallback, msg);
         }
 
         // sendMessage(message: Message, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {

@@ -591,4 +591,14 @@ module RongIMLib {
 
         CommandNotificationMessage = 12
     }
+    export enum SchemeType {
+        //http ws
+        HSL = 0,
+        //https wss
+        SSL = 1,
+        //polling 方式下标
+        XHR = 0,
+        //websocke方式下标
+        WS = 1
+    }
 }
