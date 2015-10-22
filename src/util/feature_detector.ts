@@ -1,29 +1,28 @@
 module RongIMLib {
-    window.onload = function() {
-        if (document.readyState == "interactive" || document.readyState == "complete") {
+    if (document.readyState == "interactive" || document.readyState == "complete") {
+        new FeatureDectector();
+    } else if (document.addEventListener) {
+        document.addEventListener("DOMContentLoaded", function() {
+            document.removeEventListener("DOMContentLoaded", arguments.callee, false);
             new FeatureDectector();
-        } else if (document.addEventListener) {
-            document.addEventListener("DOMContentLoaded", function() {
-                document.removeEventListener("DOMContentLoaded", arguments.callee, false);
+        }, false)
+    } else if (document.attachEvent) {
+        document.attachEvent("onreadystatechange", function() {
+            if (document.readyState === "interactive" || document.readyState === "complete") {
+                document.detachEvent("onreadystatechange", arguments.callee);
                 new FeatureDectector();
-            }, false)
-        } else if (document.attachEvent) {
-            document.attachEvent("onreadystatechange", function() {
-                if (document.readyState === "interactive" || document.readyState === "complete") {
-                    document.detachEvent("onreadystatechange", arguments.callee);
-                    new FeatureDectector();
-                }
-            })
-        }
+            }
+        })
     }
     class FeatureDectector {
         script: any = document.createElement("script");
         head: any = document.getElementsByTagName("head")[0];
         global: any = window;
+        //TODO 设置WEB_XHR_POLLING 为true时为成功，和时机有关系
         constructor() {
             Transports._TransportType = Socket.WEBSOCKET;
             if ("WebSocket" in this.global && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !this.global.WEB_SOCKET_FORCE_FLASH && !this.global.WEB_XHR_POLLING) {
-            //http://res.websdk.rongcloud.cn/protobuf-0.2.min.js
+                //http://res.websdk.rongcloud.cn/protobuf-0.2.min.js
                 this.script.src = "http://localhost:9876/base/src/internal/protobuf.js";
 
             } else if (!/opera/i.test(navigator.userAgent) && !this.global.WEB_XHR_POLLING && (function() {

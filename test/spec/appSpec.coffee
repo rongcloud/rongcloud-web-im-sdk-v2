@@ -16,7 +16,7 @@
 #     ,1000)
 describe "RongIMClient",->
     it "Connect&SendMessage",->
-    window["WEB_XHR_POLLING"] = true;
+    # window["WEB_XHR_POLLING"] = true;
     RongIMLib.RongIMClient.init "cpj2xarlj5cdn"
     RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
       console.log message.getContent()
@@ -35,20 +35,20 @@ describe "RongIMClient",->
             onError:(error)->
                 console.log("loginError,errorcode:"+error)
 
-    # setTimeout(->
-    #     message = RongIMLib.TextMessage.obtain("RongIM")
-    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "lisi", message,null,
-    #       onSuccess: (data)->
-    #             console.log "Send Successfully"
-    #       onError: (errorcode)->
-    #             console.log errorcode
-    # ,1000)
-    #
-    # setTimeout(->
-    #         message = RongIMLib.TextMessage.obtain("Cocal")
-    #         RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
-    #           onSuccess: ()->
-    #                 console.log "Send Successfully"
-    #           onError: (errorcode)->
-    #                 console.log errorcode
-    # ,3000)
+    setTimeout(->
+        message = RongIMLib.TextMessage.obtain("my name is san er1")
+        RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
+          onSuccess: (data)->
+                console.log "Send Successfully"
+          onError: (errorcode)->
+                console.log errorcode
+    ,1000)
+
+    setTimeout(->
+            message = RongIMLib.TextMessage.obtain("my name is san er")
+            RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
+              onSuccess: ()->
+                    console.log "Send Successfully"
+              onError: (errorcode)->
+                    console.log errorcode
+    ,3000)

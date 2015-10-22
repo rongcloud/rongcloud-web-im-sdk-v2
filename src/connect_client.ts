@@ -156,7 +156,7 @@ module RongIMLib {
         }
         _encode(x: any) {
             var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId");
-            if (!/(PubAckMessage|QueryConMessage)/.test(x.constructor._name)) {
+            if (!/(PubAckMessage|QueryConMessage)/.test(x._name)) {
                 str += "&topic=" + x.getTopic() + "&targetid=" + (x.getTargetId() || "");
             }
             return {
@@ -320,7 +320,7 @@ module RongIMLib {
             this.queryMessage(str, MessageUtil.ArrayForm(modules.toArrayBuffer()), target, Qos.AT_LEAST_ONCE, {
                 onSuccess: function(collection: any) {
                     var sync = MessageUtil.int64ToTimestamp(collection.syncTime),
-                        symbol = this.userId;
+                        symbol = me.userId;
                     if (str == "chrmPull") {
                         symbol += 'CST';
                     }
@@ -331,8 +331,8 @@ module RongIMLib {
                     for (var i = 0; i < list.length; i++) {
                         Bridge._client.handler.onReceived(list[i])
                     }
-                    this.SyncTimeQueue.state = "complete";
-                    this.invoke();
+                    me.SyncTimeQueue.state = "complete";
+                    me.invoke();
                 },
                 onError: function() {
                     me.SyncTimeQueue.state = "complete";

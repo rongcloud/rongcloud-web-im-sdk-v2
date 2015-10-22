@@ -108,6 +108,21 @@ module RongIMLib {
             return this.type;
         }
         encode(): any {
+            var me = this;
+            switch (this.qos) {
+                case Qos[0]:
+                    me.qos = Qos.AT_MOST_ONCE
+                    break;
+                case Qos[1]:
+                    me.qos = Qos.AT_LEAST_ONCE
+                    break;
+                case Qos[2]:
+                    me.qos = Qos.EXACTLY_ONCE
+                    break;
+                case Qos[3]:
+                    me.qos = Qos.DEFAULT
+                    break;
+            }
             var _byte = (this.type << 4);
             _byte |= this.retain ? 1 : 0;
             _byte |= this.qos << 1;

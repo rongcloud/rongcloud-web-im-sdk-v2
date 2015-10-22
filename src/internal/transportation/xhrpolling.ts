@@ -113,9 +113,11 @@ module RongIMLib {
                 return;
             }
             var self = this, val = JSON.parse(data);
-            Navigate.Endpoint.userId = val.userId;
+            if (val.userId) {
+                Navigate.Endpoint.userId = val.userId;
+            }
             if (header) {
-                CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId") || CookieHelper.createStorage().setItem(Navigate.Endpoint.userId + "sId", header);
+                CookieHelper.createStorage().setItem(Navigate.Endpoint.userId + "sId", header);
             }
             if (!MessageUtil.isArray(val)) {
                 val = [val];
@@ -172,7 +174,6 @@ module RongIMLib {
 
         }
         onPollingSuccess(a: any, b?: any): void {
-            //把数据返回，随后判断状态是否开启下次请求
             this.onData(a, b);
             if (/"headerCode":-32,/.test(a)) return;
             this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId"), true)
@@ -186,6 +187,7 @@ module RongIMLib {
         status200(text: string, arg: any) {
             var txt = text.match(/"sessionid":"\S+?(?=")/);
             this.onPollingSuccess(text, txt ? txt[0].slice(13) : void 0);
+            this.connected=true;
             arg || this._socket.fire("connect");
         }
         status400(self: any) {
@@ -194,7 +196,6 @@ module RongIMLib {
             this._socket.fire("disconnect");
             this.connected = false;
             this.isClose = true;
-            this._xhr.connect(null, null);
         }
     }
 }

@@ -15,12 +15,12 @@ module.exports = (config) ->
 
     # list of files / patterns to load in the browser
     files: [
-      'test/test-main.coffee',
       'dist/RongIMLib.js',
+      'test/test-main.coffee',
       'src/internal/MD5.js',
-      'src/internal/protobuf.js',
-      'src/internal/xhrpolling.js',
-      {pattern: 'test/**/*Spec.coffee', included: false}
+      {pattern: 'test/**/*Spec.coffee', included: false},
+      # 'src/internal/xhrpolling.js',
+      'src/internal/protobuf.js'
     ]
 
 
