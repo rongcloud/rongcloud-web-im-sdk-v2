@@ -18,7 +18,6 @@ describe "RongIMClient",->
     it "Connect&SendMessage",->
     # window["WEB_XHR_POLLING"] = true;
     # RongIMLib.RongIMClient.schemeType = RongIMLib.SchemeType.SSL
-    RongIMLib.RongIMClient.web_xhr_polling = true
     RongIMLib.RongIMClient.init "cpj2xarlj5cdn"
     RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
       console.log message.getContent()
@@ -31,26 +30,34 @@ describe "RongIMClient",->
           when RongIMLib.ConnectionStatus.DISCONNECTED
             console.log "断开连接"
           else console.log "状态为解析:"+status
-    RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcE",
+    RongIMLib.RongIMClient.connect "0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==",
             onSuccess:(userId)->
                 console.log("loginSuccess,userId."+userId)
             onError:(error)->
                 console.log("loginError,errorcode:"+error)
-
+###############################sendMessage##########################################
     setTimeout(->
-        message = RongIMLib.TextMessage.obtain("my name is san er1")
+        message = RongIMLib.TextMessage.obtain("my name is saner")
         RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
           onSuccess: (data)->
                 console.log "Send Successfully"
           onError: (errorcode)->
                 console.log errorcode
     ,1000)
-
+    #
+    # setTimeout(->
+    #         message = RongIMLib.TextMessage.obtain("my name is saner")
+    #         RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
+    #           onSuccess: ()->
+    #                 console.log "Send Successfully"
+    #           onError: (errorcode)->
+    #                 console.log errorcode
+    # ,3000)
+##############################getConversationList##########################################
     setTimeout(->
-            message = RongIMLib.TextMessage.obtain("my name is san er")
-            RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
-              onSuccess: ()->
-                    console.log "Send Successfully"
-              onError: (errorcode)->
-                    console.log errorcode
-    ,3000)
+        RongIMLib.RongIMClient.getInstance().getConversationList
+            onSuccess:(list)->
+                console.log list
+            onError:(error)->
+                console.log "GetConversationList,errorcode:"+error
+    ,1000)

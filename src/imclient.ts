@@ -14,6 +14,8 @@ module RongIMLib {
          * SSL需要设置schemeType为SchemeType.SSL
          * HTTP或WS需要设置 schemeType为SchemeType.HSL(默认)
          * 若改变连接方式此属性必须在RongIMClient.init之前赋值
+         * expmale:
+         * RongIMLib.RongIMClient.schemeType = RongIMLib.SchemeType.SSL
          * @type {number}
          */
         static schemeType: number = SchemeType.HSL;
@@ -23,6 +25,8 @@ module RongIMLib {
         private static _connectionChannel: ConnectionChannel;
         private static _storageProvider: StorageProvider;
         private static _dataAccessProvider: DataAccessProvider;
+        //缓存会话列表
+        private conversationList: Array<Conversation> = [];
         //桥连接类
         static bridge: Bridge;
         //存放监听数组
@@ -34,11 +38,7 @@ module RongIMLib {
          * 不能通过此函数获取 RongIMClient 实例。
          * 请使用 RongIMClient.getInstrance() 获取 RongIMClient 实例。
          */
-        constructor() {
-            console.log("constructor");
-
-        }
-
+        constructor() { }
         /**
          * 获取 RongIMClient 实例。
          * 需在执行 init 方法初始化 SDK 后再获取，否则返回 null 值。
@@ -321,7 +321,25 @@ module RongIMLib {
         }
 
         getConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["object"], "getConversationList");
+            var modules = new Modules.RelationsInput(), self = this;
+            modules.setType(1);
+            RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(list: any) {//TODO
+                    if (list.info) {
+                        for (let i = 0, len = list.info.length; i < len; i++) {
+                            var tempConver=list.info[i],conver = new Conversation("title", tempConver.type, "darf", true, null, null, null, "objectName", null, new Date(), "senderUserId", "senderUserName", null, new Date(), "targetId", 10);
+                            if (true) {
+                            }
+                            self.conversationList.push(conver);
+                        }
+                    }
+                    callback.onSuccess(self.conversationList)
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.UNKNOWN);
+                }
+            }, "RelationsOutput");
         }
 
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {

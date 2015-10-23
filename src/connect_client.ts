@@ -39,7 +39,7 @@ module RongIMLib {
             this.socket.send(val);
         }
         reconnect(callback: any) {
-            new MessageIdHandler().clearMessageId();
+            MessageIdHandler.clearMessageId();
             this.socket = this.socket.reconnect();
             if (callback) {
                 this.self.reconnectObj = callback;
@@ -252,7 +252,7 @@ module RongIMLib {
             this.pauseTimer();
         }
         publishMessage(_topic: any, _data: any, _targetId: any, _callback: any, _msg: any) {
-            var msgId = new MessageIdHandler().messageIdPlus(this.channel.reconnect);
+            var msgId = MessageIdHandler.messageIdPlus(this.channel.reconnect);
             if (!msgId) {
                 return;
             }
@@ -274,7 +274,7 @@ module RongIMLib {
                     return;
                 }
             }
-            var msgId = new MessageIdHandler().messageIdPlus(this.channel.reconnect);
+            var msgId = MessageIdHandler.messageIdPlus(this.channel.reconnect);
             if (!msgId) {
                 return;
             }
@@ -379,7 +379,7 @@ module RongIMLib {
             Bridge._client.channel.disconnect()
         }
         //执行queryMessage请求
-        queryMsg(topic: string, content: string, targetId: string, callback: any, pbname: string): void {
+        queryMsg(topic: any, content: any, targetId: string, callback: any, pbname: string): void {
             if (typeof topic != "string") {
                 topic = _topic[topic]
             }

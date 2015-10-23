@@ -1,22 +1,22 @@
 module RongIMLib {
     export class Conversation {
         constructor(
-            public conversationTitle: string,
-            public conversationType: ConversationType,
-            public draft: string,
-            public isTop: boolean,
-            public latestMessage: Message,
-            public latestMessageId: string,
-            public notificationStatus: ConversationNotificationStatus,
-            public objectName: string,
-            public ReceivedStatus: ReceivedStatus,
-            public receivedTime: Date,
-            public senderUserId: string,
-            public senderUserName: string,
-            public sentStatus: SentStatus,
-            public sentTime: Date,
-            public targetId: string,
-            public unreadMessageCount: number
+            public conversationTitle?: string,
+            public conversationType?: ConversationType,
+            public draft?: string,
+            public isTop?: boolean,
+            public latestMessage?: Message,
+            public latestMessageId?: string,
+            public notificationStatus?: ConversationNotificationStatus,
+            public objectName?: string,
+            public ReceivedStatus?: ReceivedStatus,
+            public receivedTime?: Date,
+            public senderUserId?: string,
+            public senderUserName?: string,
+            public sentStatus?: SentStatus,
+            public sentTime?: Date,
+            public targetId?: string,
+            public unreadMessageCount?: number
         ) { }
     }
 

@@ -493,7 +493,7 @@ module RongIMLib {
             var out = this.binaryHelper.convertStream(Out);
             out.writeUTF(this.topic);
             out.writeUTF(this.targetId);
-            BaseMessage.prototype.writeMessage.call(this, out);
+            RetryableMessage.prototype.writeMessage.call(this, out);
             out.write(this.data)
         }
         readMessage(In: any, msgLength: number) {
@@ -554,7 +554,7 @@ module RongIMLib {
             var _in = this.binaryHelper.convertStream(In);
             RetryableMessage.prototype.readMessage.call(this, _in);
             this.date = _in.readInt();
-            status = _in.read() * 256 + _in.read();
+            this.setStatus(_in.read() * 256 + _in.read());
             if (msgLength > 0) {
                 this.data = new Array(msgLength - 8);
                 _in.read(this.data)

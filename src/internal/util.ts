@@ -184,15 +184,12 @@ module RongIMLib {
         }
     }
     export class MessageIdHandler {
-        messageId: number = 0;
-        isXHR: boolean = Transports._TransportType === Socket.XHR_POLLING;
-        constructor() {
-            this.isXHR && this.init();
-        }
-        init() {
+        static messageId: number = 0;
+        static isXHR: boolean = Transports._TransportType === Socket.XHR_POLLING;
+        static init() {
             this.messageId = +(CookieHelper.createStorage().getItem("msgId") || CookieHelper.createStorage().setItem("msgId", 0) || 0);
         }
-        messageIdPlus(method: any): any {
+        static messageIdPlus(method: any): any {
             this.isXHR && this.init();
             if (this.messageId >= 65535) {
                 method();
@@ -202,11 +199,11 @@ module RongIMLib {
             this.isXHR && CookieHelper.createStorage().setItem("msgId", this.messageId);
             return this.messageId;
         }
-        clearMessageId() {
+        static clearMessageId() {
             this.messageId = 0;
             this.isXHR && CookieHelper.createStorage().setItem("msgId", this.messageId);
         }
-        getMessageId() {
+        static getMessageId() {
             this.isXHR && this.init();
             return this.messageId;
         }

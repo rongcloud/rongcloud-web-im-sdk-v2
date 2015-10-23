@@ -4141,12 +4141,12 @@
         }
     } else {
         require(['ProtoBuf'], function (k) {
-        g.Modules = k.loadProtoFile().build("Modules").probuf;
-});
-        require(["RongIMLib"], function (r) {
-                if (r.connect.token) {
-                    r.getInstance().connect(r.connect.token, r.connect.callback);
-                }
+            g.Modules = k.loadProtoFile().build("Modules").probuf;
+        });
+        require(['RongIMLib'], function (r) {
+            if (r.connect.token) {
+                r.getInstance().connect(r.connect.token, r.connect.callback);
+            }
         })
     }
 
