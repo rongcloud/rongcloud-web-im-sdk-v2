@@ -102,7 +102,18 @@ module RongIMLib {
          * 不在讨论组。
          */
         NOT_IN_DISCUSSION = 21406,
-
+        /**
+         * 加入讨论失败
+         */
+        JOIN_IN_DISCUSSION = 21407,
+        /**
+         * 创建讨论组失败
+         */
+        CREATE_DISCUSSION = 21408,
+        /**
+         * 设置讨论组邀请状态失败
+         */
+        INVITE_DICUSSION = 21409,
         /**
          * 不在群组。
          */

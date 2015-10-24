@@ -23,7 +23,14 @@ var mapping: any = {
         "RC:DizNtf": "DiscussionNotificationMessage"
     },
     //自定义消息类型
-    registerMessageTypeMapping: { [s: string]: any } = {}
+    registerMessageTypeMapping: { [s: string]: any } = {},
+    HistoryMsgType: { [s: number]: any } = {
+        1: "qryCMsg",
+        2: "qryDMsg",
+        3: "qryGMsg",
+        4: "qryPMsg",
+        5: "qrySMsg"
+    }
 module RongIMLib {
     /**
      * 通道标识类
@@ -84,12 +91,12 @@ module RongIMLib {
             return timestamp;
         }
         //消息转换方法
-        static messageParser(entity: any, onReceived: any): any {
+        static messageParser(entity: any, onReceived?: any): any {
             var message: any, content: any = entity.content, de: any, objectName: string = entity.classname;
             try {
                 de = JSON.parse(new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content))
             } catch (ex) {
-                console.log(ex + " -> postion:messageParset")
+                console.log(ex + " -> postion:messageParser")
                 return null;
             }
             //处理表情 TODO
@@ -227,6 +234,32 @@ module RongIMLib {
         getType(str: string): string {
             var temp = Object.prototype.toString.call(str).toLowerCase();
             return temp.slice(8, temp.length - 1);
+        }
+    }
+    export class LimitableMap {
+        map: any;
+        keys: any;
+        limit: number;
+        constructor(limit?: number) {
+            this.map = {};
+            this.keys = [];
+            this.limit = limit || 10;
+        }
+        set(key: string, value: any): void {
+            if (this.map.hasOwnProperty(key)) {
+                if (this.keys.length === this.limit) {
+                    var firstKey = this.keys.shift();
+                    delete this.map[firstKey];
+                }
+                this.keys.push(key);
+            }
+            this.map[key] = value;
+        }
+        get(key: string): number {
+            return this.map[key] || 0;
+        }
+        remove(key: string): void {
+            delete this.map[key]
         }
     }
 }

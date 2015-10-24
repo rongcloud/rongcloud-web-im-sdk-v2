@@ -379,7 +379,7 @@ module RongIMLib {
             Bridge._client.channel.disconnect()
         }
         //执行queryMessage请求
-        queryMsg(topic: any, content: any, targetId: string, callback: any, pbname: string): void {
+        queryMsg(topic: any, content: any, targetId: string, callback: any, pbname?: string): void {
             if (typeof topic != "string") {
                 topic = _topic[topic]
             }

@@ -6,7 +6,7 @@ module RongIMLib {
 
     export interface ResultCallback<T> {
         onError(error: ErrorCode): void;
-        onSuccess(result: T): void;
+        onSuccess(result: T,bool?:boolean): void;
     }
 
     export interface ConnectCallback extends ResultCallback<string> {

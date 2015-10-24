@@ -4,7 +4,8 @@ module RongIMLib {
 
         // Business properties.
         private _currentUserId: string;
-
+        //储存上次读取消息时间
+        private lastReadTime: LimitableMap = new LimitableMap();
         //token
         static _token: string;
         //判断是否推送消息
@@ -26,7 +27,7 @@ module RongIMLib {
         private static _storageProvider: StorageProvider;
         private static _dataAccessProvider: DataAccessProvider;
         //缓存会话列表
-        private conversationList: Array<Conversation> = [];
+        private conversationList: any = [];
         //桥连接类
         static bridge: Bridge;
         //存放监听数组
@@ -173,12 +174,35 @@ module RongIMLib {
         }
 
         /**
-         * 获取当前连接用户的信息。
+         * [getCurrentUserInfo 获取当前用户信息]
+         * @param  {ResultCallback<UserInfo>} callback [回调函数]
          */
         getCurrentUserInfo(callback: ResultCallback<UserInfo>) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["object"], "getCurrentUserInfo");
+            this.getUserInfo(Bridge._client.userId, callback);
         }
-
+        /**
+         * 获得用户信息
+         * @param  {string}                   userId [用户Id]
+         * @param  {ResultCallback<UserInfo>} callback [回调函数]
+         */
+        getUserInfo(userId: string, callback: ResultCallback<UserInfo>) {
+            CheckParam.getInstance().check(["string", "object"], "getUserInfo");
+            var user = new Modules.GetUserInfoInput();
+            user.setNothing(1);
+            RongIMClient.bridge.queryMsg(5, MessageUtil.ArrayForm(user.toArrayBuffer()), userId, {
+                onSuccess: function(info: any) {
+                    var userInfo = new UserInfo();
+                    userInfo.setUserId(info.userId);
+                    userInfo.setUserName(info.name);
+                    userInfo.setPortraitUri(info.portraitUri);
+                    callback.onSuccess(userInfo);
+                },
+                onError: function(err: any) {
+                    callback.onError(err);
+                }
+            }, "GetUserInfoOutput");
+        }
         /**
          * 提交用户数据到服务器，以便后台业务（如：客服系统）使用。
          *
@@ -203,7 +227,12 @@ module RongIMLib {
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.clearMessages(conversationType, targetId);
         }
-
+        /**
+         * [clearMessagesUnreadStatus 清空指定会话未读消息]
+         * @param  {ConversationType}        conversationType [会话类型]
+         * @param  {string}                  targetId         [用户id]
+         * @param  {ResultCallback<boolean>} callback         [返回值，参数回调]
+         */
         clearMessagesUnreadStatus(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.updateMessages(conversationType, targetId, "readStatus", false);
         }
@@ -251,18 +280,72 @@ module RongIMLib {
         insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
         }
-
-        getHistoryMessages(conversationType: ConversationType, targetId: string, oldestMessageId: number, count: number, callback: ResultCallback<Message[]>, objectName?: string) {
-            throw new Error("Not implemented yet");
+        /**
+         * [getHistoryMessages 拉取历史消息记录]
+         * @param  {ConversationType}          conversationType [会话类型]
+         * @param  {string}                    targetId         [用户Id]
+         * @param  {number|null}               pullMessageTime  [拉取历史消息起始位置(格式为毫秒数)，可以为null]
+         * @param  {number}                    count            [历史消息数量]
+         * @param  {ResultCallback<Message[]>} callback         [回调函数]
+         * @param  {string}                    objectName       [objectName]
+         */
+        getHistoryMessages(conversationType: ConversationType, targetId: string, pullMessageTime: number, count: number, callback: ResultCallback<Message[]>, objectName?: string) {
+            CheckParam.getInstance().check(["number", "string", "number|null", "number", "object"], "getHistoryMessages");
+            if (count > 20) {
+                console.log("HistroyMessage count must be less than or equal to 20!")
+                callback.onError(ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
+                return;
+            }
+            if (conversationType.valueOf() == 0) {
+                console.log("ConversationType must be greater than 0")
+                callback.onError(ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
+                return;
+            }
+            var modules = new Modules.HistoryMessageInput(), self = this;
+            modules.setTargetId(targetId);
+            if (!pullMessageTime) {
+                modules.setDataTime(this.lastReadTime.get(conversationType + targetId));
+            } else {
+                modules.setDataTime(new Date(pullMessageTime));
+            }
+            modules.setSize(count);
+            RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
+                onSuccess: function(data: any) {
+                    var list = data.list.reverse();
+                    self.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
+                    for (var i = 0; i < list.length; i++) {
+                        list[i] = MessageUtil.messageParser(list[i]);
+                    }
+                    callback.onSuccess(list, !!data.hasMsg);
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.UNKNOWN);
+                }
+            }, "HistoryMessagesOuput");
         }
 
         // TODO: Date or Number ?
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, dateTime: Date, count: number, callback: ResultCallback<Message[]>) {
             throw new Error("Not implemented yet");
         }
-
-        hasUnreadMessages(appkey: string, token: string, callback: ConnectCallback) {
-            throw new Error("Not implemented yet");
+        /**
+         * [hasUnreadMessages 是否有未接收的消息，jsonp方法]
+         * @param  {string}          appkey   [appkey]
+         * @param  {string}          token    [token]
+         * @param  {ConnectCallback} callback [返回值，参数回调]
+         */
+        hasUnreadMessages(appkey: string, token: string, callback: ResultCallback<Boolean>) {
+            window.RCcallback = function(x: any) {
+                callback.onSuccess(!!+x.status);
+                xss.parentNode.removeChild(xss);
+            };
+            var xss = document.createElement("script");
+            xss.src = "http://api.cn.rong.io/message/exist.js?appKey=" + encodeURIComponent(appkey) + "&token=" + encodeURIComponent(token) + "&callBack=RCcallback&_=" + Date.now();
+            document.body.appendChild(xss);
+            xss.onerror = function() {
+                callback.onError(ErrorCode.UNKNOWN);
+                xss.parentNode.removeChild(xss);
+            };
         }
 
         getTotalUnreadCount(callback: ResultCallback<number>) {
@@ -317,7 +400,8 @@ module RongIMLib {
         }
 
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["number", "string", "object"], "getConversation");
+            return this.conversationList.get(conversationType, targetId);
         }
 
         getConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
@@ -325,12 +409,27 @@ module RongIMLib {
             var modules = new Modules.RelationsInput(), self = this;
             modules.setType(1);
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(list: any) {//TODO
+                onSuccess: function(list: any) {
+                    //TODO 等待修改server接口，直接同步推相关信息
+                    //userId -> sendUserId
+                    //type conversationType
                     if (list.info) {
                         for (let i = 0, len = list.info.length; i < len; i++) {
-                            var tempConver=list.info[i],conver = new Conversation("title", tempConver.type, "darf", true, null, null, null, "objectName", null, new Date(), "senderUserId", "senderUserName", null, new Date(), "targetId", 10);
-                            if (true) {
-                            }
+                            var tempConver = list.info[i], conver = new Conversation();
+                            conver.conversationType = tempConver.type;
+                            // if (tempConver.type == ConversationType.PRIVATE) {
+                            //     self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{
+                            //         onSuccess: function(info: UserInfo) {
+                            //             conver.conversationTitle = info.getUserName();
+                            //             conver.senderUserName = info.getUserName();
+                            //             conver.senderUserId = info.getUserId();
+                            //             conver.targetId = Bridge._client.userId;
+                            //         },
+                            //         onError: function(error: any) {
+                            //             console.log("getUserInfo error:" + error + ",postion->getConversationList.getUserInfo")
+                            //         }
+                            //     });
+                            // }
                             self.conversationList.push(conver);
                         }
                     }
@@ -377,33 +476,113 @@ module RongIMLib {
         // #endregion Notifications
 
         // #region Discussion
-
+        /**
+         * [addMemberToDiscussion   加入讨论组]
+         * @param  {string}            discussionId [讨论组Id]
+         * @param  {string[]}          userIdList   [讨论中成员]
+         * @param  {OperationCallback} callback     [返回值，函数回调]
+         */
         addMemberToDiscussion(discussionId: string, userIdList: string[], callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "array", "object"], "addMemberToDiscussion");
+            var modules = new Modules.ChannelInvitationInput();
+            modules.setUsers(userIdList);
+            RongIMClient.bridge.queryMsg(0, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
+                onSuccess: function() {
+                    callback.onSuccess();
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.JOIN_IN_DISCUSSION);
+                }
+            });
         }
-
+        /**
+         * [createDiscussion 创建讨论组]
+         * @param  {string}                   name       [讨论组名称]
+         * @param  {string[]}                 userIdList [讨论组成员]
+         * @param  {CreateDiscussionCallback} callback   [返回值，函数回调]
+         */
         createDiscussion(name: string, userIdList: string[], callback: CreateDiscussionCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "array", "object"], "createDiscussion");
+            var modules = new Modules.CreateDiscussionInput(), self = this;
+            modules.setName(name);
+            RongIMClient.bridge.queryMsg(1, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(discussId: string) {
+                    self.addMemberToDiscussion(discussId, userIdList, <OperationCallback>{
+                        onSuccess: function() { },
+                        onError: function(error) {
+                            callback.onError(error);
+                        }
+                    });
+                    callback.onSuccess(discussId);
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.CREATE_DISCUSSION);
+                }
+            }, "CreateDiscussionOutput");
         }
-
+        /**
+         * [getDiscussion 获取讨论组信息]
+         * @param  {string}                     discussionId [讨论组Id]
+         * @param  {ResultCallback<Discussion>} callback     [返回值，函数回调]
+         */
         getDiscussion(discussionId: string, callback: ResultCallback<Discussion>) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "object"], "getDiscussion");
+            var modules = new Modules.ChannelInfoInput();
+            modules.setNothing(1);
+            RongIMClient.bridge.queryMsg(4, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, callback, "ChannelInfoOutput");
         }
-
+        /**
+         * [quitDiscussion 退出讨论组]
+         * @param  {string}            discussionId [讨论组Id]
+         * @param  {OperationCallback} callback     [返回值，函数回调]
+         */
         quitDiscussion(discussionId: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "object"], "quitDiscussion");
+            var modules = new Modules.LeaveChannelInput();
+            modules.setNothing(1);
+            RongIMClient.bridge.queryMsg(7, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, callback);
         }
-
+        /**
+         * [removeMemberFromDiscussion 将指定成员移除讨论租]
+         * @param  {string}            discussionId [讨论组Id]
+         * @param  {string}            userId       [被移除的用户Id]
+         * @param  {OperationCallback} callback     [返回值，参数回调]
+         */
         removeMemberFromDiscussion(discussionId: string, userId: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "string", "object"], "removeMemberFromDiscussion");
+            var modules = new Modules.ChannelEvictionInput();
+            modules.setUser(userId);
+            RongIMClient.bridge.queryMsg(9, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, callback);
         }
-
+        /**
+         * [setDiscussionInviteStatus 设置讨论组邀请状态]
+         * @param  {string}                 discussionId [讨论组Id]
+         * @param  {DiscussionInviteStatus} status       [邀请状态]
+         * @param  {OperationCallback}      callback     [返回值，函数回调]
+         */
         setDiscussionInviteStatus(discussionId: string, status: DiscussionInviteStatus, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "number", "object"], "setDiscussionInviteStatus");
+            var modules = new Modules.ModifyPermissionInput();
+            modules.setOpenStatus(status.valueOf());
+            RongIMClient.bridge.queryMsg(11, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
+                onSuccess: function(x: any) {
+                    callback.onSuccess();
+                }, onError: function() {
+                    callback.onError(ErrorCode.INVITE_DICUSSION);
+                }
+            });
         }
-
+        /**
+         * [setDiscussionName 设置讨论组名称]
+         * @param  {string}            discussionId [讨论组Id]
+         * @param  {string}            name         [讨论组名称]
+         * @param  {OperationCallback} callback     [返回值，参数回调]
+         */
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "string","object"], "setDiscussionName");
+            var modules = new Modules.RenameChannelInput();
+            modules.setName(name);
+            RongIMClient.bridge.queryMsg(12,MessageUtil.ArrayForm(modules.toArrayBuffer()),discussionId,callback);
         }
 
         // #endregion Discussion
