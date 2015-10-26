@@ -14,6 +14,10 @@
 #         console.log RongIMLib.Navigate.Endpoint.host
 #         done();
 #     ,1000)
+#
+################################功能模块单元测试############################################
+#说明：
+#所有功能均已测试通过，若重新测试，删除注释重新运行karma即可
 describe "RongIMClient",->
     it "Connect&SendMessage",->
     # window["WEB_XHR_POLLING"] = true;
@@ -30,16 +34,16 @@ describe "RongIMClient",->
           when RongIMLib.ConnectionStatus.DISCONNECTED
             console.log "断开连接"
           else console.log "状态为解析:"+status
-###############################connect##########################################
+###############################connect#####################################################
     RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcE",
             onSuccess:(userId)->
                 console.log("loginSuccess,userId."+userId)
             onError:(error)->
                 console.log("loginError,errorcode:"+error)
-###############################sendMessage##########################################
+###############################sendMessage#################################################
     # setTimeout(->
-    #     message = RongIMLib.TextMessage.obtain("my name is saner")
-    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
+    #     message = RongIMLib.TextMessage.obtain("my name is zhangsan")
+    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "cocalGroup", message,null,
     #       onSuccess: (data)->
     #             console.log "Send Successfully"
     #       onError: (errorcode)->
@@ -116,7 +120,7 @@ describe "RongIMClient",->
     #         onError:(error)->
     #             console.log "QuitDiscussion:errorcode:"+error
     # ,1500)
-##############################removeMemberFromDiscussion#################################################
+##############################removeMemberFromDiscussion#####################################
     # setTimeout(->
     #     RongIMLib.RongIMClient.getInstance().removeMemberFromDiscussion "a782bc21-68dd-451a-8663-32a530a97315","lisi",
     #         onSuccess:()->
@@ -124,7 +128,7 @@ describe "RongIMClient",->
     #         onError:(error)->
     #             console.log "RemoveMember:errorcode:"+error
     # ,1550)
-##############################setDiscussionInviteStatus#################################################
+##############################setDiscussionInviteStatus######################################
     # setTimeout(->
     #     RongIMLib.RongIMClient.getInstance().setDiscussionInviteStatus "a782bc21-68dd-451a-8663-32a530a97315",RongIMLib.DiscussionInviteStatus.CLOSED,
     #         onSuccess:()->
@@ -132,7 +136,7 @@ describe "RongIMClient",->
     #         onError:(error)->
     #             console.log "setDiscussionInviteStatus:errorcode:"+error
     # ,1600)
-##############################setDiscussionName#################################################
+##############################setDiscussionName##############################################
     # setTimeout(->
     #     RongIMLib.RongIMClient.getInstance().setDiscussionName "a782bc21-68dd-451a-8663-32a530a97315","大融云",
     #         onSuccess:()->
@@ -140,3 +144,67 @@ describe "RongIMClient",->
     #         onError:(error)->
     #             console.log "setDiscussionName:errorcode:"+error
     # ,1650)
+##############################joinGroup######################################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().joinGroup "cocalGroup","WskTestGroup",
+    #         onSuccess:()->
+    #             console.log "joinGroup Successfully"
+    #         onError:(error)->
+    #             console.log "joinGroup:errorcode:"+error
+    # ,1700)
+##############################quitGroup######################################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().quitGroup "cocalGroup",
+    #         onSuccess:()->
+    #             console.log "quitGroup Successfully"
+    #         onError:(error)->
+    #             console.log "quitGroup:errorcode:"+error
+    # ,1750)
+##############################joinChatRoom###################################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().joinChatRoom "chatRoom2015",2,
+    #         onSuccess:()->
+    #             console.log "joinChatRoom Successfully"
+    #         onError:(error)->
+    #             console.log "joinChatRoom:errorcode:"+error
+    # ,1800)
+##############################quitChatRoom###################################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().quitChatRoom "chatRoom2015",
+    #         onSuccess:()->
+    #             console.log "quitChatRoom Successfully"
+    #         onError:(error)->
+    #             console.log "quitChatRoom:errorcode:"+error
+    # ,1820)
+##############################addToBlacklist#################################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().addToBlacklist "wangwu",
+    #         onSuccess:()->
+    #             console.log "addToBlacklist Successfully"
+    #         onError:(error)->
+    #             console.log "addToBlacklist:errorcode:"+error
+    # ,1840)
+##############################getBlacklist###################################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().getBlacklist
+    #         onSuccess:(data)->
+    #             console.log data
+    #         onError:(error)->
+    #             console.log "getBlacklist:errorcode:"+error
+    # ,1860)
+##############################getBlacklistStatus#############################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().getBlacklistStatus "wangwu",
+    #         onSuccess:(status)->
+    #             console.log status
+    #         onError:(error)->
+    #             console.log "getBlacklistStatus:errorcode:"+error
+    # ,1900)
+##############################removeFromBlacklist############################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().removeFromBlacklist "wangwu",
+    #         onSuccess:()->
+    #             console.log "removeFromBlacklist Successfully"
+    #         onError:(error)->
+    #             console.log "removeFromBlacklist:errorcode:"+error
+    # ,1920)

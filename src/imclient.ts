@@ -395,7 +395,6 @@ module RongIMLib {
         clearConversations(callback: ResultCallback<boolean>, ...conversationTypes: ConversationType[]) {
             conversationTypes.forEach(conversationType => {
                 RongIMClient._dataAccessProvider;
-
             });
         }
 
@@ -436,13 +435,27 @@ module RongIMLib {
                     callback.onSuccess(self.conversationList)
                 },
                 onError: function() {
-                    callback.onError(ErrorCode.UNKNOWN);
+                    callback.onError(ErrorCode.CONVER_GETLIST_ERROR);
                 }
             }, "RelationsOutput");
         }
 
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["number", "string", "object"], "removeConversation");
+            var d = MessageUtil.remove(this.conversationList, function(f: any) {
+                return f.getTargetId() == targetId && f.getConversationType() == conversationType
+            });
+            if (!d) return;
+            var mod = new Modules.RelationInfo();
+            mod.setType(C2S[conversationType.valueOf()]);
+            mod.setUserId(targetId);
+            RongIMClient.bridge.queryMsg(27, MessageUtil.ArrayForm(mod.toArrayBuffer()), targetId, {
+                onSuccess: function() {
+                    callback.onSuccess(true);
+                }, onError: function() {
+                    callback.onError(ErrorCode.CONVER_REMOVE_ERROR);
+                }
+            });
         }
 
         setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>) {
@@ -576,41 +589,143 @@ module RongIMLib {
          * [setDiscussionName 设置讨论组名称]
          * @param  {string}            discussionId [讨论组Id]
          * @param  {string}            name         [讨论组名称]
-         * @param  {OperationCallback} callback     [返回值，参数回调]
+         * @param  {OperationCallback} callback     [返回值，函数回调]
          */
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "string","object"], "setDiscussionName");
+            CheckParam.getInstance().check(["string", "string", "object"], "setDiscussionName");
             var modules = new Modules.RenameChannelInput();
             modules.setName(name);
-            RongIMClient.bridge.queryMsg(12,MessageUtil.ArrayForm(modules.toArrayBuffer()),discussionId,callback);
+            RongIMClient.bridge.queryMsg(12, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, callback);
         }
 
         // #endregion Discussion
 
         // #region Group
-
+        /**
+         * [加入群组]
+         * @param  {string}            groupId   [群组Id]
+         * @param  {string}            groupName [群组名称]
+         * @param  {OperationCallback} callback  [返回值，函数回调]
+         */
         joinGroup(groupId: string, groupName: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "string", "object"], "joinGroup");
+            var modules = new Modules.GroupInfo();
+            modules.setId(groupId);
+            modules.setName(groupName);
+            var _mod = new Modules.GroupInput();
+            _mod.setGroupInfo([modules]);
+            RongIMClient.bridge.queryMsg(6, MessageUtil.ArrayForm(_mod.toArrayBuffer()), groupId, callback, "GroupOutput");
         }
-
+        /**
+         * [退出群组]
+         * @param  {string}            groupId  [群组Id]
+         * @param  {OperationCallback} callback [返回值，函数回调]
+         */
         quitGroup(groupId: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "object"], "quitGroup");
+            var modules = new Modules.LeaveChannelInput();
+            modules.setNothing(1);
+            RongIMClient.bridge.queryMsg(8, MessageUtil.ArrayForm(modules.toArrayBuffer()), groupId, callback);
         }
-
-        syncGroup(groups: Group[], callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+        /**
+         * [同步群组信息]
+         * @param  {Array<Group>}      groups   [群组列表]
+         * @param  {OperationCallback} callback [返回值，函数回调]
+         */
+        syncGroup(groups: Array<Group>, callback: OperationCallback) {
+            CheckParam.getInstance().check(["array", "object"], "syncGroup");
+            //去重操作
+            for (var i: number = 0, part: Array<string> = [], info: Array<any> = [], len: number = groups.length; i < len; i++) {
+                if (part.length === 0 || !(groups[i].id in part)) {
+                    part.push(groups[i].id);
+                    var groupinfo = new Modules.GroupInfo();
+                    groupinfo.setId(groups[i].id);
+                    groupinfo.setName(groups[i].name);
+                    info.push(groupinfo);
+                }
+            }
+            var modules = new Modules.GroupHashInput();
+            modules.setUserId(Bridge._client.userId);
+            modules.setGroupHashCode(MD5(part.sort().join("")));
+            RongIMClient.bridge.queryMsg(13, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(result: number) {
+                    //1为群信息不匹配需要发送给服务器进行同步，0不需要同步
+                    if (result === 1) {
+                        var val = new Modules.GroupInput();
+                        val.setGroupInfo(info);
+                        RongIMClient.bridge.queryMsg(20, MessageUtil.ArrayForm(val.toArrayBuffer()), Bridge._client.userId, {
+                            onSuccess: function() {
+                                callback.onSuccess();
+                            },
+                            onError: function() {
+                                callback.onError(ErrorCode.GROUP_MATCH_ERROR);
+                            }
+                        }, "GroupOutput");
+                    } else {
+                        callback.onSuccess();
+                    }
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.GROUP_SYNC_ERROR);
+                }
+            }, "GroupHashOutput");
         }
 
         // #endregion Group
 
         // #region ChatRoom
-
+        /**
+         * [加入聊天室]
+         * @param  {string}            chatroomId   [聊天室Id]
+         * @param  {number}            messageCount [拉取消息数量，-1为不拉去消息]
+         * @param  {OperationCallback} callback     [返回值，函数回调]
+         */
         joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "number", "object"], "joinChatRoom");
+            if (chatroomId != "") {
+                Bridge._client.chatroomId = chatroomId;
+            } else {
+                callback.onError(ErrorCode.CHATROOM_ID_ISNULL);
+                return;
+            }
+            var e = new Modules.ChrmInput();
+            e.setNothing(1);
+            RongIMClient.bridge.queryMsg(19, MessageUtil.ArrayForm(e.toArrayBuffer()), chatroomId, {
+                onSuccess: function() {
+                    callback.onSuccess();
+                    var modules = new Modules.ChrmPullMsg();
+                    messageCount == 0 && (messageCount = -1);
+                    modules.setCount(messageCount);
+                    modules.setSyncTime(0);
+                    Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
+                        onSuccess: function(collection: any) {
+                            var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
+                            CookieHelper.createStorage().setItem(Bridge._client.userId + 'CST', sync);
+                            var list = collection.list;
+                            for (var i = 0; i < list.length; i++) {
+                                Bridge._client.handler.onReceived(list[i])
+                            }
+                        },
+                        onError: function(x: any) {
+                            callback.onError(ErrorCode.CHATROOM_HISMESSAGE_ERROR);
+                        }
+                    }, "DownStreamMessages");
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.CHARTOOM_JOIN_ERROR);
+                }
+            }, "ChrmOutput");
         }
-
+        /**
+         * [退出聊天室]
+         * @param  {string}            chatroomId [聊天室Id]
+         * @param  {OperationCallback} callback   [返回值，函数回调]
+         */
         quitChatRoom(chatroomId: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "object"], "quitChatRoom");
+            var e = new Modules.ChrmInput();
+            e.setNothing(1);
+            RongIMClient.bridge.queryMsg(17, MessageUtil.ArrayForm(e.toArrayBuffer()), chatroomId, callback, "ChrmOutput")
         }
 
         // #endregion ChatRoom
@@ -644,21 +759,78 @@ module RongIMLib {
         // #endregion Public Service
 
         // #region Blacklist
-
+        /**
+         * [加入黑名单]
+         * @param  {string}            userId   [将被加入黑名单的用户Id]
+         * @param  {OperationCallback} callback [返回值，函数回调]
+         */
         addToBlacklist(userId: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "object"], "addToBlacklist");
+            var modules = new Modules.Add2BlackListInput();
+            this.getCurrentUserInfo(<ResultCallback<UserInfo>>{
+                onSuccess: function(info: UserInfo) {
+                    var uId = info.getUserId();
+                    modules.setUserId(userId);
+                    RongIMClient.bridge.queryMsg(21, MessageUtil.ArrayForm(modules.toArrayBuffer()), uId, callback);
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.BLACK_ADD_ERROR);
+                }
+            });
         }
-
+        /**
+         * [获取黑名单列表]
+         * @param  {GetBlacklistCallback} callback [返回值，函数回调]
+         */
         getBlacklist(callback: GetBlacklistCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["object"], "getBlacklist");
+            var modules = new Modules.QueryBlackListInput();
+            modules.setNothing(1);
+            RongIMClient.bridge.queryMsg(23, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "QueryBlackListOutput");
         }
-
-        getBlacklistStatus(userId: string, callback: ResultCallback<BlacklistStatus>) {
-            throw new Error("Not implemented yet");
+        /**
+         * [得到指定人员再黑名单中的状态]
+         * @param  {string}                          userId   [description]
+         * @param  {ResultCallback<BlacklistStatus>} callback [返回值，函数回调]
+         */
+        getBlacklistStatus(userId: string, callback: ResultCallback<string>) {
+            CheckParam.getInstance().check(["string", "object"], "getBlacklistStatus");
+            var modules = new Modules.BlackListStatusInput();
+            this.getCurrentUserInfo({
+                onSuccess: function(info) {
+                    var uId = info.getUserId();
+                    modules.setUserId(userId);
+                    RongIMClient.bridge.queryMsg(24, MessageUtil.ArrayForm(modules.toArrayBuffer()), uId, {
+                        onSuccess: function(status: number) {
+                            callback.onSuccess(BlacklistStatus[status]);
+                        }, onError: function() {
+                            callback.onError(ErrorCode.BLACK_GETSTATUS_ERROR);
+                        }
+                    });
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.BLACK_GETSTATUS_ERROR);
+                }
+            });
         }
-
+        /**
+         * [将指定用户移除黑名单]
+         * @param  {string}            userId   [将被移除的用户Id]
+         * @param  {OperationCallback} callback [返回值，函数回调]
+         */
         removeFromBlacklist(userId: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["string", "object"], "removeFromBlacklist");
+            var modules = new Modules.RemoveFromBlackListInput();
+            this.getCurrentUserInfo({
+                onSuccess: function(info) {
+                    var uId = info.getUserId();
+                    modules.setUserId(userId);
+                    RongIMClient.bridge.queryMsg(22, MessageUtil.ArrayForm(modules.toArrayBuffer()), uId, callback);
+                },
+                onError: function() {
+                    console.log(ErrorCode.BLACK_REMOVE_ERROR);
+                }
+            });
         }
 
         // #endregion Blacklist

@@ -430,7 +430,7 @@ module RongIMLib {
                 entity = msg;
                 CookieHelper.createStorage().setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
             } else {
-                if (msg.getTopic() == "") {
+                if (msg.getTopic() == "s_ntf") {
                     entity = Modules.NotifyMsg.decode(msg.getData());
                     this._client.syncTime(entity.type, MessageUtil.int64ToTimestamp(entity.time));
                     return;

@@ -30,6 +30,11 @@ var mapping: any = {
         3: "qryGMsg",
         4: "qryPMsg",
         5: "qrySMsg"
+    }, C2S: { [s: number]: any } = {
+        4: 1,
+        2: 2,
+        3: 3,
+        1: 5
     }
 module RongIMLib {
     /**
@@ -74,6 +79,14 @@ module RongIMLib {
                     }
                 }
             }
+        }
+        static remove(array: any, func: any): void {
+            for (var i = 0, len = array.length; i < len; i++) {
+                if (func(array[i])) {
+                    return array.splice(i, 1)[0]
+                }
+            }
+            return null
         }
         static int64ToTimestamp(obj: any, isDate?: boolean) {
             if (obj.low === undefined) {

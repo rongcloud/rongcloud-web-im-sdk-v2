@@ -297,7 +297,50 @@ module RongIMLib {
         /**
          * 连接中，再调用 connect 被拒绝。
          */
-        BIZ_ERROR_CONNECTING = 33006
+        BIZ_ERROR_CONNECTING = 33006,
+        /**
+         * 删除会话失败
+         */
+        CONVER_REMOVE_ERROR = 34001,
+        /**
+         *拉取历史消息
+         */
+        CONVER_GETLIST_ERROR = 34002,
+        //群组异常信息
+        /**
+         *
+         */
+        GROUP_SYNC_ERROR = 35001,
+        /**
+         * 匹配群信息系异常
+         */
+        GROUP_MATCH_ERROR = 35002,
+        //聊天室异常
+        /**
+         * 加入聊天室Id为空
+         */
+        CHATROOM_ID_ISNULL = 36001,
+        /**
+         * 加入聊天室失败
+         */
+        CHARTOOM_JOIN_ERROR = 36002,
+        /**
+         * 拉取聊天室历史消息失败
+         */
+        CHATROOM_HISMESSAGE_ERROR = 36003,
+        //黑名单异常
+        /**
+         * 加入黑名单异常
+         */
+        BLACK_ADD_ERROR = 37001,
+        /**
+         * 获得指定人员再黑名单中的状态异常
+         */
+        BLACK_GETSTATUS_ERROR = 37002,
+        /**
+         * 移除黑名单异常
+         */
+        BLACK_REMOVE_ERROR = 37003
     }
 
     export enum MediaType {
