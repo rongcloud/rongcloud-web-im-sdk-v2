@@ -94,12 +94,36 @@ module RongIMLib {
         /**
          * 注册消息类型，用于注册用户自定义的消息。
          * 内建的消息类型已经注册过，不需要再次注册。
-         *
+         * 自定义消息声明需放在执行顺序最高的位置（在RongIMClient.init(appkey)之后即可）
          * @param objectName  用户数据信息。
-         * @param msgTag      操作成功或者失败的回调。
          */
-        static registerMessageType(objectName: string, msgTag: MessageTag): void {
-            throw new Error("Not implemented yet");
+        static registerMessageType(objectName: string, messageType: string, fieldName: Array<string>[]): void {
+            if (!RongIMClient._instance) throw new Error("unInitException");
+            CheckParam.getInstance().check(["string", "string", "array"], "registerMessageType");
+            if (objectName == "") throw new Error("objectName can't be empty,postion -> registerMessageType");
+            registerMessageTypeMapping[objectName] = messageType;
+            var str = "var temp = RongIMLib." + messageType + " = function(c) {" +
+                "var p = RongIMLib.RongIMMessage.call(this, c);" +
+                "RongIMLib.MessageType[messageType] = messageType;" +
+                "this.message = c;" +
+                "this.setMessageType(messageType);" +
+                "this.setObjectName(objectName);" +
+                "for (var i = 0; i < fieldName.length; i++) {" +
+                "var item = fieldName[i];" +
+                "this['set' + item] = (function(na) {" +
+                "return function(a) {" +
+                "this.setContent(a, na);" +
+                "}" +
+                "})(item);" +
+                "this['get' + item] = (function(na) {" +
+                "return function() {" +
+                "return this.getDetail()[na];" +
+                "}" +
+                "})(item);" +
+                "}" +
+                "this.getMessage=function(){return this}" +
+                "}; temp.prototype = new RongIMLib.RongIMMessage;";
+            eval(str);
         }
 
         /**
@@ -793,6 +817,7 @@ module RongIMLib {
          * @param  {string}                          userId   [description]
          * @param  {ResultCallback<BlacklistStatus>} callback [返回值，函数回调]
          */
+        //TODO 如果人员不在黑名单中，获取状态会出现异常
         getBlacklistStatus(userId: string, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["string", "object"], "getBlacklistStatus");
             var modules = new Modules.BlackListStatusInput();

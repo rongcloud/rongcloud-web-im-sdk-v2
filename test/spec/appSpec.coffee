@@ -17,12 +17,17 @@
 #
 ################################功能模块单元测试############################################
 #说明：
-#所有功能均已测试通过，若重新测试，删除注释重新运行karma即可
+#所有功能均已测试通过，若重新测试，删除注释重新运行karma即可(讨论组Id可能需要修改)
 describe "RongIMClient",->
     it "Connect&SendMessage",->
     # window["WEB_XHR_POLLING"] = true;
     # RongIMLib.RongIMClient.schemeType = RongIMLib.SchemeType.SSL
     RongIMLib.RongIMClient.init "cpj2xarlj5cdn"
+###############################registerMessageType###########################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',['Name','Age','Address']
+    # ,10);
+
     RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
       console.log message.getContent()
     RongIMLib.RongIMClient.setConnectionStatusListener onChanged: (status) ->
@@ -43,7 +48,8 @@ describe "RongIMClient",->
 ###############################sendMessage#################################################
     # setTimeout(->
     #     message = RongIMLib.TextMessage.obtain("my name is zhangsan")
-    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "cocalGroup", message,null,
+    #     # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
+    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
     #       onSuccess: (data)->
     #             console.log "Send Successfully"
     #       onError: (errorcode)->
@@ -98,7 +104,7 @@ describe "RongIMClient",->
     # ,1300)
 ##############################addMemberToDiscussion#########################################
     # setTimeout(->
-    #     RongIMLib.RongIMClient.getInstance().addMemberToDiscussion "a782bc21-68dd-451a-8663-32a530a97315",["lisi"],
+    #     RongIMLib.RongIMClient.getInstance().addMemberToDiscussion "1aef7b7e-24ac-4740-893c-0914ba3f4bf4",["wangwu"],
     #         onSuccess:()->
     #             console.log "addMemberToDiscussion Successfully"
     #         onError:(error)->
@@ -106,7 +112,7 @@ describe "RongIMClient",->
     # ,1400)
 ##############################getDiscussion#################################################
     # setTimeout(->
-    #     RongIMLib.RongIMClient.getInstance().getDiscussion "a782bc21-68dd-451a-8663-32a530a97315",
+    #     RongIMLib.RongIMClient.getInstance().getDiscussion "1aef7b7e-24ac-4740-893c-0914ba3f4bf4",
     #         onSuccess:(discuss)->
     #             console.log discuss
     #         onError:(error)->
