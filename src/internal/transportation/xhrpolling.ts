@@ -36,7 +36,7 @@ module RongIMLib {
             return this;
         }
         _request(url: string, method: string, multipart?: boolean) {
-            var req = this.XmlHtppRequest();
+            var req = this.XmlHttpRequest();
             if (multipart) req.multipart = true;
             req.open(method || 'GET', MessageUtil.schemeArrs[RongIMClient.schemeType][SchemeType.XHR]+"://" + url);
             if (method == 'POST' && 'setRequestHeader' in req) {
@@ -142,7 +142,7 @@ module RongIMLib {
         onError(error: any): void {
             throw new Error(error);
         }
-        XmlHtppRequest(): any {
+        XmlHttpRequest(): any {
             var hasCORS = typeof XMLHttpRequest !== 'undefined' && 'withCredentials' in new XMLHttpRequest(), self = this;
             if ('undefined' != typeof XMLHttpRequest && hasCORS) {
                 self.allowWithCrendentials = true;

@@ -14,11 +14,4 @@ module RongIMLib {
 
     updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any): void;
   }
-
-  export class DataAccessProviderBase {
-    composeConversationKey(conversationType: ConversationType, targetId: string): string {
-      //var conversationTypeValue: number = conversationType;
-      return `_rc_ct_${conversationType}_${targetId}`;
-    }
-  }
 }

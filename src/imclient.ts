@@ -56,21 +56,12 @@ module RongIMLib {
          *
          * @param appKey    开发者后台申请的 AppKey，用来标识应用。
          */
-        static init(appKey: string, forceConnectionChannel?: ConnectionChannel, forceLocalStorageProvider?: StorageProvider): void {
+        static init(appKey: string): void {
             if (!RongIMClient._instance) {
                 RongIMClient._instance = new RongIMClient();
             }
-
             RongIMClient._appKey = appKey;
-            RongIMClient._connectionChannel = forceConnectionChannel;
-
-            if (forceLocalStorageProvider) {
-                RongIMClient._storageProvider = forceLocalStorageProvider;
-                RongIMClient._dataAccessProvider = forceLocalStorageProvider.getDataAccessProvider();
-            } else {
-                // Use default provider by browser engine and version.
-            }
-            // RongIMClient.registerMessageType("RC:TxtMsg", MessageTag.ISPERSISTED | MessageTag.ISCOUNTED);
+            RongIMClient._storageProvider = MessageUtil.createStorageFactory();
         }
 
         /**

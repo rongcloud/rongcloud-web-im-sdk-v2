@@ -47,7 +47,28 @@ module RongIMLib {
      * 工具类
      */
     export class MessageUtil {
+        //适配SSL
         static schemeArrs: Array<any> = [["http", "ws"], ["https", "wss"]];
+        static supportLargeStorage(): boolean {
+            if (window.localStorage) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        static createStorageFactory(): StorageProvider {
+            if (MessageUtil.supportLargeStorage()) {
+                return new LocalStorageProvider();
+            } else {
+                return new CookieProvider();
+            }
+        }
+        /**
+         *4680000 为localstorage最小容量5200000字节的90%，超过90%将删除之前过早的存储
+         */
+        static checkStorageSize(): boolean {
+            return JSON.stringify(localStorage).length < 4680000;
+        }
         static ArrayForm(typearray: any): Array<any> {
             if (Object.prototype.toString.call(typearray) == "[object ArrayBuffer]") {
                 var arr = new Int8Array(typearray);
@@ -112,12 +133,12 @@ module RongIMLib {
                 console.log(ex + " -> postion:messageParser")
                 return null;
             }
-            //处理表情 TODO
-            // if ("Expression" in RongIMClient && "RC:TxtMsg" == objectName && de.content) {
-            //     de.content = de.content.replace(/[\uf000-\uf700]/g, function(x) {
-            //         return RongIMClient.Expression.calcUTF(x) || x;
-            //     })
-            // }
+            //处理表情
+            if ("Expression" in RongIMClient && "RC:TxtMsg" == objectName && de.content) {
+                de.content = de.content.replace(/[\uf000-\uf700]/g, function(x: any) {
+                    return eval("RongIMClient.Expression.calcUTF(x) || x");
+                })
+            }
             //映射为具体消息对象
             if (objectName in typeMapping) {
                 var str = "new RongIMLib." + typeMapping[objectName] + "(de)";
