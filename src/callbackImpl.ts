@@ -140,14 +140,13 @@ module RongIMLib {
         process(status: number, userId: string) {
             this.readTimeOut();
             if (status == 0) {
-                var naviStr = CookieHelper.createStorage().getItem("navi\\w+?");
-                var arrNavi = document.cookie.match(new RegExp("(^| )(navi\\w+?)=.*"));
-                var naviKey = arrNavi[2];
+                var naviStr = RongIMClient._storageProvider.getItem(RongIMClient._storageProvider.getItemKey("navi"));
+                var naviKey = RongIMClient._storageProvider.getItemKey("navi");
 
                 var arr = unescape(naviStr).split(",");
                 if (!arr[1]) {
                     naviStr = unescape(naviStr) + userId;
-                    CookieHelper.createStorage().setItem(naviKey, naviStr);
+                    RongIMClient._storageProvider.setItem(naviKey, naviStr);
                 }
 
                 this._client.userId = userId;

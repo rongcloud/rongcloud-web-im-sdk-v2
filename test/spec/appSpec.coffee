@@ -46,15 +46,15 @@ describe "RongIMClient",->
             onError:(error)->
                 console.log("loginError,errorcode:"+error)
 ###############################sendMessage#################################################
-    # setTimeout(->
-    #     message = RongIMLib.TextMessage.obtain("my name is zhangsan")
-    #     # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
-    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
-    #       onSuccess: (data)->
-    #             console.log "Send Successfully"
-    #       onError: (errorcode)->
-    #             console.log errorcode
-    # ,1000)
+    setTimeout(->
+        message = RongIMLib.TextMessage.obtain("my name is zhangsan")
+        # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
+        RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
+          onSuccess: (data)->
+                console.log "Send Successfully"
+          onError: (errorcode)->
+                console.log errorcode
+    ,1000)
     #
     # setTimeout(->
     #         message = RongIMLib.TextMessage.obtain("my name is saner")

@@ -24,7 +24,7 @@ module RongIMLib {
          */
         createTransport(url: string, method?: string): any {
             if (!url) throw new Error("Url is empty,Please check it!");
-            var sid = CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId"), me = this;
+            var sid = RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId"), me = this;
             if (sid) {
                 setTimeout(function() {
                     me.onPollingSuccess("{\"status\":0,\"userId\":\"" + Navigate.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
@@ -38,7 +38,7 @@ module RongIMLib {
         _request(url: string, method: string, multipart?: boolean) {
             var req = this.XmlHttpRequest();
             if (multipart) req.multipart = true;
-            req.open(method || 'GET', MessageUtil.schemeArrs[RongIMClient.schemeType][SchemeType.XHR]+"://" + url);
+            req.open(method || 'GET', MessageUtil.schemeArrs[RongIMClient.schemeType][SchemeType.XHR] + "://" + url);
             if (method == 'POST' && 'setRequestHeader' in req) {
                 req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=utf-8');
             }
@@ -117,7 +117,7 @@ module RongIMLib {
                 Navigate.Endpoint.userId = val.userId;
             }
             if (header) {
-                CookieHelper.createStorage().setItem(Navigate.Endpoint.userId + "sId", header);
+                RongIMClient._storageProvider.setItem(Navigate.Endpoint.userId + "sId", header);
             }
             if (!MessageUtil.isArray(val)) {
                 val = [val];
@@ -176,7 +176,7 @@ module RongIMLib {
         onPollingSuccess(a: any, b?: any): void {
             this.onData(a, b);
             if (/"headerCode":-32,/.test(a)) return;
-            this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId"), true)
+            this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId"), true)
         }
         onPollingError(): void {
             this.disconnect();
@@ -187,11 +187,11 @@ module RongIMLib {
         status200(text: string, arg: any) {
             var txt = text.match(/"sessionid":"\S+?(?=")/);
             this.onPollingSuccess(text, txt ? txt[0].slice(13) : void 0);
-            this.connected=true;
+            this.connected = true;
             arg || this._socket.fire("connect");
         }
         status400(self: any) {
-            CookieHelper.createStorage().removeItem(Navigate.Endpoint.userId + "sId");
+            RongIMClient._storageProvider.removeItem(Navigate.Endpoint.userId + "sId");
             this.disconnect();
             this._socket.fire("disconnect");
             this.connected = false;

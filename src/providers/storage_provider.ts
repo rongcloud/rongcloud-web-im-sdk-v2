@@ -1,16 +1,19 @@
 module RongIMLib {
 
     export interface StorageProvider {
+        _host: string;
 
-        setObject(object: any, composedKey: ComposeKeyFunc): void;
+        setItem(composedKey: string, object: any): void;
 
-        getObject(composedKey: ComposeKeyFunc): void;
+        getItem(composedKey: string): string;
 
-        removeObject(composedKey: ComposeKeyFunc): void;
+        removeItem(composedKey: string): void;
 
-        clearObject(composedKey: ComposeKeyFunc): void;
+        clearItem(): void;
 
-        onOutOfQuota(currentMaxSize: number): void;
+        onOutOfQuota(): number;
+
+        getItemKey(regStr: string): any;
 
         // getDataAccessProvider(): DataAccessProvider;
     }

@@ -155,7 +155,7 @@ module RongIMLib {
             return this
         }
         _encode(x: any) {
-            var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + CookieHelper.createStorage().getItem(Navigate.Endpoint.userId + "sId");
+            var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId");
             if (!/(PubAckMessage|QueryConMessage)/.test(x._name)) {
                 str += "&topic=" + x.getTopic() + "&targetid=" + (x.getTargetId() || "");
             }
@@ -285,21 +285,21 @@ module RongIMLib {
             this.channel.writeAndFlush(msg)
         }
         invoke() {
-            var time: string, modules: any, str: string,me=this, target: string, temp: any = this.SyncTimeQueue.shift();
+            var time: string, modules: any, str: string, me = this, target: string, temp: any = this.SyncTimeQueue.shift();
             if (temp == undefined) {
                 return;
             }
             this.SyncTimeQueue.state = "pending";
             if (temp.type != 2) {
                 //普通消息
-                time = CookieHelper.createStorage().getItem(this.userId) || 0;
+                time = RongIMClient._storageProvider.getItem(this.userId) || "0";
                 modules = new Modules.SyncRequestMsg();
                 modules.setIspolling(false);
                 str = 'pullMsg';
                 target = this.userId;
             } else {
                 //聊天室消息
-                time = CookieHelper.createStorage().getItem(this.userId + "CST") || 0;
+                time = RongIMClient._storageProvider.getItem(this.userId + "CST") || "0";
                 modules = new Modules.ChrmPullMsg();
                 modules.setCount(0);
                 str = 'chrmPull';
@@ -325,7 +325,7 @@ module RongIMLib {
                         symbol += 'CST';
                     }
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
-                    CookieHelper.createStorage().setItem(symbol, sync);
+                    RongIMClient._storageProvider.setItem(symbol, sync);
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
                     for (var i = 0; i < list.length; i++) {
@@ -428,7 +428,7 @@ module RongIMLib {
                 con: any;
             if (msg._name != "PublishMessage") {
                 entity = msg;
-                CookieHelper.createStorage().setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
+                RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
             } else {
                 if (msg.getTopic() == "s_ntf") {
                     entity = Modules.NotifyMsg.decode(msg.getData());
@@ -436,7 +436,7 @@ module RongIMLib {
                     return;
                 } else if (msg.getTopic() == "s_msg") {
                     entity = Modules.DownStreamMessage.decode(msg.getData());
-                    CookieHelper.createStorage().setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
+                    RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
                 } else {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == '1.0.0') {
                         return;

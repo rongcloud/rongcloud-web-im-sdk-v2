@@ -10,6 +10,7 @@ module RongIMLib {
         static _token: string;
         //判断是否推送消息
         static isNotPullMsg: boolean = false;
+        static _storageProvider: StorageProvider;
         /**
          * [schemeType 选择连接方式]
          * SSL需要设置schemeType为SchemeType.SSL
@@ -24,7 +25,6 @@ module RongIMLib {
         private static _instance: RongIMClient;
         private static _appKey: string;
         private static _connectionChannel: ConnectionChannel;
-        private static _storageProvider: StorageProvider;
         private static _dataAccessProvider: DataAccessProvider;
         //缓存会话列表
         private conversationList: any = [];
@@ -715,7 +715,7 @@ module RongIMLib {
                     Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
                         onSuccess: function(collection: any) {
                             var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
-                            CookieHelper.createStorage().setItem(Bridge._client.userId + 'CST', sync);
+                            RongIMClient._storageProvider.setItem(Bridge._client.userId + 'CST', sync);
                             var list = collection.list;
                             for (var i = 0; i < list.length; i++) {
                                 Bridge._client.handler.onReceived(list[i])

@@ -204,31 +204,31 @@ module RongIMLib {
     /**
      * 本地常用信息存储工具类
      */
-    export class CookieHelper {
-        static obj: any;
-        static old: any;
-        static _host: string;
-        static createStorage(): any {
-            if (window.FORCE_LOCAL_STORAGE === true) {
-                this.old = localStorage.setItem;
-                localStorage.setItem = function(x: any, value: any) {
-                    if (localStorage.length == 15) {
-                        localStorage.removeItem(localStorage.key(0));
-                    }
-                    this.old.call(localStorage, x, value)
-                }
-                this.obj = localStorage;
-            } else {
-                this.obj = new UserCookie();
-            }
-            return this.obj;
-        }
-    }
+    // export class CookieHelper {
+    //     static obj: any;
+    //     static old: any;
+    //     static _host: string;
+    //     static createStorage(): any {
+    //         if (window.FORCE_LOCAL_STORAGE === true) {
+    //             this.old = localStorage.setItem;
+    //             localStorage.setItem = function(x: any, value: any) {
+    //                 if (localStorage.length == 15) {
+    //                     localStorage.removeItem(localStorage.key(0));
+    //                 }
+    //                 this.old.call(localStorage, x, value)
+    //             }
+    //             this.obj = localStorage;
+    //         } else {
+    //             this.obj = new UserCookie();
+    //         }
+    //         return this.obj;
+    //     }
+    // }
     export class MessageIdHandler {
         static messageId: number = 0;
         static isXHR: boolean = Transports._TransportType === Socket.XHR_POLLING;
         static init() {
-            this.messageId = +(CookieHelper.createStorage().getItem("msgId") || CookieHelper.createStorage().setItem("msgId", 0) || 0);
+            this.messageId = +(RongIMClient._storageProvider.getItem("msgId") || RongIMClient._storageProvider.setItem("msgId", 0) || 0);
         }
         static messageIdPlus(method: any): any {
             this.isXHR && this.init();
@@ -237,12 +237,12 @@ module RongIMLib {
                 return false;
             }
             this.messageId++;
-            this.isXHR && CookieHelper.createStorage().setItem("msgId", this.messageId);
+            this.isXHR && RongIMClient._storageProvider.setItem("msgId", this.messageId);
             return this.messageId;
         }
         static clearMessageId() {
             this.messageId = 0;
-            this.isXHR && CookieHelper.createStorage().setItem("msgId", this.messageId);
+            this.isXHR && RongIMClient._storageProvider.setItem("msgId", this.messageId);
         }
         static getMessageId() {
             this.isXHR && this.init();
