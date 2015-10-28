@@ -340,7 +340,19 @@ module RongIMLib {
         /**
          * 移除黑名单异常
          */
-        BLACK_REMOVE_ERROR = 37003
+        BLACK_REMOVE_ERROR = 37003,
+        /**
+         * 获取草稿失败
+         */
+        DRAF_GET_ERROR = 38001,
+        /**
+         * 保存草稿失败
+         */
+        DRAF_SAVE_ERROR = 38002,
+        /**
+         * 删除草稿失败
+         */
+        DRAF_REMOVE_ERROR = 38003
     }
 
     export enum MediaType {

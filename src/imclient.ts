@@ -2,8 +2,6 @@ module RongIMLib {
     export class RongIMClient {
         // Basic properties.
 
-        // Business properties.
-        private _currentUserId: string;
         //储存上次读取消息时间
         private lastReadTime: LimitableMap = new LimitableMap();
         //token
@@ -144,27 +142,17 @@ module RongIMLib {
         }
 
         /**
-         * 断开连接，但是保留当前用户与设备的登录关系，继续接收推送（Push）消息。
+         * 断开连接。
          */
         disconnect(): void {
-            RongIMClient.bridge.disConnect();
-        }
-
-        /**
-         * 断开连接，并且注销当前用户与设备的登录关系，不再接收推送（Push）消息。
-         * TODO: Should there be a callback?
-         *
-         * @param callback  操作成功或者失败的回调。
-         */
-        logout(callback: OperationCallback): void {
-            throw new Error("Not implemented yet");
+            RongIMClient.bridge.disconnect();
         }
 
         /**
          * 获取当前连接的状态。
          */
         getCurrentConnectionStatus(): ConnectionStatus {
-            return null;
+            return Bridge._client.channel.connectionStatus;
         }
 
         /**
@@ -185,7 +173,7 @@ module RongIMLib {
          * 获取当前连接用户的 UserId。
          */
         getCurrentUserId(): string {
-            return this._currentUserId;
+            return Bridge._client.userId;
         }
 
         /**
@@ -251,11 +239,26 @@ module RongIMLib {
         clearMessagesUnreadStatus(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.updateMessages(conversationType, targetId, "readStatus", false);
         }
-
+        /**
+         * [deleteMessages 删除消息记录。]
+         * @param  {ConversationType}        conversationType [description]
+         * @param  {string}                  targetId         [description]
+         * @param  {number[]}                messageIds       [description]
+         * @param  {ResultCallback<boolean>} callback         [description]
+         */
         deleteMessages(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [sendMessage 发送消息。]
+         * @param  {ConversationType}        conversationType [会话类型]
+         * @param  {string}                  targetId         [目标Id]
+         * @param  {MessageContent}          messageContent   [消息类型]
+         * @param  {SendMessageCallback}     sendCallback     []
+         * @param  {ResultCallback<Message>} resultCallback   [返回值，函数回调]
+         * @param  {string}                  pushContent      []
+         * @param  {string}                  pushData         []
+         */
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
             CheckParam.getInstance().check(["number", "string", "object", "null", "object"], "sendMessage");
             if (!Bridge._client.channel.socket.socket.connected) {
@@ -279,24 +282,38 @@ module RongIMLib {
             }
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, resultCallback, msg);
         }
-
-        // sendMessage(message: Message, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
-        //
-        // }
-
-        sendStatusMessage(message: Message, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>) {
+        /**
+         * [sendStatusMessage description]
+         * @param  {MessageContent}          messageContent [description]
+         * @param  {SendMessageCallback}     sendCallback   [description]
+         * @param  {ResultCallback<Message>} resultCallback [description]
+         * @return {[type]}                                 [description]
+         */
+        sendStatusMessage(messageContent: MessageContent, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
         }
-
-        sendTextMessage() {
+        /**
+         * [sendTextMessage 发送TextMessage快捷方式]
+         * @param  {string}                  content        [消息内容]
+         * @param  {ResultCallback<Message>} resultCallback [返回值，参数回调]
+         */
+        sendTextMessage(content: string, resultCallback: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [insertMessage 向本地插入一条消息，不发送到服务器。]
+         * @param  {ConversationType}        conversationType [description]
+         * @param  {string}                  targetId         [description]
+         * @param  {string}                  senderUserId     [description]
+         * @param  {MessageContent}          content          [description]
+         * @param  {ResultCallback<Message>} callback         [description]
+         * @return {[type]}                                   [description]
+         */
         insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
         }
         /**
-         * [getHistoryMessages 拉取历史消息记录]
+         * [getHistoryMessages 拉取历史消息记录。]
          * @param  {ConversationType}          conversationType [会话类型]
          * @param  {string}                    targetId         [用户Id]
          * @param  {number|null}               pullMessageTime  [拉取历史消息起始位置(格式为毫秒数)，可以为null]
@@ -339,7 +356,15 @@ module RongIMLib {
             }, "HistoryMessagesOuput");
         }
 
-        // TODO: Date or Number ?
+        /**
+         * [getRemoteHistoryMessages 拉取某个时间戳之前的消息]
+         * @param  {ConversationType}          conversationType [description]
+         * @param  {string}                    targetId         [description]
+         * @param  {Date}                      dateTime         [description]
+         * @param  {number}                    count            [description]
+         * @param  {ResultCallback<Message[]>} callback         [description]
+         * @return {[type]}                                     [description]
+         */
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, dateTime: Date, count: number, callback: ResultCallback<Message[]>) {
             throw new Error("Not implemented yet");
         }
@@ -366,12 +391,20 @@ module RongIMLib {
         getTotalUnreadCount(callback: ResultCallback<number>) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [getConversationUnreadCount 指定多种会话类型获取未读消息数]
+         * @param  {ResultCallback<number>} callback             [返回值，参数回调。]
+         * @param  {ConversationType[]}     ...conversationTypes [会话类型。]
+         */
         getConversationUnreadCount(callback: ResultCallback<number>, ...conversationTypes: ConversationType[]) {
             throw new Error("Not implemented yet");
         }
-
-        getUnreadCount(conversationType: ConversationType, targetId: string) {
+        /**
+         * [getUnreadCount 指定用户、会话类型的未读消息总数。]
+         * @param  {ConversationType} conversationType [会话类型]
+         * @param  {string}           targetId         [用户Id]
+         */
+        getUnreadCount(conversationType: ConversationType, targetId: string): number {
             throw new Error("Not implemented yet");
         }
 
@@ -390,17 +423,50 @@ module RongIMLib {
         // #endregion Message
 
         // #region TextMessage Draft
-
+        /**
+         * [clearTextMessageDraft 清除指定会话和消息类型的草稿。]
+         * @param  {ConversationType}        conversationType [会话类型]
+         * @param  {string}                  targetId         [目标Id]
+         * @param  {ResultCallback<boolean>} callback         [返回值，参数回调]
+         */
         clearTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["number", "string", "object"], "clearTextMessageDraft");
+            try {
+                RongIMClient._storageProvider.removeItem(conversationType + "_" + targetId);
+            } catch (e) {
+                callback.onError(ErrorCode.DRAF_REMOVE_ERROR);
+            }
+            callback.onSuccess(true);
         }
-
+        /**
+         * [getTextMessageDraft 获取指定消息和会话的草稿。]
+         * @param  {ConversationType}       conversationType [会话类型]
+         * @param  {string}                 targetId         [目标Id]
+         * @param  {ResultCallback<string>} callback         [返回值，参数回调]
+         */
         getTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<string>) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["number", "string", "object"], "getTextMessageDraft");
+            if (targetId == "" || conversationType < 0) {
+                callback.onError(ErrorCode.DRAF_GET_ERROR);
+                return;
+            }
+            callback.onSuccess(RongIMClient._storageProvider.getItem(conversationType + "_" + targetId));
         }
-
+        /**
+         * [saveTextMessageDraft description]
+         * @param  {ConversationType}        conversationType [会话类型]
+         * @param  {string}                  targetId         [目标Id]
+         * @param  {string}                  value            [草稿值]
+         * @param  {ResultCallback<boolean>} callback         [返回值，参数回调]
+         */
         saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["number", "string", "string", "object"], "saveTextMessageDraft");
+            try {
+                RongIMClient._storageProvider.setItem(conversationType + "_" + targetId, value);
+            } catch (e) {
+                callback.onError(ErrorCode.DRAF_SAVE_ERROR);
+            }
+            callback.onSuccess(true)
         }
 
         // #endregion TextMessage Draft
@@ -480,23 +546,42 @@ module RongIMLib {
         // #endregion Conversation
 
         // #region Notifications
-
+        /**
+         * [getConversationNotificationStatus 获取指定用户和会话类型免提醒。]
+         * @param  {ConversationType}                               conversationType [会话类型]
+         * @param  {string}                                         targetId         [目标Id]
+         * @param  {ResultCallback<ConversationNotificationStatus>} callback         [返回值，函数回调]
+         */
         getConversationNotificationStatus(conversationType: ConversationType, targetId: string, callback: ResultCallback<ConversationNotificationStatus>) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [setConversationNotificationStatus 设置指定用户和会话类型免提醒。]
+         * @param  {ConversationType}                               conversationType [会话类型]
+         * @param  {string}                                         targetId         [目标Id]
+         * @param  {ResultCallback<ConversationNotificationStatus>} callback         [返回值，函数回调]
+         */
         setConversationNotificationStatus(conversationType: ConversationType, targetId: string, notificationStatus: ConversationNotificationStatus, callback: ResultCallback<ConversationNotificationStatus>) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [getNotificationQuietHours 获取免提醒消息时间。]
+         * @param  {GetNotificationQuietHoursCallback} callback [返回值，函数回调]
+         */
         getNotificationQuietHours(callback: GetNotificationQuietHoursCallback) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [removeNotificationQuietHours 移除免提醒消息时间。]
+         * @param  {GetNotificationQuietHoursCallback} callback [返回值，函数回调]
+         */
         removeNotificationQuietHours(callback: OperationCallback) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [setNotificationQuietHours 设置免提醒消息时间。]
+         * @param  {GetNotificationQuietHoursCallback} callback [返回值，函数回调]
+         */
         setNotificationQuietHours(startTime: string, spanMinutes: number, callback: OperationCallback) {
             throw new Error("Not implemented yet");
         }

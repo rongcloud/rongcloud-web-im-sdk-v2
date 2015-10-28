@@ -46,15 +46,15 @@ describe "RongIMClient",->
             onError:(error)->
                 console.log("loginError,errorcode:"+error)
 ###############################sendMessage#################################################
-    setTimeout(->
-        message = RongIMLib.TextMessage.obtain("my name is zhangsan")
-        # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
-        RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
-          onSuccess: (data)->
-                console.log "Send Successfully"
-          onError: (errorcode)->
-                console.log errorcode
-    ,1000)
+    # setTimeout(->
+    #     message = RongIMLib.TextMessage.obtain("my name is zhangsan")
+    #     # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
+    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
+    #       onSuccess: (data)->
+    #             console.log "Send Successfully"
+    #       onError: (errorcode)->
+    #             console.log errorcode
+    # ,1000)
     #
     # setTimeout(->
     #         message = RongIMLib.TextMessage.obtain("my name is saner")
@@ -214,3 +214,27 @@ describe "RongIMClient",->
     #         onError:(error)->
     #             console.log "removeFromBlacklist:errorcode:"+error
     # ,1920)
+##############################saveTextMessageDraft############################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().saveTextMessageDraft RongIMLib.ConversationType.PRIVATE,"lisi","drafTextMessageTest hello!!!",
+    #         onSuccess:()->
+    #             console.log "saveTextMessageDraft Successfully"
+    #         onError:(error)->
+    #             console.log "saveTextMessageDraft:errorcode:"+error
+    # ,1930)
+##############################getTextMessageDraft############################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().getTextMessageDraft RongIMLib.ConversationType.PRIVATE,"lisi",
+    #         onSuccess:(draf)->
+    #             console.log "GetTextMessageDraf:"+draf
+    #         onError:(error)->
+    #             console.log "getTextMessageDraft:errorcode:"+error
+    # ,1940)
+##############################clearTextMessageDraft############################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().clearTextMessageDraft RongIMLib.ConversationType.PRIVATE,"lisi",
+    #         onSuccess:(isClear)->
+    #             console.log "clearTextMessageDraft:"+isClear
+    #         onError:(error)->
+    #             console.log "clearTextMessageDraft:errorcode:"+error
+    # ,1950)

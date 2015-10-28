@@ -7,6 +7,7 @@ module RongIMLib {
         socket: Socket;
         static _ConnectionStatusListener: any;
         static _ReceiveMessageListener: any;
+        connectionStatus: number = -1;
         url: string;
         self: any;
         constructor(address: any, cb: any, self: Client) {
@@ -16,6 +17,7 @@ module RongIMLib {
             this.socket.connect(this.url, cb);
             //注册状态改变观察者
             if (typeof Channel._ConnectionStatusListener == "object" && "onChanged" in Channel._ConnectionStatusListener) {
+                var me = this;
                 this.socket.on("StatusChanged", function(code: any) {
                     //如果参数为DisconnectionStatus，就停止心跳，其他的不停止心跳。每3min连接一次服务器
                     if (code === ConnectionStatus.DISCONNECTED) {
@@ -23,6 +25,7 @@ module RongIMLib {
                         self.clearHeartbeat();
                         return;
                     }
+                    me.connectionStatus = code;
                     Channel._ConnectionStatusListener.onChanged(code)
                 })
             } else {
@@ -371,10 +374,10 @@ module RongIMLib {
                 }
             }
         }
-        reConnect(callabck: any): void {
+        reconnect(callabck: any): void {
             Bridge._client.channel.reconnect(callabck);
         }
-        disConnect() {
+        disconnect() {
             Bridge._client.clearHeartbeat();
             Bridge._client.channel.disconnect()
         }
