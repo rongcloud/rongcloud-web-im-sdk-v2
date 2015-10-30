@@ -306,6 +306,22 @@ module RongIMLib {
          *拉取历史消息
          */
         CONVER_GETLIST_ERROR = 34002,
+        /**
+         * 会话指定异常
+         */
+        CONVER_SETOP_ERROR = 34003,
+        /**
+         * 获取会话未读消息总数失败
+         */
+        CONVER_TOTAL_UNREAD_ERROR = 34004,
+        /**
+         * 获取指定会话类型未读消息数异常
+         */
+        CONVER_TYPE_UNREAD_ERROR = 34005,
+        /**
+         * 获取指定用户ID&会话类型未读消息数异常
+         */
+        CONVER_ID_TYPE_UNREAD_ERROR = 34006,
         //群组异常信息
         /**
          *

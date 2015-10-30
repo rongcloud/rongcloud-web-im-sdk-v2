@@ -40,21 +40,21 @@ describe "RongIMClient",->
             console.log "断开连接"
           else console.log "状态为解析:"+status
 ###############################connect#####################################################
-    RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcE",
+    RongIMLib.RongIMClient.connect "0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==",
             onSuccess:(userId)->
                 console.log("loginSuccess,userId."+userId)
             onError:(error)->
                 console.log("loginError,errorcode:"+error)
 ###############################sendMessage#################################################
-    # setTimeout(->
-    #     message = RongIMLib.TextMessage.obtain("my name is zhangsan")
-    #     # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
-    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
-    #       onSuccess: (data)->
-    #             console.log "Send Successfully"
-    #       onError: (errorcode)->
-    #             console.log errorcode
-    # ,1000)
+    setTimeout(->
+        message = RongIMLib.TextMessage.obtain("my name is zhangsan")
+        # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
+        RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
+          onSuccess: (data)->
+                console.log "Send Successfully"
+          onError: (errorcode)->
+                console.log errorcode
+    ,1000)
     #
     # setTimeout(->
     #         message = RongIMLib.TextMessage.obtain("my name is saner")

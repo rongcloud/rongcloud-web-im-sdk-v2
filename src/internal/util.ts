@@ -44,6 +44,32 @@ module RongIMLib {
         static _TransportType: string = Socket.WEBSOCKET;
     }
     /**
+     * 会话工具类。
+     */
+    export class ConversationMap {
+        conversationList: Array<Conversation>;
+        constructor() {
+            this.conversationList = [];
+        }
+        get(conversavtionType: number, targetId: string): Conversation {
+            for (let i = 0, len = this.conversationList.length; i < len; i++) {
+                if (this.conversationList[i].conversationType == conversavtionType && this.conversationList[i].targetId == targetId) {
+                    return this.conversationList[i];
+                }
+            }
+            return null;
+        }
+        add(conversation: Conversation): void {
+            for (let i = 0, len = this.conversationList.length; i < len; i++) {
+                if (this.conversationList[i].conversationType === conversation.conversationType && i != 0 && this.conversationList[i].targetId === conversation.targetId) {
+                    this.conversationList.unshift(this.conversationList.splice(i, 1)[0]);
+                    break;
+                }
+            }
+            this.conversationList.unshift(conversation);
+        }
+    }
+    /**
      * 工具类
      */
     export class MessageUtil {
@@ -175,55 +201,6 @@ module RongIMLib {
             return message;
         }
     }
-    class UserCookie {
-        getItem(x: any) {
-            var arr = document.cookie.match(new RegExp("(^| )" + x + "=([^;]*)(;|$)"));
-            if (arr != null) {
-                return (arr[2]);
-            }
-            return null;
-        }
-        setItem(x: any, value: any) {
-            var exp = new Date();
-            exp.setTime(exp.getTime() + 15 * 24 * 3600 * 1000);
-            document.cookie = x + "=" + escape(value) + ";path=/;expires=" + exp.toGMTString();
-        }
-        removeItem(x: any) {
-            if (this.getItem(x)) {
-                document.cookie = x + "=;path=/;expires=Thu, 01-Jan-1970 00:00:01 GMT";
-            }
-        }
-        clear() {
-            var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
-            if (keys) {
-                for (var i = keys.length; i--;)
-                    document.cookie = keys[i] + '=0;path=/;expires=' + new Date(0).toUTCString();
-            }
-        }
-    }
-    /**
-     * 本地常用信息存储工具类
-     */
-    // export class CookieHelper {
-    //     static obj: any;
-    //     static old: any;
-    //     static _host: string;
-    //     static createStorage(): any {
-    //         if (window.FORCE_LOCAL_STORAGE === true) {
-    //             this.old = localStorage.setItem;
-    //             localStorage.setItem = function(x: any, value: any) {
-    //                 if (localStorage.length == 15) {
-    //                     localStorage.removeItem(localStorage.key(0));
-    //                 }
-    //                 this.old.call(localStorage, x, value)
-    //             }
-    //             this.obj = localStorage;
-    //         } else {
-    //             this.obj = new UserCookie();
-    //         }
-    //         return this.obj;
-    //     }
-    // }
     export class MessageIdHandler {
         static messageId: number = 0;
         static isXHR: boolean = Transports._TransportType === Socket.XHR_POLLING;

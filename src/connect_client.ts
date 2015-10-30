@@ -470,23 +470,26 @@ module RongIMLib {
             if (message === null) {
                 return;
             }
-            // //创建会话对象 TODO
-            // con = RongIMClient.getInstance().getConversationList().get(message.getConversationType(), message.getTargetId());
-            // if (!con) {
-            //     con = RongIMClient.getInstance().createConversation(message.getConversationType(), message.getTargetId(), "");
-            // }
-            // //根据messageTag判断是否进行消息数累加
-            // if (/ISCOUNTED/.test(message.getMessageTag())) {
-            //     con.getConversationType() != 0 && con.setUnreadMessageCount(con.getUnreadMessageCount() + 1);
-            // }
-            // con.setReceivedTime((new Date).getTime());
-            // con.setReceivedStatus(ReceivedStatus.READ);
-            // con.setSenderUserId(message.getSenderUserId());
-            // con.setObjectName(message.getObjectName());
-            // con.setNotificationStatus(ConversationNotificationStatus.DO_NOT_DISTURB);
-            // con.setLatestMessageId(message.getMessageId());
-            // con.setLatestMessage(message);
-            // con.setTop();
+            //创建会话对象 TODO
+            con = RongIMClient.conversationMap.get(message.getConversationType(), message.getTargetId());
+            if (!con) {
+                con = RongIMClient.getInstance().createConversation(message.getConversationType(), message.getTargetId(), "", true);
+            }
+            //根据messageTag判断是否进行消息数累加
+            if (/ISCOUNTED/.test(message.getMessageTag())) {
+                if (con.conversationType != 0) {
+                    con.unreadMessageCount = con.unreadMessageCount + 1
+                }
+            }
+            con.receivedTime = new Date().getTime();
+            con.receivedStatus = ReceivedStatus.READ;
+            con.setSenderUserId = message.getSenderUserId();
+            con.objectName = message.getObjectName();
+            con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB
+            con.latestMessageId = message.getMessageId();
+            con.latestMessage = message;
+            //置顶
+            RongIMClient.conversationMap.add(con);
             //把消息传递给消息监听器
             this._onReceived(message);
         }
