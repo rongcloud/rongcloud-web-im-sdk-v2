@@ -61,7 +61,8 @@
         "src/util/feature_detector.ts",
         "src/util/feature_patcher.ts",
         "src/util/http_client.ts",
-        "src/util/script_loader.ts"
+        "src/util/script_loader.ts",
+        "typings/tsd.d.ts"
     ],
     "compileOnSave": false,
     "buildOnSave": false,
