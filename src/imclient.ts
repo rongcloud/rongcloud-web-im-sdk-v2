@@ -37,7 +37,7 @@ module RongIMLib {
          * 不能通过此函数获取 RongIMClient 实例。
          * 请使用 RongIMClient.getInstrance() 获取 RongIMClient 实例。
          */
-        constructor() {}
+        constructor() { }
         /**
          * 获取 RongIMClient 实例。
          * 需在执行 init 方法初始化 SDK 后再获取，否则返回 null 值。
@@ -430,7 +430,7 @@ module RongIMLib {
          * @param  {ResultCallback<number>} callback             [返回值，参数回调。]
          * @param  {ConversationType[]}     ...conversationTypes [会话类型。]
          */
-        getConversationUnreadCount(callback: ResultCallback<number>, ...conversationTypes: ConversationType[]) {
+        getConversationUnreadCount(conversationTypes: ConversationType[], callback: ResultCallback<number>) {
             var count: number = 0, me = this;
             try {
                 conversationTypes.forEach(converType=> {
@@ -451,7 +451,8 @@ module RongIMLib {
          * @param  {string}           targetId         [用户Id]
          */
         getUnreadCount(conversationType: ConversationType, targetId: string): number {
-            return RongIMClient.conversationMap.get(conversationType, targetId).unreadMessageCount;
+            var conver = RongIMClient.conversationMap.get(conversationType, targetId);
+            return conver ? conver.unreadMessageCount : 0;
         }
 
         setMessageExtra(messageId: number, value: string, callback: ResultCallback<boolean>) {
@@ -542,34 +543,64 @@ module RongIMLib {
             CheckParam.getInstance().check(["number", "string", "object"], "getConversation");
             callback.onSuccess(RongIMClient.conversationMap.get(conversationType, targetId));
         }
-
+        /**
+         * [pottingConversation 组装会话列表]
+         * @param {any} tempConver [临时会话]
+         */
+        private pottingConversation(tempConver: any): void {
+            var conver = RongIMClient.conversationMap.get(S2C[tempConver.type], tempConver.userId), self = this, isUseReplace: boolean = false;
+            if (!conver) {
+                conver = new Conversation();
+            } else {
+                isUseReplace = true;
+            }
+            conver.conversationType = S2C[tempConver.type];
+            conver.targetId = tempConver.userId;
+            conver.latestMessage = MessageUtil.messageParser(tempConver.msg);
+            conver.latestMessageId = conver.latestMessage.getMessageId();
+            conver.objectName = conver.latestMessage.getObjectName();
+            conver.receivedStatus = conver.latestMessage.getReceivedStatus();
+            conver.receivedTime = conver.latestMessage.getReceivedTime();
+            conver.sentStatus = conver.latestMessage.getReceivedStatus();
+            conver.sentTime = conver.latestMessage.getSentTime();
+            conver.unreadMessageCount = 0;
+            if (conver.conversationType == ConversationType.PRIVATE) {
+                self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{
+                    onSuccess: function(info: UserInfo) {
+                        conver.conversationTitle = info.getUserName();
+                        conver.senderUserName = info.getUserName();
+                        conver.senderUserId = info.getUserId();
+                        conver.senderPortraitUri = info.getPortaitUri();
+                    },
+                    onError: function(error: ErrorCode) {
+                        console.log("getUserInfo error:" + error + ",postion->getConversationList.getUserInfo")
+                    }
+                });
+            } else if (conver.conversationType == ConversationType.DISCUSSION) {
+                self.getDiscussion(tempConver.userId, {
+                    onSuccess: function(info: Discussion) {
+                        conver.conversationTitle = info.getName();
+                    },
+                    onError: function(error: ErrorCode) {
+                        console.log("getDiscussion error:" + error + ",postion->getConversationList.getDiscussion")
+                    }
+                });
+            }
+            if (isUseReplace) {
+                RongIMClient.conversationMap.replace(conver);
+            } else {
+                RongIMClient.conversationMap.add(conver);
+            }
+        }
         getConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
             CheckParam.getInstance().check(["object"], "getConversationList");
             var modules = new Modules.RelationsInput(), self = this;
             modules.setType(1);
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(list: any) {
-                    //TODO 等待修改server接口，直接同步推相关信息
-                    //userId -> sendUserId
-                    //type conversationType
                     if (list.info) {
                         for (let i = 0, len = list.info.length; i < len; i++) {
-                            var tempConver = list.info[i], conver = new Conversation();
-                            conver.conversationType = tempConver.type;
-                            // if (tempConver.type == ConversationType.PRIVATE) {
-                            //     self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{
-                            //         onSuccess: function(info: UserInfo) {
-                            //             conver.conversationTitle = info.getUserName();
-                            //             conver.senderUserName = info.getUserName();
-                            //             conver.senderUserId = info.getUserId();
-                            //             conver.targetId = Bridge._client.userId;
-                            //         },
-                            //         onError: function(error: any) {
-                            //             console.log("getUserInfo error:" + error + ",postion->getConversationList.getUserInfo")
-                            //         }
-                            //     });
-                            // }
-                            RongIMClient.conversationMap.conversationList.push(conver);
+                            setTimeout(self.pottingConversation(list.info[i]), 200);
                         }
                     }
                     callback.onSuccess(RongIMClient.conversationMap.conversationList);
@@ -596,26 +627,22 @@ module RongIMLib {
             conver.targetId = targetId;
             conver.conversationType = conversationType;
             conver.conversationTitle = converTitle;
+            conver.unreadMessageCount = 0;
             RongIMClient.conversationMap.add(conver);
-            if (/^[1234]$/.test(String(conversationType)) && islocal) {
-                //如果会话类型为1、2、3、4并且不仅是操作本地的会话列表，就把该会话同步到服务器
-                var mod = new Modules.RelationsInput();
-                mod.setType(C2S[conversationType]);
-                RongIMClient.bridge.queryMsg(25, MessageUtil.ArrayForm(mod.toArrayBuffer()), targetId, {
-                    onSuccess: function() { },
-                    onError: function() { }
-                });
-            }
             return conver;
         }
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["number", "string", "object"], "removeConversation");
-            var d = MessageUtil.remove(RongIMClient.conversationMap.conversationList, function(f: any) {
-                return f.getTargetId() == targetId && f.getConversationType() == conversationType
-            });
+            var d: Conversation = null;
+            for (let i = 0, len = RongIMClient.conversationMap.conversationList.length; i < len; i++) {
+                var f: Conversation = RongIMClient.conversationMap.conversationList[i];
+                if (f.targetId == targetId && f.conversationType == conversationType) {
+                    d = f;
+                }
+            }
             if (!d) return;
             var mod = new Modules.RelationInfo();
-            mod.setType(C2S[conversationType.valueOf()]);
+            mod.setType(C2S[conversationType]);
             mod.setUserId(targetId);
             RongIMClient.bridge.queryMsg(27, MessageUtil.ArrayForm(mod.toArrayBuffer()), targetId, {
                 onSuccess: function() {

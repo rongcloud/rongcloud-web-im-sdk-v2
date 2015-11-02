@@ -219,8 +219,6 @@ module RongIMLib {
                         _callback.onError(ConnectionState.UNACCEPTABLE_PROTOCOL_VERSION);
                         return;
                     }
-                    //判断是否是flashsocket  是的话就加载代理文件
-                    'loadFlashPolicyFile' in WebSocket && WebSocket.loadFlashPolicyFile();
                 }
                 //实例消息处理类
                 this.handler = new MessageHandler(this);
@@ -489,7 +487,7 @@ module RongIMLib {
             con.latestMessageId = message.getMessageId();
             con.latestMessage = message;
             //置顶
-            RongIMClient.conversationMap.add(con);
+            con.setTop();
             //把消息传递给消息监听器
             this._onReceived(message);
         }

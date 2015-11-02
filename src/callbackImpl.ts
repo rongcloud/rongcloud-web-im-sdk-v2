@@ -143,9 +143,9 @@ module RongIMLib {
                 var naviStr = RongIMClient._storageProvider.getItem(RongIMClient._storageProvider.getItemKey("navi"));
                 var naviKey = RongIMClient._storageProvider.getItemKey("navi");
 
-                var arr = unescape(naviStr).split(",");
+                var arr = encodeURIComponent(naviStr).split(",");
                 if (!arr[1]) {
-                    naviStr = unescape(naviStr) + userId;
+                    naviStr = encodeURIComponent(naviStr) + userId;
                     RongIMClient._storageProvider.setItem(naviKey, naviStr);
                 }
 

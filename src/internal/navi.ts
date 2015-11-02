@@ -26,7 +26,7 @@ module RongIMLib {
             var me = this;
             this.getServerEndpoint(token, appId, function() {
                 client.connect(callback);
-            }, callback.OnError, true)
+            }, callback.onError, true)
             return client;
         }
         getServerEndpoint(_token: string, _appId: string, _onsuccess?: any, _onerror?: any, unignore?: any) {
@@ -37,7 +37,7 @@ module RongIMLib {
                     _old = RongIMClient._storageProvider.getItem(RongIMClient._storageProvider.getItemKey("navi")),
                     _new = RongIMClient._storageProvider.getItem("navi" + naviStr);
                 if (_old == _new && _new !== null && RongIMClient._storageProvider.getItem("rongSDK") == Transports._TransportType) {
-                    var obj = unescape(_old).split(",");
+                    var obj = encodeURIComponent(_old).split(",");
                     setTimeout(function() {
                         RongIMClient._storageProvider._host = Navigate.Endpoint.host = obj[0];
                         Navigate.Endpoint.userId = obj[1];

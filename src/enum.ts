@@ -628,7 +628,9 @@ module RongIMLib {
         IDENTIFIER_REJECTED = 2,
 
         SERVER_UNAVAILABLE = 3,
-
+        /**
+         * token无效
+         */
         TOKEN_INCORRECT = 4,
 
         NOT_AUTHORIZED = 5,
@@ -683,4 +685,5 @@ module RongIMLib {
         //websocke方式下标
         WS = 1
     }
+
 }

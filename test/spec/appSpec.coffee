@@ -39,38 +39,77 @@ describe "RongIMClient",->
           when RongIMLib.ConnectionStatus.DISCONNECTED
             console.log "断开连接"
           else console.log "状态为解析:"+status
-###############################connect#####################################################
-    RongIMLib.RongIMClient.connect "0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==",
+###############################connect-correct token#####################################################
+    RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcE",
             onSuccess:(userId)->
                 console.log("loginSuccess,userId."+userId)
             onError:(error)->
-                console.log("loginError,errorcode:"+error)
-###############################sendMessage#################################################
-    setTimeout(->
-        message = RongIMLib.TextMessage.obtain("my name is zhangsan")
-        # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
-        RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
-          onSuccess: (data)->
-                console.log "Send Successfully"
-          onError: (errorcode)->
-                console.log errorcode
-    ,1000)
-    #
+               switch error
+                  when RongIMLib.ConnectionState.SERVER_UNAVAILABLE
+                    console.log "SERVER_UNAVAILABLE"
+                  when RongIMLib.ConnectionState.TOKEN_INCORRECT
+                    console.log "token 无效"
+                  else
+                    console.log type
+###############################connect-error token#######################################
+    # RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcEa",
+    #         onSuccess:(userId)->
+    #             console.log("loginSuccess,userId."+userId)
+    #         onError:(error)->
+    #             switch error
+    #               when RongIMLib.ConnectionState.SERVER_UNAVAILABLE
+    #                 console.log "SERVER_UNAVAILABLE"
+    #               when RongIMLib.ConnectionState.TOKEN_INCORRECT
+    #                 console.log "token 无效"
+    #               else
+    #                 console.log type
+###############################sendMessage- correct parameter##############################
+    # setTimeout(->
+    #     message = RongIMLib.TextMessage.obtain("my name is zhangsan")
+    #     # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
+    #     RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "wangwu", message,null,
+    #       onSuccess: (data)->
+    #             console.log "Send Successfully"
+    #       onError: (errorcode)->
+    #             console.log errorcode
+    # ,1000)
+###############################sendMessage- error parameter################################
     # setTimeout(->
     #         message = RongIMLib.TextMessage.obtain("my name is saner")
     #         RongIMLib.RongIMClient.getInstance().sendMessage 4, "lisi", message,null,
     #           onSuccess: ()->
     #                 console.log "Send Successfully"
     #           onError: (errorcode)->
-    #                 console.log errorcode
-    # ,3000)
-##############################getConversationList##########################################
+    #                 console.log "Send failure"
+    # ,1000)
+##############################createConversation##########################################
     # setTimeout(->
-    #     RongIMLib.RongIMClient.getInstance().getConversationList
-    #         onSuccess:(list)->
-    #             console.log list
+    #     conversation = RongIMLib.RongIMClient.getInstance().createConversation RongIMLib.ConversationType.PRIVATE,"zhaoliu","小标题",true;
+    #     console.log(conversation)
+    # ,1000)
+##############################getConversationList##########################################
+    setTimeout(->
+        RongIMLib.RongIMClient.getInstance().getConversationList
+            onSuccess:(list)->
+                console.log list
+            onError:(error)->
+                console.log "GetConversationList,errorcode:"+error
+    ,300)
+##############################setConversationToTop##########################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().setConversationToTop RongIMLib.ConversationType.PRIVATE,"zhaoliu",
+    #         onSuccess:(isTop)->
+    #             console.log "setTop:"+isTop
     #         onError:(error)->
-    #             console.log "GetConversationList,errorcode:"+error
+    #             console.log "SetConversationToTop,errorcode:"+error
+    # ,1000)
+##############################removeConversation##########################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().removeConversation RongIMLib.ConversationType.PRIVATE,"zhaoliu",
+    #         onSuccess:(isTop)->
+    #             console.log "removeConversation:"+isTop
+    #         onError:(error)->
+    #             console.log "removeConversation,errorcode:"+error
     # ,1000)
 ##############################getUserInfo##################################################
     # setTimeout(->
@@ -238,3 +277,24 @@ describe "RongIMClient",->
     #         onError:(error)->
     #             console.log "clearTextMessageDraft:errorcode:"+error
     # ,1950)
+##############################getTotalUnreadCount############################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().getTotalUnreadCount
+    #         onSuccess:(count)->
+    #             console.log "TotalUnreadCount:"+count
+    #         onError:(error)->
+    #             console.log "getTotalUnreadCount:errorcode:"+error
+    # ,1950)
+##############################getConversationUnreadCount############################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().getConversationUnreadCount [RongIMLib.ConversationType.PRIVATE],
+    #         onSuccess:(count)->
+    #             console.log "getConversationUnreadCount:"+count
+    #         onError:(error)->
+    #             console.log "getConversationUnreadCount:errorcode:"+error
+    # ,1000)
+##############################getUnreadCount############################################
+    # setTimeout(->
+    #     count = RongIMLib.RongIMClient.getInstance().getUnreadCount RongIMLib.ConversationType.PRIVATE,"lisi"
+    #     console.log count
+    # ,1200)

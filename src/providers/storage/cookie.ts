@@ -4,7 +4,7 @@ module RongIMLib {
         setItem(composedKey: string, object: any): void {
             var exp = new Date();
             exp.setTime(exp.getTime() + 15 * 24 * 3600 * 1000);
-            document.cookie = composedKey + "=" + escape(object) + ";path=/;expires=" + exp.toGMTString();
+            document.cookie = composedKey + "=" + decodeURIComponent(object) + ";path=/;expires=" + exp.toGMTString();
         }
 
         getItem(composedKey: string): string {

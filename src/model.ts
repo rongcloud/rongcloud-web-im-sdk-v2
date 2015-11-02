@@ -16,8 +16,12 @@ module RongIMLib {
             public sentStatus?: SentStatus,
             public sentTime?: number,
             public targetId?: string,
-            public unreadMessageCount?: number
+            public unreadMessageCount?: number,
+            public senderPortraitUri?: string
         ) { }
+        setTop(): void {
+            RongIMClient.conversationMap.add(this);
+        }
     }
 
     export class Discussion {

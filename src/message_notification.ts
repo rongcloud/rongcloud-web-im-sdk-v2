@@ -24,7 +24,7 @@ module RongIMLib {
             return this.message;
         }
         getMessageTag(): any {
-            return [MessageTag.ISPERSISTED, MessageTag.ISCOUNTED];
+            return [MessageTag[1], MessageTag[2]];
         }
         getContent(): any {
             return this.message.content;

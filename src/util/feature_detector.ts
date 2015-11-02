@@ -3,7 +3,8 @@ module RongIMLib {
     new FeatureDectector();
   } else if (document.addEventListener) {
     document.addEventListener("DOMContentLoaded", function() {
-      document.removeEventListener("DOMContentLoaded", arguments.callee, false);
+      //TODO 替换callee
+      document.removeEventListener("DOMContentLoaded", <any>arguments.callee, false);
       new FeatureDectector();
     }, false)
   } else if (document.attachEvent) {
@@ -25,20 +26,6 @@ module RongIMLib {
         //http://res.websdk.rongcloud.cn/protobuf-0.2.min.js
         this.script.src = "http://localhost:9876/base/src/internal/protobuf.js";
 
-      } else if (!/opera/i.test(navigator.userAgent) && !this.global.WEB_XHR_POLLING && (function() {
-        if ('navigator' in this.global && 'plugins' in navigator && navigator.plugins['Shockwave Flash']) {
-          return !!navigator.plugins['Shockwave Flash'].description;
-        }
-        if ('ActiveXObject' in this.global) {
-          try {
-            return !!new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
-          } catch (e) {
-          }
-        }
-        return false;
-      })()) {
-        //加载flash widget帮助库
-        this.script.src = "http://res.websdk.rongcloud.cn/swfobject-0.2.min.js";
       } else {
         //如果上述条件都不支持则执行comet逻辑
         Transports._TransportType = "xhr-polling";

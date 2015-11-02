@@ -35,6 +35,11 @@ var mapping: any = {
         2: 2,
         3: 3,
         1: 5
+    }, S2C: { [s: number]: any } = {
+        1: 4,
+        2: 2,
+        3: 3,
+        5: 1
     }
 module RongIMLib {
     /**
@@ -60,13 +65,30 @@ module RongIMLib {
             return null;
         }
         add(conversation: Conversation): void {
+            var isAdd: boolean = true;
             for (let i = 0, len = this.conversationList.length; i < len; i++) {
-                if (this.conversationList[i].conversationType === conversation.conversationType && i != 0 && this.conversationList[i].targetId === conversation.targetId) {
+                if (this.conversationList[i].conversationType === conversation.conversationType && this.conversationList[i].targetId === conversation.targetId) {
                     this.conversationList.unshift(this.conversationList.splice(i, 1)[0]);
+                    isAdd = false;
                     break;
                 }
             }
-            this.conversationList.unshift(conversation);
+            if (isAdd) {
+                this.conversationList.unshift(conversation);
+            }
+        }
+        /**
+         * [replace 替换会话]
+         * 会话数组存在的情况下调用add方法会是当前会话被替换且返回到第一个位置，导致用户本地一些设置失效，所以提供replace方法
+         * @return {[type]} [description]
+         */
+        replace(conversation: Conversation) {
+            for (let i = 0, len = this.conversationList.length; i < len; i++) {
+                if (this.conversationList[i].conversationType === conversation.conversationType && this.conversationList[i].targetId === conversation.targetId) {
+                    this.conversationList.splice(i,1,conversation);
+                    break;
+                }
+            }
         }
     }
     /**
