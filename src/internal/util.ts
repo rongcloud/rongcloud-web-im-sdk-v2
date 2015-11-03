@@ -85,7 +85,15 @@ module RongIMLib {
         replace(conversation: Conversation) {
             for (let i = 0, len = this.conversationList.length; i < len; i++) {
                 if (this.conversationList[i].conversationType === conversation.conversationType && this.conversationList[i].targetId === conversation.targetId) {
-                    this.conversationList.splice(i,1,conversation);
+                    this.conversationList.splice(i, 1, conversation);
+                    break;
+                }
+            }
+        }
+        remove(conversation: Conversation) {
+            for (let i = 0, len = this.conversationList.length; i < len; i++) {
+                if (this.conversationList[i].conversationType === conversation.conversationType && this.conversationList[i].targetId === conversation.targetId) {
+                    this.conversationList.splice(i, 1);
                     break;
                 }
             }

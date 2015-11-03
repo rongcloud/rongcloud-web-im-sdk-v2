@@ -123,7 +123,10 @@ module RongIMLib {
          * 不在聊天室。
          */
         NOT_IN_CHATROOM = 23406,
-
+        /**
+         *获取用户失败
+         */
+        GET_USERINFO_ERROR = 23407,
         /**
          * 在黑名单中。
          */

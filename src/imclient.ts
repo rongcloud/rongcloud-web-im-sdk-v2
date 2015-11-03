@@ -641,11 +641,12 @@ module RongIMLib {
                 }
             }
             if (!d) return;
-            var mod = new Modules.RelationInfo();
+            var mod = new Modules.RelationsInput();
             mod.setType(C2S[conversationType]);
-            mod.setUserId(targetId);
             RongIMClient.bridge.queryMsg(27, MessageUtil.ArrayForm(mod.toArrayBuffer()), targetId, {
                 onSuccess: function() {
+                    //TODO 删除本地存储
+                    RongIMClient.conversationMap.remove(d);
                     callback.onSuccess(true);
                 }, onError: function() {
                     callback.onError(ErrorCode.CONVER_REMOVE_ERROR);

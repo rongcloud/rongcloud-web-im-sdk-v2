@@ -124,7 +124,7 @@ module RongIMLib {
         }
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(0);
+            c.setSessionId(3);
             c.setClassname(this.getObjectName());
             c.setContent(JSON.stringify(this.getDetail()));
             var val = c.toArrayBuffer();
