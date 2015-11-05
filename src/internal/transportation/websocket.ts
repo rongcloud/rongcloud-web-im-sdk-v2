@@ -61,9 +61,8 @@ module RongIMLib {
             if (MessageUtil.isArray(data)) {
                 this._socket.onMessage(new MessageInputStream(data).readMessage());
             } else {
-                this._socket.onMessage(new MessageInputStream(MessageUtil.ArrayForm(data)).readMessage())
+                this._socket.onMessage(new MessageInputStream(MessageUtil.ArrayFormInput(data)).readMessage())
             }
-
             return "";
         }
         /**

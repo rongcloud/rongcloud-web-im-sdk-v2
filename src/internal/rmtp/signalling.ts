@@ -120,8 +120,7 @@ module RongIMLib {
             payloadSize += this.binaryHelper.toMQttString(this.token).length;
             return payloadSize + this.CONNECT_HEADER_SIZE;
         }
-        readMessage(In: any) {
-            var stream = this.binaryHelper.convertStream(In);
+        readMessage(stream: any) {
             this.protocolId = stream.readUTF();
             this.protocolVersion = stream.readByte();
             var cFlags = stream.readByte();
@@ -210,17 +209,16 @@ module RongIMLib {
             }
             return length;
         }
-        readMessage(In: any, msglength: number) {
-            var stream = this.binaryHelper.convertStream(In);
-            stream.read();
-            var result = +stream.read();
+        readMessage(_in: any, msglength: number) {
+            _in.read();
+            var result = +_in.read();
             if (result >= 0 && result <= 9) {
                 this.setStatus(result);
             } else {
                 throw new Error("Unsupported CONNACK code:" + result)
             }
             if (msglength > this.MESSAGE_LENGTH) {
-                this.setUserId(stream.readUTF())
+                this.setUserId(_in.readUTF())
             }
         }
         writeMessage(out: any) {
@@ -278,8 +276,7 @@ module RongIMLib {
         messageLength(): number {
             return this.MESSAGE_LENGTH;
         }
-        readMessage(In: any) {
-            var _in = this.binaryHelper.convertStream(In);
+        readMessage(_in: any) {
             _in.read();
             var result = +_in.read();
             if (result >= 0 && result <= 5) {
@@ -345,9 +342,8 @@ module RongIMLib {
             out.write(lsb);
             return out
         }
-        readMessage(In: any, msgLength?: number) {
-            var _in = this.binaryHelper.convertStream(In),
-                msgId = _in.read() * 256 + _in.read();
+        readMessage(_in: any, msgLength?: number) {
+            var msgId = _in.read() * 256 + _in.read();
             this.setMessageId(parseInt(msgId, 10));
         }
         setMessageId(_messageId: number) {
@@ -380,8 +376,7 @@ module RongIMLib {
             var out = this.binaryHelper.convertStream(Out);
             RetryableMessage.prototype.writeMessage.call(this, out)
         }
-        readMessage(In: any, msgLength: number) {
-            var _in = this.binaryHelper.convertStream(In);
+        readMessage(_in: any, msgLength: number) {
             RetryableMessage.prototype.readMessage.call(this, _in);
             this.date = _in.readInt();
             status = _in.read() * 256 + _in.read()
@@ -428,8 +423,8 @@ module RongIMLib {
             RetryableMessage.prototype.writeMessage.apply(this, arguments);
             out.write(this.data)
         };
-        readMessage(In: any, msgLength: number) {
-            var pos = 6, _in = this.binaryHelper.convertStream(In);
+        readMessage(_in: any, msgLength: number) {
+            var pos = 6;
             this.date = _in.readInt();
             this.topic = _in.readUTF();
             pos += this.binaryHelper.toMQttString(this.topic).length;
@@ -437,7 +432,7 @@ module RongIMLib {
             pos += this.binaryHelper.toMQttString(this.targetId).length;
             RetryableMessage.prototype.readMessage.apply(this, arguments);
             this.data = new Array(msgLength - pos);
-            _in.read(this.data)
+            this.data = _in.read(this.data)
         };
         setTopic(x: any) {
             this.topic = x;
@@ -496,8 +491,8 @@ module RongIMLib {
             RetryableMessage.prototype.writeMessage.call(this, out);
             out.write(this.data)
         }
-        readMessage(In: any, msgLength: number) {
-            var pos = 0, _in = this.binaryHelper.convertStream(In);
+        readMessage(_in: any, msgLength: number) {
+            var pos = 0;
             this.topic = _in.readUTF();
             this.targetId = _in.readUTF();
             pos += this.binaryHelper.toMQttString(this.topic).length;
@@ -551,13 +546,12 @@ module RongIMLib {
             super(header)
         }
         readMessage(In: any, msgLength: number) {
-            var _in = this.binaryHelper.convertStream(In);
-            RetryableMessage.prototype.readMessage.call(this, _in);
-            this.date = _in.readInt();
-            this.setStatus(_in.read() * 256 + _in.read());
+            RetryableMessage.prototype.readMessage.call(this, In);
+            this.date = In.readInt();
+            this.setStatus(In.read() * 256 + In.read());
             if (msgLength > 0) {
                 this.data = new Array(msgLength - 8);
-                _in.read(this.data)
+                this.data = In.read(this.data)
             }
         }
         getData(): any {

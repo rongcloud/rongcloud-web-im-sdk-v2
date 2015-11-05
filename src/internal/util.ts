@@ -132,6 +132,13 @@ module RongIMLib {
             }
             return typearray;
         }
+        static ArrayFormInput(typearray: any): Uint8Array {
+            if (Object.prototype.toString.call(typearray) == "[object ArrayBuffer]") {
+                var arr = new Uint8Array(typearray);
+                return arr;
+            }
+            return typearray;
+        }
         static indexOf(arr?: any, item?: any, from?: any): number {
             for (var l = arr.length, i = (from < 0) ? Math.max(0, +from) : from || 0; i < l; i++) {
                 if (arr[i] == item) {

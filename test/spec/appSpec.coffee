@@ -20,10 +20,17 @@
 #所有功能均已测试通过，若重新测试，删除注释重新运行karma即可(讨论组Id可能需要修改)
 describe "RongIMClient",->
     it "Connect&SendMessage",->
+###############################getInstance##############################################
+    #没有执行init调用getInstance()
+    # RongIMLib.RongIMClient.getInstance();
     # window["WEB_XHR_POLLING"] = true;
     # RongIMLib.RongIMClient.schemeType = RongIMLib.SchemeType.SSL
+###############################inti#####################################################
+    #correct appkey
     RongIMLib.RongIMClient.init "8luwapkvucoil"
-###############################registerMessageType###########################################
+    #error appkey
+    # RongIMLib.RongIMClient.init "testAppkey"
+###############################registerMessageType######################################
     # setTimeout(->
     #     RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',['Name','Age','Address']
     # ,10);
@@ -39,30 +46,31 @@ describe "RongIMClient",->
           when RongIMLib.ConnectionStatus.DISCONNECTED
             console.log "断开连接"
           else console.log "状态为解析:"+status
-###############################connect-correct token#####################################################
-    RongIMLib.RongIMClient.connect "hsYEW1+K1JHASMHGUrJJJLrkPG6U/xPk3zvPIWf9le1hEGTTL55/U3+F/iaeDmXmOvEHh5CgU1f6tiN2qQZgBQ==",
-            onSuccess:(userId)->
-                console.log("loginSuccess,userId."+userId)
-            onError:(error)->
-               switch error
-                  when RongIMLib.ConnectionState.SERVER_UNAVAILABLE
-                    console.log "SERVER_UNAVAILABLE"
-                  when RongIMLib.ConnectionState.TOKEN_INCORRECT
-                    console.log "token 无效"
-                  else
-                    console.log type
-###############################connect-error token#######################################
-    # RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcEa",
-    #         onSuccess:(userId)->
-    #             console.log("loginSuccess,userId."+userId)
-    #         onError:(error)->
-    #             switch error
-    #               when RongIMLib.ConnectionState.SERVER_UNAVAILABLE
-    #                 console.log "SERVER_UNAVAILABLE"
-    #               when RongIMLib.ConnectionState.TOKEN_INCORRECT
-    #                 console.log "token 无效"
-    #               else
-    #                 console.log type
+###############################connect#################################################
+        #correct token
+    RongIMLib.RongIMClient.connect "gZJPeSu/8FmfBTKw/dWGpMSkAMimzaj6nB20cRPaYWRyLGGbEPHrt1VKGG3VLZ+uNXcegD4ILRafVHKjO9aQ+w==",
+        onSuccess:(userId)->
+            console.log("loginSuccess,userId."+userId)
+        onError:(error)->
+           switch error
+              when RongIMLib.ConnectionState.SERVER_UNAVAILABLE
+                console.log "SERVER_UNAVAILABLE"
+              when RongIMLib.ConnectionState.TOKEN_INCORRECT
+                console.log "token 无效"
+              else
+                console.log type
+        # error token
+        # RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcEa",
+        #     onSuccess:(userId)->
+        #         console.log("loginSuccess,userId."+userId)
+        #     onError:(error)->
+        #         switch error
+        #           when RongIMLib.ConnectionState.SERVER_UNAVAILABLE
+        #             console.log "SERVER_UNAVAILABLE"
+        #           when RongIMLib.ConnectionState.TOKEN_INCORRECT
+        #             console.log "token 无效"
+        #           else
+        #             console.log type
 ###############################sendMessage- correct parameter##############################
     # setTimeout(->
     #     message = RongIMLib.TextMessage.obtain("测试一下，发给大海飞")
@@ -129,14 +137,22 @@ describe "RongIMClient",->
     #                 when 20404
     #                     console.log "用户不存在"
     # ,500)
-##############################getHistoryMessages############################################
+##############################getHistoryMessages-correct size############################################
     # setTimeout(->
-    #     RongIMLib.RongIMClient.getInstance().getHistoryMessages ,,"lisi",null,5,
+    #     RongIMLib.RongIMClient.getInstance().getHistoryMessages 4,"1005",null,20,
     #         onSuccess:(list,hasMsg)->
     #             console.log(list)
     #         onError:(error)->
     #             console.log "GetHistoryMessages,errorcode:"+error
     # ,1200)
+##############################getHistoryMessages-error size############################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().getHistoryMessages 4,"1005",null,21,
+    #         onSuccess:(list,hasMsg)->
+    #             console.log(list)
+    #         onError:(error)->
+    #             console.log "GetHistoryMessages,errorcode:"+error
+    # ,1300)
 ##############################hasUnreadMessages############################################
     # RongIMLib.RongIMClient.getInstance().hasUnreadMessages "cpj2xarlj5cdn","0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==",
     #     onSuccess:(hasMsg)->
@@ -295,7 +311,7 @@ describe "RongIMClient",->
     #         onError:(error)->
     #             console.log "getTotalUnreadCount:errorcode:"+error
     # ,1950)
-##############################getConversationUnreadCount############################################
+##############################getConversationUnreadCount#####################################
     # setTimeout(->
     #     RongIMLib.RongIMClient.getInstance().getConversationUnreadCount [RongIMLib.ConversationType.PRIVATE],
     #         onSuccess:(count)->
@@ -303,7 +319,7 @@ describe "RongIMClient",->
     #         onError:(error)->
     #             console.log "getConversationUnreadCount:errorcode:"+error
     # ,1000)
-##############################getUnreadCount############################################
+##############################getUnreadCount#################################################
     # setTimeout(->
     #     count = RongIMLib.RongIMClient.getInstance().getUnreadCount RongIMLib.ConversationType.PRIVATE,"lisi"
     #     console.log count

@@ -98,7 +98,7 @@ module RongIMLib {
                 "this.message = c;" +
                 "this.setMessageType(messageType);" +
                 "this.setObjectName(objectName);" +
-                "for (var i = 0; i < fieldName.length; i++) {" +
+                "for (var i = 0,len=fieldName.length; i < len; i++) {" +
                 "var item = fieldName[i];" +
                 "this['set' + item] = (function(na) {" +
                 "return function(a) {" +
@@ -370,7 +370,7 @@ module RongIMLib {
                 onSuccess: function(data: any) {
                     var list = data.list.reverse();
                     self.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
-                    for (var i = 0; i < list.length; i++) {
+                    for (var i = 0, len = list.length; i < len; i++) {
                         list[i] = MessageUtil.messageParser(list[i]);
                     }
                     callback.onSuccess(list, !!data.hasMsg);
@@ -922,7 +922,7 @@ module RongIMLib {
                             var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
                             RongIMClient._storageProvider.setItem(Bridge._client.userId + 'CST', sync);
                             var list = collection.list;
-                            for (var i = 0; i < list.length; i++) {
+                            for (var i = 0,len = list.length; i < len; i++) {
                                 Bridge._client.handler.onReceived(list[i])
                             }
                         },

@@ -137,16 +137,6 @@ module RongIMLib {
      * 二进制帮助对象
      */
     export class BinaryHelper {
-        init(array: any): any {
-            for (let i = 0, len = array.length; i < len; i++) {
-                array[i] *= 1;
-                if (array[i] < 0) {
-                    array[i] += 256;
-                }
-            }
-            return array;
-        }
-
         writeUTF(str: string, isGetBytes?: any): any {
             var back: any = [], byteSize = 0;
             for (let i = 0, len = str.length; i < len; i++) {
@@ -183,8 +173,9 @@ module RongIMLib {
             if (Object.prototype.toString.call(arr) == "[object String]") {
                 return arr;
             }
-            var UTF = "", _arr = this.init(arr)
+            var UTF = "", _arr = arr;
             for (let i = 0, len = _arr.length; i < len; i++) {
+                if(_arr[i]<0)_arr[i]+=256;
                 var one = _arr[i].toString(2), v = one.match(/^1+?(?=0)/);
                 if (v && one.length == 8) {
                     var bytesLength = v[0].length,
@@ -205,11 +196,11 @@ module RongIMLib {
          * @param  {any}    x [参数]
          * @return {[RongIMStream]}   [RongIMStream]
          */
-        convertStream(x: any): RongIMLib.RongIMStream {
+        convertStream(x: any): RongIMStream {
             if (x instanceof RongIMStream) {
                 return x;
             } else {
-                return new RongIMLib.RongIMStream(x)
+                return new RongIMStream(x)
             }
         }
         toMQttString(str: string): any {
@@ -219,36 +210,40 @@ module RongIMLib {
     export class RongIMStream {
         pool: any;
         //当前流执行的起始位置
-        position = 0;
+        position: number = 0;
         //当前流写入的多少字节
-        writen = 0;
+        writen: number = 0;
+
+        poolLen: number = 0;
+
+        binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(arr: any) {
-            var binaryHelper = new RongIMLib.BinaryHelper();
-            this.pool = binaryHelper.init(arr);
+            this.pool = arr;
+            this.poolLen = arr.length;
         }
         check(): boolean {
             return this.position >= this.pool.length;
         }
-        baseRead(m: any, i: number, a: Array<any>) {
-            var t = a ? a : [];
-            for (var start = 0; start < i; start++) {
-                t[start] = this.pool[m.position++]
-            }
-            return t
-        }
-        readInt(): any {
+        readInt(): number {
             if (this.check()) {
-                return -1
+                return -1;
             }
             var end = "";
             for (var i = 0; i < 4; i++) {
-                end += this.pool[this.position++].toString(16)
+                end += this.pool[this.position++].toString(16);
             }
             return parseInt(end, 16);
         }
+        readUTF(): any {
+            if (this.check()) {
+                return -1;
+            }
+            var big = (this.readByte() << 8) | this.readByte();
+            return this.binaryHelper.readUTF(this.pool.subarray(this.position, this.position += big));
+        }
         readByte(): any {
             if (this.check()) {
-                return -1
+                return -1;
             }
             var val = this.pool[this.position++];
             if (val > 255) {
@@ -257,20 +252,13 @@ module RongIMLib {
             return val;
         }
         read(bytesArray?: any): any {
-            if (this.check()) {
-                return -1;
-            }
             if (bytesArray) {
-                this.baseRead(this, bytesArray.length, bytesArray)
+                return this.pool.subarray(this.position, this.poolLen);
             } else {
                 return this.readByte();
             }
         }
-        readUTF(): any {
-            var big = (this.readByte() << 8) | this.readByte();
-            return new BinaryHelper().readUTF(this.pool.slice(this.position, this.position += big));
-        }
-        write(_byte: any): any {
+        write(_byte: any) {
             var b = _byte;
             if (Object.prototype.toString.call(b).toLowerCase() == "[object array]") {
                 [].push.apply(this.pool, b)
@@ -280,27 +268,27 @@ module RongIMLib {
                         b &= 255;
                     }
                     this.pool.push(b);
-                    this.writen++;
+                    this.writen++
                 }
             }
-            return b
+            return b;
         }
-        writeChar(v: any): any {
+        writeChar(v: any) {
             if (+v != v) {
-                throw new Error("writeChar:arguments type is error")
+                throw new Error("writeChar:arguments type is error");
             }
-            this.write((v >> 8) & 255);
+            this.write(v >> 8 & 255);
             this.write(v & 255);
-            this.writen += 2
+            this.writen += 2;
         }
-        writeUTF(str: any): any {
-            var val = new BinaryHelper().writeUTF(str);
+        writeUTF(str: string) {
+            var val = this.binaryHelper.writeUTF(str);
             [].push.apply(this.pool, val);
             this.writen += val.length;
         }
         toComplements(): any {
             var _tPool = this.pool;
-            for (var i = 0; i < _tPool.length; i++) {
+            for (var i = 0; i < this.poolLen; i++) {
                 if (_tPool[i] > 128) {
                     _tPool[i] -= 256
                 }
