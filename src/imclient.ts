@@ -164,8 +164,6 @@ module RongIMLib {
                 RongIMClient._connectionChannel = ConnectionChannel.XHR_POLLING;
             } else if (Transports._TransportType == Socket.WEBSOCKET) {
                 RongIMClient._connectionChannel = ConnectionChannel.WEBSOCKET;
-            } else {
-                RongIMClient._connectionChannel = ConnectionChannel.FLASH;
             }
             return RongIMClient._connectionChannel;
         }
@@ -234,11 +232,11 @@ module RongIMLib {
         }
 
         // #region Message
-
+        //TODO
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.clearMessages(conversationType, targetId);
         }
-        /**
+        /**TODO
          * [clearMessagesUnreadStatus 清空指定会话未读消息]
          * @param  {ConversationType}        conversationType [会话类型]
          * @param  {string}                  targetId         [用户id]
@@ -247,7 +245,7 @@ module RongIMLib {
         clearMessagesUnreadStatus(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.updateMessages(conversationType, targetId, "readStatus", false);
         }
-        /**
+        /**TODO
          * [deleteMessages 删除消息记录。]
          * @param  {ConversationType}        conversationType [description]
          * @param  {string}                  targetId         [description]
@@ -363,7 +361,7 @@ module RongIMLib {
             if (!pullMessageTime) {
                 modules.setDataTime(this.lastReadTime.get(conversationType + targetId));
             } else {
-                modules.setDataTime(new Date(pullMessageTime));
+                modules.setDataTime(pullMessageTime);
             }
             modules.setSize(count);
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {

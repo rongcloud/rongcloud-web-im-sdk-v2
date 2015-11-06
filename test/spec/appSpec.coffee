@@ -153,6 +153,14 @@ describe "RongIMClient",->
     #         onError:(error)->
     #             console.log "GetHistoryMessages,errorcode:"+error
     # ,1300)
+##############################getHistoryMessages-pullMessageTime############################################
+    setTimeout(->
+        RongIMLib.RongIMClient.getInstance().getHistoryMessages 4,"1005",new Date().getTime(),1,
+            onSuccess:(list,hasMsg)->
+                console.log(list[0].message.content)
+            onError:(error)->
+                console.log "GetHistoryMessages,errorcode:"+error
+    ,1300)
 ##############################hasUnreadMessages############################################
     # RongIMLib.RongIMClient.getInstance().hasUnreadMessages "cpj2xarlj5cdn","0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==",
     #     onSuccess:(hasMsg)->
@@ -324,3 +332,41 @@ describe "RongIMClient",->
     #     count = RongIMLib.RongIMClient.getInstance().getUnreadCount RongIMLib.ConversationType.PRIVATE,"lisi"
     #     console.log count
     # ,1200)
+##############################getCurrentConnectionStatus#################################################
+    # setTimeout(->
+    #     status = RongIMLib.RongIMClient.getInstance().getCurrentConnectionStatus()
+    #     switch status
+    #         when RongIMLib.ConnectionStatus.CONNECTED
+    #           console.log "已连接"
+    #         when RongIMLib.ConnectionStatus.DISCONNECTED
+    #           console.log "已断开"
+    #         else console.log "状态为解析:"+status
+    # ,1000)
+##############################getConnectionChannel#################################################
+    # setTimeout(->
+    #     channel = RongIMLib.RongIMClient.getInstance().getConnectionChannel()
+    #     switch channel
+    #         when 1
+    #           console.log "xhr-polling"
+    #         when 2
+    #           console.log "websocket"
+    #         else console.log "状态为解析:"+status
+    # ,1000)
+##############################getStorageProvider#################################################
+    # setTimeout(->
+    #     provider = RongIMLib.RongIMClient.getInstance().getStorageProvider()
+    #     console.log(provider)
+    # ,1000)
+##############################getCurrentUserId#################################################
+    # setTimeout(->
+    #     userId = RongIMLib.RongIMClient.getInstance().getCurrentUserId()
+    #     console.log(userId)
+    # ,1000)
+##############################getCurrentUserInfo#################################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().getCurrentUserInfo
+    #         onSuccess:(info)->
+    #             console.log info
+    #         onError:(error)->
+    #             console.log "getCurrentUserInfo:errorcode:"+error
+    # ,1000)

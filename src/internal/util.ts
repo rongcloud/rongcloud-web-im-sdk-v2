@@ -191,13 +191,18 @@ module RongIMLib {
         static messageParser(entity: any, onReceived?: any): any {
             var message: any, content: any = entity.content, de: any, objectName: string = entity.classname;
             try {
-                de = JSON.parse(new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content))
+                if (window["WEB_XHR_POLLING"]) {
+                    de = JSON.parse(new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content))
+                } else {
+                    de = JSON.parse(new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayFormInput(content.buffer).subarray(content.offset, content.limit) : content))
+                }
+
             } catch (ex) {
                 console.log(ex + " -> postion:messageParser")
                 return null;
             }
             //处理表情
-            if ("Expression" in RongIMClient && "RC:TxtMsg" == objectName && de.content) {
+            if ("Expression" in RongIMClient && de.content) {
                 de.content = de.content.replace(/[\uf000-\uf700]/g, function(x: any) {
                     return eval("RongIMClient.Expression.calcUTF(x) || x");
                 })
