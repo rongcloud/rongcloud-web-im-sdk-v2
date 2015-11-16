@@ -102,7 +102,7 @@ describe "RongIMClient",->
     #             console.log list
     #         onError:(error)->
     #             console.log "GetConversationList,errorcode:"+error
-    # ,1200)
+    # ,100)
 ##############################setConversationToTop##########################################
     # setTimeout(->
     #     RongIMLib.RongIMClient.getInstance().setConversationToTop RongIMLib.ConversationType.PRIVATE,"zhaoliu",
@@ -113,11 +113,19 @@ describe "RongIMClient",->
     # ,1000)
 ##############################removeConversation##########################################
     # setTimeout(->
-    #     RongIMLib.RongIMClient.getInstance().removeConversation RongIMLib.ConversationType.PRIVATE,"zhaoliu",
+    #     RongIMLib.RongIMClient.getInstance().removeConversation RongIMLib.ConversationType.PRIVATE,"1006",
     #         onSuccess:(isRemove)->
     #             console.log "removeConversation:"+isRemove
     #         onError:(error)->
     #             console.log "removeConversation,errorcode:"+error
+    # ,1000)
+##############################getConversation##########################################
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().getConversation RongIMLib.ConversationType.PRIVATE,"1002",
+    #         onSuccess:(conver,hasConver)->
+    #             console.log conver
+    #         onError:(error)->
+    #             console.log "getConversation,errorcode:"+error
     # ,1000)
 ##############################getUserInfo-correct user##################################################
     # setTimeout(->
@@ -154,13 +162,13 @@ describe "RongIMClient",->
     #             console.log "GetHistoryMessages,errorcode:"+error
     # ,1300)
 ##############################getHistoryMessages-pullMessageTime############################################
-    setTimeout(->
-        RongIMLib.RongIMClient.getInstance().getHistoryMessages 4,"1005",new Date().getTime(),1,
-            onSuccess:(list,hasMsg)->
-                console.log(list[0].message.content)
-            onError:(error)->
-                console.log "GetHistoryMessages,errorcode:"+error
-    ,1300)
+    # setTimeout(->
+    #     RongIMLib.RongIMClient.getInstance().getHistoryMessages 4,"1005",new Date().getTime(),1,
+    #         onSuccess:(list,hasMsg)->
+    #             console.log(list[0].message.content)
+    #         onError:(error)->
+    #             console.log "GetHistoryMessages,errorcode:"+error
+    # ,1300)
 ##############################hasUnreadMessages############################################
     # RongIMLib.RongIMClient.getInstance().hasUnreadMessages "cpj2xarlj5cdn","0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==",
     #     onSuccess:(hasMsg)->
@@ -289,7 +297,7 @@ describe "RongIMClient",->
     # ,1920)
 ##############################saveTextMessageDraft############################################
     # setTimeout(->
-    #     RongIMLib.RongIMClient.getInstance().saveTextMessageDraft RongIMLib.ConversationType.PRIVATE,"lisi","drafTextMessageTest hello!!!",
+    #     RongIMLib.RongIMClient.getInstance().saveTextMessageDraft RongIMLib.ConversationType.PRIVATE,"1002","drafTextMessageTest hello!!!",
     #         onSuccess:()->
     #             console.log "saveTextMessageDraft Successfully"
     #         onError:(error)->
@@ -297,7 +305,7 @@ describe "RongIMClient",->
     # ,1930)
 ##############################getTextMessageDraft############################################
     # setTimeout(->
-    #     RongIMLib.RongIMClient.getInstance().getTextMessageDraft RongIMLib.ConversationType.PRIVATE,"lisi",
+    #     RongIMLib.RongIMClient.getInstance().getTextMessageDraft RongIMLib.ConversationType.PRIVATE,"1002",
     #         onSuccess:(draf)->
     #             console.log "GetTextMessageDraf:"+draf
     #         onError:(error)->
@@ -305,7 +313,7 @@ describe "RongIMClient",->
     # ,1940)
 ##############################clearTextMessageDraft############################################
     # setTimeout(->
-    #     RongIMLib.RongIMClient.getInstance().clearTextMessageDraft RongIMLib.ConversationType.PRIVATE,"lisi",
+    #     RongIMLib.RongIMClient.getInstance().clearTextMessageDraft RongIMLib.ConversationType.PRIVATE,"1002",
     #         onSuccess:(isClear)->
     #             console.log "clearTextMessageDraft:"+isClear
     #         onError:(error)->

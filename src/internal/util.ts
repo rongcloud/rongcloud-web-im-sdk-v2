@@ -25,7 +25,7 @@ var mapping: any = {
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
     HistoryMsgType: { [s: number]: any } = {
-        1: "qryCMsg",
+        0: "qryCMsg",
         2: "qryDMsg",
         3: "qryGMsg",
         4: "qryPMsg",

@@ -9,7 +9,7 @@ module RongIMLib {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> TextMessage.");
             }
             super.setObjectName("RC:TxtMsg");
-            super.setMessageType(MessageType[1]);
+            super.setMessageType(MessageType.TextMessage);
         }
         static obtain(text: string): TextMessage {
             TextMessage.message = new TextMessage({ extra: "", content: text });
@@ -29,7 +29,7 @@ module RongIMLib {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> VoiceMessage.");
             }
             super.setObjectName("RC:VcMsg");
-            super.setMessageType(MessageType[3]);
+            super.setMessageType(MessageType.VoiceMessage);
         }
 
         static obtain(base64Content: string, duration: number): VoiceMessage {
@@ -59,7 +59,7 @@ module RongIMLib {
             if (!ImageMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ImageMessage.");
             }
-            super.setMessageType(MessageType[2]);
+            super.setMessageType(MessageType.ImageMessage);
             super.setObjectName("RC:ImgMsg");
         }
         static obtain(content: string, imageUri: string): ImageMessage {
@@ -94,7 +94,7 @@ module RongIMLib {
             if (!LocationMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> LocationMessage.");
             }
-            super.setMessageType(MessageType[8]);
+            super.setMessageType(MessageType.LocationMessage);
             super.setObjectName("RC:LBSMsg");
         }
 
@@ -139,7 +139,7 @@ module RongIMLib {
             if (!LocationMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> RichContentMessage.");
             }
-            super.setMessageType(MessageType[4]);
+            super.setMessageType(MessageType.RichContentMessage);
             super.setObjectName("RC:ImgTextMsg");
         }
         static obtain(title: string, content: string, imageUri: string): RichContentMessage {
@@ -169,7 +169,7 @@ module RongIMLib {
     export class UnknownMessage extends RongIMMessage implements MessageContent {
         constructor(data: string, objectName: string) {
             super(this);
-            super.setMessageType(MessageType[6]);
+            super.setMessageType(MessageType.UnknownMessage);
             super.setObjectName(objectName);
         }
         getMessage(): RongIMMessage {

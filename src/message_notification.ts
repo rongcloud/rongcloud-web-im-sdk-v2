@@ -139,7 +139,7 @@ module RongIMLib {
         public userInfo: UserInfo;
         constructor(message: any) {
             super(message);
-            this.setMessageType(MessageType[9]);
+            this.setMessageType(MessageType.InformationNotificationMessage);
             this.setObjectName("RC:InfoNtf");
         }
         static obtain(content: string): InformationNotificationMessage {
@@ -203,7 +203,7 @@ module RongIMLib {
         public extra: string;
         constructor(message: any) {
             super(message);
-            this.setMessageType(MessageType[11]);
+            this.setMessageType(MessageType.ProfileNotificationMessage);
             this.setObjectName("RC:ProfileNtf");
         }
         static obtain(operation: string, data: string): ProfileNotificationMessage {
@@ -235,7 +235,7 @@ module RongIMLib {
         public extra: string;
         constructor(message: any) {
             super(message);
-            this.setMessageType(MessageType[11]);
+            this.setMessageType(MessageType.CommandNotificationMessage);
             this.setObjectName("RC:ProfileNtf");
         }
         static obtain(x: string, data: string): CommandNotificationMessage {
@@ -268,7 +268,7 @@ module RongIMLib {
         public isReceived: boolean = false;
         constructor(message: any) {
             super(message);
-            this.setMessageType(MessageTag[0]);
+            this.setMessageType(MessageType.DiscussionNotificationMessage);
             this.setObjectName("RC:DizNtf");
 
         }
