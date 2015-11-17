@@ -345,6 +345,11 @@ module RongIMLib {
         insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
         }
+        resetGetHistoryMessages(conversationType:ConversationType,targetId:string):boolean {
+            CheckParam.getInstance().check(["number","string"],"resetGetHistoryMessages");
+            this.lastReadTime.remove(conversationType+targetId);
+            return true;
+        }
         /**
          * [getHistoryMessages 拉取历史消息记录。]
          * @param  {ConversationType}          conversationType [会话类型]

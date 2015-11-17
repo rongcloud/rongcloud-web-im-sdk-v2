@@ -5,7 +5,6 @@ module RongIMLib {
             window.getServerEndpoint = function(x: any) {
                 //把导航返回的server字段赋值给CookieHelper._host，因为flash widget需要使用
                 RongIMClient._storageProvider._host = Navigate.Endpoint.host = x["server"];
-                // Navigate.Endpoint.userId = x.userId;
                 //替换本地存储的导航信息
                 var temp = RongIMClient._storageProvider.getItemKey("navi");
                 temp !== null && RongIMClient._storageProvider.removeItem(temp);

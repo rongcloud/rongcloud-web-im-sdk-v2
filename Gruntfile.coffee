@@ -96,7 +96,6 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-karma'
   grunt.loadNpmTasks 'grunt-typedoc'
   grunt.loadNpmTasks 'grunt-typescript'
-
   # Build for dev.
   grunt.registerTask 'build', [
     'clean:build'
@@ -104,6 +103,7 @@ module.exports = (grunt) ->
     'watch'
   ]
 
+  # grunt.registerTask 'default','mochaTest'
   # Build for release.
   grunt.registerTask 'release', [
     'clean:release'
