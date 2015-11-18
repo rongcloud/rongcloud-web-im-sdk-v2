@@ -1,24 +1,5 @@
-# describe "Navi Test",->
-#   it "1",->
-#     #rongSDK为判断是否向服务器发起请求条件之一，本应该设置通道连接成功之后，没有联调，所以设置于此
-#     nvai = new RongIMLib.Navigate()
-#     callback =
-#       onSuccess: ->
-#         console.log "connect---successs"
-#
-#       onError: ->
-#         console.log "connect--error"
-#
-#     nvai.connect  "cpj2xarlj5cdn","0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==",callback
-#     setTimeout(->
-#         console.log RongIMLib.Navigate.Endpoint.host
-#         done();
-#     ,1000)
-#
-################################功能模块单元测试############################################
 #说明：
 #所有功能均已测试通过，若重新测试，删除注释重新运行karma即可(讨论组Id可能需要修改)
-
 describe "RongIMClient",->
     RongIMLib.RongIMClient.init "8luwapkvucoil"
     RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
@@ -43,87 +24,83 @@ describe "RongIMClient",->
                 console.log "token 无效"
               else
                 console.log error
+    it "sendMessage",(done)->
+        setTimeout(->
+            message = RongIMLib.TextMessage.obtain("测试一下，发给1005")
+            # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
+            RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "1005", message,null,
+              onSuccess: (data)->
+                    console.log "Send Successfully"
+                    done()
+              onError: (errorcode)->
+                    console.log errorcode
+        ,1000)
+    it "sendTextMessage",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().sendTextMessage RongIMLib.ConversationType.PRIVATE, "1005", "我是TextMessage",
+              onSuccess: (data)->
+                    console.log "SendTextMessage Successfully"
+                    done()
+              onError: (errorcode)->
+                    console.log errorcode
+        ,1000)
+    it "createConversation",(done)->
+        setTimeout(->
+            conversation = RongIMLib.RongIMClient.getInstance().createConversation RongIMLib.ConversationType.PRIVATE,"zhaoliu","小标题",true;
+            console.log(conversation)
+            done()
+        ,1000)
 
-###############################getInstance##############################################
-    #没有执行init调用getInstance()
-    # RongIMLib.RongIMClient.getInstance();
-    # window["WEB_XHR_POLLING"] = true;
-    # RongIMLib.RongIMClient.schemeType = RongIMLib.SchemeType.SSL
-###############################inti#####################################################
-    #error appkey
-    # RongIMLib.RongIMClient.init "testAppkey"
-###############################registerMessageType######################################
-    # setTimeout(->
-    #     RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',['Name','Age','Address']
-    # ,10);
-###############################connect#################################################
-        #correct token
-            # error token
-            # RongIMLib.RongIMClient.connect "dXOJIInqKDahrpig+TJcq3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2MRus3mUdaZlHmSaXaVmp5/yPASY0/fWWKnbNZUuYfcEa",
-            #     onSuccess:(userId)->
-            #         console.log("loginSuccess,userId."+userId)
-            #     onError:(error)->
-            #         switch error
-            #           when RongIMLib.ConnectionState.SERVER_UNAVAILABLE
-            #             console.log "SERVER_UNAVAILABLE"
-            #           when RongIMLib.ConnectionState.TOKEN_INCORRECT
-            #             console.log "token 无效"
-            #           else
-            #             console.log type
-    # it "Connect&SendMessage",(done)->
-    #     setTimeout(->
-    #         message = RongIMLib.TextMessage.obtain("测试一下，发给1005")
-    #         # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
-    #         RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "1005", message,null,
-    #           onSuccess: (data)->
-    #                 console.log "Send Successfully"
-    #                 done()
-    #           onError: (errorcode)->
-    #                 console.log errorcode
-    #     ,1000)
-    # it "createConversation",(done)->
-    #     setTimeout(->
-    #         conversation = RongIMLib.RongIMClient.getInstance().createConversation RongIMLib.ConversationType.PRIVATE,"zhaoliu","小标题",true;
-    #         console.log(conversation)
-    #         done()
-    #     ,1000)
-    #
-    # it "getConversationList",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().getConversationList
-    #             onSuccess:(list)->
-    #                 console.log list
-    #                 done()
-    #             onError:(error)->
-    #                 console.log "GetConversationList,errorcode:"+error
-    #     ,100)
-    # it "setConversationToTop",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().setConversationToTop RongIMLib.ConversationType.PRIVATE,"1005",
-    #             onSuccess:(isTop)->
-    #                 console.log "setTop:"+isTop
-    #                 done()
-    #             onError:(error)->
-    #                 console.log "SetConversationToTop,errorcode:"+error
-    #     ,200)
-    # it "removeConversation",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().removeConversation RongIMLib.ConversationType.PRIVATE,"1005",
-    #             onSuccess:(isRemove)->
-    #                 console.log "removeConversation:"+isRemove
-    #                 done()
-    #             onError:(error)->
-    #                 console.log "removeConversation,errorcode:"+error
-    #     ,210)
-    # it "getConversation",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().getConversation RongIMLib.ConversationType.PRIVATE,"1003",
-    #             onSuccess:(conver,hasConver)->
-    #                 console.log conver
-    #                 done()
-    #             onError:(error)->
-    #                 console.log "getConversation,errorcode:"+error
-    #     ,220)
+    it "getConversationList",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().getConversationList
+                onSuccess:(list)->
+                    console.log list
+                    done()
+                onError:(error)->
+                    console.log "GetConversationList,errorcode:"+error
+        ,100)
+    it "setConversationToTop",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().setConversationToTop RongIMLib.ConversationType.PRIVATE,"1005",
+                onSuccess:(isTop)->
+                    console.log "setTop:"+isTop
+                    done()
+                onError:(error)->
+                    console.log "SetConversationToTop,errorcode:"+error
+        ,200)
+    it "removeConversation",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().removeConversation RongIMLib.ConversationType.PRIVATE,"1005",
+                onSuccess:(isRemove)->
+                    console.log "removeConversation:"+isRemove
+                    done()
+                onError:(error)->
+                    console.log "removeConversation,errorcode:"+error
+        ,210)
+    it "getConversation",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().getConversation RongIMLib.ConversationType.PRIVATE,"1003",
+                onSuccess:(conver,hasConver)->
+                    console.log conver
+                    done()
+                onError:(error)->
+                    console.log "getConversation,errorcode:"+error
+        ,220)
+    it "clearConversations ",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().clearConversations
+                onSuccess:(isOk)->
+                    console.log isOk
+                    done()
+                onError:(error)->
+                    console.log "clearConversations,errorcode:"+error
+        ,230)
+    it "registerMessageType",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',['Name','Age','Address']
+            done()
+        ,100);
     it "getUserInfo",(done)->
         setTimeout(->
             RongIMLib.RongIMClient.getInstance().getUserInfo "1003",
@@ -142,6 +119,16 @@ describe "RongIMClient",->
                 onError:(error)->
                     console.log "GetHistoryMessages,errorcode:"+error
         ,200)
+    it "getHistoryMessages-count",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().getHistoryMessages 4,"1002",null,21,
+                onSuccess:(list,hasMsg)->
+                    console.log(list)
+                    done()
+                onError:(error)->
+                    console.log "GetHistoryMessages,errorcode:"+error
+                    done()
+        ,290)
     it "getHistoryMessages-pullMessageTime",(done)->
         setTimeout(->
             RongIMLib.RongIMClient.getInstance().getHistoryMessages 4,"1002",null,20,

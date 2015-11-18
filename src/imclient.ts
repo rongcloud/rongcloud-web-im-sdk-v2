@@ -484,10 +484,10 @@ module RongIMLib {
 
         // #region TextMessage Draft
         /**
-         * [clearTextMessageDraft 清除指定会话和消息类型的草稿。]
-         * @param  {ConversationType}        conversationType [会话类型]
-         * @param  {string}                  targetId         [目标Id]
-         * @param  {ResultCallback<boolean>} callback         [返回值，参数回调]
+         * clearTextMessageDraft 清除指定会话和消息类型的草稿。
+         * @param  {ConversationType}        conversationType 会话类型
+         * @param  {string}                  targetId         目标Id
+         * @param  {ResultCallback<boolean>} callback         返回值，参数回调
          */
         clearTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["number", "string", "object"], "clearTextMessageDraft");
