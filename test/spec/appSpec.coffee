@@ -184,16 +184,16 @@ describe "RongIMClient",->
                     console.log "QuitDiscussion:errorcode:"+error
                     done()
         ,201)
-    # it "removeMemberFromDiscussion",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().removeMemberFromDiscussion "ff636ffe-5b90-4897-b998-e27c1f03ef6b","1001",
-    #             onSuccess:()->
-    #                 console.log "RemoveMember Successfully"
-    #                 done()
-    #             onError:(error)->
-    #                 console.log "RemoveMember:errorcode:"+error
-    #                 done()
-    #     ,202)
+    it "removeMemberFromDiscussion",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().removeMemberFromDiscussion "2af24046-e089-4e7a-a05b-ffa14ab1b92e","1002",
+                onSuccess:()->
+                    console.log "RemoveMember Successfully"
+                    done()
+                onError:(error)->
+                    console.log "RemoveMember:errorcode:"+error
+                    done()
+        ,202)
     it "setDiscussionInviteStatus",(done)->
         setTimeout(->
             RongIMLib.RongIMClient.getInstance().setDiscussionInviteStatus "ff636ffe-5b90-4897-b998-e27c1f03ef6b",RongIMLib.DiscussionInviteStatus.CLOSED,
@@ -395,3 +395,19 @@ describe "RongIMClient",->
                     console.log "getCurrentUserInfo:errorcode:"+error
                     done()
         ,750)
+    it "disconnect ",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().disconnect()
+            done()
+        ,2600)
+    it "reconnect  ",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.reconnect
+                onSuccess:()->
+                    console.log "reconnect Successfully"
+                    done()
+                onError:()->
+                    console.log "reconnect:error"
+                    done()
+            done()
+        ,1500)

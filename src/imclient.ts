@@ -1,7 +1,5 @@
 module RongIMLib {
     export class RongIMClient {
-        // Basic properties.
-
         //储存上次读取消息时间
         private lastReadTime: LimitableMap = new LimitableMap();
         //token
@@ -80,7 +78,9 @@ module RongIMLib {
             RongIMClient.listenerList.length = 0;
             return RongIMClient._instance;
         }
-
+        static reconnect(callback: ConnectCallback) {
+            RongIMClient.bridge.reconnect(callback);
+        }
         /**
          * 注册消息类型，用于注册用户自定义的消息。
          * 内建的消息类型已经注册过，不需要再次注册。
@@ -345,9 +345,9 @@ module RongIMLib {
         insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
         }
-        resetGetHistoryMessages(conversationType:ConversationType,targetId:string):boolean {
-            CheckParam.getInstance().check(["number","string"],"resetGetHistoryMessages");
-            this.lastReadTime.remove(conversationType+targetId);
+        resetGetHistoryMessages(conversationType: ConversationType, targetId: string): boolean {
+            CheckParam.getInstance().check(["number", "string"], "resetGetHistoryMessages");
+            this.lastReadTime.remove(conversationType + targetId);
             return true;
         }
         /**

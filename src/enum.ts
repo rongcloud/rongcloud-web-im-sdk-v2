@@ -1,7 +1,5 @@
 module RongIMLib {
-    /**
-     * 黑名单状态。
-     */
+
     export enum BlacklistStatus {
         /**
          * 在黑名单中。
@@ -47,9 +45,6 @@ module RongIMLib {
         NETWORK_UNAVAILABLE = -1
     }
 
-    /**
-     * 会话通知提醒状态。
-     */
     export enum ConversationNotificationStatus {
         /**
          * 免打扰状态，关闭对应会话的通知提醒。
@@ -408,9 +403,6 @@ module RongIMLib {
         RECEIVE = 2
     }
 
-    /**
-     * 消息的注解，以声明消息的标识、是否记入未读消息数和是否存储为消息历史记录。
-     */
     export enum MessageTag {
         /**
          * 空值，不表示任何意义。
@@ -426,9 +418,6 @@ module RongIMLib {
         ISCOUNTED = 1 << 1
     }
 
-    /**
-     * 公众服务类型枚举。
-     */
     export enum PublicServiceType {
         /**
          * 应用公众服务。

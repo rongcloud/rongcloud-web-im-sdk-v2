@@ -4,6 +4,11 @@ module.exports = (grunt) ->
   grunt.initConfig
     pkg: grunt.file.readJSON('package.json')
 
+    jsdoc:
+      dist:
+        src:['dist/RongIMLib.js']
+        options:
+          destination : 'jsdoc'
     # Task configuration.
     clean:
       build:
@@ -70,7 +75,7 @@ module.exports = (grunt) ->
         options:
           module: 'amd'
           noImplicitAny: true
-          removeComments: true
+          removeComments: false
           sourceMap: true
           suppressImplicitAnyIndexErrors: false
           target: 'es3'
@@ -80,7 +85,7 @@ module.exports = (grunt) ->
         options:
           module: 'amd'
           noImplicitAny: true
-          removeComments: true
+          removeComments: false
           sourceMap: true
           suppressImplicitAnyIndexErrors: false
           target: 'es3'
@@ -96,6 +101,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-karma'
   grunt.loadNpmTasks 'grunt-typedoc'
   grunt.loadNpmTasks 'grunt-typescript'
+  grunt.loadNpmTasks 'grunt-jsdoc'
   # Build for dev.
   grunt.registerTask 'build', [
     'clean:build'
@@ -109,5 +115,6 @@ module.exports = (grunt) ->
     'clean:release'
     'typescript:release'
     'uglify:release'
-    'typedoc:release'
+    # 'typedoc:release'
+    # 'jsdoc'
   ]

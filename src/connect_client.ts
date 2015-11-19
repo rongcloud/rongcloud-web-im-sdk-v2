@@ -48,8 +48,8 @@ module RongIMLib {
                 this.self.reconnectObj = callback;
             }
         }
-        disconnect(x?: any) {
-            this.socket.disconnect(x);
+        disconnect() {
+            this.socket.disconnect();
         }
     }
     export class Socket {
@@ -102,17 +102,14 @@ module RongIMLib {
         onMessage(data: any) {
             this.fire("message", data);
         }
-        disconnect(callback?: any) {
-            if (callback) {
-                this.fire("StatusChanged", callback)
-            }
+        disconnect() {
             this.socket.disconnect();
             this.fire("disconnect");
             return this;
         }
         reconnect(): any {
             if (this.currentURL) {
-                return this.connect(null, null);
+                return this.connect(this.currentURL, null);
             } else {
                 throw new Error("reconnect:no have URL");
             }
@@ -530,7 +527,7 @@ module RongIMLib {
                     Bridge._client.pauseTimer();
                     break;
                 case "DisconnectMessage":
-                    Bridge._client.channel.disconnect(msg.getStatus());
+                    Bridge._client.channel.disconnect();
                     break;
                 default:
             }
