@@ -15,7 +15,7 @@ module RongIMLib {
           script.onreadystatechange = function(event: Event) {
             var target: any = event.srcElement;
             onLoad(target.src);
-          }
+          };
         }
       }
 
