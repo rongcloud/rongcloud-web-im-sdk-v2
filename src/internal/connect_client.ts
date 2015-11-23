@@ -26,17 +26,17 @@ module RongIMLib {
                         return;
                     }
                     me.connectionStatus = code;
-                    Channel._ConnectionStatusListener.onChanged(code)
-                })
+                    Channel._ConnectionStatusListener.onChanged(code);
+                });
             } else {
-                throw new Error("setConnectStatusListener:Parameter format is incorrect")
+                throw new Error("setConnectStatusListener:Parameter format is incorrect");
             }
             //注册message观察者
             this.socket.on("message", self.handler.handleMessage);
             //注册断开连接观察者
             this.socket.on("disconnect", function() {
                 self.channel.socket.fire("StatusChanged", 2);
-            })
+            });
         }
         writeAndFlush(val: any) {
             this.socket.send(val);
@@ -54,7 +54,7 @@ module RongIMLib {
     }
     export class Socket {
         //消息通道常量，所有和通道相关判断均用 XHR_POLLING WEBSOCKET两属性
-        public static XHR_POLLING: string = "xhr-polling"
+        public static XHR_POLLING: string = "xhr-polling";
         public static WEBSOCKET: string = "websocket";
         socket: any = null;
         _events: any = {};
@@ -66,19 +66,19 @@ module RongIMLib {
         connect(url: string, cb: any): any {
             if (this.socket) {
                 if (url) {
-                    this.on("connect", cb || function() { })
+                    this.on("connect", cb || function() { });
                 }
                 if (url) {
                     this.currentURL = url;
                 }
-                this.socket.createTransport(url)
+                this.socket.createTransport(url);
             }
             return this;
         }
         createServer(): any {
             var transport = this.getTransport(this.checkTransport());
             if (transport === null) {
-                throw new Error("the channel was not supported")
+                throw new Error("the channel was not supported");
             }
             return transport;
         }
@@ -131,28 +131,28 @@ module RongIMLib {
                     this._events[x][i](args);
                 }
             }
-            return this
+            return this;
         }
         on(x: any, func: any) {
             if (!(typeof func == "function" && x)) {
-                return this
+                return this;
             }
             if (x in this._events) {
-                MessageUtil.indexOf(this._events, func) == -1 && this._events[x].push(func)
+                MessageUtil.indexOf(this._events, func) == -1 && this._events[x].push(func);
             } else {
                 this._events[x] = [func];
             }
-            return this
+            return this;
         }
         removeEvent(x: any, fn: any) {
             if (x in this._events) {
                 for (var a = 0, l = this._events[x].length; a < l; a++) {
                     if (this._events[x][a] == fn) {
-                        this._events[x].splice(a, 1)
+                        this._events[x].splice(a, 1);
                     }
                 }
             }
-            return this
+            return this;
         }
         _encode(x: any) {
             var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId");
@@ -193,14 +193,14 @@ module RongIMLib {
                         return;
                     }
                     try {
-                        this.channel.disconnect()
+                        this.channel.disconnect();
                     } catch (e) {
                     }
                     clearTimeout(this.timeout_);
                     this.timeout_ = 0;
                     this.channel.reconnect();
                     this.channel.socket.fire("StatusChanged", 5);
-                }, this.timeoutMillis)
+                }, this.timeoutMillis);
             }
         }
         pauseTimer() {
@@ -224,10 +224,10 @@ module RongIMLib {
                 //实例通道类型
                 var me = this;
                 this.channel = new Channel(Navigate.Endpoint, function() {
-                    Transports._TransportType == Socket.WEBSOCKET && me.keepLive()
+                    Transports._TransportType == Socket.WEBSOCKET && me.keepLive();
                 }, this);
                 //触发状态改变观察者
-                this.channel.socket.fire("StatusChanged", 1)
+                this.channel.socket.fire("StatusChanged", 1);
             } else {
                 //没有返回地址就手动抛出错误
                 _callback.onError(ConnectionState.NOT_AUTHORIZED);
@@ -258,7 +258,7 @@ module RongIMLib {
             msg.setMessageId(msgId);
             if (_callback) {
                 msg.setQos(Qos.AT_LEAST_ONCE);
-                this.handler.putCallback(new PublishCallback(_callback.onSuccess, _callback.onError), msg.getMessageId(), _msg)
+                this.handler.putCallback(new PublishCallback(_callback.onSuccess, _callback.onError), msg.getMessageId(), _msg);
             } else {
                 msg.setQos(Qos.AT_MOST_ONCE);
             }
@@ -280,7 +280,7 @@ module RongIMLib {
             msg.setMessageId(msgId);
             msg.setQos(_qos);
             this.handler.putCallback(new QueryCallback(_callback.onSuccess, _callback.onError), msg.getMessageId(), pbtype);
-            this.channel.writeAndFlush(msg)
+            this.channel.writeAndFlush(msg);
         }
         invoke() {
             var time: string, modules: any, str: string, me = this, target: string, temp: any = this.SyncTimeQueue.shift();
@@ -327,7 +327,7 @@ module RongIMLib {
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
                     for (var i = 0; i < list.length; i++) {
-                        Bridge._client.handler.onReceived(list[i])
+                        Bridge._client.handler.onReceived(list[i]);
                     }
                     me.SyncTimeQueue.state = "complete";
                     me.invoke();
@@ -342,7 +342,7 @@ module RongIMLib {
             this.SyncTimeQueue.push({ type: _type, pulltime: pullTime });
             //如果队列中只有一个成员并且状态已经完成就执行invoke方法
             if (this.SyncTimeQueue.length == 1 && this.SyncTimeQueue.state == "complete") {
-                this.invoke()
+                this.invoke();
             }
         }
         __init(f: any) {
@@ -374,18 +374,18 @@ module RongIMLib {
         }
         disconnect() {
             Bridge._client.clearHeartbeat();
-            Bridge._client.channel.disconnect()
+            Bridge._client.channel.disconnect();
         }
         //执行queryMessage请求
         queryMsg(topic: any, content: any, targetId: string, callback: any, pbname?: string): void {
             if (typeof topic != "string") {
-                topic = _topic[topic]
+                topic = _topic[topic];
             }
             Bridge._client.queryMessage(topic, content, targetId, Qos.AT_MOST_ONCE, callback, pbname);
         }
         //发送消息 执行publishMessage 请求
         pubMsg(topic: number, content: string, targetId: string, callback: any, msg: any): void {
-            Bridge._client.publishMessage(_topic[10][topic], content, targetId, callback, msg)
+            Bridge._client.publishMessage(_topic[10][topic], content, targetId, callback, msg);
         }
     }
     export class MessageHandler implements InFMessageHandler {
@@ -466,32 +466,29 @@ module RongIMLib {
                 return;
             }
             //创建会话对象 TODO
-            con = RongIMClient.conversationMap.get(message.getConversationType(), message.getTargetId());
+            con = RongIMClient.conversationMap.get(message.conversationType, message.targetId);
             if (!con) {
-                con = RongIMClient.getInstance().createConversation(message.getConversationType(), message.getTargetId(), "", true);
+                con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "", true);
             }
             //根据messageTag判断是否进行消息数累加
-            if (/ISCOUNTED/.test(message.getMessageTag())) {
+            // if (/ISCOUNTED/.test(message.getMessageTag())) {
                 if (con.conversationType != 0) {
-                    con.unreadMessageCount = con.unreadMessageCount + 1
+                    con.unreadMessageCount = con.unreadMessageCount + 1;
                 }
-            }
+            // }
             con.receivedTime = new Date().getTime();
             con.receivedStatus = ReceivedStatus.READ;
-            con.setSenderUserId = message.getSenderUserId();
-            con.objectName = message.getObjectName();
-            con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB
-            con.latestMessageId = message.getMessageId();
+            con.setSenderUserId = message.sendUserId;
+            con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
+            con.latestMessageId = message.messageId;
             con.latestMessage = message;
-            //置顶
             con.setTop();
-            //把消息传递给消息监听器
             this._onReceived(message);
         }
 
         handleMessage(msg: any): void {
             if (!msg) {
-                return
+                return;
             }
             switch (msg._name) {
                 case "ConnAckMessage":
@@ -506,7 +503,7 @@ module RongIMLib {
                     break;
                 case "QueryAckMessage":
                     if (msg.getQos() != 0) {
-                        Bridge._client.channel.writeAndFlush(new QueryConMessage(msg.getMessageId()))
+                        Bridge._client.channel.writeAndFlush(new QueryConMessage(msg.getMessageId()));
                     }
                     var temp = Bridge._client.handler.map[msg.getMessageId()];
                     if (temp) {

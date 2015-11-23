@@ -1,4 +1,4 @@
-/// <reference path="./dts/util.d.ts"/>
+/// <reference path="../dts/external.d.ts"/>
 module RongIMLib {
     export class MessageCallback implements InFMessageCallback {
         timeoutMillis: number;
@@ -86,7 +86,7 @@ module RongIMLib {
             this.readTimeOut();
             if (_status == 0) {
                 if (_msg) {
-                    _msg.setSentStatus(_status);
+                    _msg.setSentStatus = _status;
                 }
                 this._cb();
             } else {
@@ -183,5 +183,4 @@ module RongIMLib {
             MessageCallback.prototype.readTimeOut.call(this, x)
         }
     }
-
 }

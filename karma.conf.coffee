@@ -19,8 +19,7 @@ module.exports = (config) ->
       'test/test-main.coffee',
       'src/internal/MD5.js',
       {pattern: 'test/**/*Spec.coffee', included: false},
-      'src/internal/protobuf.js',
-      'build/**/*.js'
+      'src/internal/protobuf.js'
     ]
 
 

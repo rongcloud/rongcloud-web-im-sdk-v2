@@ -1,22 +1,41 @@
 module RongIMLib {
-    export class TextMessage extends RongIMMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
+    export class TextMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
         userInfo: UserInfo;
-        //此处直接赋值对象为以后添加扩展属性埋下伏笔
-        static message: any;
+        message: TextMessage;
+        content: string;
+        extra: string;
         constructor(message: any) {
-            super(message);
-            if (!TextMessage.caller && arguments.length == 0) {
+            if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> TextMessage.");
             }
-            super.setObjectName("RC:TxtMsg");
-            super.setMessageType(MessageType.TextMessage);
+            this.message = message;
         }
         static obtain(text: string): TextMessage {
-            TextMessage.message = new TextMessage({ extra: "", content: text });
-            return TextMessage.message;
+            var msg = new TextMessage({ extra: "", content: text });
+            return msg;
         }
-        getMessage(): TextMessage {
-            return TextMessage.message;
+        setExtra(extra: string): void {
+            this.message.extra = extra;
+        }
+        setContent(content: string): void {
+            this.message.content = content;
+        }
+        getExtra(): string {
+            return this.message.extra;
+        }
+        getContent(): string {
+            return this.message.content;
+        }
+        encode() {
+            var c = new Modules.UpStreamMessage();
+            c.setSessionId(3);
+            c.setClassname("RC:TxtMsg");
+            c.setContent(JSON.stringify(this.message));
+            var val = c.toArrayBuffer();
+            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
+                return [].slice.call(new Int8Array(val))
+            }
+            return val;
         }
     }
 

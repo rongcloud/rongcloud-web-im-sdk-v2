@@ -166,15 +166,15 @@ module RongIMLib {
       stream.writeUTF(this.clientId);
       if (this.hasWill) {
         stream.writeUTF(this.willTopic);
-        stream.writeUTF(this.will)
+        stream.writeUTF(this.will);
       }
       if (this.hasAppId) {
-        stream.writeUTF(this.appId)
+        stream.writeUTF(this.appId);
       }
       if (this.hasToken) {
-        stream.writeUTF(this.token)
+        stream.writeUTF(this.token);
       }
-      return stream
+      return stream;
     }
   }
   /**

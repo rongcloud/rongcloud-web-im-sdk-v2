@@ -41,17 +41,4 @@ module RongIMLib {
   export interface SendMessageCallback {
 
   }
-
-  // TODO: 内部接口都写到 internal 目录中
-  export interface InFMessageCallback {
-
-  }
-  // TODO: 内部接口都写到 internal 目录中
-  export interface InFPublishCallback {
-
-  }
-  // TODO: 内部接口都写到 internal 目录中
-  export interface InFQueryCallback {
-
-  }
 }
