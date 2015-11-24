@@ -281,9 +281,6 @@ module RongIMLib {
                   resultCallback.onError(ErrorCode.TIMEOUT);
                   throw new Error("connect is timeout! postion:sendMessage");
               }
-              if (!(messageContent instanceof Message)) {
-                  throw new Error("wrong parameter! postion:sendMessage");
-              }
               var content: any = messageContent.encode(), message:any,j: any;
               // message.conversationType = conversationType;
               // message.messageDirection = MessageDirection.SEND;
@@ -301,10 +298,10 @@ module RongIMLib {
                       c.sentStatus = SentStatus.SENDING;
                       c.senderUserName = "";
                       c.senderUserId = Bridge._client.userId;
-                      c.objectName = message.objectName;
+                      // c.objectName = message.objectName;
                       c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-                      c.latestMessageId = message.messageId;
-                      c.latestMessage = message;
+                      // c.latestMessageId = message.messageId;
+                      c.latestMessage = messageContent;
                       c.unreadMessageCount = 0;
                   },
                   onError: function() { }
@@ -584,12 +581,12 @@ module RongIMLib {
       conver.conversationType = S2C[tempConver.type];
       conver.targetId = tempConver.userId;
       conver.latestMessage = MessageUtil.messageParser(tempConver.msg);
-      conver.latestMessageId = conver.latestMessage.getMessageId();
-      conver.objectName = conver.latestMessage.getObjectName();
-      conver.receivedStatus = conver.latestMessage.getReceivedStatus();
-      conver.receivedTime = conver.latestMessage.getReceivedTime();
-      conver.sentStatus = conver.latestMessage.getReceivedStatus();
-      conver.sentTime = conver.latestMessage.getSentTime();
+      conver.latestMessageId = conver.latestMessage.messageId;
+      conver.objectName = conver.latestMessage.objectName;
+      conver.receivedStatus = conver.latestMessage.receivedStatus;
+      conver.receivedTime = conver.latestMessage.receiveTime;
+      conver.sentStatus = conver.latestMessage.sentStatus;
+      conver.sentTime = conver.latestMessage.sentTime;
       !isUseReplace ? conver.unreadMessageCount = 0 : null;
       if (conver.conversationType == ConversationType.PRIVATE) {
         self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{

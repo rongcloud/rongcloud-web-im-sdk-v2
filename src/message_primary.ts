@@ -33,166 +33,313 @@ module RongIMLib {
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
             if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val))
+                return [].slice.call(new Int8Array(val));
             }
             return val;
         }
     }
 
-    export class VoiceMessage extends RongIMMessage implements MessageContent, UserInfoAttachedMessage {
+    export class VoiceMessage implements MessageContent, UserInfoAttachedMessage {
         userInfo: UserInfo;
-        static message: VoiceMessage;
+        message: VoiceMessage;
+        base64: string;
+        duration: number;
+        uri: string;
+        extra: string;
         constructor(message: any) {
-            super(message);
             if (!VoiceMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> VoiceMessage.");
             }
-            super.setObjectName("RC:VcMsg");
-            super.setMessageType(MessageType.VoiceMessage);
+            this.message = message;
         }
 
         static obtain(base64Content: string, duration: number): VoiceMessage {
-            VoiceMessage.message = new VoiceMessage({
-                content: base64Content,
-                duration: duration,
-                extra: ""
-            });
-            return VoiceMessage.message;
+            var msg = new VoiceMessage({ content: base64Content, duration: duration, extra: "" });
+            return msg;
         }
-        getMessage(): RongIMMessage {
-            return VoiceMessage.message;
+
+        setBase64(base64: string) {
+            this.message.base64 = base64;
         }
-        setDuration(a: any) {
-            super.setContent(a, "duration");
+
+        setDuration(duration: number) {
+            this.message.duration = duration;
         }
-        getDuration(): any {
-            return super.getDetail().duration;
+
+        setUri(uri: string) {
+            this.message.uri = uri;
+        }
+
+        setExtra(extra: string) {
+            this.message.extra = extra;
+        }
+
+        getBase64(): string {
+            return this.message.base64;
+        }
+
+        getDuration(): number {
+            return this.message.duration;
+        }
+
+        getUri(): string {
+            return this.message.uri;
+        }
+
+        getExtra(): string {
+            return this.message.extra;
+        }
+
+
+        encode() {
+            var c = new Modules.UpStreamMessage();
+            c.setSessionId(3);
+            c.setClassname("RC:VcMsg");
+            c.setContent(JSON.stringify(this.message));
+            var val = c.toArrayBuffer();
+            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
+                return [].slice.call(new Int8Array(val));
+            }
+            return val;
         }
     }
 
-    export class ImageMessage extends RongIMMessage implements MessageContent, UserInfoAttachedMessage {
+    export class ImageMessage implements MessageContent, UserInfoAttachedMessage {
         userInfo: UserInfo;
-        static message: ImageMessage;
+        message: ImageMessage;
+        base64: string;
+        extra: string;
+        localUri: string;
+        remoteUri: string;
+        thumUri: string;
+        isFull: boolean = false;
+        isUpLoadExp: boolean = false;
         constructor(message: any) {
-            super(message);
             if (!ImageMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ImageMessage.");
             }
-            super.setMessageType(MessageType.ImageMessage);
-            super.setObjectName("RC:ImgMsg");
+            this.message = message;
         }
         static obtain(content: string, imageUri: string): ImageMessage {
-            ImageMessage.message = new ImageMessage({
-                content: content,
-                imageUri: imageUri,
-                extra: ""
-            })
-            return ImageMessage.message;
+            var msg = new ImageMessage({ content: content, imageUri: imageUri, extra: "" });
+            return msg;
         }
-        setImageUri(a: any) {
-            super.setContent(a, "imageUri");
+
+        getBase64(): string {
+            return this.message.base64;
         }
-        getImageUri(): string {
-            return super.getDetail().imageUri
+
+        getExtra(): string {
+            return this.message.extra;
         }
-        getMessage(): RongIMMessage {
-            return ImageMessage.message;
+
+        getLocalUri(): string {
+            return this.message.localUri;
+        }
+
+        getRemoteUri(): string {
+            return this.message.remoteUri;
+        }
+
+        getThumUri(): string {
+            return this.message.thumUri;
+        }
+
+        getIsFull(): boolean {
+            return this.message.isFull;
+        }
+
+        getIsUpLoadExp(): boolean {
+            return this.message.isUpLoadExp;
+        }
+
+        setBase64(base64: string) {
+            this.message.base64 = base64;
+        }
+
+        setExtra(extra: string) {
+            this.message.extra = extra;
+        }
+        setLocalUri(localUri: string) {
+            this.message.localUri = localUri;
+        }
+        setRemoteUri(remoteUri: string) {
+            this.message.remoteUri = remoteUri;
+        }
+        setThumUri(thumUri: string) {
+            this.message.thumUri = thumUri;
+        }
+        setIsUpLoadExp(isUpLoadExp: boolean) {
+            this.message.isUpLoadExp = isUpLoadExp;
+        }
+        setIsFull(isFull: boolean) {
+            this.message.isFull = isFull;
+        }
+
+        encode() {
+            var c = new Modules.UpStreamMessage();
+            c.setSessionId(3);
+            c.setClassname("RC:ImgMsg");
+            c.setContent(JSON.stringify(this.message));
+            var val = c.toArrayBuffer();
+            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
+                return [].slice.call(new Int8Array(val));
+            }
+            return val;
         }
     }
 
-    export class LocationMessage extends RongIMMessage implements MessageContent, UserInfoAttachedMessage {
+    export class LocationMessage implements MessageContent, UserInfoAttachedMessage {
         userInfo: UserInfo;
         extra: string;
-        latitude: number;
-        longitude: number;
-        poi: string;
+        base64: string;
         imgUri: string;
-        static message: LocationMessage;
+        lat: number;
+        lng: number;
+        poi: string;
+        message: LocationMessage;
+
         constructor(message: any) {
-            super(message);
             if (!LocationMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> LocationMessage.");
             }
-            super.setMessageType(MessageType.LocationMessage);
-            super.setObjectName("RC:LBSMsg");
+            this.message = message;
         }
 
         static obtain(latitude: number, longitude: number, poi: string, imgUri: string): LocationMessage {
-            LocationMessage.message = new LocationMessage({
-                latitude: longitude,
-                longitude: longitude,
-                poi: poi,
-                imgUri: imgUri,
-                extra: ""
-            });
-            return LocationMessage.message;
-        }
-        getMessage(): RongIMMessage {
-            return LocationMessage.message;
-        }
-        setLatitude(a: any) {
-            super.setContent(a, "latitude")
-        }
-        getLatitude(): number {
-            return this.getDetail().latitude;
-        }
-        setLongitude(a: any) {
-            super.setContent(a, "longitude")
-        }
-        getLongitude(): number {
-            return this.getDetail().longitude;
-        }
-        setPoi(a: any) {
-            super.setContent(a, "poi")
-        }
-        getPoi(): string {
-            return this.getDetail().poi;
+            var msg = new LocationMessage({ latitude: longitude, longitude: longitude, poi: poi, imgUri: imgUri, extra: "" });
+            return msg;
         }
 
+        getBase64(): string {
+            return this.message.base64;
+        }
+        getExtra(): string {
+            return this.message.extra;
+        }
+        getImgUri(): string {
+            return this.message.imgUri;
+        }
+        getLat(): number {
+            return this.message.lat;
+        }
+        getLng(): number {
+            return this.message.lng;
+        }
+        getPoi(): string {
+            return this.message.poi;
+        }
+
+        setBase64(base64: string) {
+            this.message.base64 = base64;
+        }
+
+        setExtra(extra: string) {
+            this.message.extra = extra;
+        }
+
+        setImgUri(imgUri: string) {
+            this.message.imgUri = imgUri;
+        }
+
+        setLat(lat: number) {
+            this.message.lat = lat;
+        }
+
+        setLng(lng: number) {
+            this.message.lng = lng;
+        }
+
+        setPoi(poi: string) {
+            this.message.poi = poi;
+        }
+
+        encode() {
+            var c = new Modules.UpStreamMessage();
+            c.setSessionId(3);
+            c.setClassname("RC:LBSMsg");
+            c.setContent(JSON.stringify(this.message));
+            var val = c.toArrayBuffer();
+            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
+                return [].slice.call(new Int8Array(val));
+            }
+            return val;
+        }
     }
-    export class RichContentMessage extends RongIMMessage implements MessageContent, UserInfoAttachedMessage {
+    export class RichContentMessage implements MessageContent, UserInfoAttachedMessage {
         userInfo: UserInfo;
-        static message: RichContentMessage;
+        message: RichContentMessage;
+        content: string;
+        extra: string;
+        imgUrl: string;
+        title: string;
+        url: string;
         constructor(message: any) {
-            super(message);
             if (!LocationMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> RichContentMessage.");
             }
-            super.setMessageType(MessageType.RichContentMessage);
-            super.setObjectName("RC:ImgTextMsg");
+            this.message = message;
         }
         static obtain(title: string, content: string, imageUri: string): RichContentMessage {
-            RichContentMessage.message = new RichContentMessage({
-                title: title,
-                content: content,
-                imageUri: imageUri
-            });
-            return RichContentMessage.message;
+            var msg = new RichContentMessage({ title: title, content: content, imageUri: imageUri });
+            return msg;
         }
-        getMessage(): RongIMMessage {
-            return RichContentMessage.message;
+
+        getContent(): string {
+            return this.message.content;
         }
-        setTitle(a: any) {
-            super.setContent(a, "title")
-        };
+        getExtra(): string {
+            return this.message.extra;
+        }
+        getImgUrl(): string {
+            return this.message.imgUrl;
+        }
         getTitle(): string {
-            return this.getDetail().title;
-        };
-        setImageUri(a: any) {
-            super.setContent(a, "imageUri")
-        };
-        getImageUri(): string {
-            return this.getDetail().imageUri;
-        };
-    }
-    export class UnknownMessage extends RongIMMessage implements MessageContent {
-        constructor(data: string, objectName: string) {
-            super(this);
-            super.setMessageType(MessageType.UnknownMessage);
-            super.setObjectName(objectName);
+            return this.message.title;
         }
-        getMessage(): RongIMMessage {
-            return this;
+        getUrl(): string {
+            return this.message.url;
+        }
+
+        setContent(content: string) {
+            return this.message.content = content;
+        }
+        setExtra(extra: string) {
+            return this.message.extra = extra;
+        }
+        setImgUrl(imgUrl: string) {
+            return this.message.imgUrl = imgUrl;
+        }
+        setTitle(title: string) {
+            return this.message.title = title;
+        }
+        setUrl(url: string) {
+            return this.message.url = url;
+        }
+
+        encode() {
+            var c = new Modules.UpStreamMessage();
+            c.setSessionId(3);
+            c.setClassname("RC:ImgTextMsg");
+            c.setContent(JSON.stringify(this.message));
+            var val = c.toArrayBuffer();
+            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
+                return [].slice.call(new Int8Array(val));
+            }
+            return val;
+        }
+    }
+    export class UnknownMessage implements MessageContent {
+        message: UnknownMessage;
+        constructor(message: any) {
+            if (!LocationMessage.caller && arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> RichContentMessage.");
+            }
+            this.message = message;
+        }
+
+        encode() {
+            var c = new Modules.UpStreamMessage();
         }
     }
 }
