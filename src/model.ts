@@ -37,7 +37,6 @@ module RongIMLib {
         private memberIdList: string[];
         private name: string;
         private isOpen: boolean;
-        constructor() { }
         setId(id: string) {
             this.id = id;
         }
@@ -91,7 +90,8 @@ module RongIMLib {
             public senderUserId?: string,
             public sentStatus?: SentStatus,
             public sentTime?: number,
-            public targetId?: string
+            public targetId?: string,
+            public messageType?:string
         ) { }
         setObjectName(objectName: string) {
             this.objectName = objectName;
@@ -129,7 +129,6 @@ module RongIMLib {
         userId: string;
         name: string;
         portraitUri: string;
-        constructor() { }
         setUserId(userId: string) {
             this.userId = userId;
         }

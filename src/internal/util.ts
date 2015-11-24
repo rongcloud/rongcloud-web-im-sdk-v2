@@ -211,14 +211,18 @@ module RongIMLib {
             if (objectName in typeMapping) {
                 var str = "new RongIMLib." + typeMapping[objectName] + "(de)";
                 message.content = eval(str);
+                message.messageType = typeMapping[objectName];
             } else if (objectName in sysNtf) {
                 var str = "new RongIMLib." + sysNtf[objectName] + "(de)";
                 message.content = eval(str);
+                message.messageType = sysNtf[objectName];
             } else if (objectName in registerMessageTypeMapping) {
-                var str = "new RongIMLib." + registerMessageTypeMapping[objectName] + "(de)";
+                var str = "new " + registerMessageTypeMapping[objectName] + "(de)";
                 message.content = eval(str);
+                message.messageType = registerMessageTypeMapping[objectName];
             } else {
                 message.content = new UnknownMessage({content:de,objectName:objectName});
+                message.messageType = "UnknownMessage";
             }
             //根据实体对象设置message对象
             message.sentTime = MessageUtil.int64ToTimestamp(entity.dataTime);

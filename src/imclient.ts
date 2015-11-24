@@ -22,6 +22,12 @@ module RongIMLib {
     private static _appKey: string;
     private static _connectionChannel: ConnectionChannel;
     private static _dataAccessProvider: DataAccessProvider;
+
+    static MessageType: any = {TextMessage:"TextMessage",ImageMessage:"ImageMessage",DiscussionNotificationMessage:"DiscussionNotificationMessage",
+                               VoiceMessage:"VoiceMessage",RichContentMessage:"RichContentMessage",HandshakeMessage:"HandshakeMessage",
+                               UnknownMessage:"UnknownMessage",SuspendMessage:"SuspendMessage",LocationMessage:"LocationMessage",InformationNotificationMessage:"InformationNotificationMessage",
+                               ContactNotificationMessage:"ContactNotificationMessage",ProfileNotificationMessage:"ProfileNotificationMessage",
+                               CommandNotificationMessage:"CommandNotificationMessage"};
     //缓存会话列表
     static conversationMap: ConversationMap = new ConversationMap();
     //桥连接类
@@ -30,12 +36,6 @@ module RongIMLib {
     static listenerList: Array<any> = [];
 
 
-    /**
-     * 构造函数。
-     * 不能通过此函数获取 RongIMClient 实例。
-     * 请使用 RongIMClient.getInstrance() 获取 RongIMClient 实例。
-     */
-    constructor() { }
     /**
      * 获取 RongIMClient 实例。
      * 需在执行 init 方法初始化 SDK 后再获取，否则返回 null 值。
@@ -88,31 +88,34 @@ module RongIMLib {
      * @param objectName  用户数据信息。
      */
     static registerMessageType(objectName: string, messageType: string, fieldName: Array<string>[]): void {
-      if (!RongIMClient._instance) { throw new Error("unInitException"); };
-      CheckParam.getInstance().check(["string", "string", "array"], "registerMessageType");
-      if (objectName == "") throw new Error("objectName can't be empty,postion -> registerMessageType");
+      if (objectName == ""){
+        throw new Error("objectName can't be empty,postion -> registerMessageType");
+      }
       registerMessageTypeMapping[objectName] = messageType;
-      var str = "var temp = RongIMLib." + messageType + " = function(c) {" +
-        "var p = RongIMLib.RongIMMessage.call(this, c);" +
-        "RongIMLib.MessageType[messageType] = messageType;" +
-        "this.message = c;" +
-        "this.setMessageType(messageType);" +
-        "this.setObjectName(objectName);" +
-        "for (var i = 0,len=fieldName.length; i < len; i++) {" +
-        "var item = fieldName[i];" +
-        "this['set' + item] = (function(na) {" +
-        "return function(a) {" +
-        "this.setContent(a, na);" +
-        "}" +
-        "})(item);" +
-        "this['get' + item] = (function(na) {" +
-        "return function() {" +
-        "return this.getDetail()[na];" +
-        "}" +
-        "})(item);" +
-        "}" +
-        "this.getMessage=function(){return this}" +
-        "}; temp.prototype = new RongIMLib.RongIMMessage;";
+      RongIMClient.MessageType[messageType] = messageType;
+      var str = "var temp = " + messageType + " = function(message) {" +
+          "this.message = message;" +
+                "for (var i = 0,len=fieldName.length; i < len; i++) {" +
+                "var item = fieldName[i];" +
+                "this['set' + item] = function(na) {" +
+                "this.message[item] = na;" +
+                "};" +
+                "this['get' + item] = function() {" +
+                "return this.message[item];" +
+                "};" +
+                "}" +
+                "this.encode=function(){"+
+                "var c = new Modules.UpStreamMessage();"+
+                "c.setSessionId(3);"+
+                "c.setClassname(objectName);"+
+                "c.setContent(JSON.stringify(this.message));"+
+                "var val = c.toArrayBuffer();"+
+                "if (Object.prototype.toString.call(val) == '[object ArrayBuffer]') {"+
+                    "return [].slice.call(new Int8Array(val));"+
+                "}"+
+                "return val;"+
+                "}" +
+                "};";
       eval(str);
     }
 
@@ -304,7 +307,9 @@ module RongIMLib {
                       c.latestMessage = messageContent;
                       c.unreadMessageCount = 0;
                   },
-                  onError: function() { }
+                  onError: function() {
+                      console.log("getConversation-Error->postion:sendMessage")
+                  }
               });
               RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, resultCallback, null);
     }

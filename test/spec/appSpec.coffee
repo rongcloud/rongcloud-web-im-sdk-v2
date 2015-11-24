@@ -25,10 +25,15 @@ describe "RongIMClient",->
                 console.log "token 无效"
               else
                 console.log error
+    it "registerMessageType",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',['Name','Age','Address']
+            done()
+        ,50);
     it "sendMessage",(done)->
         setTimeout(->
-            message = RongIMLib.TextMessage.obtain("而下下，发给1005")
-            # message = new RongIMLib.EmptyMessage({Name:'RongCloud-101',Age:18,Address:"beijing"});
+            # message = RongIMLib.TextMessage.obtain("而下下，发给1005")
+            message = new EmptyMessage({Name:'RongCloud2015-101',Age:18,Address:"beijing"});
             RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "1005", message,null,
               onSuccess: (data)->
                     console.log "Send Successfully"
@@ -36,15 +41,15 @@ describe "RongIMClient",->
               onError: (errorcode)->
                     console.log errorcode
         ,1000)
-    # it "sendTextMessage",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().sendTextMessage RongIMLib.ConversationType.PRIVATE, "1005", "我是TextMessage",
-    #           onSuccess: (data)->
-    #                 console.log "SendTextMessage Successfully"
-    #                 done()
-    #           onError: (errorcode)->
-    #                 console.log errorcode
-    #     ,1000)
+    it "sendTextMessage",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().sendTextMessage RongIMLib.ConversationType.PRIVATE, "1005", "我是TextMessage",
+              onSuccess: (data)->
+                    console.log "SendTextMessage Successfully"
+                    done()
+              onError: (errorcode)->
+                    console.log errorcode
+        ,1000)
     it "createConversation",(done)->
         setTimeout(->
             conversation = RongIMLib.RongIMClient.getInstance().createConversation RongIMLib.ConversationType.PRIVATE,"zhaoliu","小标题",true;
@@ -97,11 +102,6 @@ describe "RongIMClient",->
                 onError:(error)->
                     console.log "clearConversations,errorcode:"+error
         ,230)
-    it "registerMessageType",(done)->
-        setTimeout(->
-            RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',['Name','Age','Address']
-            done()
-        ,100);
     it "getUserInfo",(done)->
         setTimeout(->
             RongIMLib.RongIMClient.getInstance().getUserInfo "1003",
