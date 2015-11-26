@@ -33,7 +33,7 @@ module RongIMLib {
         this.flags = _in.readByte();
         this._in = _in;
       } else {
-        this.flags = In["headerCode"]
+        this.flags = In["headerCode"];
       }
       this.header = new RongIMLib.Header(this.flags);
       this.isPolling = isPolling;
@@ -76,14 +76,14 @@ module RongIMLib {
           this.msg = new DisconnectMessage(this.header);
           break;
         default:
-          throw new Error("No support for deserializing " + this.header.getType() + " messages")
+          throw new Error("No support for deserializing " + this.header.getType() + " messages");
       }
       if (this.isPolling) {
         this.msg.init(this.In);
       } else {
         this.msg.read(this._in, this.In.length - 1);
       }
-      return this.msg
+      return this.msg;
     }
   }
   export class Header {
@@ -111,23 +111,23 @@ module RongIMLib {
       var me = this;
       switch (this.qos) {
         case Qos[0]:
-          me.qos = Qos.AT_MOST_ONCE
+          me.qos = Qos.AT_MOST_ONCE;
           break;
         case Qos[1]:
-          me.qos = Qos.AT_LEAST_ONCE
+          me.qos = Qos.AT_LEAST_ONCE;
           break;
         case Qos[2]:
-          me.qos = Qos.EXACTLY_ONCE
+          me.qos = Qos.EXACTLY_ONCE;
           break;
         case Qos[3]:
-          me.qos = Qos.DEFAULT
+          me.qos = Qos.DEFAULT;
           break;
       }
       var _byte = (this.type << 4);
       _byte |= this.retain ? 1 : 0;
       _byte |= this.qos << 1;
       _byte |= this.dup ? 8 : 0;
-      return _byte
+      return _byte;
     }
     toString(): string {
       return "Header [type=" + this.type + ",retain=" + this.retain + ",qos=" + this.qos + ",dup=" + this.dup + "]";
@@ -147,21 +147,21 @@ module RongIMLib {
         } else if (code >= 128 && code <= 2047) {
           byteSize += 2;
           back.push((192 | (31 & (code >> 6))));
-          back.push((128 | (63 & code)))
+          back.push((128 | (63 & code)));
         } else if (code >= 2048 && code <= 65535) {
           byteSize += 3;
           back.push((224 | (15 & (code >> 12))));
           back.push((128 | (63 & (code >> 6))));
-          back.push((128 | (63 & code)))
+          back.push((128 | (63 & code)));
         }
       }
       for (let i = 0, len = back.length; i < len; i++) {
         if (back[i] > 255) {
-          back[i] &= 255
+          back[i] &= 255;
         }
       }
       if (isGetBytes) {
-        return back
+        return back;
       }
       if (byteSize <= 255) {
         return [0, byteSize].concat(back);
@@ -175,18 +175,18 @@ module RongIMLib {
       }
       var UTF = "", _arr = arr;
       for (let i = 0, len = _arr.length; i < len; i++) {
-        if (_arr[i] < 0) _arr[i] += 256;
+        if (_arr[i] < 0){ _arr[i] += 256;};
         var one = _arr[i].toString(2), v = one.match(/^1+?(?=0)/);
         if (v && one.length == 8) {
           var bytesLength = v[0].length,
             store = _arr[i].toString(2).slice(7 - bytesLength);
           for (var st = 1; st < bytesLength; st++) {
-            store += _arr[st + i].toString(2).slice(2)
+            store += _arr[st + i].toString(2).slice(2);
           }
           UTF += String.fromCharCode(parseInt(store, 2));
-          i += bytesLength - 1
+          i += bytesLength - 1;
         } else {
-          UTF += String.fromCharCode(_arr[i])
+          UTF += String.fromCharCode(_arr[i]);
         }
       }
       return UTF;
@@ -200,7 +200,7 @@ module RongIMLib {
       if (x instanceof RongIMStream) {
         return x;
       } else {
-        return new RongIMStream(x)
+        return new RongIMStream(x);
       }
     }
     toMQttString(str: string): any {
@@ -261,14 +261,14 @@ module RongIMLib {
     write(_byte: any) {
       var b = _byte;
       if (Object.prototype.toString.call(b).toLowerCase() == "[object array]") {
-        [].push.apply(this.pool, b)
+        [].push.apply(this.pool, b);
       } else {
         if (+b == b) {
           if (b > 255) {
             b &= 255;
           }
           this.pool.push(b);
-          this.writen++
+          this.writen++;
         }
       }
       return b;
@@ -290,14 +290,14 @@ module RongIMLib {
       var _tPool = this.pool;
       for (var i = 0; i < this.poolLen; i++) {
         if (_tPool[i] > 128) {
-          _tPool[i] -= 256
+          _tPool[i] -= 256;
         }
       }
-      return _tPool
+      return _tPool;
     }
     getBytesArray(isCom: boolean): any {
       if (isCom) {
-        return this.toComplements()
+        return this.toComplements();
       }
       return this.pool;
     }

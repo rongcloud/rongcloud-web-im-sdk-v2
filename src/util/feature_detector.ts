@@ -6,14 +6,14 @@ module RongIMLib {
       //TODO 替换callee
       document.removeEventListener("DOMContentLoaded", <any>arguments.callee, false);
       new FeatureDectector();
-    }, false)
+    }, false);
   } else if (document.attachEvent) {
     document.attachEvent("onreadystatechange", function() {
       if (document.readyState === "interactive" || document.readyState === "complete") {
         document.detachEvent("onreadystatechange", arguments.callee);
         new FeatureDectector();
       }
-    })
+    });
   }
   class FeatureDectector {
     script: any = document.createElement("script");

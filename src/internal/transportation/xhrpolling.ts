@@ -23,7 +23,7 @@ module RongIMLib {
          * @return {PollingTransportation} [此处与websocket略有区别，此处不返回Polling对象]
          */
         createTransport(url: string, method?: string): any {
-            if (!url) throw new Error("Url is empty,Please check it!");
+            if (!url){throw new Error("Url is empty,Please check it!");};
             var sid = RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId"), me = this;
             if (sid) {
                 setTimeout(function() {
@@ -37,10 +37,10 @@ module RongIMLib {
         }
         _request(url: string, method: string, multipart?: boolean) {
             var req = this.XmlHttpRequest();
-            if (multipart) req.multipart = true;
-            req.open(method || 'GET', MessageUtil.schemeArrs[RongIMClient.schemeType][SchemeType.XHR] + "://" + url);
-            if (method == 'POST' && 'setRequestHeader' in req) {
-                req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=utf-8');
+            if (multipart) {req.multipart = true;}
+            req.open(method || "GET", MessageUtil.schemeArrs[RongIMClient.schemeType][SchemeType.XHR] + "://" + url);
+            if (method == "POST" && "setRequestHeader" in req) {
+                req.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
             }
             return req;
         }
@@ -50,7 +50,7 @@ module RongIMLib {
             if ("onload" in this._xhr) {
                 this._xhr.onload = function() {
                     this.onload = this.empty;
-                    if (this.responseText == 'lost params') {
+                    if (this.responseText == "lost params") {
                         me.status400(me);
                     } else {
                         me.status200(this.responseText, args);
@@ -58,7 +58,7 @@ module RongIMLib {
                 };
                 this._xhr.onerror = function() {
                     this.disconnect();
-                }
+                };
             } else {
                 this._xhr.onreadystatechange = function() {
                     if (this.readyState == 4) {
@@ -72,7 +72,7 @@ module RongIMLib {
                         }
 
                     }
-                }
+                };
             }
             this._xhr.send();
         }
@@ -83,9 +83,9 @@ module RongIMLib {
          */
         send(data: any, url?: string, method?: string): void {
             var me: PollingTransportation = this;
-            if (!this.connected) this.queue.push(data);
-            if (this.isClose) throw new Error("The Connection is closed,Please open the Connection!!!");
-            this._sendXhr = this._request(Navigate.Endpoint.host + "/websocket" + data.url, 'POST');
+            if (!this.connected) {this.queue.push(data);}
+            if (this.isClose) {throw new Error("The Connection is closed,Please open the Connection!!!");}
+            this._sendXhr = this._request(Navigate.Endpoint.host + "/websocket" + data.url, "POST");
             if ("onload" in this._sendXhr) {
                 this._sendXhr.onload = function() {
                     this.onload = this.empty;
@@ -143,12 +143,12 @@ module RongIMLib {
             throw new Error(error);
         }
         XmlHttpRequest(): any {
-            var hasCORS = typeof XMLHttpRequest !== 'undefined' && 'withCredentials' in new XMLHttpRequest(), self = this;
-            if ('undefined' != typeof XMLHttpRequest && hasCORS) {
+            var hasCORS = typeof XMLHttpRequest !== "undefined" && "withCredentials" in new XMLHttpRequest(), self = this;
+            if ("undefined" != typeof XMLHttpRequest && hasCORS) {
                 self.allowWithCrendentials = true;
                 //isXHR 此处无需设置，默认true
                 return new XMLHttpRequest();
-            } else if ('undefined' != typeof XDomainRequest) {
+            } else if ("undefined" != typeof XDomainRequest) {
                 self.isXHR = false;
                 return new XDomainRequest();
             } else {
@@ -156,7 +156,7 @@ module RongIMLib {
             }
         }
         checkWithCredentials(): boolean {
-            if (!('XMLHttpRequest' in window)) return false;
+            if (!("XMLHttpRequest" in window)){return false;}
             var xmlRequest = new XMLHttpRequest();
             return xmlRequest.withCredentials !== undefined;
         }
@@ -170,20 +170,18 @@ module RongIMLib {
         disconnect(): void {
             this.onClose(false);
         }
-        reconnect(): void {
-
+        reconnect(): any {
+            return null;
         }
         onPollingSuccess(a: any, b?: any): void {
             this.onData(a, b);
-            if (/"headerCode":-32,/.test(a)) return;
-            this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId"), true)
+            if (/"headerCode":-32,/.test(a)){return;}
+            this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId"), true);
         }
         onPollingError(): void {
             this.disconnect();
         }
-        addEvent() {
-
-        }
+        addEvent() {}
         status200(text: string, arg: any) {
             var txt = text.match(/"sessionid":"\S+?(?=")/);
             this.onPollingSuccess(text, txt ? txt[0].slice(13) : void 0);

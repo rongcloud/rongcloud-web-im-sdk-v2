@@ -181,7 +181,7 @@ module RongIMLib {
                 low += 0xffffffff + 1;
             }
             low = low.toString(16);
-            var timestamp = parseInt(obj.high.toString(16) + "00000000".replace(new RegExp('0{' + low.length + '}$'), low), 16);
+            var timestamp = parseInt(obj.high.toString(16) + "00000000".replace(new RegExp("0{" + low.length + "}$"), low), 16);
             if (isDate) {
                 return new Date(timestamp);
             }
@@ -277,7 +277,7 @@ module RongIMLib {
         }
         check(f: any, position: string, d?: any) {
             var c = arguments.callee.caller;
-            if ('_client' in Bridge || d) {
+            if ("_client" in Bridge || d) {
                 for (var g = 0, e = c.arguments.length; g < e; g++) {
                     if (!new RegExp(this.getType(c.arguments[g])).test(f[g])) {
                         throw new Error("The index of " + g + " parameter was wrong type " + this.getType(c.arguments[g]) + " [" + f[g] + "] -> position:" + position);

@@ -38,7 +38,7 @@
     "grunt-typescript": "^0.7.0",
     "jasmine-core": "^2.3.4",
     "karma": "^0.13.9",
-    "karma-chrome-launcher": "^0.2.0",
+    "karma-chrome-launcher": "^0.2.1",
     "karma-coffee-preprocessor": "^0.3.0",
     "karma-coverage": "^0.5.3",
     "karma-firefox-launcher": "^0.1.6",

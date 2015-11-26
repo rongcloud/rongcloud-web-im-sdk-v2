@@ -2,7 +2,7 @@ module RongIMLib {
     export class LocalStorageProvider implements StorageProvider {
         _host: string;
         setItem(composedKey: string, object: any): void {
-            if (localStorage.length == 20) localStorage.removeItem(localStorage.key(0));
+            if (localStorage.length == 20) {localStorage.removeItem(localStorage.key(0));}
             localStorage.setItem(composedKey.toString(), object);
         }
 
@@ -29,7 +29,7 @@ module RongIMLib {
         }
         //单位：字节
         onOutOfQuota(): number {
-            return JSON.stringify(localStorage).length
+            return JSON.stringify(localStorage).length;
         }
     }
 }

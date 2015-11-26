@@ -2,8 +2,8 @@
 module RongIMLib {
     export class MessageCallback implements InFMessageCallback {
         timeoutMillis: number;
-        timeout: any = null
-        onError: any = null
+        timeout: any = null;
+        onError: any = null;
         constructor(error: any) {
             if (error && typeof error == "number") {
                 this.timeoutMillis = error;
@@ -17,7 +17,7 @@ module RongIMLib {
             if (this.timeoutMillis > 0 && !this.timeout) {
                 this.timeout = setTimeout(function() {
                     me.readTimeOut(true);
-                }, this.timeoutMillis)
+                }, this.timeoutMillis);
             }
         }
         pauseTimer() {
@@ -28,7 +28,7 @@ module RongIMLib {
         }
         readTimeOut(isTimeout: boolean) {
             if (isTimeout && this.onError) {
-                this.onError(ErrorCode.TIMEOUT)
+                this.onError(ErrorCode.TIMEOUT);
             } else {
                 this.pauseTimer();
             }
@@ -90,7 +90,7 @@ module RongIMLib {
                 }
                 this._cb();
             } else {
-                this._timeout(ErrorCode.UNKNOWN)
+                this._timeout(ErrorCode.UNKNOWN);
             }
         }
         readTimeOut(x?: any) {
@@ -120,7 +120,7 @@ module RongIMLib {
                 }
                 this._cb(data);
             } else {
-                status > 0 ? this._timeout(status) : this._cb(status)
+                status > 0 ? this._timeout(status) : this._cb(status);
             }
         }
         readTimeOut(x?: any) {
@@ -166,21 +166,21 @@ module RongIMLib {
                 new Navigate().getServerEndpoint(this._client.token, this._client.appId, function() {
                     this._client.clearHeartbeat();
                     new Client(this._client.token, this._client.appId).__init.call(x, function() {
-                        Transports._TransportType == "websocket" && this._client.keepLive()
+                        Transports._TransportType == "websocket" && this._client.keepLive();
                     });
                     this._client.channel.socket.fire("StatusChanged", 2);
-                }, this._timeout, false)
+                }, this._timeout, false);
             } else {
                 if (this._client.reconnectObj.onError) {
                     this._client.reconnectObj.onError(status);
                     delete this._client.reconnectObj.onError;
                 } else {
-                    this._timeout(status)
+                    this._timeout(status);
                 }
             }
         }
         readTimeOut(x?: any) {
-            MessageCallback.prototype.readTimeOut.call(this, x)
+            MessageCallback.prototype.readTimeOut.call(this, x);
         }
     }
 }

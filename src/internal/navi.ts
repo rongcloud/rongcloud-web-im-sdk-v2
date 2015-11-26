@@ -1,6 +1,6 @@
 module RongIMLib {
     export class Navigate {
-        static Endpoint: any = new Object
+        static Endpoint: any = new Object;
         constructor() {
             window.getServerEndpoint = function(x: any) {
                 //把导航返回的server字段赋值给CookieHelper._host，因为flash widget需要使用
@@ -9,7 +9,7 @@ module RongIMLib {
                 var temp = RongIMClient._storageProvider.getItemKey("navi");
                 temp !== null && RongIMClient._storageProvider.removeItem(temp);
                 RongIMClient._storageProvider.setItem("navi" + MD5(RongIMLib.Bridge._client.token).slice(8, 16), x["server"] + "," + (x.userId || ""));
-            }
+            };
         }
         connect(appId?: string, token?: string, callback?: any) {
             var oldAppId = RongIMClient._storageProvider.getItem("appId");
@@ -25,7 +25,7 @@ module RongIMLib {
             var me = this;
             this.getServerEndpoint(token, appId, function() {
                 client.connect(callback);
-            }, callback.onError, true)
+            }, callback.onError, true);
             return client;
         }
         getServerEndpoint(_token: string, _appId: string, _onsuccess?: any, _onerror?: any, unignore?: any) {
@@ -63,7 +63,7 @@ module RongIMLib {
             } else {
                 xss.onreadystatechange = function() {
                     xss.readyState == "loaded" && _onsuccess();
-                }
+                };
             }
         }
     }

@@ -1,8 +1,8 @@
 //用于连接通道
 module RongIMLib {
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
-        ["chatMsg", "pcMsgP", "pdMsgP", "pgMsgP", "ppMsgP"], "pdOpen", "rename", "uGcmpr", "qnTkn", 'destroyChrm',
-        'createChrm', 'exitChrm', 'queryChrm', 'joinChrm', "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", 'qryRelation', 'delRelation'];
+        ["chatMsg", "pcMsgP", "pdMsgP", "pgMsgP", "ppMsgP"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation"];
     export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
@@ -59,14 +59,13 @@ module RongIMLib {
         socket: any = null;
         _events: any = {};
         currentURL: string;
-        constructor() { }
         static getInstance(): Socket {
             return new Socket();
         }
         connect(url: string, cb: any): any {
             if (this.socket) {
                 if (url) {
-                    this.on("connect", cb || function() { });
+                    this.on("connect", cb || new Function);
                 }
                 if (url) {
                     this.currentURL = url;
@@ -178,7 +177,7 @@ module RongIMLib {
         userId: string = "";
         reconnectObj: any = {};
         heartbeat: any = 0;
-        chatroomId: string = '';
+        chatroomId: string = "";
         static userInfoMapping: any = {};
         SyncTimeQueue: any = [];
         constructor(token: string, appId: string) {
@@ -195,6 +194,7 @@ module RongIMLib {
                     try {
                         this.channel.disconnect();
                     } catch (e) {
+                        throw new Error(e);
                     }
                     clearTimeout(this.timeout_);
                     this.timeout_ = 0;
@@ -293,15 +293,15 @@ module RongIMLib {
                 time = RongIMClient._storageProvider.getItem(this.userId) || "0";
                 modules = new Modules.SyncRequestMsg();
                 modules.setIspolling(false);
-                str = 'pullMsg';
+                str = "pullMsg";
                 target = this.userId;
             } else {
                 //聊天室消息
                 time = RongIMClient._storageProvider.getItem(this.userId + "CST") || "0";
                 modules = new Modules.ChrmPullMsg();
                 modules.setCount(0);
-                str = 'chrmPull';
-                if (this.chatroomId === '') {
+                str = "chrmPull";
+                if (this.chatroomId === "") {
                     //受到聊天室消息，但是本地没有加入聊天室就手动抛出一个错误
                     throw new Error("syncTime:Received messages of chatroom but was not init");
                 }
@@ -320,7 +320,7 @@ module RongIMLib {
                     var sync = MessageUtil.int64ToTimestamp(collection.syncTime),
                         symbol = me.userId;
                     if (str == "chrmPull") {
-                        symbol += 'CST';
+                        symbol += "CST";
                     }
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
                     RongIMClient._storageProvider.setItem(symbol, sync);
@@ -362,9 +362,9 @@ module RongIMLib {
         }
         setListener(_changer: any): void {
             if (typeof _changer == "object") {
-                if (typeof _changer.onChanged == 'function') {
+                if (typeof _changer.onChanged == "function") {
                     Channel._ConnectionStatusListener = _changer;
-                } else if (typeof _changer.onReceived == 'function') {
+                } else if (typeof _changer.onReceived == "function") {
                     Channel._ReceiveMessageListener = _changer;
                 }
             }
@@ -436,7 +436,7 @@ module RongIMLib {
                     entity = Modules.DownStreamMessage.decode(msg.getData());
                     RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
                 } else {
-                    if (Bridge._client.sdkVer && Bridge._client.sdkVer == '1.0.0') {
+                    if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;
                     }
                     entity = Modules.UpStreamMessage.decode(msg.getData());

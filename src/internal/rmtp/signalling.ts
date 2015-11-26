@@ -10,7 +10,7 @@ module RongIMLib {
     lengthSize: any = 0;
     constructor(arg: any) {
       if (arg instanceof Header) {
-        this._header = arg
+        this._header = arg;
       } else {
         this._header = new Header(arg, false, Qos.AT_MOST_ONCE, false);
       }
@@ -24,7 +24,7 @@ module RongIMLib {
       this._headerCode = this.getHeaderFlag();
       out.write(this._headerCode);
       this.writeMessage(out);
-      return out
+      return out;
     }
     getHeaderFlag(): any {
       return this._header.encode();
@@ -36,22 +36,22 @@ module RongIMLib {
       return this.write([]).getBytesArray();
     }
     isRetained() {
-      return this._header.retain
+      return this._header.retain;
     }
     setRetained(retain: any) {
       this._header.retain = retain;
     }
     setQos(qos: any) {
-      this._header.qos = Object.prototype.toString.call(qos) == '[object Object]' ? qos : Qos[qos]
+      this._header.qos = Object.prototype.toString.call(qos) == "[object Object]" ? qos : Qos[qos];
     }
     setDup(dup: boolean) {
       this._header.dup = dup;
     }
     isDup() {
-      return this._header.dup
+      return this._header.dup;
     }
     getType() {
-      return this._header.type
+      return this._header.type;
     }
     getQos() {
       return this._header.qos;
@@ -64,11 +64,13 @@ module RongIMLib {
     init(args: any) {
       var valName: any, nana: any, me: { [s: string]: any; } = this;
       for (nana in args) {
-        if (!args.hasOwnProperty(nana))
-          continue;
+        if (!args.hasOwnProperty(nana)){
+            continue;
+        }
+
         valName = nana.replace(/^\w/, function(x: any) {
           var tt = x.charCodeAt(0);
-          return 'set' + (tt >= 0x61 ? String.fromCharCode(tt & ~32) : x)
+          return "set" + (tt >= 0x61 ? String.fromCharCode(tt & ~32) : x);
         });
         if (valName in me) {
           me[valName](args[nana]);
@@ -105,7 +107,7 @@ module RongIMLib {
         case 1:
         case 3:
           if (!arguments[0] || arguments[0].length > 64) {
-            throw new Error("ConnectMessage:Client Id cannot be null and must be at most 64 characters long: " + arguments[0])
+            throw new Error("ConnectMessage:Client Id cannot be null and must be at most 64 characters long: " + arguments[0]);
           }
           this.clientId = arguments[0];
           this.cleanSession = arguments[1];
@@ -135,21 +137,23 @@ module RongIMLib {
       this.clientId = stream.readUTF();
       if (this.hasWill) {
         this.willTopic = stream.readUTF();
-        this.will = stream.readUTF()
+        this.will = stream.readUTF();
       }
       if (this.hasAppId) {
         try {
-          this.appId = stream.readUTF()
+          this.appId = stream.readUTF();
         } catch (ex) {
+          throw new Error(ex);
         }
       }
       if (this.hasToken) {
         try {
-          this.token = stream.readUTF()
+          this.token = stream.readUTF();
         } catch (ex) {
+          throw new Error(ex);
         }
       }
-      return stream
+      return stream;
     }
     writeMessage(out: any) {
       var stream = this.binaryHelper.convertStream(out);
@@ -187,7 +191,7 @@ module RongIMLib {
     MESSAGE_LENGTH = 2;
     binaryHelper: BinaryHelper = new BinaryHelper();
     constructor(header: any) {
-      super(arguments.length == 0 ? Type.CONNACK : arguments.length == 1 ? arguments[0] instanceof Header ? arguments[0] : Type.CONNACK : null)
+      super(arguments.length == 0 ? Type.CONNACK : arguments.length == 1 ? arguments[0] instanceof Header ? arguments[0] : Type.CONNACK : null);
       var me = this;
       switch (arguments.length) {
         case 0:
@@ -195,7 +199,7 @@ module RongIMLib {
           if (!(arguments[0] instanceof Header)) {
             if (arguments[0] in ConnectionState) {
               if (arguments[0] == null) {
-                throw new Error("ConnAckMessage:The status of ConnAskMessage can't be null")
+                throw new Error("ConnAckMessage:The status of ConnAskMessage can't be null");
               }
               me.setStatus(arguments[0]);
             }
@@ -206,7 +210,7 @@ module RongIMLib {
     messageLength(): number {
       var length = this.MESSAGE_LENGTH;
       if (this.userId) {
-        length += this.binaryHelper.toMQttString(this.userId).length
+        length += this.binaryHelper.toMQttString(this.userId).length;
       }
       return length;
     }
@@ -216,10 +220,10 @@ module RongIMLib {
       if (result >= 0 && result <= 9) {
         this.setStatus(result);
       } else {
-        throw new Error("Unsupported CONNACK code:" + result)
+        throw new Error("Unsupported CONNACK code:" + result);
       }
       if (msglength > this.MESSAGE_LENGTH) {
-        this.setUserId(_in.readUTF())
+        this.setUserId(_in.readUTF());
       }
     }
     writeMessage(out: any) {
@@ -241,9 +245,9 @@ module RongIMLib {
           throw new Error("Unsupported CONNACK code:" + status);
       }
       if (this.userId) {
-        stream.writeUTF(this.userId)
+        stream.writeUTF(this.userId);
       }
-      return stream
+      return stream;
     }
     setStatus(x: any) {
       this.status = x;
@@ -262,7 +266,7 @@ module RongIMLib {
    *断开消息类型
    */
   export class DisconnectMessage extends BaseMessage {
-    _name: string = "DisconnectMessage"
+    _name: string = "DisconnectMessage";
     status: any;
     MESSAGE_LENGTH: number = 2;
     binaryHelper: BinaryHelper = new BinaryHelper();
@@ -270,7 +274,7 @@ module RongIMLib {
       super(header instanceof Header ? header : Type.DISCONNECT);
       if (!(header instanceof Header)) {
         if (header in RongIMLib.DisconnectionStatus) {
-          this.status = header
+          this.status = header;
         }
       }
     }
@@ -283,7 +287,7 @@ module RongIMLib {
       if (result >= 0 && result <= 5) {
         this.setStatus(result);
       } else {
-        throw new Error("Unsupported CONNACK code:" + result)
+        throw new Error("Unsupported CONNACK code:" + result);
       }
     }
     writeMessage(Out: any) {
@@ -292,7 +296,7 @@ module RongIMLib {
       if (+status >= 1 && +status <= 3) {
         out.write((+status) - 1);
       } else {
-        throw new Error("Unsupported CONNACK code:" + status)
+        throw new Error("Unsupported CONNACK code:" + status);
       }
     }
     setStatus(x: any) {
@@ -342,7 +346,7 @@ module RongIMLib {
         msb = (Id & 65280) >> 8;
       out.write(msb);
       out.write(lsb);
-      return out
+      return out;
     }
 
     readMessage(_in: any, msgLength?: number) {
@@ -351,11 +355,11 @@ module RongIMLib {
     }
 
     setMessageId(_messageId: number) {
-      this.messageId = _messageId
+      this.messageId = _messageId;
     }
 
     getMessageId(): any {
-      return this.messageId
+      return this.messageId;
     }
   }
   /**
@@ -363,8 +367,8 @@ module RongIMLib {
    *qos为1必须给出应答（所有消息类型一样）
    */
   export class PubAckMessage extends RetryableMessage {
-    status: any
-    msgLen: number = 2
+    status: any;
+    msgLen: number = 2;
     date: number = 0;
     binaryHelper: BinaryHelper = new BinaryHelper();
     _name: string = "PubAckMessage";
@@ -379,14 +383,14 @@ module RongIMLib {
     }
     writeMessage(Out: any) {
       var out = this.binaryHelper.convertStream(Out);
-      RetryableMessage.prototype.writeMessage.call(this, out)
+      RetryableMessage.prototype.writeMessage.call(this, out);
     }
     readMessage(_in: any, msgLength: number) {
       RetryableMessage.prototype.readMessage.call(this, _in);
       this.date = _in.readInt();
-      status = _in.read() * 256 + _in.read()
+      status = _in.read() * 256 + _in.read();
     }
-    setStatus = function(x: any) {
+    setStatus(x: any) {
       this.status = x;
     }
     getStatus(): any {
@@ -426,7 +430,7 @@ module RongIMLib {
       out.writeUTF(this.topic);
       out.writeUTF(this.targetId);
       RetryableMessage.prototype.writeMessage.apply(this, arguments);
-      out.write(this.data)
+      out.write(this.data);
     };
     readMessage(_in: any, msgLength: number) {
       var pos = 6;
@@ -437,7 +441,7 @@ module RongIMLib {
       pos += this.binaryHelper.toMQttString(this.targetId).length;
       RetryableMessage.prototype.readMessage.apply(this, arguments);
       this.data = new Array(msgLength - pos);
-      this.data = _in.read(this.data)
+      this.data = _in.read(this.data);
     };
     setTopic(x: any) {
       this.topic = x;
@@ -487,14 +491,14 @@ module RongIMLib {
       length += this.binaryHelper.toMQttString(this.targetId).length;
       length += 2;
       length += this.data.length;
-      return length
+      return length;
     }
     writeMessage(Out: any) {
       var out = this.binaryHelper.convertStream(Out);
       out.writeUTF(this.topic);
       out.writeUTF(this.targetId);
       RetryableMessage.prototype.writeMessage.call(this, out);
-      out.write(this.data)
+      out.write(this.data);
     }
     readMessage(_in: any, msgLength: number) {
       var pos = 0;
@@ -505,7 +509,7 @@ module RongIMLib {
       this.readMessage.apply(this, arguments);
       pos += 2;
       this.data = new Array(msgLength - pos);
-      _in.read(this.data)
+      _in.read(this.data);
     }
     setTopic(x: any) {
       this.topic = x;
@@ -548,7 +552,7 @@ module RongIMLib {
     date: any;
     binaryHelper: BinaryHelper = new BinaryHelper();
     constructor(header: RongIMLib.Header) {
-      super(header)
+      super(header);
     }
     readMessage(In: any, msgLength: number) {
       RetryableMessage.prototype.readMessage.call(this, In);
@@ -556,7 +560,7 @@ module RongIMLib {
       this.setStatus(In.read() * 256 + In.read());
       if (msgLength > 0) {
         this.data = new Array(msgLength - 8);
-        this.data = In.read(this.data)
+        this.data = In.read(this.data);
       }
     }
     getData(): any {

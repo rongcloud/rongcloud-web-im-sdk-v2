@@ -25,10 +25,10 @@ module RongIMLib {
          * @return {WebScoket} [返回WebSockt对象]
          */
         createTransport(url: string, method?: string): any {
-            if (!url) throw new Error("URL can't be empty");
+            if (!url){throw new Error("URL can't be empty");};
             this.url = url;
             this.socket = new WebSocket(MessageUtil.schemeArrs[RongIMClient.schemeType][SchemeType.WS]+"://" + url);
-            this.socket.binaryType = 'arraybuffer';
+            this.socket.binaryType = "arraybuffer";
             this.addEvent();
             return this.socket;
         }
@@ -61,7 +61,7 @@ module RongIMLib {
             if (MessageUtil.isArray(data)) {
                 this._socket.onMessage(new MessageInputStream(data).readMessage());
             } else {
-                this._socket.onMessage(new MessageInputStream(MessageUtil.ArrayFormInput(data)).readMessage())
+                this._socket.onMessage(new MessageInputStream(MessageUtil.ArrayFormInput(data)).readMessage());
             }
             return "";
         }
@@ -89,22 +89,22 @@ module RongIMLib {
                 self.isClose = false;
                 //通道可以用后，调用发送队列方法，把所有等得发送的消息发出
                 self.doQueue();
-                self._socket.fire("connect")
-            }
+                self._socket.fire("connect");
+            };
             self.socket.onmessage = function(ev) {
                 //判断数据是不是字符串，如果是字符串那么就是flash传过来的。
                 if (typeof ev.data == "string") {
-                    self.onData(ev.data.split(","))
+                    self.onData(ev.data.split(","));
                 } else {
-                    self.onData(ev.data)
+                    self.onData(ev.data);
                 }
-            }
+            };
             self.socket.onerror = function(ev) {
                 self.onError(ev);
-            }
+            };
             self.socket.close = function() {
                 self.onClose();
-            }
+            };
         }
         /**
          * [doQueue 消息队列，把队列中消息发出]
