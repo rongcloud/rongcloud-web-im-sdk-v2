@@ -4,6 +4,10 @@ module RongIMLib {
         message: TextMessage;
         content: string;
         extra: string;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> TextMessage.");
@@ -28,7 +32,7 @@ module RongIMLib {
         }
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:TxtMsg");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
@@ -46,6 +50,10 @@ module RongIMLib {
         duration: number;
         uri: string;
         extra: string;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
         constructor(message: any) {
             if (!VoiceMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> VoiceMessage.");
@@ -93,7 +101,7 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:VcMsg");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
@@ -114,6 +122,10 @@ module RongIMLib {
         thumUri: string;
         isFull: boolean = false;
         isUpLoadExp: boolean = false;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
         constructor(message: any) {
             if (!ImageMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ImageMessage.");
@@ -178,7 +190,7 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:ImgMsg");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
@@ -198,7 +210,10 @@ module RongIMLib {
         lng: number;
         poi: string;
         message: LocationMessage;
-
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
         constructor(message: any) {
             if (!LocationMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> LocationMessage.");
@@ -256,7 +271,7 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:LBSMsg");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
@@ -274,6 +289,10 @@ module RongIMLib {
         imgUrl: string;
         title: string;
         url: string;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
         constructor(message: any) {
             if (!LocationMessage.caller && arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> RichContentMessage.");
@@ -319,7 +338,7 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:ImgTextMsg");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();

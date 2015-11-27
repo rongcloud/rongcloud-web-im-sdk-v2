@@ -1,144 +1,14 @@
 module RongIMLib {
-    // //消息基类
-    // export class RongIMMessage {
-    //     msgType: string = "unknown";
-    //     message: any;
-    //     receiveTime: any;
-    //     converType: number;
-    //     msgDirection: number;
-    //     msgId: string;
-    //     objName: string;
-    //     receivedStatus: any;
-    //     sendUserId: string;
-    //     sentStatus: any;
-    //     sentTime: any;
-    //     targetId: string;
-    //     pushContent: any;
-    //     constructor(message: any) {
-    //         this.message = message || {};
-    //     }
-    //     getPushContent(): any {
-    //         return this.pushContent;
-    //     }
-    //     getDetail(): any {
-    //         return this.message;
-    //     }
-    //     getMessageTag(): any {
-    //         return [MessageTag[1], MessageTag[2]];
-    //     }
-    //     getContent(): any {
-    //         return this.message.content;
-    //     }
-    //     getConversationType(): number {
-    //         return this.converType;
-    //     }
-    //     getExtra(): string {
-    //         return this.message.extra;
-    //     }
-    //     getMessageDirection(): any {
-    //         return this.msgDirection;
-    //     }
-    //     getMessageId(): string {
-    //         return this.msgId;
-    //     }
-    //     getObjectName(): string {
-    //         return this.objName;
-    //     }
-    //     getReceivedStatus(): any {
-    //         return this.receivedStatus;
-    //     }
-    //     getReceivedTime(): any {
-    //         return this.receiveTime;
-    //     }
-    //     getSenderUserId(): string {
-    //         return this.sendUserId;
-    //     }
-    //     getSentStatus(): any {
-    //         return this.sentStatus;
-    //     }
-    //     getTargetId(): string {
-    //         return this.targetId;
-    //     }
-    //     getMessageType(): any {
-    //         return this.msgType;
-    //     }
-    //     getSentTime(): any {
-    //         return this.sentTime;
-    //     }
-    //     setPushContent(pushContent: any) {
-    //         this.pushContent = pushContent;
-    //     };
-    //     setContent(c: any, d: any) {
-    //         this.message[d || "content"] = c;
-    //     };
-    //     setConversationType(c: number) {
-    //         this.converType = c;
-    //     };
-    //     setExtra(c: string) {
-    //         this.message.extra = c;
-    //     };
-    //     setMessageDirection(c: any) {
-    //         this.msgDirection = c;
-    //     };
-    //     setMessageId(msgId: string) {
-    //         this.msgId = msgId;
-    //     };
-    //     setObjectName(objName: string) {
-    //         this.objName = objName;
-    //     };
-    //     setReceivedStatus(status: any) {
-    //         this.receivedStatus = status;
-    //     };
-    //     setSenderUserId(userId: string) {
-    //         this.sendUserId = userId;
-    //     };
-    //     setSentStatus(status: any) {
-    //         return !!(this.sentStatus = status)
-    //     };
-    //     setSentTime(sentTime: any) {
-    //         this.sentTime = MessageUtil.int64ToTimestamp(sentTime);
-    //     };
-    //     setTargetId(targetId: string) {
-    //         this.targetId = targetId;
-    //     };
-    //     setReceivedTime(receiveTime: any) {
-    //         this.receiveTime = receiveTime;
-    //     };
-    //     setMessageType(msgType: any) {
-    //         this.msgType = msgType;
-    //     }
-    //     toJSONString(): any {
-    //         var c = {
-    //             "receivedTime": this.receiveTime,
-    //             "messageType": this.msgType,
-    //             "details": this.message,
-    //             "conversationType": this.converType,
-    //             "direction": this.msgDirection,
-    //             "messageId": this.msgId,
-    //             "objectName": this.objName,
-    //             "senderUserId": this.sendUserId,
-    //             "sendTime": this.sentTime,
-    //             "targetId": this.targetId
-    //         };
-    //         return JSON.stringify(c)
-    //     }
-    //     encode() {
-    //         var c = new Modules.UpStreamMessage();
-    //         c.setSessionId(3);
-    //         c.setClassname(this.getObjectName());
-    //         c.setContent(JSON.stringify(this.getDetail()));
-    //         var val = c.toArrayBuffer();
-    //         if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-    //             return [].slice.call(new Int8Array(val))
-    //         }
-    //         return val
-    //     }
-    // }
+
     export class InformationNotificationMessage implements UserInfoAttachedMessage, ExtraAttachedMessage {
         userInfo: UserInfo;
         message: InformationNotificationMessage;
         content: string;
         extra: string;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
         constructor(message: any) {
             this.message = message;
         }
@@ -164,7 +34,7 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:InfoNtf");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
@@ -182,6 +52,10 @@ module RongIMLib {
         operation: string;
         sourceUserId: string;
         targetUserId: string;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
         static CONTACT_OPERATION_ACCEPT_RESPONSE: string = "ContactOperationAcceptResponse";
         static CONTACT_OPERATION_REJECT_RESPONSE: string = "ContactOperationRejectResponse";
         static CONTACT_OPERATION_REQUEST: string = "ContactOperationRequest";
@@ -234,7 +108,7 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:ContactNtf");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
@@ -250,6 +124,10 @@ module RongIMLib {
         extra: string;
         content: string;
         operation: string;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
         constructor(message: any) {
             this.message = message;
         }
@@ -282,7 +160,7 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:ProfileNtf");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
@@ -298,6 +176,10 @@ module RongIMLib {
         extra: string;
         content: string;
         name: string;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
 
         constructor(message: any) {
             this.message = message;
@@ -325,7 +207,7 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:CmdNtf");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
@@ -343,6 +225,10 @@ module RongIMLib {
         type: string;
         isHasReceived: boolean = false;
         operation: string;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
         constructor(message: any) {
             this.message = message;
         }
@@ -380,7 +266,7 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
-            c.setSessionId(3);
+            c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:DizNtf");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();

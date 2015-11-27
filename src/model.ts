@@ -92,7 +92,7 @@ module RongIMLib {
             public sentTime?: number,
             public targetId?: string,
             public messageType?:string
-        ) { }
+           ) {}
         setObjectName(objectName: string) {
             this.objectName = objectName;
         }

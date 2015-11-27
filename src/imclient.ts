@@ -286,13 +286,7 @@ module RongIMLib {
                 resultCallback.onError(ErrorCode.TIMEOUT);
                 throw new Error("connect is timeout! postion:sendMessage");
             }
-            var content: any = messageContent.encode(), message: any, j: any;
-            // message.conversationType = conversationType;
-            // message.messageDirection = MessageDirection.SEND;
-            // message.sentStatus = SentStatus.SENDING;
-            // message.senderUserId = Bridge._client.userId;
-            // message.sentTime = new Date().getTime();
-            // message.targetId = targetId;
+            var content: any = messageContent.encode(), message: any;
             var me = this;
             this.getConversation(conversationType, targetId, <ResultCallback<Conversation>>{
                 onSuccess: function(c) {
@@ -308,6 +302,7 @@ module RongIMLib {
                     // c.latestMessageId = message.messageId;
                     c.latestMessage = messageContent;
                     c.unreadMessageCount = 0;
+                    c.setTop();
                 },
                 onError: function() {
                     console.log("getConversation-Error->postion:sendMessage");
