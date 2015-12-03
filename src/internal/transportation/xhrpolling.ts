@@ -60,15 +60,15 @@ module RongIMLib {
                     this.disconnect();
                 };
             } else {
-                this._xhr.onreadystatechange = function() {
-                    if (this.readyState == 4) {
-                        this.onreadystatechange = this.empty;
-                        if (/^(200|202)$/.test(this.status)) {
-                            me.status200(this.responseText, args);
-                        } else if (/^(400|403)$/.test(this.status)) {
+                me._xhr.onreadystatechange = function() {
+                    if (me._xhr.readyState == 4) {
+                        me._xhr.onreadystatechange = me.empty;
+                        if (/^(200|202)$/.test(me._xhr.status)) {
+                            me.status200(me._xhr.responseText, args);
+                        } else if (/^(400|403)$/.test(me._xhr.status)) {
                             me.status400(me);
                         } else {
-                            this.disconnect();
+                            me.disconnect();
                         }
 
                     }
@@ -96,10 +96,10 @@ module RongIMLib {
                 };
             } else {
                 this._sendXhr.onreadystatechange = function() {
-                    if (this.readyState == 4) {
+                    if (me._sendXhr.readyState == 4) {
                         this.onreadystatechange = this.empty;
-                        if (/^(202|200)$/.test(this.status)) {
-                            me.onData(this.responseText);
+                        if (/^(202|200)$/.test(me._sendXhr.status)) {
+                            me.onData(me._sendXhr.responseText);
                         }
                     }
                 };
@@ -122,19 +122,27 @@ module RongIMLib {
             if (!MessageUtil.isArray(val)) {
                 val = [val];
             }
-            [].forEach.call(val, function(x: any) {
+            Array.forEach(val, function(x: any) {
                 self._socket.fire("message", new RongIMLib.MessageInputStream(x, true).readMessage());
             });
             return "";
         }
         onClose(isrecon?: boolean): any {
             if (this._xhr) {
-                this._xhr.onreadystatechange = this._xhr.onload = this.empty;
+                if (this._xhr.onload) {
+                    this._xhr.onreadystatechange = this._xhr.onload = this.empty;
+                }else{
+                    this._xhr.onreadystatechange = this.empty;
+                }
                 this._xhr.abort();
                 this._xhr = null;
             }
             if (this._sendXhr) {
-                this._sendXhr.onreadystatechange = this._sendXhr.onload = this.empty;
+                if (this._sendXhr.onload) {
+                    this._sendXhr.onreadystatechange = this._sendXhr.onload = this.empty;
+                }else{
+                    this._sendXhr.onreadystatechange = this.empty;
+                }
                 this._sendXhr.abort();
                 this._sendXhr = null;
             }
@@ -152,7 +160,7 @@ module RongIMLib {
                 self.isXHR = false;
                 return new XDomainRequest();
             } else {
-                return new Function;
+                return new ActiveXObject("Microsoft.XMLHTTP");
             }
         }
         checkWithCredentials(): boolean {

@@ -60,7 +60,8 @@ module RongIMLib {
             }
             RongIMClient._appKey = appKey;
             RongIMClient._storageProvider = MessageUtil.createStorageFactory();
-
+            var pather = new FeaturePatcher();
+            pather.patchAll();
         }
 
         /**
@@ -281,7 +282,7 @@ module RongIMLib {
          * @param  {string}                  pushData         []
          */
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
-            CheckParam.getInstance().check(["number", "string", "object", "null", "object"], "sendMessage");
+            CheckParam.getInstance().check(["number", "string", "object", "null|object", "object"], "sendMessage");
             if (!Bridge._client.channel.socket.socket.connected) {
                 resultCallback.onError(ErrorCode.TIMEOUT);
                 throw new Error("connect is timeout! postion:sendMessage");
@@ -297,9 +298,7 @@ module RongIMLib {
                     c.sentStatus = SentStatus.SENDING;
                     c.senderUserName = "";
                     c.senderUserId = Bridge._client.userId;
-                    // c.objectName = message.objectName;
                     c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-                    // c.latestMessageId = message.messageId;
                     c.latestMessage = messageContent;
                     c.unreadMessageCount = 0;
                     c.setTop();
@@ -541,8 +540,8 @@ module RongIMLib {
                     RongIMLib.ConversationType.PUBLIC_SERVICE,
                     RongIMLib.ConversationType.APP_PUBLIC_SERVICE];
             }
-            conversationTypes.forEach(conversationType => {
-                RongIMClient.conversationMap.conversationList.forEach(conver=> {
+            Array.forEach(conversationTypes,function(conversationType:ConversationType){
+                Array.forEach(RongIMClient.conversationMap.conversationList,function(conver:Conversation){
                     if (conversationType == conver.conversationType) {
                         arrs.push(conver);
                     }
@@ -1079,7 +1078,7 @@ module RongIMLib {
                     RongIMClient.bridge.queryMsg(22, MessageUtil.ArrayForm(modules.toArrayBuffer()), uId, callback);
                 },
                 onError: function() {
-                    console.log(ErrorCode.BLACK_REMOVE_ERROR);
+                    callback.onError(ErrorCode.BLACK_REMOVE_ERROR);
                 }
             });
         }

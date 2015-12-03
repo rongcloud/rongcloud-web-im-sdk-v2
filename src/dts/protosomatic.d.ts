@@ -7,6 +7,7 @@ declare interface Window {
   RongIMClient: any;
   getServerEndpoint: any;
   XDomainRequest: any;
+  JSON:any;
 }
 declare interface HTMLScriptElement {
   onreadystatechange: any;
@@ -14,6 +15,10 @@ declare interface HTMLScriptElement {
 }
 declare interface Date {
   toGMTString: any;
+}
+
+declare interface ArrayConstructor{
+  forEach:any;
 }
 
 declare interface Document {
