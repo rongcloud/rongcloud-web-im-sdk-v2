@@ -35,8 +35,24 @@ module RongIMLib {
         }
     }
     export class CallbackMapping {
+        publicServiceList: Array<PublicServiceProfile> = [];
+        profile: PublicServiceProfile;
         static getInstance(): CallbackMapping {
             return new CallbackMapping();
+        }
+        pottingProfile(item:any){
+            var temp: any;
+            this.profile = new PublicServiceProfile();
+            temp = JSON.parse(item.extra);
+            this.profile.isGlobal = temp.isGlobal;
+            this.profile.introduction = temp.introduction;
+            this.profile.menu = <Array<PublicServiceMenuItem>>temp.menu;
+            this.profile.hasFollowed = temp.follow;
+            this.profile.publicServiceId = item.mpid;
+            this.profile.name = item.name;
+            this.profile.portraitUri = item.portraitUrl;
+            this.profile.conversationType = item.type == 'mc' ? ConversationType.APP_PUBLIC_SERVICE : ConversationType.PUBLIC_SERVICE;
+            this.publicServiceList.push(this.profile);
         }
         mapping(entity: any, tag: string): any {
             switch (tag) {
@@ -69,6 +85,14 @@ module RongIMLib {
                     return entity.result;
                 case "QueryBlackListOutput":
                     return entity.userIds;
+                case "PullMpOutput":
+                    if (entity.info) {
+                        var self = this;
+                        Array.forEach(entity.info, function(item: any) {
+                            setTimeout(self.pottingProfile(item),100);
+                        });
+                    }
+                    return this.publicServiceList;
                 default:
                     return entity;
             }

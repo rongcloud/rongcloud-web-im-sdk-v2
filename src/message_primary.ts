@@ -281,6 +281,7 @@ module RongIMLib {
             return val;
         }
     }
+
     export class RichContentMessage implements MessageContent, UserInfoAttachedMessage {
         userInfo: UserInfo;
         message: RichContentMessage;
@@ -348,6 +349,7 @@ module RongIMLib {
             return val;
         }
     }
+
     export class UnknownMessage implements MessageContent {
         message: UnknownMessage;
         constructor(message: any) {
@@ -359,6 +361,108 @@ module RongIMLib {
 
         encode() {
             var c = new Modules.UpStreamMessage();
+        }
+    }
+
+    export class PublicServiceMenuItem {
+        id: string;
+        name: string;
+        type: ConversationType;
+        sunMenuItems: Array<PublicServiceMenuItem>;
+        url: string;
+        getId(): string {
+            return this.id;
+        }
+        getName(): string {
+            return this.name;
+        }
+        getSubMenuItems(): Array<PublicServiceMenuItem> {
+            return this.sunMenuItems;
+        }
+        getType(): ConversationType {
+            return this.type;
+        }
+        setId(id: string) {
+            this.id = id;
+        }
+        setType(type: ConversationType) {
+            this.type = type;
+        }
+        setName(name: string) {
+            this.name = name;
+        }
+        setSunMenuItems(sunMenuItems: Array<PublicServiceMenuItem>) {
+            this.sunMenuItems = sunMenuItems;
+        }
+    }
+
+    export class PublicServiceCommandMessage implements MessageContent {
+        message: PublicServiceCommandMessage;
+        data: string;
+        extra: string;
+        command: string;
+        //persited 0:持久化 1:不持久化
+        persited: number = 1;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 2;
+        menuItem: PublicServiceMenuItem;
+        constructor(message: any) {
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> TextMessage.");
+            }
+            this.message = message;
+        }
+        static obtain(item: PublicServiceMenuItem): PublicServiceCommandMessage {
+            var msg = new PublicServiceCommandMessage({ extra: "", data: "", command: "", menuItem: item });
+            return msg;
+        }
+        encode(): any {
+            var c = new Modules.UpStreamMessage();
+            c.setSessionId(this.persited | this.counted);
+            c.setClassname("RC:PSCmd");
+            c.setContent(JSON.stringify(this.message));
+            var val = c.toArrayBuffer();
+            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
+                return [].slice.call(new Int8Array(val));
+            }
+            return val;
+        }
+    }
+
+    export class PublicServiceMultiRichContentMessage implements MessageContent, UserInfoAttachedMessage {
+        userInfo: UserInfo;
+        richContentMessages: Array<RichContentMessage>;
+        constructor(messages: Array<RichContentMessage>) {
+            this.richContentMessages = messages;
+        }
+        getPublicServiceUserInfo(): UserInfo {
+            return this.userInfo;
+        }
+        setPublicServiceUserInfo(user: UserInfo) {
+            this.userInfo = user;
+        }
+        encode(): any {
+            return null;
+        }
+    }
+
+    export class PublicServiceRichContentMessage implements MessageContent, UserInfoAttachedMessage {
+        userInfo: UserInfo;
+        richContentMessage: RichContentMessage;
+        constructor(message: RichContentMessage) {
+            this.richContentMessage = message;
+        }
+        getMessage(): RichContentMessage {
+            return this.richContentMessage;
+        }
+        getPublicServiceUserInfo(): UserInfo {
+            return this.userInfo;
+        }
+        setPublicServiceUserInfo(user: UserInfo) {
+            this.userInfo = user;
+        }
+        encode(): any {
+            return null;
         }
     }
 }

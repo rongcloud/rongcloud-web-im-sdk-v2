@@ -86,16 +86,16 @@ module RongIMLib {
             if (!this.connected) {this.queue.push(data);}
             if (this.isClose) {throw new Error("The Connection is closed,Please open the Connection!!!");}
             this._sendXhr = this._request(Navigate.Endpoint.host + "/websocket" + data.url, "POST");
-            if ("onload" in this._sendXhr) {
-                this._sendXhr.onload = function() {
-                    this.onload = this.empty;
-                    me.onData(this.responseText);
+            if ("onload" in me._sendXhr) {
+                me._sendXhr.onload = function() {
+                    me._sendXhr.onload = me.empty;
+                    me.onData(me._sendXhr.responseText);
                 };
-                this._sendXhr.onerror = function() {
-                    this.onerror = this.empty;
+                me._sendXhr.onerror = function() {
+                    me._sendXhr.onerror = me.empty;
                 };
             } else {
-                this._sendXhr.onreadystatechange = function() {
+                me._sendXhr.onreadystatechange = function() {
                     if (me._sendXhr.readyState == 4) {
                         this.onreadystatechange = this.empty;
                         if (/^(202|200)$/.test(me._sendXhr.status)) {

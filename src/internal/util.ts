@@ -48,6 +48,12 @@ module RongIMLib {
     export class Transports {
         static _TransportType: string = Socket.WEBSOCKET;
     }
+    export class PublicServiceMap {
+        publicServiceList: Array<any>;
+        constructor() {
+            this.publicServiceList = [];
+        }
+    }
     /**
      * 会话工具类。
      */
@@ -221,7 +227,7 @@ module RongIMLib {
                 message.content = eval(str);
                 message.messageType = registerMessageTypeMapping[objectName];
             } else {
-                message.content = new UnknownMessage({content:de,objectName:objectName});
+                message.content = new UnknownMessage({ content: de, objectName: objectName });
                 message.messageType = "UnknownMessage";
             }
             //根据实体对象设置message对象

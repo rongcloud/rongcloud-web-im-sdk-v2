@@ -91,8 +91,8 @@ module RongIMLib {
             public sentStatus?: SentStatus,
             public sentTime?: number,
             public targetId?: string,
-            public messageType?:string
-           ) {}
+            public messageType?: string
+        ) { }
         setObjectName(objectName: string) {
             this.objectName = objectName;
         }
@@ -104,16 +104,16 @@ module RongIMLib {
     // TODO: TBD
     export class PublicServiceProfile {
         constructor(
-            public name: string,
-            public portraitUri: string,
-            public publicServiceId: string,
-            public hasFollowed: boolean,
-            public introduction: string,
-            public isGolbal: boolean
-
+            public conversationType?: ConversationType,
+            public introduction?: string,
+            public menu?: Array<PublicServiceMenuItem>,
+            public name?: string,
+            public portraitUri?: string,
+            public publicServiceId?: string,
+            public hasFollowed?: boolean,
+            public isGlobal?: boolean
         ) { }
     }
-
     export class UserData {
         constructor(
             public accountInfo: UserData.AccountInfo,

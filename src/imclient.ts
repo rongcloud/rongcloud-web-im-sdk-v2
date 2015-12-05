@@ -22,7 +22,8 @@ module RongIMLib {
         private static _appKey: string;
         private static _connectionChannel: ConnectionChannel;
         private static _dataAccessProvider: DataAccessProvider;
-
+        //缓存公众号列表
+        private static publicServiceMap: PublicServiceMap = new PublicServiceMap();
         static MessageType: any = {
             TextMessage: "TextMessage", ImageMessage: "ImageMessage", DiscussionNotificationMessage: "DiscussionNotificationMessage",
             VoiceMessage: "VoiceMessage", RichContentMessage: "RichContentMessage", HandshakeMessage: "HandshakeMessage",
@@ -32,6 +33,7 @@ module RongIMLib {
         };
         //缓存会话列表
         static conversationMap: ConversationMap = new ConversationMap();
+
         //桥连接类
         static bridge: Bridge;
         //存放监听数组
@@ -540,8 +542,8 @@ module RongIMLib {
                     RongIMLib.ConversationType.PUBLIC_SERVICE,
                     RongIMLib.ConversationType.APP_PUBLIC_SERVICE];
             }
-            Array.forEach(conversationTypes,function(conversationType:ConversationType){
-                Array.forEach(RongIMClient.conversationMap.conversationList,function(conver:Conversation){
+            Array.forEach(conversationTypes, function(conversationType: ConversationType) {
+                Array.forEach(RongIMClient.conversationMap.conversationList, function(conver: Conversation) {
                     if (conversationType == conver.conversationType) {
                         arrs.push(conver);
                     }
@@ -980,27 +982,79 @@ module RongIMLib {
         // #endregion ChatRoom
 
         // #region Public Service
+        syncPublicServiceList(mpId?: string, conversationType?: number, pullMessageTime?: any, callback?: ResultCallback<PublicServiceProfile[]>) {
+            var modules = new Modules.PullMpInput(),self = this;
+            if (!pullMessageTime) {
+                modules.setTime(0);
+            } else {
+                modules.setTime(this.lastReadTime.get(conversationType + Bridge._client.userId));
+            }
+            if (!mpId) {
+                modules.setMpid("");
+            } else {
+                modules.setMpid(mpId);
+            }
+            RongIMClient.bridge.queryMsg(28, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(data: Array<PublicServiceProfile>) {
+                    //TODO 找出最大时间
+                    // self.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
+                    RongIMClient.publicServiceMap.publicServiceList = data;
+                },
+                onError: function() { }
+            }, "PullMpOutput");
 
-        getPublicServiceList(callback: ResultCallback<PublicServiceProfile[]>) {
-            throw new Error("Not implemented yet");
         }
-
+        /**
+         * [getPublicServiceList ]获取已经的公共账号列表
+         * @param  {ResultCallback<PublicServiceProfile[]>} callback [返回值，参数回调]
+         */
+        getPublicServiceList(callback: ResultCallback<PublicServiceProfile[]>) {
+            CheckParam.getInstance().check(["object"], "getPublicServiceList");
+            callback.onSuccess(RongIMClient.publicServiceMap.publicServiceList);
+        }
+        /**
+         * [getPublicServiceProfile ]   获取某公共服务信息。
+         * @param  {PublicServiceType}                    publicServiceType [公众服务类型。]
+         * @param  {string}                               publicServiceId   [公共服务 Id。]
+         * @param  {ResultCallback<PublicServiceProfile>} callback          [公共账号信息回调。]
+         */
         getPublicServiceProfile(publicServiceType: PublicServiceType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [searchPublicService ]按公众服务类型搜索公众服务。
+         * @param  {SearchType}                             searchType [搜索类型枚举。]
+         * @param  {string}                                 keywords   [搜索关键字。]
+         * @param  {ResultCallback<PublicServiceProfile[]>} callback   [搜索结果回调。]
+         */
         searchPublicService(searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [searchPublicServiceByType ]按公众服务类型搜索公众服务。
+         * @param  {PublicServiceType}                      publicServiceType [公众服务类型。]
+         * @param  {SearchType}                             searchType        [搜索类型枚举。]
+         * @param  {string}                                 keywords          [搜索关键字。]
+         * @param  {ResultCallback<PublicServiceProfile[]>} callback          [搜索结果回调。]
+         */
         searchPublicServiceByType(publicServiceType: PublicServiceType, searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [subscribePublicService ] 订阅公众号。
+         * @param  {PublicServiceType} publicServiceType [公众服务类型。]
+         * @param  {string}            publicServiceId   [公共服务 Id。]
+         * @param  {OperationCallback} callback          [订阅公众号回调。]
+         */
         subscribePublicService(publicServiceType: PublicServiceType, publicServiceId: string, callback: OperationCallback) {
             throw new Error("Not implemented yet");
         }
-
+        /**
+         * [unsubscribePublicService ] 取消订阅公众号。
+         * @param  {PublicServiceType} publicServiceType [公众服务类型。]
+         * @param  {string}            publicServiceId   [公共服务 Id。]
+         * @param  {OperationCallback} callback          [取消订阅公众号回调。]
+         */
         unsubscribePublicService(publicServiceType: PublicServiceType, publicServiceId: string, callback: OperationCallback) {
             throw new Error("Not implemented yet");
         }
