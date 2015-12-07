@@ -50,7 +50,7 @@ module RongIMLib {
                 //测试环境
                 "navUrl-Debug": "http://119.254.111.49:9100/",
                 //线上环境
-                "navUrl-Release": "http://nav.cn.rong.io/"
+                "navUrl-Release": "http://nav.cn.ronghub.com/"
             }, xss = document.createElement("script");
             //进行jsonp请求
             xss.src = Url["navUrl-Release"] + (window["WEB_XHR_POLLING"] ? "cometnavi.js" : "navi.js") + "?appId=" + _appId + "&token=" + encodeURIComponent(_token) + "&" + "callBack=getServerEndpoint&t=" + (new Date).getTime();

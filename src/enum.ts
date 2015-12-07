@@ -65,8 +65,10 @@ module RongIMLib {
         GROUP = 3,
         PRIVATE = 4,
         SYSTEM = 5,
-        APP_PUBLIC_SERVICE = 6,
-        PUBLIC_SERVICE = 7
+        //默认关注 MC
+        APP_PUBLIC_SERVICE = 7,
+        //手工关注 MP
+        PUBLIC_SERVICE = 8
     }
 
     export enum DiscussionInviteStatus {
@@ -366,7 +368,11 @@ module RongIMLib {
         /**
          * 删除草稿失败
          */
-        DRAF_REMOVE_ERROR = 38003
+        DRAF_REMOVE_ERROR = 38003,
+        /**
+         * 关注公众号失败
+         */
+        SUBSCRIBE_ERROR = 39001
     }
 
     export enum MediaType {

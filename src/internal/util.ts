@@ -53,6 +53,13 @@ module RongIMLib {
         constructor() {
             this.publicServiceList = [];
         }
+        get(publicServiceType: ConversationType, publicServiceId: string): PublicServiceProfile {
+            for (let i = 0,len = this.publicServiceList.length; i < len; i++) {
+                if (this.publicServiceList[i].conversationType == publicServiceType && publicServiceId == this.publicServiceList[i].publicServiceId) {
+                    return this.publicServiceList[i];
+                }
+            }
+        }
     }
     /**
      * 会话工具类。

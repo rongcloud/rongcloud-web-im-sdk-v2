@@ -284,7 +284,7 @@ module RongIMLib {
          * @param  {string}                  pushData         []
          */
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
-            CheckParam.getInstance().check(["number", "string", "object", "null|object", "object"], "sendMessage");
+            CheckParam.getInstance().check(["number", "string", "object", "null|object|global", "object"], "sendMessage");
             if (!Bridge._client.channel.socket.socket.connected) {
                 resultCallback.onError(ErrorCode.TIMEOUT);
                 throw new Error("connect is timeout! postion:sendMessage");
@@ -983,17 +983,13 @@ module RongIMLib {
 
         // #region Public Service
         syncPublicServiceList(mpId?: string, conversationType?: number, pullMessageTime?: any, callback?: ResultCallback<PublicServiceProfile[]>) {
-            var modules = new Modules.PullMpInput(),self = this;
+            var modules = new Modules.PullMpInput(), self = this;
             if (!pullMessageTime) {
                 modules.setTime(0);
             } else {
                 modules.setTime(this.lastReadTime.get(conversationType + Bridge._client.userId));
             }
-            if (!mpId) {
-                modules.setMpid("");
-            } else {
-                modules.setMpid(mpId);
-            }
+            modules.setMpid("");
             RongIMClient.bridge.queryMsg(28, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(data: Array<PublicServiceProfile>) {
                     //TODO 找出最大时间
@@ -1018,8 +1014,41 @@ module RongIMLib {
          * @param  {string}                               publicServiceId   [公共服务 Id。]
          * @param  {ResultCallback<PublicServiceProfile>} callback          [公共账号信息回调。]
          */
-        getPublicServiceProfile(publicServiceType: PublicServiceType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
-            throw new Error("Not implemented yet");
+        getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
+            CheckParam.getInstance().check(["number", "string", "object"], "getPublicServiceProfile");
+            var profile: PublicServiceProfile = RongIMClient.publicServiceMap.get(publicServiceType, publicServiceId);
+            callback.onSuccess(profile);
+        }
+
+        /**
+         * [pottingPublicSearchType ] 公众好查询类型
+         * @param  {number} bussinessType [ 0-all 1-mp 2-mc]
+         * @param  {number} searchType    [0-exact 1-fuzzy]
+         */
+        private pottingPublicSearchType(bussinessType: number, searchType: number): number {
+            var bits = 0;
+            if (bussinessType == 0) {
+                bits |= 3;
+                if (searchType == 0)
+                    bits |= 12;
+                else
+                    bits |= 48;
+            }
+            else if (bussinessType == 1) {
+                bits |= 1;
+                if (searchType == 0)
+                    bits |= 8;
+                else
+                    bits |= 32;
+            }
+            else {
+                bits |= 2;
+                if (bussinessType == 0)
+                    bits |= 4;
+                else
+                    bits |= 16;
+            }
+            return bits;
         }
         /**
          * [searchPublicService ]按公众服务类型搜索公众服务。
@@ -1028,7 +1057,11 @@ module RongIMLib {
          * @param  {ResultCallback<PublicServiceProfile[]>} callback   [搜索结果回调。]
          */
         searchPublicService(searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
-            throw new Error("Not implemented yet");
+            CheckParam.getInstance().check(["number", "string", "object"], "searchPublicService");
+            var modules = new Modules.SearchMpInput();
+            modules.setType(this.pottingPublicSearchType(0, searchType));
+            modules.setId(keywords);
+            RongIMClient.bridge.queryMsg(29, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "SearchMpOutput");
         }
         /**
          * [searchPublicServiceByType ]按公众服务类型搜索公众服务。
@@ -1037,8 +1070,13 @@ module RongIMLib {
          * @param  {string}                                 keywords          [搜索关键字。]
          * @param  {ResultCallback<PublicServiceProfile[]>} callback          [搜索结果回调。]
          */
-        searchPublicServiceByType(publicServiceType: PublicServiceType, searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
-            throw new Error("Not implemented yet");
+        searchPublicServiceByType(publicServiceType: ConversationType, searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
+            CheckParam.getInstance().check(["number", "number", "string", "object"], "searchPublicServiceByType");
+            var type: number = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? 2 : 1;
+            var modules: any = new Modules.SearchMpInput();
+            modules.setType(this.pottingPublicSearchType(type, searchType));
+            modules.setId(keywords);
+            RongIMClient.bridge.queryMsg(29, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "SearchMpOutput");
         }
         /**
          * [subscribePublicService ] 订阅公众号。
@@ -1046,8 +1084,18 @@ module RongIMLib {
          * @param  {string}            publicServiceId   [公共服务 Id。]
          * @param  {OperationCallback} callback          [订阅公众号回调。]
          */
-        subscribePublicService(publicServiceType: PublicServiceType, publicServiceId: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+        subscribePublicService(publicServiceType: ConversationType, publicServiceId: string, callback: OperationCallback) {
+            CheckParam.getInstance().check(["number", "string", "object"], "subscribePublicService");
+            var modules = new Modules.MPFollowInput(), follow = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? "mcFollow" : "mpFollow";
+            modules.setId(publicServiceId);
+            RongIMClient.bridge.queryMsg(follow, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function() {
+                    callback.onSuccess();
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.SUBSCRIBE_ERROR);
+                }
+            }, "MPFollowOutput");
         }
         /**
          * [unsubscribePublicService ] 取消订阅公众号。
@@ -1055,8 +1103,18 @@ module RongIMLib {
          * @param  {string}            publicServiceId   [公共服务 Id。]
          * @param  {OperationCallback} callback          [取消订阅公众号回调。]
          */
-        unsubscribePublicService(publicServiceType: PublicServiceType, publicServiceId: string, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
+        unsubscribePublicService(publicServiceType: ConversationType, publicServiceId: string, callback: OperationCallback) {
+            CheckParam.getInstance().check(["number", "string", "object"], "unsubscribePublicService");
+            var modules = new Modules.MPFollowInput(), follow = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? "mcUnFollow" : "mpUnFollow";
+            modules.setId(publicServiceId);
+            RongIMClient.bridge.queryMsg(follow, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function() {
+                    callback.onSuccess();
+                },
+                onError: function() {
+                    callback.onError(ErrorCode.SUBSCRIBE_ERROR);
+                }
+            }, "MPFollowOutput");
         }
 
         // #endregion Public Service

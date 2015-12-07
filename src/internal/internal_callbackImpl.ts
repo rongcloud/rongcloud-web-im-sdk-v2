@@ -85,6 +85,7 @@ module RongIMLib {
                     return entity.result;
                 case "QueryBlackListOutput":
                     return entity.userIds;
+                case "SearchMpOutput":
                 case "PullMpOutput":
                     if (entity.info) {
                         var self = this;
