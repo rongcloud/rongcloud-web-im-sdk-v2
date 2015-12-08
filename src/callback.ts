@@ -1,7 +1,7 @@
 module RongIMLib {
   export interface OperationCallback {
     onError(error: ErrorCode): void;
-    onSuccess(): void;
+    onSuccess(info?:any): void;
   }
 
   export interface ResultCallback<T> {

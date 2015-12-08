@@ -54,9 +54,40 @@ module RongIMLib {
             this.publicServiceList = [];
         }
         get(publicServiceType: ConversationType, publicServiceId: string): PublicServiceProfile {
-            for (let i = 0,len = this.publicServiceList.length; i < len; i++) {
+            for (let i = 0, len = this.publicServiceList.length; i < len; i++) {
                 if (this.publicServiceList[i].conversationType == publicServiceType && publicServiceId == this.publicServiceList[i].publicServiceId) {
                     return this.publicServiceList[i];
+                }
+            }
+        }
+        add(publicServiceProfile: PublicServiceProfile) {
+            var isAdd: boolean = true, me = this;
+            for (let i = 0, len = this.publicServiceList.length; i < len; i++) {
+                if (me.publicServiceList[i].conversationType == publicServiceProfile.conversationType && publicServiceProfile.publicServiceId == me.publicServiceList[i].publicServiceId) {
+                    this.publicServiceList.unshift(this.publicServiceList.splice(i, 1)[0]);
+                    isAdd = false;
+                    break;
+                }
+            }
+            if (isAdd) {
+                this.publicServiceList.unshift(publicServiceProfile);
+            }
+        }
+        replace(publicServiceProfile: PublicServiceProfile) {
+            var me = this;
+            for (let i = 0, len = this.publicServiceList.length; i < len; i++) {
+                if (me.publicServiceList[i].conversationType == publicServiceProfile.conversationType && publicServiceProfile.publicServiceId == me.publicServiceList[i].publicServiceId) {
+                    me.publicServiceList.splice(i, 1, publicServiceProfile);
+                    break;
+                }
+            }
+        }
+        remove(conversationType:ConversationType,publicServiceId:string) {
+            var me = this;
+            for (let i = 0, len = this.publicServiceList.length; i < len; i++) {
+                if (me.publicServiceList[i].conversationType == conversationType && publicServiceId == me.publicServiceList[i].publicServiceId) {
+                    this.publicServiceList.splice(i, 1);
+                    break;
                 }
             }
         }

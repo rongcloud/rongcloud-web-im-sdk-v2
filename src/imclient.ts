@@ -994,6 +994,7 @@ module RongIMLib {
                 onSuccess: function(data: Array<PublicServiceProfile>) {
                     //TODO 找出最大时间
                     // self.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
+                    RongIMClient.publicServiceMap.publicServiceList.length = 0;
                     RongIMClient.publicServiceMap.publicServiceList = data;
                 },
                 onError: function() { }
@@ -1086,10 +1087,14 @@ module RongIMLib {
          */
         subscribePublicService(publicServiceType: ConversationType, publicServiceId: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["number", "string", "object"], "subscribePublicService");
-            var modules = new Modules.MPFollowInput(), follow = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? "mcFollow" : "mpFollow";
+            var modules = new Modules.MPFollowInput(), me = this, follow = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? "mcFollow" : "mpFollow";
             modules.setId(publicServiceId);
             RongIMClient.bridge.queryMsg(follow, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function() {
+                    me.syncPublicServiceList(null, null, null, <ResultCallback<PublicServiceProfile[]>>{
+                        onSuccess: function() { },
+                        onError: function() { }
+                    });
                     callback.onSuccess();
                 },
                 onError: function() {
@@ -1105,10 +1110,11 @@ module RongIMLib {
          */
         unsubscribePublicService(publicServiceType: ConversationType, publicServiceId: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["number", "string", "object"], "unsubscribePublicService");
-            var modules = new Modules.MPFollowInput(), follow = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? "mcUnFollow" : "mpUnFollow";
+            var modules = new Modules.MPFollowInput(), me = this, follow = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? "mcUnFollow" : "mpUnFollow";
             modules.setId(publicServiceId);
             RongIMClient.bridge.queryMsg(follow, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function() {
+                    RongIMClient.publicServiceMap.remove(publicServiceType, publicServiceId);
                     callback.onSuccess();
                 },
                 onError: function() {
