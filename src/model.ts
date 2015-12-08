@@ -100,7 +100,43 @@ module RongIMLib {
             this.content = content;
         }
     }
-
+    export class PublicServiceMenuItem {
+        id: string;
+        name: string;
+        type: ConversationType;
+        sunMenuItems: Array<PublicServiceMenuItem>;
+        url: string;
+        getId(): string {
+            return this.id;
+        }
+        getName(): string {
+            return this.name;
+        }
+        getSubMenuItems(): Array<PublicServiceMenuItem> {
+            return this.sunMenuItems;
+        }
+        getUrl(): string {
+            return this.url;
+        }
+        getType(): ConversationType {
+            return this.type;
+        }
+        setId(id: string) {
+            this.id = id;
+        }
+        setType(type: ConversationType) {
+            this.type = type;
+        }
+        setName(name: string) {
+            this.name = name;
+        }
+        setSunMenuItems(sunMenuItems: Array<PublicServiceMenuItem>) {
+            this.sunMenuItems = sunMenuItems;
+        }
+        setUrl(url: string) {
+            this.url = url;
+        }
+    }
     // TODO: TBD
     export class PublicServiceProfile {
         constructor(

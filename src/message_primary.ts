@@ -364,37 +364,6 @@ module RongIMLib {
         }
     }
 
-    export class PublicServiceMenuItem {
-        id: string;
-        name: string;
-        type: ConversationType;
-        sunMenuItems: Array<PublicServiceMenuItem>;
-        url: string;
-        getId(): string {
-            return this.id;
-        }
-        getName(): string {
-            return this.name;
-        }
-        getSubMenuItems(): Array<PublicServiceMenuItem> {
-            return this.sunMenuItems;
-        }
-        getType(): ConversationType {
-            return this.type;
-        }
-        setId(id: string) {
-            this.id = id;
-        }
-        setType(type: ConversationType) {
-            this.type = type;
-        }
-        setName(name: string) {
-            this.name = name;
-        }
-        setSunMenuItems(sunMenuItems: Array<PublicServiceMenuItem>) {
-            this.sunMenuItems = sunMenuItems;
-        }
-    }
 
     export class PublicServiceCommandMessage implements MessageContent {
         message: PublicServiceCommandMessage;
