@@ -11,9 +11,7 @@ module RongIMLib {
         this.script.src = "http://localhost:9876/base/src/internal/protobuf.js";
 
       } else {
-        //如果上述条件都不支持则执行comet逻辑
         Transports._TransportType = "xhr-polling";
-        //加载comet帮助库
         this.script.src = "http://localhost:9876/base/src/internal/xhrpolling.js";
       }
       this.head.appendChild(this.script);
@@ -35,7 +33,6 @@ module RongIMLib {
     }
     /**
      * [isCookieEnabled 是否禁用Cookie]
-     * @return {boolean} [true:启用Cookie ; false:禁用Cookie]
      */
     isCookieEnabled(): boolean {
       return navigator.cookieEnabled;

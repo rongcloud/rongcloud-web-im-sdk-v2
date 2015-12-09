@@ -3,7 +3,7 @@ module RongIMLib {
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["chatMsg", "pcMsgP", "pdMsgP", "pgMsgP", "ppMsgP","","","pmcMsgN","pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
         "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation","pullMp","schMp"];
-    export class Channel {
+export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
         static _ReceiveMessageListener: any;
@@ -116,7 +116,6 @@ module RongIMLib {
         /**
          * [checkTransport 返回通道类型]
          * WEB_XHR_POLLING:是否选择comet方式进行连接
-         * @return {string} [通道类型 xhr-polling 或 websocket]
          */
         checkTransport(): string {
             if (window["WEB_XHR_POLLING"] && window["WEB_XHR_POLLING"] == true) {
@@ -516,7 +515,7 @@ module RongIMLib {
                     var item = Bridge._client.handler.map[msg.getMessageId()];
                     if (item) {
                         //执行回调操作
-                        item.Callback.process(msg.getStatus() || 0, msg.getDate(), item.Message);
+                        item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(),msg.getTimestamp(), item.Message);
                         delete Bridge._client.handler.map[msg.getMessageId()];
                     }
                     break;

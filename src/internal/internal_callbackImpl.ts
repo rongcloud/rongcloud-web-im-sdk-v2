@@ -40,7 +40,7 @@ module RongIMLib {
         static getInstance(): CallbackMapping {
             return new CallbackMapping();
         }
-        pottingProfile(item:any){
+        pottingProfile(item: any) {
             var temp: any;
             this.profile = new PublicServiceProfile();
             temp = JSON.parse(item.extra);
@@ -90,7 +90,7 @@ module RongIMLib {
                     if (entity.info) {
                         var self = this;
                         Array.forEach(entity.info, function(item: any) {
-                            setTimeout(self.pottingProfile(item),100);
+                            setTimeout(self.pottingProfile(item), 100);
                         });
                     }
                     return this.publicServiceList;
@@ -107,13 +107,13 @@ module RongIMLib {
             this._cb = _cb;
             this._timeout = _timeout;
         }
-        process(_status: number, _serverTime: any, _msg: any) {
+        process(_status: number, messageUId: string, timestamp: number, _msg: any) {
             this.readTimeOut();
             if (_status == 0) {
                 if (_msg) {
                     _msg.setSentStatus = _status;
                 }
-                this._cb();
+                this._cb({ messageUId: messageUId, timestamp: timestamp });
             } else {
                 this._timeout(ErrorCode.UNKNOWN);
             }

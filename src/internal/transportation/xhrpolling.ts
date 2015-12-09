@@ -20,7 +20,6 @@ module RongIMLib {
         }
         /**
          * [createTransport 创建Polling，打开请求连接]
-         * @return {PollingTransportation} [此处与websocket略有区别，此处不返回Polling对象]
          */
         createTransport(url: string, method?: string): any {
             if (!url){throw new Error("Url is empty,Please check it!");};

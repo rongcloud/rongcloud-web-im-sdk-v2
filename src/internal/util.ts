@@ -124,7 +124,6 @@ module RongIMLib {
         /**
          * [replace 替换会话]
          * 会话数组存在的情况下调用add方法会是当前会话被替换且返回到第一个位置，导致用户本地一些设置失效，所以提供replace方法
-         * @return {[type]} [description]
          */
         replace(conversation: Conversation) {
             for (let i = 0, len = this.conversationList.length; i < len; i++) {

@@ -316,7 +316,6 @@ module RongIMLib {
          * @param  {MessageContent}          messageContent [description]
          * @param  {SendMessageCallback}     sendCallback   [description]
          * @param  {ResultCallback<Message>} resultCallback [description]
-         * @return {[type]}                                 [description]
          */
         sendStatusMessage(messageContent: MessageContent, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
@@ -337,7 +336,6 @@ module RongIMLib {
          * @param  {string}                  senderUserId     [description]
          * @param  {MessageContent}          content          [description]
          * @param  {ResultCallback<Message>} callback         [description]
-         * @return {[type]}                                   [description]
          */
         insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
@@ -398,7 +396,6 @@ module RongIMLib {
          * @param  {Date}                      dateTime         [description]
          * @param  {number}                    count            [description]
          * @param  {ResultCallback<Message[]>} callback         [description]
-         * @return {[type]}                                     [description]
          */
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, dateTime: Date, count: number, callback: ResultCallback<Message[]>) {
             throw new Error("Not implemented yet");

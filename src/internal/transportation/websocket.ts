@@ -22,7 +22,6 @@ module RongIMLib {
         }
         /**
          * [createTransport 创建WebScoket对象]
-         * @return {WebScoket} [返回WebSockt对象]
          */
         createTransport(url: string, method?: string): any {
             if (!url){throw new Error("URL can't be empty");};
@@ -55,7 +54,6 @@ module RongIMLib {
         /**
          * [onData 通道返回数据时调用的方法，用来想上层传递服务器返回的二进制消息流]
          * @param  {ArrayBuffer}    data [二进制消息流]
-         * @return {string}      [description]
          */
         onData(data: any): string {
             if (MessageUtil.isArray(data)) {

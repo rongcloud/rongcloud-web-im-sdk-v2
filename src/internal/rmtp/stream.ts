@@ -194,7 +194,6 @@ module RongIMLib {
     /**
      * [convertStream 将参数x转化为RongIMStream对象]
      * @param  {any}    x [参数]
-     * @return {[RongIMStream]}   [RongIMStream]
      */
     convertStream(x: any): RongIMStream {
       if (x instanceof RongIMStream) {

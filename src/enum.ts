@@ -1,5 +1,5 @@
 module RongIMLib {
-
+    
     export enum BlacklistStatus {
         /**
          * 在黑名单中。
@@ -56,7 +56,9 @@ module RongIMLib {
          */
         NOTIFY
     }
-
+    /**
+     * @ignore
+     */
     export enum ConversationType {
         NONE = -1,
         CHATROOM = 0,
