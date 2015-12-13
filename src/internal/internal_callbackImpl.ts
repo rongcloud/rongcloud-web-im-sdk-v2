@@ -75,11 +75,11 @@ module RongIMLib {
                     return entity.id;
                 case "ChannelInfoOutput":
                     var disInfo = new Discussion();
-                    disInfo.setCreatorId(entity.adminUserId);
-                    disInfo.setId(entity.channelId);
-                    disInfo.setMemberIdList(entity.firstTenUserIds);
-                    disInfo.setName(entity.channelName);
-                    disInfo.setOpen(entity.openStatus);
+                    disInfo.creatorId = entity.adminUserId;
+                    disInfo.id = entity.channelId;
+                    disInfo.memberIdList = entity.firstTenUserIds;
+                    disInfo.name = entity.channelName;
+                    disInfo.isOpen = entity.openStatus;
                     return disInfo;
                 case "GroupHashOutput":
                     return entity.result;

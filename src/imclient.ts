@@ -24,12 +24,21 @@ module RongIMLib {
         private static _dataAccessProvider: DataAccessProvider;
         //缓存公众号列表
         private static publicServiceMap: PublicServiceMap = new PublicServiceMap();
-        static MessageType: any = {
-            TextMessage: "TextMessage", ImageMessage: "ImageMessage", DiscussionNotificationMessage: "DiscussionNotificationMessage",
-            VoiceMessage: "VoiceMessage", RichContentMessage: "RichContentMessage", HandshakeMessage: "HandshakeMessage",
-            UnknownMessage: "UnknownMessage", SuspendMessage: "SuspendMessage", LocationMessage: "LocationMessage", InformationNotificationMessage: "InformationNotificationMessage",
-            ContactNotificationMessage: "ContactNotificationMessage", ProfileNotificationMessage: "ProfileNotificationMessage",
-            CommandNotificationMessage: "CommandNotificationMessage"
+        static MessageType: { [s: string]: any } = {
+            TextMessage: { typeName: "TextMessage", objectName: "RC:TxtMsg", msgTag: new MessageTag(true, true) },
+            ImageMessage: { typeName: "ImageMessage", objectName: "RC:ImgMsg", msgTag: new MessageTag(true, true) },
+            DiscussionNotificationMessage: { typeName: "DiscussionNotificationMessage", objectName: "RC:DizNtf", msgTag: new MessageTag(true, true) },
+            VoiceMessage: { typeName: "VoiceMessage", objectName: "RC:VcMsg", msgTag: new MessageTag(true, true) },
+            RichContentMessage: { typeName: "RichContentMessage", objectName: "RC:ImgTextMsg", msgTag: new MessageTag(true, true) },
+            HandshakeMessage: { typeName: "HandshakeMessage", objectName: "", msgTag: new MessageTag(true, true) },
+            UnknownMessage: { typeName: "UnknownMessage", objectName: "", msgTag: new MessageTag(true, true) },
+            SuspendMessage: { typeName: "SuspendMessage", objectName: "", msgTag: new MessageTag(true, true) },
+            LocationMessage: { typeName: "LocationMessage", objectName: "RC:LBSMsg", msgTag: new MessageTag(true, true) },
+            InformationNotificationMessage: { typeName: "InformationNotificationMessage", objectName: "RC:InfoNtf", msgTag: new MessageTag(true, true) },
+            ContactNotificationMessage: { typeName: "ContactNotificationMessage", objectName: "RC:ContactNtf", msgTag: new MessageTag(true, true) },
+            ProfileNotificationMessage: { typeName: "ProfileNotificationMessage", objectName: "RC:ProfileNtf", msgTag: new MessageTag(true, true) },
+            CommandNotificationMessage: { typeName: "CommandNotificationMessage", objectName: "RC:CmdNtf", msgTag: new MessageTag(true, true) },
+            CommandMessage: { typeName: "CommandNotificationMessage", objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) }
         };
         //缓存会话列表
         static conversationMap: ConversationMap = new ConversationMap();
@@ -296,9 +305,15 @@ module RongIMLib {
                 resultCallback.onError(ErrorCode.TIMEOUT);
                 throw new Error("connect is timeout! postion:sendMessage");
             }
-            var content: any = messageContent.encode(), message: any;
-            var me = this;
-            var c: Conversation = this.getConversation(conversationType, targetId);
+            var modules = new Modules.UpStreamMessage();
+            // modules.setSessionId(RongIMClient.MessageType[messageContent.constructor.name].msgTag.getMessageTag());
+            // modules.setClassname(RongIMClient.MessageType[messageContent.constructor.name].objectName);
+            modules.setContent(messageContent.encode());
+            var content: any = modules.toArrayBuffer();
+            if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
+                content = [].slice.call(new Int8Array(content));
+            }
+            var c: Conversation = this.getConversation(conversationType, targetId), me = this;;
             if (!c) {
                 c = me.createConversation(conversationType, targetId, "");
             }
@@ -591,7 +606,7 @@ module RongIMLib {
             } else if (conver.conversationType == ConversationType.DISCUSSION) {
                 self.getDiscussion(tempConver.userId, {
                     onSuccess: function(info: Discussion) {
-                        conver.conversationTitle = info.getName();
+                        conver.conversationTitle = info.name;
                     },
                     onError: function(error: ErrorCode) {
                         console.log("getDiscussion error:" + error + ",postion->getConversationList.getDiscussion");

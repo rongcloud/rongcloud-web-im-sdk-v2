@@ -25,47 +25,13 @@ module RongIMLib {
     }
 
     export class Discussion {
-        /**
-         *         disInfo.setCreatorId(entity.adminUserId);
-                 disInfo.setId(entity.channelId);
-                 disInfo.setMemberIdList(entity.firstTenUserIds);
-                 disInfo.setName(entity.channelName);
-                 disInfo.setOpen(entity.openStatus);
-         */
-        private creatorId: string;
-        private id: string;
-        private memberIdList: string[];
-        private name: string;
-        private isOpen: boolean;
-        setId(id: string) {
-            this.id = id;
-        }
-        setCreatorId(creatorId: string) {
-            this.creatorId = creatorId;
-        }
-        setMemberIdList(memberIdList: string[]) {
-            this.memberIdList = memberIdList;
-        }
-        setName(name: string) {
-            this.name = name;
-        }
-        setOpen(isOpen: boolean) {
-            this.isOpen = isOpen;
-        }
-        getId() {
-            return this.id;
-        }
-        getCreatorId() {
-            return this.creatorId;
-        }
-        getMemberIdList() {
-            return this.memberIdList;
-        }
-        getName() {
-            return this.name;
-        }
-        getOpen() {
-            return this.isOpen;
+        constructor(
+            public creatorId?: string,
+            public id?: string,
+            public memberIdList?: string[],
+            public name?: string,
+            public isOpen?: boolean) {
+
         }
     }
 
@@ -100,6 +66,24 @@ module RongIMLib {
             this.content = content;
         }
     }
+    export class MessageTag {
+        constructor(
+            public isCounted: boolean,
+            public isPersited: boolean
+        ) { }
+        getMessageTag(): number {
+            if (this.isCounted && this.isPersited) {
+                return 3;
+            } else if (this.isCounted || !this.isPersited) {
+                return 2;
+            } else if (!this.isCounted || this.isPersited) {
+                return 1;
+            } else if (!this.isCounted && !this.isPersited) {
+                return 0;
+            }
+        }
+    }
+
     export class PublicServiceMenuItem {
         id: string;
         name: string;

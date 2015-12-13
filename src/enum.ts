@@ -1,5 +1,5 @@
 module RongIMLib {
-    
+
     export enum BlacklistStatus {
         /**
          * 在黑名单中。
@@ -411,20 +411,6 @@ module RongIMLib {
         RECEIVE = 2
     }
 
-    export enum MessageTag {
-        /**
-         * 空值，不表示任何意义。
-         */
-        NONE = 0,
-        /**
-         * 消息需要被存储到消息历史记录。
-         */
-        ISPERSISTED = 1 << 0,
-        /**
-         * 消息需要被记入未读消息数。
-         */
-        ISCOUNTED = 1 << 1
-    }
 
     export enum PublicServiceType {
         /**
