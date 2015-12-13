@@ -42,11 +42,11 @@ module RongIMLib {
             return val;
         }
     }
-
+    
     export class VoiceMessage implements MessageContent, UserInfoAttachedMessage {
         userInfo: UserInfo;
         message: VoiceMessage;
-        base64: string;
+        content: string;
         duration: number;
         uri: string;
         extra: string;
@@ -66,8 +66,8 @@ module RongIMLib {
             return msg;
         }
 
-        setBase64(base64: string) {
-            this.message.base64 = base64;
+        setContent(base64: string) {
+            this.message.content = base64;
         }
 
         setDuration(duration: number) {
@@ -82,8 +82,8 @@ module RongIMLib {
             this.message.extra = extra;
         }
 
-        getBase64(): string {
-            return this.message.base64;
+        getContent(): string {
+            return this.message.content;
         }
 
         getDuration(): number {
@@ -204,7 +204,6 @@ module RongIMLib {
     export class LocationMessage implements MessageContent, UserInfoAttachedMessage {
         userInfo: UserInfo;
         extra: string;
-        base64: string;
         imgUri: string;
         lat: number;
         lng: number;
@@ -226,9 +225,6 @@ module RongIMLib {
             return msg;
         }
 
-        getBase64(): string {
-            return this.message.base64;
-        }
         getExtra(): string {
             return this.message.extra;
         }
@@ -243,10 +239,6 @@ module RongIMLib {
         }
         getPoi(): string {
             return this.message.poi;
-        }
-
-        setBase64(base64: string) {
-            this.message.base64 = base64;
         }
 
         setExtra(extra: string) {
@@ -289,7 +281,6 @@ module RongIMLib {
         extra: string;
         imgUrl: string;
         title: string;
-        url: string;
         //persited 0:持久化 1:不持久化
         persited: number = 1;
         //counted 0:不累计未读消息数  2:累计为度消息数
@@ -317,9 +308,6 @@ module RongIMLib {
         getTitle(): string {
             return this.message.title;
         }
-        getUrl(): string {
-            return this.message.url;
-        }
 
         setContent(content: string) {
             return this.message.content = content;
@@ -332,9 +320,6 @@ module RongIMLib {
         }
         setTitle(title: string) {
             return this.message.title = title;
-        }
-        setUrl(url: string) {
-            return this.message.url = url;
         }
 
         encode() {

@@ -467,7 +467,7 @@ export class Channel {
             //创建会话对象 TODO
             con = RongIMClient.conversationMap.get(message.conversationType, message.targetId);
             if (!con) {
-                con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "", true);
+                con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
             }
             //根据messageTag判断是否进行消息数累加
             // if (/ISCOUNTED/.test(message.getMessageTag())) {

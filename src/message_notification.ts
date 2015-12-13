@@ -5,7 +5,7 @@ module RongIMLib {
         message: InformationNotificationMessage;
         content: string;
         extra: string;
-        //persited 0:持久化 1:不持久化
+        //persited 0:不持久化  1:持久化
         persited: number = 1;
         //counted 0:不累计未读消息数  2:累计为度消息数
         counted: number = 2;
@@ -36,6 +36,32 @@ module RongIMLib {
             var c = new Modules.UpStreamMessage();
             c.setSessionId(this.persited | this.counted);
             c.setClassname("RC:InfoNtf");
+            c.setContent(JSON.stringify(this.message));
+            var val = c.toArrayBuffer();
+            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
+                return [].slice.call(new Int8Array(val));
+            }
+            return val;
+        }
+    }
+    export class CommandMessage implements MessageContent {
+        message: TextMessage;
+        //persited 0: 不持久化 1:持久化
+        persited: number = 0;
+        //counted 0:不累计未读消息数  2:累计为度消息数
+        counted: number = 0;
+        content: string;
+        constructor(message: any) {
+            this.message = message;
+        }
+        static obtain(content: string): CommandMessage {
+            var msg = new CommandMessage({ content: content });
+            return msg;
+        }
+        encode() {
+            var c = new Modules.UpStreamMessage();
+            c.setSessionId(this.persited | this.counted);
+            c.setClassname("RC:CmdMsg");
             c.setContent(JSON.stringify(this.message));
             var val = c.toArrayBuffer();
             if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {

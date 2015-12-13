@@ -11,7 +11,7 @@ module RongIMLib {
 
   export interface ConnectCallback extends ResultCallback<string> {
     onSuccess(userId: string): void;
-    onTokenIncorrect(): void;
+    onTokenIncorrect(error:ConnectionState): void;
   }
 
   export interface CreateDiscussionCallback extends ResultCallback<string> {

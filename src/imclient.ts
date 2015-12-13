@@ -75,7 +75,14 @@ module RongIMLib {
         static connect(token: string, callback: ConnectCallback): RongIMClient {
             CheckParam.getInstance().check(["string", "object"], "connect", true);
             RongIMClient.bridge = Bridge.getInstance();
-            RongIMClient.bridge.connect(RongIMClient._appKey, token, callback);
+            RongIMClient.bridge.connect(RongIMClient._appKey, token, {
+                onSuccess: function(data: string) {
+                    callback.onSuccess(data);
+                },
+                onError: function(e: ConnectionState) {
+                    callback.onTokenIncorrect(e);
+                }
+            });
             //循环设置监听事件，追加之后清空存放事件数据
             for (let i = 0, len = RongIMClient.listenerList.length; i < len; i++) {
                 RongIMClient.bridge["setListener"](RongIMClient.listenerList[i]);
@@ -291,24 +298,18 @@ module RongIMLib {
             }
             var content: any = messageContent.encode(), message: any;
             var me = this;
-            this.getConversation(conversationType, targetId, <ResultCallback<Conversation>>{
-                onSuccess: function(c) {
-                    if (!c) {
-                        c = me.createConversation(conversationType, targetId, "", true);
-                    }
-                    c.sentTime = new Date().getTime();
-                    c.sentStatus = SentStatus.SENDING;
-                    c.senderUserName = "";
-                    c.senderUserId = Bridge._client.userId;
-                    c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-                    c.latestMessage = messageContent;
-                    c.unreadMessageCount = 0;
-                    c.setTop();
-                },
-                onError: function() {
-                    console.log("getConversation-Error->postion:sendMessage");
-                }
-            });
+            var c: Conversation = this.getConversation(conversationType, targetId);
+            if (!c) {
+                c = me.createConversation(conversationType, targetId, "");
+            }
+            c.sentTime = new Date().getTime();
+            c.sentStatus = SentStatus.SENDING;
+            c.senderUserName = "";
+            c.senderUserId = Bridge._client.userId;
+            c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
+            c.latestMessage = messageContent;
+            c.unreadMessageCount = 0;
+            c.setTop();
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, resultCallback, null);
         }
         /**
@@ -421,37 +422,28 @@ module RongIMLib {
             };
         }
 
-        getTotalUnreadCount(callback: ResultCallback<number>) {
+        getTotalUnreadCount(): number {
             var count: number = 0;
-            try {
-                RongIMClient.conversationMap.conversationList.forEach(conver=> {
-                    count += conver.unreadMessageCount;
-                });
-            } catch (e) {
-                callback.onError(ErrorCode.CONVER_TOTAL_UNREAD_ERROR);
-            }
-            callback.onSuccess(count);
-
+            RongIMClient.conversationMap.conversationList.forEach(conver=> {
+                count += conver.unreadMessageCount;
+            });
+            return count;
         }
         /**
          * [getConversationUnreadCount 指定多种会话类型获取未读消息数]
          * @param  {ResultCallback<number>} callback             [返回值，参数回调。]
          * @param  {ConversationType[]}     ...conversationTypes [会话类型。]
          */
-        getConversationUnreadCount(conversationTypes: ConversationType[], callback: ResultCallback<number>) {
-            var count: number = 0, me = this;
-            try {
-                conversationTypes.forEach(converType=> {
-                    RongIMClient.conversationMap.conversationList.forEach(conver=> {
-                        if (conver.conversationType == converType) {
-                            count += conver.unreadMessageCount;
-                        }
-                    });
+        getConversationUnreadCount(conversationTypes: ConversationType[]): number {
+            var count: number = 0;
+            conversationTypes.forEach(converType=> {
+                RongIMClient.conversationMap.conversationList.forEach(conver=> {
+                    if (conver.conversationType == converType) {
+                        count += conver.unreadMessageCount;
+                    }
                 });
-            } catch (e) {
-                callback.onError(ErrorCode.CONVER_TYPE_UNREAD_ERROR);
-            }
-            callback.onSuccess(count);
+            });
+            return count;
         }
         /**
          * [getUnreadCount 指定用户、会话类型的未读消息总数。]
@@ -482,46 +474,44 @@ module RongIMLib {
          * clearTextMessageDraft 清除指定会话和消息类型的草稿。
          * @param  {ConversationType}        conversationType 会话类型
          * @param  {string}                  targetId         目标Id
-         * @param  {ResultCallback<boolean>} callback         返回值，参数回调
          */
-        clearTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+        clearTextMessageDraft(conversationType: ConversationType, targetId: string): boolean {
             CheckParam.getInstance().check(["number", "string", "object"], "clearTextMessageDraft");
+            var isOk = true;
             try {
                 RongIMClient._storageProvider.removeItem(conversationType + "_" + targetId);
             } catch (e) {
-                callback.onError(ErrorCode.DRAF_REMOVE_ERROR);
+                isOk = false;
             }
-            callback.onSuccess(true);
+            return isOk;
         }
         /**
          * [getTextMessageDraft 获取指定消息和会话的草稿。]
          * @param  {ConversationType}       conversationType [会话类型]
          * @param  {string}                 targetId         [目标Id]
-         * @param  {ResultCallback<string>} callback         [返回值，参数回调]
          */
-        getTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<string>) {
+        getTextMessageDraft(conversationType: ConversationType, targetId: string): string {
             CheckParam.getInstance().check(["number", "string", "object"], "getTextMessageDraft");
             if (targetId == "" || conversationType < 0) {
-                callback.onError(ErrorCode.DRAF_GET_ERROR);
-                return;
+                throw new Error("params error : " + ErrorCode.DRAF_GET_ERROR);
             }
-            callback.onSuccess(RongIMClient._storageProvider.getItem(conversationType + "_" + targetId));
+            return RongIMClient._storageProvider.getItem(conversationType + "_" + targetId);
         }
         /**
          * [saveTextMessageDraft description]
          * @param  {ConversationType}        conversationType [会话类型]
          * @param  {string}                  targetId         [目标Id]
          * @param  {string}                  value            [草稿值]
-         * @param  {ResultCallback<boolean>} callback         [返回值，参数回调]
          */
-        saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string, callback: ResultCallback<boolean>) {
+        saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string): boolean {
             CheckParam.getInstance().check(["number", "string", "string", "object"], "saveTextMessageDraft");
+            var isOk = true;
             try {
                 RongIMClient._storageProvider.setItem(conversationType + "_" + targetId, value);
             } catch (e) {
-                callback.onError(ErrorCode.DRAF_SAVE_ERROR);
+                isOk = false;
             }
-            callback.onSuccess(true);
+            return isOk;
         }
 
         // #endregion TextMessage Draft
@@ -555,18 +545,15 @@ module RongIMLib {
             }
             callback.onSuccess(true);
         }
-        //TODO 可否改成直接返回会话，不需要回调函数
         /**
          * [getConversation 获取指定会话，此方法需在getConversationList之后执行]
          * @param  {ConversationType}             conversationType [会话类型]
          * @param  {string}                       targetId         [目标Id]
          * @param  {ResultCallback<Conversation>} callback         [返回值，函数回调]
          */
-        getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>) {
+        getConversation(conversationType: ConversationType, targetId: string): Conversation {
             CheckParam.getInstance().check(["number", "string", "object"], "getConversation");
-            var conver: Conversation = RongIMClient.conversationMap.get(conversationType, targetId);
-            var hasConver = conver ? true : false;
-            callback.onSuccess(conver, hasConver);
+            return RongIMClient.conversationMap.get(conversationType, targetId);
         }
         /**
          * [pottingConversation 组装会话列表]
@@ -617,6 +604,26 @@ module RongIMLib {
                 RongIMClient.conversationMap.add(conver);
             }
         }
+
+        sortConversationList(conversationList: Array<Conversation>): Array<Conversation> {
+            if (conversationList.length <= 1) { return conversationList; }
+            var pivotIndex: number = Math.floor(conversationList.length / 2);
+            var pivot: Conversation = conversationList.splice(pivotIndex, 1)[0];
+            var left: Array<Conversation> = [], right: Array<Conversation> = [], topArr: Array<Conversation> = [];
+            for (var i = 0, len = conversationList.length; i < len; i++) {
+                if (conversationList[i].isTop) {
+                    topArr.push(conversationList[i]);
+                } else {
+                    if (conversationList[i].sentTime > pivot.sentTime) {
+                        left.push(conversationList[i]);
+                    } else {
+                        right.push(conversationList[i]);
+                    }
+                }
+            }
+            RongIMClient.conversationMap.conversationList = topArr.concat(this.sortConversationList(left).concat([pivot], this.sortConversationList(right)));
+            return RongIMClient.conversationMap.conversationList;
+        }
         //TODO conversationTypes
         getConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
             CheckParam.getInstance().check(["object"], "getConversationList");
@@ -643,7 +650,7 @@ module RongIMLib {
          * @param  {string}  converTitle      [会话标题]
          * @param  {boolean} islocal          [是否同步到服务器，ture：同步，false:不同步]
          */
-        createConversation(conversationType: number, targetId: string, converTitle: string, islocal: boolean): Conversation {
+        createConversation(conversationType: number, targetId: string, converTitle: string): Conversation {
             CheckParam.getInstance().check(["number", "string", "string", "boolean"], "createConversation");
             var conver: Conversation = RongIMClient.conversationMap.get(conversationType, targetId);
             if (conver) {
@@ -680,13 +687,14 @@ module RongIMLib {
             });
         }
 
-        setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+        setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): boolean {
+            var isOK = true;
             try {
                 RongIMClient.conversationMap.add(RongIMClient.conversationMap.get(conversationType, targetId));
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_SETOP_ERROR);
+                isOK = false;
             }
-            callback.onSuccess(true);
+            return isOK;
         }
 
         // #endregion Conversation
