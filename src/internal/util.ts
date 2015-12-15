@@ -245,9 +245,9 @@ module RongIMLib {
                 return null;
             }
             //处理表情
-            if ("Expression" in RongIMClient && de.content) {
+            if ("Expression" in RongIMLib && de.content) {
                 de.content = de.content.replace(/[\uf000-\uf700]/g, function(x: any) {
-                    return eval("RongIMClient.Expression.calcUTF(x) || x");
+                    return eval("RongIMLib.Expression.calcUTF(x) || x");
                 });
             }
             //映射为具体消息对象

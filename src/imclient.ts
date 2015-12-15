@@ -108,35 +108,24 @@ module RongIMLib {
          * 自定义消息声明需放在执行顺序最高的位置（在RongIMClient.init(appkey)之后即可）
          * @param objectName  用户数据信息。
          */
-        static registerMessageType(objectName: string, messageType: string, fieldName: Array<string>[]): void {
+        static registerMessageType(objectName: string, messageType: string, messageTag: MessageTag, protos: Array<string>): void {
             if (objectName == "") {
                 throw new Error("objectName can't be empty,postion -> registerMessageType");
             }
             registerMessageTypeMapping[objectName] = messageType;
-            RongIMClient.MessageType[messageType] = messageType;
-            var str = "var temp = " + messageType + " = function(message) {" +
-                "this.message = message;" +
-                "for (var i = 0,len=fieldName.length; i < len; i++) {" +
-                "var item = fieldName[i];" +
-                "this['set' + item] = function(na) {" +
-                "this.message[item] = na;" +
-                "};" +
-                "this['get' + item] = function() {" +
-                "return this.message[item];" +
-                "};" +
+            RongIMClient.MessageType[messageType] = { typeName: messageType, objectName: objectName, msgTag: messageTag };
+            var str = "var temp = RongIMLib."+messageType+" = function(message){" +
+                "this.messageName = '" + messageType + "';" +
+                "if (arguments.length == 0) {" +
+                "throw new Error('Can not instantiate with empty parameters -> registerMessageType');}";
+            for (var p in protos) {
+                str += "this['" + protos[p] + "'] = message['" + protos[p] + "'];";
+            }
+            str += "if (message.userInfo) {" +
+                "this['userInfo'] = message.userInfo;" +
                 "}" +
-                "this.encode=function(){" +
-                "var c = new Modules.UpStreamMessage();" +
-                "c.setSessionId(3);" +
-                "c.setClassname(objectName);" +
-                "c.setContent(JSON.stringify(this.message));" +
-                "var val = c.toArrayBuffer();" +
-                "if (Object.prototype.toString.call(val) == '[object ArrayBuffer]') {" +
-                "return [].slice.call(new Int8Array(val));" +
-                "}" +
-                "return val;" +
-                "}" +
-                "};";
+                "this.encode = function(){return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));}"+
+                "}";
             eval(str);
         }
 
@@ -313,16 +302,20 @@ module RongIMLib {
             if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
                 content = [].slice.call(new Int8Array(content));
             }
-            var c: Conversation = this.getConversation(conversationType, targetId), me = this;;
+            var c: Conversation = this.getConversation(conversationType, targetId), me = this,msg:Message;
             if (!c) {
                 c = me.createConversation(conversationType, targetId, "");
+                msg = new RongIMLib.Message();
+                msg.conversationType = conversationType;
+                msg.sentTime = new Date().getTime();
+                c.latestMessage = msg;
             }
             c.sentTime = new Date().getTime();
             c.sentStatus = SentStatus.SENDING;
             c.senderUserName = "";
             c.senderUserId = Bridge._client.userId;
             c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-            c.latestMessage = messageContent;
+            c.latestMessage.content = messageContent;
             c.unreadMessageCount = 0;
             c.setTop();
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, resultCallback, null);

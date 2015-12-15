@@ -29,9 +29,7 @@ module RongIMLib {
         static modelClone(object: any): any {
             var obj: any = {};
             for (var item in object) {
-                if (object[item] && !object.hasOwnProperty(item)) {
                     obj[item] = object[item];
-                }
             }
             return obj;
         }
