@@ -1,5 +1,6 @@
 module RongIMLib {
     export abstract class MessageContent {
+        messageName: string;
 
         constructor(data?: any) {
             throw new Error("This method is abstract, you must implement this method in inherited class.");
@@ -26,7 +27,7 @@ module RongIMLib {
 
     export class ModelUtil {
         static modelClone(object: any): any {
-            var obj:any = {};
+            var obj: any = {};
             for (var item in object) {
                 if (object[item] && !object.hasOwnProperty(item)) {
                     obj[item] = object[item];

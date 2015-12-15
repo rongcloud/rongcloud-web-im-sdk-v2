@@ -364,21 +364,6 @@ var RongIMLib;
         MessageDirection[MessageDirection["RECEIVE"] = 2] = "RECEIVE";
     })(RongIMLib.MessageDirection || (RongIMLib.MessageDirection = {}));
     var MessageDirection = RongIMLib.MessageDirection;
-    (function (MessageTag) {
-        /**
-         * 空值，不表示任何意义。
-         */
-        MessageTag[MessageTag["NONE"] = 0] = "NONE";
-        /**
-         * 消息需要被存储到消息历史记录。
-         */
-        MessageTag[MessageTag["ISPERSISTED"] = 1] = "ISPERSISTED";
-        /**
-         * 消息需要被记入未读消息数。
-         */
-        MessageTag[MessageTag["ISCOUNTED"] = 2] = "ISCOUNTED";
-    })(RongIMLib.MessageTag || (RongIMLib.MessageTag = {}));
-    var MessageTag = RongIMLib.MessageTag;
     (function (PublicServiceType) {
         /**
          * 应用公众服务。
@@ -561,6 +546,28 @@ var RongIMLib;
 })(RongIMLib || (RongIMLib = {}));
 var RongIMLib;
 (function (RongIMLib) {
+    var MessageTag = (function () {
+        function MessageTag(isCounted, isPersited) {
+            this.isCounted = isCounted;
+            this.isPersited = isPersited;
+        }
+        MessageTag.prototype.getMessageTag = function () {
+            if (this.isCounted && this.isPersited) {
+                return 3;
+            }
+            else if (this.isCounted || !this.isPersited) {
+                return 2;
+            }
+            else if (!this.isCounted || this.isPersited) {
+                return 1;
+            }
+            else if (!this.isCounted && !this.isPersited) {
+                return 0;
+            }
+        };
+        return MessageTag;
+    })();
+    RongIMLib.MessageTag = MessageTag;
     var PublicServiceMap = (function () {
         function PublicServiceMap() {
             this.publicServiceList = [];
@@ -910,9 +917,16 @@ var RongIMLib;
                 resultCallback.onError(RongIMLib.ErrorCode.TIMEOUT);
                 throw new Error("connect is timeout! postion:sendMessage");
             }
-            var content = messageContent.encode(), message;
-            var me = this;
-            var c = this.getConversation(conversationType, targetId);
+            var modules = new Modules.UpStreamMessage();
+            modules.setSessionId(RongIMClient.MessageType[messageContent.messageName].msgTag.getMessageTag());
+            modules.setClassname(RongIMClient.MessageType[messageContent.messageName].objectName);
+            modules.setContent(messageContent.encode());
+            var content = modules.toArrayBuffer();
+            if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
+                content = [].slice.call(new Int8Array(content));
+            }
+            var c = this.getConversation(conversationType, targetId), me = this;
+            ;
             if (!c) {
                 c = me.createConversation(conversationType, targetId, "");
             }
@@ -1206,7 +1220,7 @@ var RongIMLib;
             else if (conver.conversationType == RongIMLib.ConversationType.DISCUSSION) {
                 self.getDiscussion(tempConver.userId, {
                     onSuccess: function (info) {
-                        conver.conversationTitle = info.getName();
+                        conver.conversationTitle = info.name;
                     },
                     onError: function (error) {
                         console.log("getDiscussion error:" + error + ",postion->getConversationList.getDiscussion");
@@ -1860,11 +1874,20 @@ var RongIMLib;
         //缓存公众号列表
         RongIMClient.publicServiceMap = new RongIMLib.PublicServiceMap();
         RongIMClient.MessageType = {
-            TextMessage: "TextMessage", ImageMessage: "ImageMessage", DiscussionNotificationMessage: "DiscussionNotificationMessage",
-            VoiceMessage: "VoiceMessage", RichContentMessage: "RichContentMessage", HandshakeMessage: "HandshakeMessage",
-            UnknownMessage: "UnknownMessage", SuspendMessage: "SuspendMessage", LocationMessage: "LocationMessage", InformationNotificationMessage: "InformationNotificationMessage",
-            ContactNotificationMessage: "ContactNotificationMessage", ProfileNotificationMessage: "ProfileNotificationMessage",
-            CommandNotificationMessage: "CommandNotificationMessage"
+            TextMessage: { typeName: "TextMessage", objectName: "RC:TxtMsg", msgTag: new RongIMLib.MessageTag(true, true) },
+            ImageMessage: { typeName: "ImageMessage", objectName: "RC:ImgMsg", msgTag: new RongIMLib.MessageTag(true, true) },
+            DiscussionNotificationMessage: { typeName: "DiscussionNotificationMessage", objectName: "RC:DizNtf", msgTag: new RongIMLib.MessageTag(true, true) },
+            VoiceMessage: { typeName: "VoiceMessage", objectName: "RC:VcMsg", msgTag: new RongIMLib.MessageTag(true, true) },
+            RichContentMessage: { typeName: "RichContentMessage", objectName: "RC:ImgTextMsg", msgTag: new RongIMLib.MessageTag(true, true) },
+            HandshakeMessage: { typeName: "HandshakeMessage", objectName: "", msgTag: new RongIMLib.MessageTag(true, true) },
+            UnknownMessage: { typeName: "UnknownMessage", objectName: "", msgTag: new RongIMLib.MessageTag(true, true) },
+            SuspendMessage: { typeName: "SuspendMessage", objectName: "", msgTag: new RongIMLib.MessageTag(true, true) },
+            LocationMessage: { typeName: "LocationMessage", objectName: "RC:LBSMsg", msgTag: new RongIMLib.MessageTag(true, true) },
+            InformationNotificationMessage: { typeName: "InformationNotificationMessage", objectName: "RC:InfoNtf", msgTag: new RongIMLib.MessageTag(true, true) },
+            ContactNotificationMessage: { typeName: "ContactNotificationMessage", objectName: "RC:ContactNtf", msgTag: new RongIMLib.MessageTag(true, true) },
+            ProfileNotificationMessage: { typeName: "ProfileNotificationMessage", objectName: "RC:ProfileNtf", msgTag: new RongIMLib.MessageTag(true, true) },
+            CommandNotificationMessage: { typeName: "CommandNotificationMessage", objectName: "RC:CmdNtf", msgTag: new RongIMLib.MessageTag(true, true) },
+            CommandMessage: { typeName: "CommandNotificationMessage", objectName: "RC:CmdMsg", msgTag: new RongIMLib.MessageTag(false, false) }
         };
         //缓存会话列表
         RongIMClient.conversationMap = new RongIMLib.ConversationMap();
@@ -2560,11 +2583,11 @@ var RongIMLib;
                     return entity.id;
                 case "ChannelInfoOutput":
                     var disInfo = new RongIMLib.Discussion();
-                    disInfo.setCreatorId(entity.adminUserId);
-                    disInfo.setId(entity.channelId);
-                    disInfo.setMemberIdList(entity.firstTenUserIds);
-                    disInfo.setName(entity.channelName);
-                    disInfo.setOpen(entity.openStatus);
+                    disInfo.creatorId = entity.adminUserId;
+                    disInfo.id = entity.channelId;
+                    disInfo.memberIdList = entity.firstTenUserIds;
+                    disInfo.name = entity.channelName;
+                    disInfo.isOpen = entity.openStatus;
                     return disInfo;
                 case "GroupHashOutput":
                     return entity.result;
@@ -4379,11 +4402,27 @@ var RongIMLib;
         return StatusMessage;
     })(MessageContent);
     RongIMLib.StatusMessage = StatusMessage;
+    var ModelUtil = (function () {
+        function ModelUtil() {
+        }
+        ModelUtil.modelClone = function (object) {
+            var obj = {};
+            for (var item in object) {
+                if (object[item] && !object.hasOwnProperty(item)) {
+                    obj[item] = object[item];
+                }
+            }
+            return obj;
+        };
+        return ModelUtil;
+    })();
+    RongIMLib.ModelUtil = ModelUtil;
 })(RongIMLib || (RongIMLib = {}));
 var RongIMLib;
 (function (RongIMLib) {
     var IsTypingStatusMessage = (function () {
         function IsTypingStatusMessage(data) {
+            this.messageName = "IsTypingStatusMessage";
             var msg = data;
         }
         IsTypingStatusMessage.prototype.encode = function () {
@@ -4397,6 +4436,7 @@ var RongIMLib;
     RongIMLib.IsTypingStatusMessage = IsTypingStatusMessage;
     var HandshakeMessage = (function () {
         function HandshakeMessage(data) {
+            this.messageName = "HandshakeMessage";
             var msg = data;
         }
         HandshakeMessage.prototype.encode = function () {
@@ -4410,6 +4450,7 @@ var RongIMLib;
     RongIMLib.HandshakeMessage = HandshakeMessage;
     var SuspendMessage = (function () {
         function SuspendMessage(data) {
+            this.messageName = "SuspendMessage";
             var msg = data;
         }
         SuspendMessage.prototype.encode = function () {
@@ -4426,119 +4467,62 @@ var RongIMLib;
 (function (RongIMLib) {
     var InformationNotificationMessage = (function () {
         function InformationNotificationMessage(message) {
-            //persited 0:不持久化  1:持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
-            this.message = message;
+            this.messageName = "InformationNotificationMessage";
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> InformationNotificationMessage.");
+            }
+            this.content = message.content;
+            this.extra = message.extra;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
         InformationNotificationMessage.obtain = function (content) {
-            var msg = new InformationNotificationMessage({ content: content, extra: "" });
-            return msg;
-        };
-        InformationNotificationMessage.prototype.getExtra = function () {
-            return this.message.extra;
-        };
-        InformationNotificationMessage.prototype.getMessage = function () {
-            return this.message.content;
-        };
-        InformationNotificationMessage.prototype.setExtra = function (extra) {
-            this.message.extra = extra;
-        };
-        InformationNotificationMessage.prototype.setMessage = function (content) {
-            this.message.content;
+            return new InformationNotificationMessage({ content: content, extra: "" });
         };
         InformationNotificationMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:InfoNtf");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return InformationNotificationMessage;
     })();
     RongIMLib.InformationNotificationMessage = InformationNotificationMessage;
     var CommandMessage = (function () {
         function CommandMessage(message) {
-            //persited 0: 不持久化 1:持久化
-            this.persited = 0;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 0;
-            this.message = message;
+            this.messageName = "CommandMessage";
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> CommandMessage.");
+            }
+            this.content = message.content;
+            this.extra = message.extra;
         }
         CommandMessage.obtain = function (content) {
-            var msg = new CommandMessage({ content: content });
-            return msg;
+            return new CommandMessage({ content: content, extra: "" });
         };
         CommandMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:CmdMsg");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return CommandMessage;
     })();
     RongIMLib.CommandMessage = CommandMessage;
     var ContactNotificationMessage = (function () {
         function ContactNotificationMessage(message) {
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
-            this.message = message;
+            this.messageName = "ContactNotificationMessage";
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ContactNotificationMessage.");
+            }
+            this.operation = message.operation;
+            this.targetUserId = message.targetUserId;
+            this.content = message.content;
+            this.extra = message.extra;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
-        ContactNotificationMessage.obtain = function (operation, sourceUserId, targetUserId, message) {
-            return new InformationNotificationMessage({ operation: operation, sourceUserId: sourceUserId, targetUserId: targetUserId, message: message, extra: "" });
-        };
-        ContactNotificationMessage.prototype.getExtra = function () {
-            return this.message.extra;
-        };
-        ContactNotificationMessage.prototype.getMessage = function () {
-            return this.message.content;
-        };
-        ContactNotificationMessage.prototype.getOperation = function () {
-            return this.message.operation;
-        };
-        ContactNotificationMessage.prototype.getSourceUserId = function () {
-            return this.message.sourceUserId;
-        };
-        ContactNotificationMessage.prototype.getTargetUserId = function () {
-            return this.message.targetUserId;
-        };
-        ContactNotificationMessage.prototype.setExtra = function (extra) {
-            this.message.extra = extra;
-        };
-        ContactNotificationMessage.prototype.setMessage = function (content) {
-            this.message.content;
-        };
-        ContactNotificationMessage.prototype.setOperation = function (operation) {
-            this.message.operation = operation;
-        };
-        ContactNotificationMessage.prototype.setSourceUserId = function (sourceUserId) {
-            this.message.sourceUserId = sourceUserId;
-        };
-        ContactNotificationMessage.prototype.setTargetUserId = function (targetUserId) {
-            this.message.targetUserId = targetUserId;
+        ContactNotificationMessage.obtain = function (operation, sourceUserId, targetUserId, content) {
+            return new InformationNotificationMessage({ operation: operation, sourceUserId: sourceUserId, targetUserId: targetUserId, content: content });
         };
         ContactNotificationMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:ContactNtf");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         ContactNotificationMessage.CONTACT_OPERATION_ACCEPT_RESPONSE = "ContactOperationAcceptResponse";
         ContactNotificationMessage.CONTACT_OPERATION_REJECT_RESPONSE = "ContactOperationRejectResponse";
@@ -4548,127 +4532,62 @@ var RongIMLib;
     RongIMLib.ContactNotificationMessage = ContactNotificationMessage;
     var ProfileNotificationMessage = (function () {
         function ProfileNotificationMessage(message) {
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
-            this.message = message;
+            this.messageName = "ProfileNotificationMessage";
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ProfileNotificationMessage.");
+            }
+            this.operation = message.operation;
+            this.data = message.data;
+            this.extra = message.extra;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
         ProfileNotificationMessage.obtain = function (operation, data) {
-            return new ProfileNotificationMessage({ operation: operation, data: data, extra: "" });
-        };
-        ProfileNotificationMessage.prototype.getData = function () {
-            return this.message.content;
-        };
-        ProfileNotificationMessage.prototype.getExtra = function () {
-            return this.message.extra;
-        };
-        ProfileNotificationMessage.prototype.getOperation = function () {
-            return this.message.operation;
-        };
-        ProfileNotificationMessage.prototype.setData = function (content) {
-            return this.message.content = content;
-        };
-        ProfileNotificationMessage.prototype.setExtra = function (extra) {
-            return this.message.extra = extra;
-        };
-        ProfileNotificationMessage.prototype.setOperation = function (operation) {
-            return this.message.operation = operation;
+            return new ProfileNotificationMessage({ operation: operation, data: data });
         };
         ProfileNotificationMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:ProfileNtf");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return ProfileNotificationMessage;
     })();
     RongIMLib.ProfileNotificationMessage = ProfileNotificationMessage;
     var CommandNotificationMessage = (function () {
         function CommandNotificationMessage(message) {
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
-            this.message = message;
+            this.messageName = "CommandNotificationMessage";
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ProfileNotificationMessage.");
+            }
+            this.data = message.data;
+            this.name = message.name;
+            this.extra = message.extra;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
-        CommandNotificationMessage.obtain = function (x, data) {
-            return new CommandNotificationMessage({ name: x, data: data, extra: "" });
-        };
-        CommandNotificationMessage.prototype.getData = function () {
-            return this.message.content;
-        };
-        CommandNotificationMessage.prototype.getName = function () {
-            return this.message.name;
-        };
-        CommandNotificationMessage.prototype.setData = function (content) {
-            return this.message.content = content;
-        };
-        CommandNotificationMessage.prototype.setName = function (name) {
-            return this.message.name = name;
+        CommandNotificationMessage.obtain = function (name, data) {
+            return new CommandNotificationMessage({ name: name, data: data, extra: "" });
         };
         CommandNotificationMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:CmdNtf");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return CommandNotificationMessage;
     })();
     RongIMLib.CommandNotificationMessage = CommandNotificationMessage;
     var DiscussionNotificationMessage = (function () {
         function DiscussionNotificationMessage(message) {
-            this.isHasReceived = false;
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
-            this.message = message;
-        }
-        DiscussionNotificationMessage.prototype.getExtension = function () {
-            return this.message.extension;
-        };
-        DiscussionNotificationMessage.prototype.getType = function () {
-            return this.message.type;
-        };
-        DiscussionNotificationMessage.prototype.getHasReceived = function () {
-            return this.message.isHasReceived;
-        };
-        DiscussionNotificationMessage.prototype.getOperator = function () {
-            return this.message.operation;
-        };
-        DiscussionNotificationMessage.prototype.setExtension = function (extension) {
-            return this.message.extension = extension;
-        };
-        DiscussionNotificationMessage.prototype.setHasReceived = function (isHasReceived) {
-            return this.message.isHasReceived = isHasReceived;
-        };
-        DiscussionNotificationMessage.prototype.setOperator = function (operation) {
-            return this.message.operation = operation;
-        };
-        DiscussionNotificationMessage.prototype.setType = function (type) {
-            return this.message.type = type;
-        };
-        DiscussionNotificationMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:DizNtf");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
+            this.messageName = "DiscussionNotificationMessage";
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> DiscussionNotificationMessage.");
             }
-            return val;
+            this.extra = message.extra;
+            this.content = message.content;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
+        }
+        DiscussionNotificationMessage.prototype.encode = function () {
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return DiscussionNotificationMessage;
     })();
@@ -4678,335 +4597,157 @@ var RongIMLib;
 (function (RongIMLib) {
     var TextMessage = (function () {
         function TextMessage(message) {
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
+            this.messageName = "TextMessage";
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> TextMessage.");
             }
-            this.message = message;
+            this.content = message.content;
+            this.extra = message.extra;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
         TextMessage.obtain = function (text) {
-            var msg = new TextMessage({ extra: "", content: text });
-            return msg;
-        };
-        TextMessage.prototype.setExtra = function (extra) {
-            this.message.extra = extra;
-        };
-        TextMessage.prototype.setContent = function (content) {
-            this.message.content = content;
-        };
-        TextMessage.prototype.getExtra = function () {
-            return this.message.extra;
-        };
-        TextMessage.prototype.getContent = function () {
-            return this.message.content;
+            return new TextMessage({ extra: "", content: text });
         };
         TextMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:TxtMsg");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return TextMessage;
     })();
     RongIMLib.TextMessage = TextMessage;
     var VoiceMessage = (function () {
         function VoiceMessage(message) {
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
-            if (!VoiceMessage.caller && arguments.length == 0) {
+            this.messageName = "VoiceMessage";
+            if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> VoiceMessage.");
             }
-            this.message = message;
+            this.content = message.content;
+            this.duration = message.duration;
+            this.extra = message.extra;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
         VoiceMessage.obtain = function (base64Content, duration) {
-            var msg = new VoiceMessage({ content: base64Content, duration: duration, extra: "" });
-            return msg;
-        };
-        VoiceMessage.prototype.setContent = function (base64) {
-            this.message.content = base64;
-        };
-        VoiceMessage.prototype.setDuration = function (duration) {
-            this.message.duration = duration;
-        };
-        VoiceMessage.prototype.setUri = function (uri) {
-            this.message.uri = uri;
-        };
-        VoiceMessage.prototype.setExtra = function (extra) {
-            this.message.extra = extra;
-        };
-        VoiceMessage.prototype.getContent = function () {
-            return this.message.content;
-        };
-        VoiceMessage.prototype.getDuration = function () {
-            return this.message.duration;
-        };
-        VoiceMessage.prototype.getUri = function () {
-            return this.message.uri;
-        };
-        VoiceMessage.prototype.getExtra = function () {
-            return this.message.extra;
+            return new VoiceMessage({ content: base64Content, duration: duration, extra: "" });
         };
         VoiceMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:VcMsg");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return VoiceMessage;
     })();
     RongIMLib.VoiceMessage = VoiceMessage;
     var ImageMessage = (function () {
         function ImageMessage(message) {
-            this.isFull = false;
-            this.isUpLoadExp = false;
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
-            if (!ImageMessage.caller && arguments.length == 0) {
+            this.messageName = "ImageMessage";
+            if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ImageMessage.");
             }
-            this.message = message;
+            this.content = message.content;
+            this.imageUri = message.imageUri;
+            this.extra = message.extra;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
         ImageMessage.obtain = function (content, imageUri) {
-            var msg = new ImageMessage({ content: content, imageUri: imageUri, extra: "" });
-            return msg;
-        };
-        ImageMessage.prototype.getBase64 = function () {
-            return this.message.base64;
-        };
-        ImageMessage.prototype.getExtra = function () {
-            return this.message.extra;
-        };
-        ImageMessage.prototype.getLocalUri = function () {
-            return this.message.localUri;
-        };
-        ImageMessage.prototype.getRemoteUri = function () {
-            return this.message.remoteUri;
-        };
-        ImageMessage.prototype.getThumUri = function () {
-            return this.message.thumUri;
-        };
-        ImageMessage.prototype.getIsFull = function () {
-            return this.message.isFull;
-        };
-        ImageMessage.prototype.getIsUpLoadExp = function () {
-            return this.message.isUpLoadExp;
-        };
-        ImageMessage.prototype.setBase64 = function (base64) {
-            this.message.base64 = base64;
-        };
-        ImageMessage.prototype.setExtra = function (extra) {
-            this.message.extra = extra;
-        };
-        ImageMessage.prototype.setLocalUri = function (localUri) {
-            this.message.localUri = localUri;
-        };
-        ImageMessage.prototype.setRemoteUri = function (remoteUri) {
-            this.message.remoteUri = remoteUri;
-        };
-        ImageMessage.prototype.setThumUri = function (thumUri) {
-            this.message.thumUri = thumUri;
-        };
-        ImageMessage.prototype.setIsUpLoadExp = function (isUpLoadExp) {
-            this.message.isUpLoadExp = isUpLoadExp;
-        };
-        ImageMessage.prototype.setIsFull = function (isFull) {
-            this.message.isFull = isFull;
+            return new ImageMessage({ content: content, imageUri: imageUri, extra: "" });
         };
         ImageMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:ImgMsg");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return ImageMessage;
     })();
     RongIMLib.ImageMessage = ImageMessage;
     var LocationMessage = (function () {
         function LocationMessage(message) {
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
-            if (!LocationMessage.caller && arguments.length == 0) {
+            this.messageName = "LocationMessage";
+            if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> LocationMessage.");
             }
-            this.message = message;
+            this.latiude = message.latitude;
+            this.longitude = message.longitude;
+            this.poi = message.pot;
+            this.imageUri = message.imageUri;
+            this.extra = message.extra;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
         LocationMessage.obtain = function (latitude, longitude, poi, imgUri) {
-            var msg = new LocationMessage({ latitude: longitude, longitude: longitude, poi: poi, imgUri: imgUri, extra: "" });
-            return msg;
-        };
-        LocationMessage.prototype.getExtra = function () {
-            return this.message.extra;
-        };
-        LocationMessage.prototype.getImgUri = function () {
-            return this.message.imgUri;
-        };
-        LocationMessage.prototype.getLat = function () {
-            return this.message.lat;
-        };
-        LocationMessage.prototype.getLng = function () {
-            return this.message.lng;
-        };
-        LocationMessage.prototype.getPoi = function () {
-            return this.message.poi;
-        };
-        LocationMessage.prototype.setExtra = function (extra) {
-            this.message.extra = extra;
-        };
-        LocationMessage.prototype.setImgUri = function (imgUri) {
-            this.message.imgUri = imgUri;
-        };
-        LocationMessage.prototype.setLat = function (lat) {
-            this.message.lat = lat;
-        };
-        LocationMessage.prototype.setLng = function (lng) {
-            this.message.lng = lng;
-        };
-        LocationMessage.prototype.setPoi = function (poi) {
-            this.message.poi = poi;
+            return new LocationMessage({ latitude: longitude, longitude: longitude, poi: poi, imgUri: imgUri, extra: "" });
         };
         LocationMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:LBSMsg");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return LocationMessage;
     })();
     RongIMLib.LocationMessage = LocationMessage;
     var RichContentMessage = (function () {
         function RichContentMessage(message) {
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
-            if (!LocationMessage.caller && arguments.length == 0) {
+            this.messageName = "RichContentMessage";
+            if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> RichContentMessage.");
             }
-            this.message = message;
+            this.title = message.title;
+            this.content = message.content;
+            this.imageUri = message.imageUri;
+            this.extra = message.extra;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
         RichContentMessage.obtain = function (title, content, imageUri) {
-            var msg = new RichContentMessage({ title: title, content: content, imageUri: imageUri });
-            return msg;
-        };
-        RichContentMessage.prototype.getContent = function () {
-            return this.message.content;
-        };
-        RichContentMessage.prototype.getExtra = function () {
-            return this.message.extra;
-        };
-        RichContentMessage.prototype.getImgUrl = function () {
-            return this.message.imgUrl;
-        };
-        RichContentMessage.prototype.getTitle = function () {
-            return this.message.title;
-        };
-        RichContentMessage.prototype.setContent = function (content) {
-            return this.message.content = content;
-        };
-        RichContentMessage.prototype.setExtra = function (extra) {
-            return this.message.extra = extra;
-        };
-        RichContentMessage.prototype.setImgUrl = function (imgUrl) {
-            return this.message.imgUrl = imgUrl;
-        };
-        RichContentMessage.prototype.setTitle = function (title) {
-            return this.message.title = title;
+            return new RichContentMessage({ title: title, content: content, imageUri: imageUri, extra: "" });
         };
         RichContentMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:ImgTextMsg");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return RichContentMessage;
     })();
     RongIMLib.RichContentMessage = RichContentMessage;
     var UnknownMessage = (function () {
         function UnknownMessage(message) {
-            if (!LocationMessage.caller && arguments.length == 0) {
-                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> RichContentMessage.");
+            this.messageName = "UnknownMessage";
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> UnknownMessage.");
             }
             this.message = message;
         }
         UnknownMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
+            return "";
         };
         return UnknownMessage;
     })();
     RongIMLib.UnknownMessage = UnknownMessage;
     var PublicServiceCommandMessage = (function () {
         function PublicServiceCommandMessage(message) {
-            //persited 0:持久化 1:不持久化
-            this.persited = 1;
-            //counted 0:不累计未读消息数  2:累计为度消息数
-            this.counted = 2;
+            this.messageName = "PublicServiceCommandMessage";
             if (arguments.length == 0) {
-                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> TextMessage.");
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> PublicServiceCommandMessage.");
             }
-            this.message = message;
+            this.content = message.content;
+            this.extra = message.extra;
+            this.menuItem = message.menuItem;
+            if (message.userInfo) {
+                this.userInfo = message.userInfo;
+            }
         }
         PublicServiceCommandMessage.obtain = function (item) {
-            var msg = new PublicServiceCommandMessage({ extra: "", data: "", command: "", menuItem: item });
-            return msg;
+            return new PublicServiceCommandMessage({ content: "", command: "", menuItem: item, extra: "" });
         };
         PublicServiceCommandMessage.prototype.encode = function () {
-            var c = new Modules.UpStreamMessage();
-            c.setSessionId(this.persited | this.counted);
-            c.setClassname("RC:PSCmd");
-            c.setContent(JSON.stringify(this.message));
-            var val = c.toArrayBuffer();
-            if (Object.prototype.toString.call(val) == "[object ArrayBuffer]") {
-                return [].slice.call(new Int8Array(val));
-            }
-            return val;
+            return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
         };
         return PublicServiceCommandMessage;
     })();
     RongIMLib.PublicServiceCommandMessage = PublicServiceCommandMessage;
     var PublicServiceMultiRichContentMessage = (function () {
         function PublicServiceMultiRichContentMessage(messages) {
+            this.messageName = "PublicServiceMultiRichContentMessage";
             this.richContentMessages = messages;
         }
-        PublicServiceMultiRichContentMessage.prototype.getPublicServiceUserInfo = function () {
-            return this.userInfo;
-        };
-        PublicServiceMultiRichContentMessage.prototype.setPublicServiceUserInfo = function (user) {
-            this.userInfo = user;
-        };
         PublicServiceMultiRichContentMessage.prototype.encode = function () {
             return null;
         };
@@ -5015,17 +4756,9 @@ var RongIMLib;
     RongIMLib.PublicServiceMultiRichContentMessage = PublicServiceMultiRichContentMessage;
     var PublicServiceRichContentMessage = (function () {
         function PublicServiceRichContentMessage(message) {
+            this.messageName = "PublicServiceRichContentMessage";
             this.richContentMessage = message;
         }
-        PublicServiceRichContentMessage.prototype.getMessage = function () {
-            return this.richContentMessage;
-        };
-        PublicServiceRichContentMessage.prototype.getPublicServiceUserInfo = function () {
-            return this.userInfo;
-        };
-        PublicServiceRichContentMessage.prototype.setPublicServiceUserInfo = function (user) {
-            this.userInfo = user;
-        };
         PublicServiceRichContentMessage.prototype.encode = function () {
             return null;
         };
@@ -5062,38 +4795,13 @@ var RongIMLib;
     })();
     RongIMLib.Conversation = Conversation;
     var Discussion = (function () {
-        function Discussion() {
-        }
-        Discussion.prototype.setId = function (id) {
-            this.id = id;
-        };
-        Discussion.prototype.setCreatorId = function (creatorId) {
+        function Discussion(creatorId, id, memberIdList, name, isOpen) {
             this.creatorId = creatorId;
-        };
-        Discussion.prototype.setMemberIdList = function (memberIdList) {
+            this.id = id;
             this.memberIdList = memberIdList;
-        };
-        Discussion.prototype.setName = function (name) {
             this.name = name;
-        };
-        Discussion.prototype.setOpen = function (isOpen) {
             this.isOpen = isOpen;
-        };
-        Discussion.prototype.getId = function () {
-            return this.id;
-        };
-        Discussion.prototype.getCreatorId = function () {
-            return this.creatorId;
-        };
-        Discussion.prototype.getMemberIdList = function () {
-            return this.memberIdList;
-        };
-        Discussion.prototype.getName = function () {
-            return this.name;
-        };
-        Discussion.prototype.getOpen = function () {
-            return this.isOpen;
-        };
+        }
         return Discussion;
     })();
     RongIMLib.Discussion = Discussion;
@@ -5131,6 +4839,7 @@ var RongIMLib;
         return Message;
     })();
     RongIMLib.Message = Message;
+
     var PublicServiceMenuItem = (function () {
         function PublicServiceMenuItem() {
         }

@@ -306,8 +306,8 @@ module RongIMLib {
                 throw new Error("connect is timeout! postion:sendMessage");
             }
             var modules = new Modules.UpStreamMessage();
-            // modules.setSessionId(RongIMClient.MessageType[messageContent.constructor.name].msgTag.getMessageTag());
-            // modules.setClassname(RongIMClient.MessageType[messageContent.constructor.name].objectName);
+            modules.setSessionId(RongIMClient.MessageType[messageContent.messageName].msgTag.getMessageTag());
+            modules.setClassname(RongIMClient.MessageType[messageContent.messageName].objectName);
             modules.setContent(messageContent.encode());
             var content: any = modules.toArrayBuffer();
             if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {

@@ -1,5 +1,6 @@
 module RongIMLib {
     export class IsTypingStatusMessage implements StatusMessage {
+        messageName: string = "IsTypingStatusMessage";
         constructor(data: string) {
             var msg = data;
         }
@@ -12,6 +13,7 @@ module RongIMLib {
     }
 
     export class HandshakeMessage implements NotificationMessage {
+        messageName: string = "HandshakeMessage";
         constructor(data: string) {
             var msg = data;
         }
@@ -24,6 +26,7 @@ module RongIMLib {
     }
 
     export class SuspendMessage implements NotificationMessage {
+        messageName: string = "SuspendMessage";
         constructor(data: string) {
             var msg = data;
         }

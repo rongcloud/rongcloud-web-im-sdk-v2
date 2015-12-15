@@ -4,6 +4,7 @@ module RongIMLib {
         userInfo: UserInfo;
         content: string;
         extra: string;
+        messageName: string = "InformationNotificationMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> InformationNotificationMessage.");
@@ -25,6 +26,7 @@ module RongIMLib {
     export class CommandMessage implements MessageContent, ExtraAttachedMessage {
         content: string;
         extra: string;
+        messageName: string = "CommandMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> CommandMessage.");
@@ -48,6 +50,7 @@ module RongIMLib {
         targetUserId: string;
         content: string;
         extra: string;
+        messageName: string = "ContactNotificationMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ContactNotificationMessage.");
@@ -73,6 +76,7 @@ module RongIMLib {
         operation: string;
         data: string;
         extra: string;
+        messageName: string = "ProfileNotificationMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ProfileNotificationMessage.");
@@ -97,6 +101,7 @@ module RongIMLib {
         data: string;
         name: string;
         extra: string;
+        messageName: string = "CommandNotificationMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ProfileNotificationMessage.");
@@ -121,6 +126,7 @@ module RongIMLib {
         userInfo: UserInfo;
         content: string;
         extra: string;
+        messageName: string = "DiscussionNotificationMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> DiscussionNotificationMessage.");

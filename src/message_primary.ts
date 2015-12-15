@@ -3,6 +3,7 @@ module RongIMLib {
         userInfo: UserInfo;
         extra: string;
         content: string;
+        messageName: string = "TextMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> TextMessage.");
@@ -26,6 +27,7 @@ module RongIMLib {
         content: string;
         duration: number;
         extra: string;
+messageName: string = "VoiceMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> VoiceMessage.");
@@ -50,6 +52,7 @@ module RongIMLib {
         content: string;
         imageUri: string;
         extra: string;
+messageName: string = "ImageMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ImageMessage.");
@@ -76,6 +79,7 @@ module RongIMLib {
         poi: string;
         imageUri: string;
         extra: string;
+messageName: string = "LocationMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> LocationMessage.");
@@ -105,6 +109,7 @@ module RongIMLib {
         content: string;
         imageUri: string;
         extra: string;
+messageName: string = "RichContentMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> RichContentMessage.");
@@ -128,6 +133,7 @@ module RongIMLib {
 
     export class UnknownMessage implements MessageContent {
         message: UnknownMessage;
+        messageName: string = "UnknownMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> UnknownMessage.");
@@ -145,6 +151,7 @@ module RongIMLib {
         menuItem: PublicServiceMenuItem;
         content: string;
         extra: string;
+messageName: string = "PublicServiceCommandMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> PublicServiceCommandMessage.");
@@ -167,6 +174,7 @@ module RongIMLib {
     export class PublicServiceMultiRichContentMessage implements MessageContent, UserInfoAttachedMessage {
         userInfo: UserInfo;
         richContentMessages: Array<RichContentMessage>;
+messageName: string = "PublicServiceMultiRichContentMessage";
         constructor(messages: Array<RichContentMessage>) {
             this.richContentMessages = messages;
         }
@@ -178,6 +186,7 @@ module RongIMLib {
     export class PublicServiceRichContentMessage implements MessageContent, UserInfoAttachedMessage {
         userInfo: UserInfo;
         richContentMessage: RichContentMessage;
+        messageName: string = "PublicServiceRichContentMessage";
         constructor(message: RichContentMessage) {
             this.richContentMessage = message;
         }
