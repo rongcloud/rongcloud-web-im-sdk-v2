@@ -22,7 +22,7 @@ module RongIMLib {
          * [createTransport 创建Polling，打开请求连接]
          */
         createTransport(url: string, method?: string): any {
-            if (!url){throw new Error("Url is empty,Please check it!");};
+            if (!url) { throw new Error("Url is empty,Please check it!"); };
             var sid = RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId"), me = this;
             if (sid) {
                 setTimeout(function() {
@@ -36,8 +36,8 @@ module RongIMLib {
         }
         _request(url: string, method: string, multipart?: boolean) {
             var req = this.XmlHttpRequest();
-            if (multipart) {req.multipart = true;}
-            req.open(method || "GET", MessageUtil.schemeArrs[RongIMClient.schemeType][SchemeType.XHR] + "://" + url);
+            if (multipart) { req.multipart = true; }
+            req.open(method || "GET", MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://" + url);
             if (method == "POST" && "setRequestHeader" in req) {
                 req.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
             }
@@ -56,7 +56,7 @@ module RongIMLib {
                     }
                 };
                 this._xhr.onerror = function() {
-                    this.disconnect();
+                    me.disconnect();
                 };
             } else {
                 me._xhr.onreadystatechange = function() {
@@ -82,8 +82,8 @@ module RongIMLib {
          */
         send(data: any, url?: string, method?: string): void {
             var me: PollingTransportation = this;
-            if (!this.connected) {this.queue.push(data);}
-            if (this.isClose) {throw new Error("The Connection is closed,Please open the Connection!!!");}
+            if (!this.connected) { this.queue.push(data); }
+            if (this.isClose) { throw new Error("The Connection is closed,Please open the Connection!!!"); }
             this._sendXhr = this._request(Navigate.Endpoint.host + "/websocket" + data.url, "POST");
             if ("onload" in me._sendXhr) {
                 me._sendXhr.onload = function() {
@@ -130,7 +130,7 @@ module RongIMLib {
             if (this._xhr) {
                 if (this._xhr.onload) {
                     this._xhr.onreadystatechange = this._xhr.onload = this.empty;
-                }else{
+                } else {
                     this._xhr.onreadystatechange = this.empty;
                 }
                 this._xhr.abort();
@@ -139,7 +139,7 @@ module RongIMLib {
             if (this._sendXhr) {
                 if (this._sendXhr.onload) {
                     this._sendXhr.onreadystatechange = this._sendXhr.onload = this.empty;
-                }else{
+                } else {
                     this._sendXhr.onreadystatechange = this.empty;
                 }
                 this._sendXhr.abort();
@@ -163,7 +163,7 @@ module RongIMLib {
             }
         }
         checkWithCredentials(): boolean {
-            if (!("XMLHttpRequest" in window)){return false;}
+            if (!("XMLHttpRequest" in window)) { return false; }
             var xmlRequest = new XMLHttpRequest();
             return xmlRequest.withCredentials !== undefined;
         }
@@ -182,13 +182,13 @@ module RongIMLib {
         }
         onPollingSuccess(a: any, b?: any): void {
             this.onData(a, b);
-            if (/"headerCode":-32,/.test(a)){return;}
+            if (/"headerCode":-32,/.test(a)) { return; }
             this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId"), true);
         }
         onPollingError(): void {
             this.disconnect();
         }
-        addEvent() {}
+        addEvent() { }
         status200(text: string, arg: any) {
             var txt = text.match(/"sessionid":"\S+?(?=")/);
             this.onPollingSuccess(text, txt ? txt[0].slice(13) : void 0);

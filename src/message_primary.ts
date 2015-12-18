@@ -21,7 +21,6 @@ module RongIMLib {
             return JSON.stringify(ModelUtil.modelClone(this));
         }
     }
-
     export class VoiceMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
         userInfo: UserInfo;
         content: string;

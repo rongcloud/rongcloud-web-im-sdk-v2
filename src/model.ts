@@ -83,7 +83,6 @@ module RongIMLib {
             }
         }
     }
-
     export class PublicServiceMenuItem {
         id: string;
         name: string;
@@ -212,5 +211,7 @@ module RongIMLib {
                 public sex: string
             ) { }
         }
+
+
     }
 }

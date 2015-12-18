@@ -26,7 +26,7 @@ module RongIMLib {
         createTransport(url: string, method?: string): any {
             if (!url){throw new Error("URL can't be empty");};
             this.url = url;
-            this.socket = new WebSocket(MessageUtil.schemeArrs[RongIMClient.schemeType][SchemeType.WS]+"://" + url);
+            this.socket = new WebSocket(MessageUtil.schemeArrs[RongIMClient.schemeType][1]+"://" + url);
             this.socket.binaryType = "arraybuffer";
             this.addEvent();
             return this.socket;

@@ -29,9 +29,25 @@ module RongIMLib {
         static modelClone(object: any): any {
             var obj: any = {};
             for (var item in object) {
-                    obj[item] = object[item];
+                obj[item] = object[item];
             }
             return obj;
+        }
+        static modleCreate(fields: string[]): any {
+            if (fields.length < 1) {
+                throw new Error('Array is empty  -> registerMessageType.modleCreate');
+            }
+            var Object = function(message: any) {
+                for (var index in fields) {
+                    if (message[fields[index]]) {
+                        Object.prototype[fields[index]] = message[fields[index]];
+                    }
+                }
+                this.encode = function() {
+                    return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
+                }
+            }
+            return Object;
         }
     }
 }

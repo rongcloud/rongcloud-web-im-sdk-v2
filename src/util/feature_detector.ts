@@ -6,13 +6,13 @@ module RongIMLib {
     //TODO 设置WEB_XHR_POLLING 为true时为成功，和时机有关系
     constructor() {
       Transports._TransportType = Socket.WEBSOCKET;
-      if ("WebSocket" in this.global && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !this.global.WEB_SOCKET_FORCE_FLASH && !this.global.WEB_XHR_POLLING) {
+      if ("WebSocket" in this.global && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !this.global.WEB_XHR_POLLING) {
         //http://res.websdk.rongcloud.cn/protobuf-0.2.min.js
-        this.script.src = "http://localhost:9876/base/src/internal/protobuf.js";
+        this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0]+"://localhost:9876/base/src/internal/protobuf.js";
 
       } else {
         Transports._TransportType = "xhr-polling";
-        this.script.src = "http://localhost:9876/base/src/internal/xhrpolling.js";
+        this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0]+"://localhost:9876/base/src/internal/xhrpolling.js";
       }
       this.head.appendChild(this.script);
     }

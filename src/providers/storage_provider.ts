@@ -13,7 +13,7 @@ module RongIMLib {
 
         onOutOfQuota(): number;
 
-        getItemKey(regStr: string): any;
+        getItemKey(regStr: string): any; // TODO: 干啥的？
 
         // getDataAccessProvider(): DataAccessProvider;
     }

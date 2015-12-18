@@ -4,19 +4,19 @@ module RongIMLib {
         private lastReadTime: LimitableMap = new LimitableMap();
         //token
         static _token: string;
-        //判断是否推送消息
+        //判断是否推送消息    TODO 找原因
         static isNotPullMsg: boolean = false;
         static _storageProvider: StorageProvider;
         /**
          * [schemeType 选择连接方式]
-         * SSL需要设置schemeType为SchemeType.SSL
-         * HTTP或WS需要设置 schemeType为SchemeType.HSL(默认)
+         * SSL需要设置schemeType为ConnectionChannel.HTTPS
+         * HTTP或WS需要设置 schemeType为ConnectionChannel.HTTP(默认)
          * 若改变连接方式此属性必须在RongIMClient.init之前赋值
          * expmale:
-         * RongIMLib.RongIMClient.schemeType = RongIMLib.SchemeType.SSL
+         * RongIMLib.RongIMClient.schemeType = RongIMLib.ConnectionChannel.HTTP
          * @type {number}
          */
-        static schemeType: number = SchemeType.HSL;
+        static schemeType: number = ConnectionChannel.HTTP;
         // Static properties.
         private static _instance: RongIMClient;
         private static _appKey: string;
@@ -24,6 +24,7 @@ module RongIMLib {
         private static _dataAccessProvider: DataAccessProvider;
         //缓存公众号列表
         private static publicServiceMap: PublicServiceMap = new PublicServiceMap();
+        //TODO 私有化
         static MessageType: { [s: string]: any } = {
             TextMessage: { typeName: "TextMessage", objectName: "RC:TxtMsg", msgTag: new MessageTag(true, true) },
             ImageMessage: { typeName: "ImageMessage", objectName: "RC:ImgMsg", msgTag: new MessageTag(true, true) },
@@ -40,13 +41,14 @@ module RongIMLib {
             CommandNotificationMessage: { typeName: "CommandNotificationMessage", objectName: "RC:CmdNtf", msgTag: new MessageTag(true, true) },
             CommandMessage: { typeName: "CommandNotificationMessage", objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) }
         };
+        static RegisterMessage: { [s: string]: any } = {};
         //缓存会话列表
         static conversationMap: ConversationMap = new ConversationMap();
 
         //桥连接类
-        static bridge: Bridge;
+        private static bridge: Bridge;
         //存放监听数组
-        static listenerList: Array<any> = [];
+        private static listenerList: Array<any> = [];
 
 
         /**
@@ -108,25 +110,34 @@ module RongIMLib {
          * 自定义消息声明需放在执行顺序最高的位置（在RongIMClient.init(appkey)之后即可）
          * @param objectName  用户数据信息。
          */
-        static registerMessageType(objectName: string, messageType: string, messageTag: MessageTag, protos: Array<string>): void {
-            if (objectName == "") {
+        /** 增加方法
+          interface decodeFunc {
+              (message:any): MessageContent;
+            }
+         */
+        static registerMessageType(objectName: string, messageType: string, messageTag: MessageTag, messageContent: any): void {
+            if (!objectName) {
                 throw new Error("objectName can't be empty,postion -> registerMessageType");
             }
-            registerMessageTypeMapping[objectName] = messageType;
-            RongIMClient.MessageType[messageType] = { typeName: messageType, objectName: objectName, msgTag: messageTag };
-            var str = "var temp = RongIMLib."+messageType+" = function(message){" +
-                "this.messageName = '" + messageType + "';" +
-                "if (arguments.length == 0) {" +
-                "throw new Error('Can not instantiate with empty parameters -> registerMessageType');}";
-            for (var p in protos) {
-                str += "this['" + protos[p] + "'] = message['" + protos[p] + "'];";
+            if (!messageType) {
+                throw new Error("messageType can't be empty,postion -> registerMessageType");
             }
-            str += "if (message.userInfo) {" +
-                "this['userInfo'] = message.userInfo;" +
-                "}" +
-                "this.encode = function(){return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));}"+
-                "}";
-            eval(str);
+            if (Object.prototype.toString.call(messageContent) == '[object Array]') {
+                var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent);
+                RongIMClient.RegisterMessage[messageType] = regMsg;
+            } else if (Object.prototype.toString.call(messageContent) == '[object Function]' || Object.prototype.toString.call(messageContent) == '[object Object]') {
+                if (!messageContent.encode) {
+                    throw new Error("encode method has not realized or messageName is undefined-> registerMessageType");
+                }
+                if (!messageContent.decode) {
+                    throw new Error("decode method has not realized -> registerMessageType");
+                }
+            } else {
+                throw new Error("The index of 3 parameter was wrong type  must be object or function or array-> registerMessageType");
+            }
+            RongIMClient.RegisterMessage[messageType].messageName = messageType;
+            RongIMClient.MessageType[messageType] = { typeName: messageType, objectName: objectName, msgTag: messageTag };
+            registerMessageTypeMapping[objectName] = messageType;
         }
 
         /**
@@ -154,7 +165,13 @@ module RongIMLib {
                 RongIMClient.listenerList.push(listener);
             }
         }
-
+        /**
+         * 清理所有连接相关的变量
+         */
+        logOut() {
+            RongIMClient.bridge.disconnect();
+            RongIMClient.bridge = null;
+        }
         /**
          * 断开连接。
          */
@@ -198,6 +215,7 @@ module RongIMLib {
         /**
          * [getCurrentUserInfo 获取当前用户信息]
          * @param  {ResultCallback<UserInfo>} callback [回调函数]
+         * TODO 待讨论
          */
         getCurrentUserInfo(callback: ResultCallback<UserInfo>) {
             CheckParam.getInstance().check(["object"], "getCurrentUserInfo");
@@ -207,6 +225,7 @@ module RongIMLib {
          * 获得用户信息
          * @param  {string}                   userId [用户Id]
          * @param  {ResultCallback<UserInfo>} callback [回调函数]
+         * TODO 待讨论
          */
         getUserInfo(userId: string, callback: ResultCallback<UserInfo>) {
             CheckParam.getInstance().check(["string", "object"], "getUserInfo");
@@ -226,19 +245,10 @@ module RongIMLib {
             }, "GetUserInfoOutput");
         }
         /**
-         * 提交用户数据到服务器，以便后台业务（如：客服系统）使用。
-         *
-         * @param userData  用户数据信息。
-         * @param callback  操作成功或者失败的回调。
-         */
-        syncUserData(userData: UserData, callback: OperationCallback) {
-            throw new Error("Not implemented yet");
-        }
-
-        /**
          * 获取本地时间与服务器时间的差值，单位为毫秒。
          *
          * @param callback  获取的回调，返回时间差值。
+         * TODO 问王平
          */
         getDeltaTime(callback: ResultCallback<number>) {
             throw new Error("Not implemented yet");
@@ -302,12 +312,12 @@ module RongIMLib {
             if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
                 content = [].slice.call(new Int8Array(content));
             }
-            var c: Conversation = this.getConversation(conversationType, targetId), me = this,msg:Message;
+            var c: Conversation = this.getConversation(conversationType, targetId), me = this, msg: Message;
             if (!c) {
                 c = me.createConversation(conversationType, targetId, "");
                 msg = new RongIMLib.Message();
                 msg.conversationType = conversationType;
-                msg.sentTime = new Date().getTime();
+                msg.sentTime = new Date().getTime(); //TODO getDeltaTime 是否有关系
                 c.latestMessage = msg;
             }
             c.sentTime = new Date().getTime();
@@ -422,7 +432,7 @@ module RongIMLib {
                 xss.parentNode.removeChild(xss);
             };
             xss = document.createElement("script");
-            xss.src = "http://api.cn.rong.io/message/exist.js?appKey=" + encodeURIComponent(appkey) + "&token=" + encodeURIComponent(token) + "&callBack=RCcallback&_=" + Date.now();
+            xss.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://api.cn.rong.io/message/exist.js?appKey=" + encodeURIComponent(appkey) + "&token=" + encodeURIComponent(token) + "&callBack=RCcallback&_=" + Date.now();
             document.body.appendChild(xss);
             xss.onerror = function() {
                 callback.onError(ErrorCode.UNKNOWN);
@@ -613,7 +623,7 @@ module RongIMLib {
             }
         }
 
-        sortConversationList(conversationList: Array<Conversation>): Array<Conversation> {
+        private sortConversationList(conversationList: Array<Conversation>) {
             if (conversationList.length <= 1) { return conversationList; }
             var pivotIndex: number = Math.floor(conversationList.length / 2);
             var pivot: Conversation = conversationList.splice(pivotIndex, 1)[0];
@@ -630,7 +640,6 @@ module RongIMLib {
                 }
             }
             RongIMClient.conversationMap.conversationList = topArr.concat(this.sortConversationList(left).concat([pivot], this.sortConversationList(right)));
-            return RongIMClient.conversationMap.conversationList;
         }
         //TODO conversationTypes
         getConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
@@ -644,6 +653,7 @@ module RongIMLib {
                             setTimeout(self.pottingConversation(list.info[i]), 200);
                         }
                     }
+                    self.sortConversationList(RongIMClient.conversationMap.conversationList);
                     callback.onSuccess(RongIMClient.conversationMap.conversationList);
                 },
                 onError: function() {

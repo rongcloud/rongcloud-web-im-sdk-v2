@@ -13,9 +13,14 @@ module RongIMLib {
     }
 
     export enum ConnectionChannel {
+
         XHR_POLLING = 0,
-        FLASH = 1,
-        WEBSOCKET = 2
+
+        WEBSOCKET = 1,
+        //外部调用
+        HTTP = 0,
+        //外部调用
+        HTTPS = 1
     }
 
     export enum ConnectionStatus {
@@ -622,15 +627,4 @@ module RongIMLib {
 
         CommandNotificationMessage = 12
     }
-    export enum SchemeType {
-        //http ws
-        HSL = 0,
-        //https wss
-        SSL = 1,
-        //polling 方式下标
-        XHR = 0,
-        //websocke方式下标
-        WS = 1
-    }
-
 }

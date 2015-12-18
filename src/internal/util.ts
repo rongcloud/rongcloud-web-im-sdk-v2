@@ -82,7 +82,7 @@ module RongIMLib {
                 }
             }
         }
-        remove(conversationType:ConversationType,publicServiceId:string) {
+        remove(conversationType: ConversationType, publicServiceId: string) {
             var me = this;
             for (let i = 0, len = this.publicServiceList.length; i < len; i++) {
                 if (me.publicServiceList[i].conversationType == conversationType && publicServiceId == me.publicServiceList[i].publicServiceId) {
@@ -232,17 +232,19 @@ module RongIMLib {
         }
         //消息转换方法
         static messageParser(entity: any, onReceived?: any): any {
-            var message: Message = new Message(), content: any = entity.content, de: any, objectName: string = entity.classname;
+            var message: Message = new Message(), content: any = entity.content, de: any, objectName: string = entity.classname, val: any, isUseDef = false;
             try {
                 if (window["WEB_XHR_POLLING"]) {
-                    de = JSON.parse(new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content));
+                    val = new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content);
+                    de = JSON.parse(val);
                 } else {
-                    de = JSON.parse(new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayFormInput(content.buffer).subarray(content.offset, content.limit) : content));
+                    val = new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayFormInput(content.buffer).subarray(content.offset, content.limit) : content);
+                    de = JSON.parse(val);
                 }
 
             } catch (ex) {
-                console.log(ex + " -> postion:messageParser");
-                return null;
+                de = val;
+                isUseDef = true;
             }
             //处理表情
             if ("Expression" in RongIMLib && de.content) {
@@ -260,8 +262,12 @@ module RongIMLib {
                 message.content = eval(str);
                 message.messageType = sysNtf[objectName];
             } else if (objectName in registerMessageTypeMapping) {
-                var str = "new " + registerMessageTypeMapping[objectName] + "(de)";
-                message.content = eval(str);
+                var str = "new RongIMLib.RongIMClient.RegisterMessage." + registerMessageTypeMapping[objectName] + "(de)";
+                if (isUseDef) {
+                    message.content = eval(str).decode(de);
+                } else {
+                    message.content = eval(str);
+                }
                 message.messageType = registerMessageTypeMapping[objectName];
             } else {
                 message.content = new UnknownMessage({ content: de, objectName: objectName });
