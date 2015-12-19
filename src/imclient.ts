@@ -373,7 +373,19 @@ module RongIMLib {
          * @param  {ResultCallback<Message[]>} callback         [回调函数]
          * @param  {string}                    objectName       [objectName]
          */
-        getHistoryMessages(conversationType: ConversationType, targetId: string, pullMessageTime: number, count: number, callback: ResultCallback<Message[]>, objectName?: string) {
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: ResultCallback<Message[]>) {
+            throw new Error("Not implemented yet");
+        }
+
+        /**
+         * [getRemoteHistoryMessages 拉取某个时间戳之前的消息]
+         * @param  {ConversationType}          conversationType [description]
+         * @param  {string}                    targetId         [description]
+         * @param  {Date}                      dateTime         [description]
+         * @param  {number}                    count            [description]
+         * @param  {ResultCallback<Message[]>} callback         [description]
+         */
+        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: ResultCallback<Message[]>) {
             CheckParam.getInstance().check(["number", "string", "number|null", "number", "object"], "getHistoryMessages");
             if (count > 20) {
                 console.log("HistroyMessage count must be less than or equal to 20!");
@@ -387,10 +399,10 @@ module RongIMLib {
             }
             var modules = new Modules.HistoryMessageInput(), self = this;
             modules.setTargetId(targetId);
-            if (!pullMessageTime) {
+            if (!timestamp) {
                 modules.setDataTime(this.lastReadTime.get(conversationType + targetId));
             } else {
-                modules.setDataTime(pullMessageTime);
+                modules.setDataTime(timestamp);
             }
             modules.setSize(count);
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
@@ -407,52 +419,39 @@ module RongIMLib {
                 }
             }, "HistoryMessagesOuput");
         }
-
         /**
-         * [getRemoteHistoryMessages 拉取某个时间戳之前的消息]
-         * @param  {ConversationType}          conversationType [description]
-         * @param  {string}                    targetId         [description]
-         * @param  {Date}                      dateTime         [description]
-         * @param  {number}                    count            [description]
-         * @param  {ResultCallback<Message[]>} callback         [description]
-         */
-        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, dateTime: Date, count: number, callback: ResultCallback<Message[]>) {
-            throw new Error("Not implemented yet");
-        }
-        /**
-         * [hasUnreadMessages 是否有未接收的消息，jsonp方法]
+         * [hasRemoteUnreadMessages 是否有未接收的消息，jsonp方法]
          * @param  {string}          appkey   [appkey]
          * @param  {string}          token    [token]
          * @param  {ConnectCallback} callback [返回值，参数回调]
          */
-        hasUnreadMessages(appkey: string, token: string, callback: ResultCallback<Boolean>) {
+        hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>) {
             var xss: any = null;
             window.RCcallback = function(x: any) {
                 callback.onSuccess(!!+x.status);
                 xss.parentNode.removeChild(xss);
             };
             xss = document.createElement("script");
-            xss.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://api.cn.rong.io/message/exist.js?appKey=" + encodeURIComponent(appkey) + "&token=" + encodeURIComponent(token) + "&callBack=RCcallback&_=" + Date.now();
+            xss.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://api.cn.rong.io/message/exist.js?appKey=" + encodeURIComponent(RongIMClient._appKey) + "&token=" + encodeURIComponent(token) + "&callBack=RCcallback&_=" + Date.now();
             document.body.appendChild(xss);
             xss.onerror = function() {
                 callback.onError(ErrorCode.UNKNOWN);
                 xss.parentNode.removeChild(xss);
             };
         }
-
-        getTotalUnreadCount(): number {
+        getTotalUnreadCount(callback: ResultCallback<number>){
             var count: number = 0;
             RongIMClient.conversationMap.conversationList.forEach(conver=> {
                 count += conver.unreadMessageCount;
             });
-            return count;
+            callback.onSuccess(count);
         }
         /**
          * [getConversationUnreadCount 指定多种会话类型获取未读消息数]
          * @param  {ResultCallback<number>} callback             [返回值，参数回调。]
          * @param  {ConversationType[]}     ...conversationTypes [会话类型。]
          */
-        getConversationUnreadCount(conversationTypes: ConversationType[]): number {
+        getConversationUnreadCount(conversationTypes: ConversationType[],callback: ResultCallback<number>) {
             var count: number = 0;
             conversationTypes.forEach(converType=> {
                 RongIMClient.conversationMap.conversationList.forEach(conver=> {
@@ -461,27 +460,27 @@ module RongIMLib {
                     }
                 });
             });
-            return count;
+            callback.onSuccess(count);
         }
         /**
          * [getUnreadCount 指定用户、会话类型的未读消息总数。]
          * @param  {ConversationType} conversationType [会话类型]
          * @param  {string}           targetId         [用户Id]
          */
-        getUnreadCount(conversationType: ConversationType, targetId: string): number {
+        getUnreadCount(conversationType: ConversationType, targetId: string,callback: ResultCallback<number>) {
             var conver = RongIMClient.conversationMap.get(conversationType, targetId);
-            return conver ? conver.unreadMessageCount : 0;
+            callback.onSuccess(conver ? conver.unreadMessageCount : 0);
         }
 
-        setMessageExtra(messageId: number, value: string, callback: ResultCallback<boolean>) {
+        setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {
             throw new Error("Not implemented yet");
         }
 
-        setMessageReceivedStatus(messageId: number, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
+        setMessageReceivedStatus(messageId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
             throw new Error("Not implemented yet");
         }
 
-        setMessageSentStatus(messageId: number, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
+        setMessageSentStatus(messageId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
             throw new Error("Not implemented yet");
         }
 
@@ -623,26 +622,28 @@ module RongIMLib {
             }
         }
 
-        private sortConversationList(conversationList: Array<Conversation>) {
-            if (conversationList.length <= 1) { return conversationList; }
-            var pivotIndex: number = Math.floor(conversationList.length / 2);
-            var pivot: Conversation = conversationList.splice(pivotIndex, 1)[0];
-            var left: Array<Conversation> = [], right: Array<Conversation> = [], topArr: Array<Conversation> = [];
+        private sortConversationList(conversationList: Conversation[]) {
+            var convers: Conversation[] = [];
             for (var i = 0, len = conversationList.length; i < len; i++) {
                 if (conversationList[i].isTop) {
-                    topArr.push(conversationList[i]);
-                } else {
-                    if (conversationList[i].sentTime > pivot.sentTime) {
-                        left.push(conversationList[i]);
-                    } else {
-                        right.push(conversationList[i]);
+                    convers.push(conversationList[i]);
+                    conversationList.splice(i, 1);
+                    continue;
+                }
+                for (var j = 0; j < len - i - 1; j++) {
+                    if (conversationList[j].sentTime < conversationList[j + 1].sentTime) {
+                        var swap = conversationList[j];
+                        conversationList[j] = conversationList[j + 1];
+                        conversationList[j + 1] = swap;
                     }
                 }
             }
-            RongIMClient.conversationMap.conversationList = topArr.concat(this.sortConversationList(left).concat([pivot], this.sortConversationList(right)));
+            RongIMClient.conversationMap.conversationList = convers.concat(conversationList);
         }
-        //TODO conversationTypes
-        getConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
+        getConversationList(callback: ResultCallback<Conversation[]>) {
+            CheckParam.getInstance().check(["object"], "getConversationList");
+        }
+        getRemoteConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
             CheckParam.getInstance().check(["object"], "getConversationList");
             var modules = new Modules.RelationsInput(), self = this;
             modules.setType(1);
@@ -668,7 +669,7 @@ module RongIMLib {
          * @param  {string}  converTitle      [会话标题]
          * @param  {boolean} islocal          [是否同步到服务器，ture：同步，false:不同步]
          */
-        createConversation(conversationType: number, targetId: string, converTitle: string): Conversation {
+        private createConversation(conversationType: number, targetId: string, converTitle: string): Conversation {
             CheckParam.getInstance().check(["number", "string", "string", "boolean"], "createConversation");
             var conver: Conversation = RongIMClient.conversationMap.get(conversationType, targetId);
             if (conver) {
@@ -682,6 +683,7 @@ module RongIMLib {
             RongIMClient.conversationMap.add(conver);
             return conver;
         }
+        //TODO 删除本地和服务器、删除本地和服务器分开
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["number", "string", "object"], "removeConversation");
             var d: Conversation = null;
@@ -1005,7 +1007,7 @@ module RongIMLib {
         // #endregion ChatRoom
 
         // #region Public Service
-        syncPublicServiceList(mpId?: string, conversationType?: number, pullMessageTime?: any, callback?: ResultCallback<PublicServiceProfile[]>) {
+        getRemotePublicServiceList(mpId?: string, conversationType?: number, pullMessageTime?: any, callback?: ResultCallback<PublicServiceProfile[]>) {
             var modules = new Modules.PullMpInput(), self = this;
             if (!pullMessageTime) {
                 modules.setTime(0);
@@ -1114,7 +1116,7 @@ module RongIMLib {
             modules.setId(publicServiceId);
             RongIMClient.bridge.queryMsg(follow, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function() {
-                    me.syncPublicServiceList(null, null, null, <ResultCallback<PublicServiceProfile[]>>{
+                    me.getRemotePublicServiceList(null, null, null, <ResultCallback<PublicServiceProfile[]>>{
                         onSuccess: function() { },
                         onError: function() { }
                     });

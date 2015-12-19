@@ -133,16 +133,6 @@ module RongIMLib {
             public isGlobal?: boolean
         ) { }
     }
-    export class UserData {
-        constructor(
-            public accountInfo: UserData.AccountInfo,
-            public appVersion: string,
-            public clientInfo: UserData.ClientInfo,
-            public contactInfo: UserData.ContactInfo,
-            public extra: string,
-            public personalInfo: UserData.PersonalInfo
-        ) { }
-    }
 
     export class UserInfo {
         userId: string;
@@ -166,52 +156,5 @@ module RongIMLib {
         getPortaitUri() {
             return this.portraitUri;
         }
-    }
-
-    export module UserData {
-        export class AccountInfo {
-            constructor(
-                public appUserId: string,
-                public nickname: string,
-                public username: string
-            ) { }
-        }
-
-        // TODO: mobilePhoneManufacturers remove "s".
-        export class ClientInfo {
-            constructor(
-                public carrier: string,
-                public device: string,
-                public mobilePhoneManufacturer: string,
-                public network: string,
-                public os: string,
-                public systemVersion: string
-            ) { }
-        }
-
-        export class ContactInfo {
-            constructor(
-                public address: string,
-                public email: string,
-                public qq: string,
-                public tel: string,
-                public weiBo: string,
-                public weiXin: string
-            ) { }
-        }
-
-        export class PersonalInfo {
-            constructor(
-                public age: string,
-                public birthday: string,
-                public comment: string,
-                public job: string,
-                public portraitUri: string,
-                public realName: string,
-                public sex: string
-            ) { }
-        }
-
-
     }
 }
