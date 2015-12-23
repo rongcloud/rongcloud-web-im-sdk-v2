@@ -20,7 +20,7 @@ module RongIMLib {
             public senderPortraitUri?: string
         ) { }
         setTop(): void {
-            RongIMClient.conversationMap.add(this);
+            RongIMClient._dataAccessProvider.addConversation(this, <ResultCallback<boolean>>{ onSuccess: function(data) { } });
         }
     }
 
@@ -135,26 +135,9 @@ module RongIMLib {
     }
 
     export class UserInfo {
-        userId: string;
-        name: string;
-        portraitUri: string;
-        setUserId(userId: string) {
-            this.userId = userId;
-        }
-        setUserName(name: string) {
-            this.name = name;
-        }
-        setPortraitUri(portraitUri: string) {
-            this.portraitUri = portraitUri;
-        }
-        getUserId() {
-            return this.userId;
-        }
-        getUserName() {
-            return this.name;
-        }
-        getPortaitUri() {
-            return this.portraitUri;
-        }
+        constructor(
+            public userId: string,
+            public name: string,
+            public portraitUri: string) { }
     }
 }

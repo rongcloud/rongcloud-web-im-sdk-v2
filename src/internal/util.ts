@@ -148,18 +148,12 @@ module RongIMLib {
     export class MessageUtil {
         //适配SSL
         static schemeArrs: Array<any> = [["http", "ws"], ["https", "wss"]];
+        static sign: any = { converNum: 1, msgNum: 1, isMsgStart: true, isConvStart: true };
         static supportLargeStorage(): boolean {
             if (window.localStorage) {
                 return true;
             } else {
                 return false;
-            }
-        }
-        static createStorageFactory(): StorageProvider {
-            if (MessageUtil.supportLargeStorage()) {
-                return new LocalStorageProvider();
-            } else {
-                return new CookieProvider();
             }
         }
         /**
@@ -234,7 +228,7 @@ module RongIMLib {
         static messageParser(entity: any, onReceived?: any): any {
             var message: Message = new Message(), content: any = entity.content, de: any, objectName: string = entity.classname, val: any, isUseDef = false;
             try {
-                if (window["WEB_XHR_POLLING"]) {
+                if (RongIMClient._memoryStore.choicePolling) {
                     val = new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content);
                     de = JSON.parse(val);
                 } else {
@@ -299,7 +293,7 @@ module RongIMLib {
         static messageId: number = 0;
         static isXHR: boolean = Transports._TransportType === Socket.XHR_POLLING;
         static init() {
-            this.messageId = +(RongIMClient._storageProvider.getItem("msgId") || RongIMClient._storageProvider.setItem("msgId", 0) || 0);
+            this.messageId = +(RongIMClient._cookieHelper.getItem("msgId") || RongIMClient._cookieHelper.setItem("msgId", 0) || 0);
         }
         static messageIdPlus(method: any): any {
             this.isXHR && this.init();
@@ -308,12 +302,12 @@ module RongIMLib {
                 return false;
             }
             this.messageId++;
-            this.isXHR && RongIMClient._storageProvider.setItem("msgId", this.messageId);
+            this.isXHR && RongIMClient._cookieHelper.setItem("msgId", this.messageId);
             return this.messageId;
         }
         static clearMessageId() {
             this.messageId = 0;
-            this.isXHR && RongIMClient._storageProvider.setItem("msgId", this.messageId);
+            this.isXHR && RongIMClient._cookieHelper.setItem("msgId", this.messageId);
         }
         static getMessageId() {
             this.isXHR && this.init();

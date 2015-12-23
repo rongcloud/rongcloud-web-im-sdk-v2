@@ -1,5 +1,5 @@
 module RongIMLib {
-    export class CookieProvider implements StorageProvider {
+    export class CookieProvider{
         _host: string;
         setItem(composedKey: string, object: any): void {
             var exp = new Date();

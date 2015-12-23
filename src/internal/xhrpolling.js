@@ -9,10 +9,103 @@
         }
     }
     var e = {
+        SearchMpInput:function(){
+            var a = {};
+            this.setType = function (b) {
+                a.type = b;
+            };
+            this.setId = function (b) {
+                a.id = b;
+            };
+            this.toArrayBuffer = function () {
+                return a;
+            }
+        },
+        SearchMpOutput:function(){
+            var a = {};
+            this.setNothing = function (b) {
+                a.nothing = b;
+            };
+            this.setInfo = function (b) {
+                a.info = b;
+            };
+            this.toArrayBuffer = function () {
+                return a;
+            }
+        },
+        MpInfo:function(){
+            var a = {};
+            this.setMpid = function(b){
+                a.mpid = b;
+            };
+            this.setName = function(b){
+                a.name = b;
+            };
+            this.setType = function(b){
+                a.type = b;
+            };
+            this.setTime = function(b){
+                a.time = b;
+            };
+            this.setPortraitUri = function(b){
+                a.portraitUrl = b;
+            };
+            this.setExtra = function(b){
+                a.extra = b;
+            };
+            this.toArrayBuffer = function () {
+                return a;
+            }
+        },
+        PullMpInput:function(){
+            var a = {};
+            this.setMpid = function(b){
+                a.mpid = b;
+            };
+            this.setTime = function(b){
+                a.time = b;
+            };
+            this.toArrayBuffer = function () {
+                return a;
+            };
+        },
+        PullMpOutput:function(){
+            var a = {};
+            this.setStatus = function(b){
+                a.status = b;
+            }
+            this.setInfo = function(b){
+                a.info = b;
+            };
+            this.toArrayBuffer = function () {
+                return a;
+            };
+        },
+        MPFollowInput:function(){
+            var a = {};
+            this.setId = function(b){
+                a.id = b;
+            };
+            this.toArrayBuffer = function () {
+                return a;
+            };
+        },
+        MPFollowOutput:function(){
+            var a = {};
+            this.setNothing = function(b){
+                a.nothing = b;
+            };
+            this.setInfo = function(b){
+                a.info = b;
+            };
+            this.toArrayBuffer = function () {
+                return a;
+            };
+        },
         NotifyMsg: function () {
             var a = {};
             this.setType = function (b) {
-                a.type = b
+                a.type = b;
             };
             this.setTime = function (b) {
                 a.time = b;
@@ -389,7 +482,7 @@
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GroupInput: function () {
             var a = {};
@@ -401,7 +494,7 @@
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GroupOutput: function () {
             var a = {};
@@ -410,7 +503,7 @@
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GroupInfo: function () {
             var a = {};
@@ -425,7 +518,7 @@
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GroupHashInput: function () {
             var a = {};
@@ -437,7 +530,7 @@
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GroupHashOutput: function () {
             var a = {};
@@ -446,7 +539,7 @@
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         ChrmInput: function () {
             var a = {};
@@ -455,7 +548,7 @@
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         ChrmOutput: function () {
             var a = {};
@@ -464,7 +557,7 @@
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         ChrmPullMsg: function () {
             var a = {};
@@ -476,16 +569,19 @@
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         RelationsInput: function () {
             var a = {};
             this.setType = function (b) {
                 a.type = b;
             };
+            this.setMsg = function(b){
+                a.msg = b;
+            };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         RelationsOutput: function () {
             var a = {};
@@ -503,6 +599,9 @@
             };
             this.setUserId = function (b) {
                 a.userId = b;
+            };
+            this.setMsg = function(b){
+                a.msg = b;
             };
             this.toArrayBuffer = function () {
                 return a

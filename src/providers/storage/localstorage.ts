@@ -1,8 +1,7 @@
 module RongIMLib {
     export class LocalStorageProvider implements StorageProvider {
-        _host: string;
         setItem(composedKey: string, object: any): void {
-            if (localStorage.length == 20) {localStorage.removeItem(localStorage.key(0));}
+            if (localStorage.length == 20) { localStorage.removeItem(localStorage.key(0)); }
             localStorage.setItem(composedKey.toString(), object);
         }
 
@@ -17,15 +16,13 @@ module RongIMLib {
         clearItem(): void {
             localStorage.clear();
         }
-        getItemKey(regStr: string): any {
-            var val: string = "";
-            for (let i = 0, len = localStorage.length; i < len; i++) {
-                if (localStorage.key(i).indexOf(regStr) > -1) {
-                    val = localStorage.key(i);
-                    break;
-                }
-            }
-            return val ? val : null;
+        getKeys(regStr: string, isUseDef?: boolean): string[] {
+            var keys: string[] = [], regExp = !isUseDef ? new RegExp(regStr + "_[0-9]") : new RegExp(regStr);
+            return keys;
+        }
+        getMsgKeys(regStr: string): string[] {
+            var keys: string[] = [], regExp = new RegExp(regStr);
+            return null;
         }
         //单位：字节
         onOutOfQuota(): number {

@@ -57,10 +57,7 @@ module RongIMLib {
         mapping(entity: any, tag: string): any {
             switch (tag) {
                 case "GetUserInfoOutput":
-                    var userInfo = new UserInfo();
-                    userInfo.setUserId(entity.userId);
-                    userInfo.setUserName(entity.userName);
-                    userInfo.setPortraitUri(entity.userPortrait);
+                    var userInfo = new UserInfo(entity.userId,entity.userName,entity.userPortrait);
                     return userInfo;
                 case "GetQNupTokenOutput":
                     return {
@@ -141,7 +138,7 @@ module RongIMLib {
                 }
                 if ("GetUserInfoOutput" == pbtype) {
                     //pb类型为GetUserInfoOutput的话就把data放入userinfo缓存队列
-                    Client.userInfoMapping[data.getUserId()] = data;
+                    Client.userInfoMapping[data.userId] = data;
                 }
                 this._cb(data);
             } else {
@@ -165,13 +162,13 @@ module RongIMLib {
         process(status: number, userId: string) {
             this.readTimeOut();
             if (status == 0) {
-                var naviStr = RongIMClient._storageProvider.getItem(RongIMClient._storageProvider.getItemKey("navi"));
-                var naviKey = RongIMClient._storageProvider.getItemKey("navi");
+                var naviStr = RongIMClient._cookieHelper.getItem(RongIMClient._cookieHelper.getItemKey("navi"));
+                var naviKey = RongIMClient._cookieHelper.getItemKey("navi");
 
                 var arr = encodeURIComponent(naviStr).split(",");
                 if (!arr[1]) {
                     naviStr = encodeURIComponent(naviStr) + userId;
-                    RongIMClient._storageProvider.setItem(naviKey, naviStr);
+                    RongIMClient._cookieHelper.setItem(naviKey, naviStr);
                 }
 
                 this._client.userId = userId;

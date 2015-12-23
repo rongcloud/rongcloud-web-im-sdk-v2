@@ -1,8 +1,6 @@
 module RongIMLib {
 
     export interface StorageProvider {
-        _host: string;
-
         setItem(composedKey: string, object: any): void;
 
         getItem(composedKey: string): string;
@@ -12,8 +10,15 @@ module RongIMLib {
         clearItem(): void;
 
         onOutOfQuota(): number;
+        /**
+         * 获取keys方法
+         * @param  {string}  regStr   正则表达式内容
+         * @param  {boolean} isUseDef 不传使用默认，传true使用自定义正则表达式
+         */
+        getKeys(regStr: string, isUseDef?: boolean): any;
 
-        getItemKey(regStr: string): any; // TODO: 干啥的？
+        getMsgKeys(regStr: string, isUseDef?: boolean): any;
+
 
         // getDataAccessProvider(): DataAccessProvider;
     }

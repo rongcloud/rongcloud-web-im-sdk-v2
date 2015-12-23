@@ -25,30 +25,30 @@ describe "RongIMClient",->
                 console.log "token 无效"
               else
                 console.log error
-    it "syncPublicServiceList",(done)->
-        setTimeout(->
-            RongIMLib.RongIMClient.getInstance().syncPublicServiceList();
-            done()
-        ,500);
-    it "registerMessageType",(done)->
-        setTimeout(->
-            RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',new RongIMLib.MessageTag(true,true),['Name','Age','Address']
-            done()
-        ,50);
-    it "sendMessage",(done)->
-        setTimeout(->
-            # message = RongIMLib.TextMessage.obtain("而下下，发给1005dddddddd")
-            message = new RongIMLib.EmptyMessage({Name:'悲伤2015',Age:18,Address:"beijing"});
-            RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "1005", message,null,
-              onSuccess: (data)->
-                    console.log "Send Successfully"
-                    done()
-              onError: (errorcode)->
-                    console.log errorcode
-        ,1000)
+    # it "getRemotePublicServiceList",(done)->
+    #     setTimeout(->
+    #         RongIMLib.RongIMClient.getInstance().getRemotePublicServiceList();
+    #         done()
+    #     ,500);
+    # it "registerMessageType",(done)->
+    #     setTimeout(->
+    #         RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',new RongIMLib.MessageTag(true,true),['Name','Age','Address']
+    #         done()
+    #     ,50);
+    # it "sendMessage",(done)->
+    #     setTimeout(->
+    #         message = RongIMLib.TextMessage.obtain("rongcloud")
+    #         #message = new EmptyMessage({Name:'悲伤2015',Age:18,Address:"beijing"});
+    #         RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "1005", message,null,
+    #           onSuccess: (data)->
+    #                 console.log "Send Successfully"
+    #                 done()
+    #           onError: (errorcode)->
+    #                 console.log errorcode
+    #     ,1000)
     # it "sendTextMessage",(done)->
     #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().sendTextMessage RongIMLib.ConversationType.PRIVATE, "1005", "我是TextMessage",
+    #         RongIMLib.RongIMClient.getInstance().sendTextMessage RongIMLib.ConversationType.PRIVATE, "1005", "我是TextMessage123123",
     #           onSuccess: (data)->
     #                 console.log "SendTextMessage Successfully"
     #                 done()
@@ -125,27 +125,8 @@ describe "RongIMClient",->
     #             onError:(error)->
     #                 console.log "GetHistoryMessages,errorcode:"+error
     #     ,200)
-    # it "getHistoryMessages-count",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().getHistoryMessages 4,"1002",null,21,
-    #             onSuccess:(list,hasMsg)->
-    #                 console.log(list)
-    #                 done()
-    #             onError:(error)->
-    #                 console.log "GetHistoryMessages,errorcode:"+error
-    #                 done()
-    #     ,290)
-    # it "getHistoryMessages-pullMessageTime",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().getHistoryMessages 4,"1002",null,20,
-    #             onSuccess:(list,hasMsg)->
-    #                 console.log(list)
-    #                 done()
-    #             onError:(error)->
-    #                 console.log "GetHistoryMessages,errorcode:"+error
-    #     ,200)
-    # it "hasUnreadMessages",->
-    #     RongIMLib.RongIMClient.getInstance().hasUnreadMessages "cpj2xarlj5cdn","0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==",
+    # it "hasRemoteUnreadMessages",->
+    #     RongIMLib.RongIMClient.getInstance().hasRemoteUnreadMessages "0Qs6YHRj2p45jxfKS40Io3U1lgYP6zEv1OpCrfDse9JiBi4BNyqa2E2dH7xIEfEE9lfCByjdxCqYNAuDFMk66A==",
     #         onSuccess:(hasMsg)->
     #             console.log hasMsg
     #         onError:(error)->
@@ -351,9 +332,12 @@ describe "RongIMClient",->
     #     ,710)
     # it "getUnreadCount",(done)->
     #     setTimeout(->
-    #         count = RongIMLib.RongIMClient.getInstance().getUnreadCount RongIMLib.ConversationType.PRIVATE,"lisi"
-    #         console.log count
-    #         done()
+    #         RongIMLib.RongIMClient.getInstance().getUnreadCount RongIMLib.ConversationType.PRIVATE,"lisi",
+    #             onSuccess:(count)->
+    #                 console.log "getUnreadCount:"+count
+    #                 done()
+    #             onError:(error)->
+    #                 console.log "getUnreadCount:errorcode:"+error
     #     ,712)
     # it "getCurrentConnectionStatus",(done)->
     #     setTimeout(->
@@ -372,10 +356,10 @@ describe "RongIMClient",->
     #         channel = RongIMLib.RongIMClient.getInstance().getConnectionChannel()
     #         switch channel
     #             when 1
-    #               console.log "xhr-polling"
+    #               console.log "websocket"
     #               done()
     #             when 2
-    #               console.log "websocket"
+    #               console.log "xhr-polling"
     #               done()
     #             else console.log "状态为解析:"+status
     #     ,730)

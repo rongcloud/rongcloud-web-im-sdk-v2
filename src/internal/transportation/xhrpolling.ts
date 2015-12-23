@@ -23,7 +23,7 @@ module RongIMLib {
          */
         createTransport(url: string, method?: string): any {
             if (!url) { throw new Error("Url is empty,Please check it!"); };
-            var sid = RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId"), me = this;
+            var sid = RongIMClient._cookieHelper.getItem(Navigate.Endpoint.userId + "sId"), me = this;
             if (sid) {
                 setTimeout(function() {
                     me.onPollingSuccess("{\"status\":0,\"userId\":\"" + Navigate.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
@@ -116,7 +116,7 @@ module RongIMLib {
                 Navigate.Endpoint.userId = val.userId;
             }
             if (header) {
-                RongIMClient._storageProvider.setItem(Navigate.Endpoint.userId + "sId", header);
+                RongIMClient._cookieHelper.setItem(Navigate.Endpoint.userId + "sId", header);
             }
             if (!MessageUtil.isArray(val)) {
                 val = [val];
@@ -183,7 +183,7 @@ module RongIMLib {
         onPollingSuccess(a: any, b?: any): void {
             this.onData(a, b);
             if (/"headerCode":-32,/.test(a)) { return; }
-            this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId"), true);
+            this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._cookieHelper.getItem(Navigate.Endpoint.userId + "sId"), true);
         }
         onPollingError(): void {
             this.disconnect();
@@ -196,7 +196,7 @@ module RongIMLib {
             arg || this._socket.fire("connect");
         }
         status400(self: any) {
-            RongIMClient._storageProvider.removeItem(Navigate.Endpoint.userId + "sId");
+            RongIMClient._cookieHelper.removeItem(Navigate.Endpoint.userId + "sId");
             this.disconnect();
             this._socket.fire("disconnect");
             this.connected = false;

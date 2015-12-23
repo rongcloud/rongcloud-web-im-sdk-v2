@@ -399,6 +399,12 @@ module RongIMLib {
         setStatus(x: any) {
             this.status = x;
         }
+        setTimestamp(timestamp: number) {
+            this.timestamp = timestamp;
+        }
+        setMessageUId(messageUId:string) {
+            this.messageUId = messageUId;
+        }
         getStatus(): any {
             return this.status;
         }

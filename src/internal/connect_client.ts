@@ -1,9 +1,9 @@
 //用于连接通道
 module RongIMLib {
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
-        ["chatMsg", "pcMsgP", "pdMsgP", "pgMsgP", "ppMsgP","","","pmcMsgN","pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
-        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation","pullMp","schMp"];
-export class Channel {
+        ["chatMsg", "pcMsgP", "pdMsgP", "pgMsgP", "ppMsgP", "", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp"];
+    export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
         static _ReceiveMessageListener: any;
@@ -118,7 +118,7 @@ export class Channel {
          * WEB_XHR_POLLING:是否选择comet方式进行连接
          */
         checkTransport(): string {
-            if (window["WEB_XHR_POLLING"] && window["WEB_XHR_POLLING"] == true) {
+            if (RongIMClient._memoryStore.choicePolling) {
                 Transports._TransportType = Socket.XHR_POLLING;
             }
             return Transports._TransportType;
@@ -153,7 +153,7 @@ export class Channel {
             return this;
         }
         _encode(x: any) {
-            var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + RongIMClient._storageProvider.getItem(Navigate.Endpoint.userId + "sId");
+            var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + RongIMClient._cookieHelper.getItem(Navigate.Endpoint.userId + "sId");
             if (!/(PubAckMessage|QueryConMessage)/.test(x._name)) {
                 str += "&topic=" + x.getTopic() + "&targetid=" + (x.getTargetId() || "");
             }
@@ -289,14 +289,14 @@ export class Channel {
             this.SyncTimeQueue.state = "pending";
             if (temp.type != 2) {
                 //普通消息
-                time = RongIMClient._storageProvider.getItem(this.userId) || "0";
+                time = RongIMClient._cookieHelper.getItem(this.userId) || "0";
                 modules = new Modules.SyncRequestMsg();
                 modules.setIspolling(false);
                 str = "pullMsg";
                 target = this.userId;
             } else {
                 //聊天室消息
-                time = RongIMClient._storageProvider.getItem(this.userId + "CST") || "0";
+                time = RongIMClient._cookieHelper.getItem(this.userId + "CST") || "0";
                 modules = new Modules.ChrmPullMsg();
                 modules.setCount(0);
                 str = "chrmPull";
@@ -322,7 +322,7 @@ export class Channel {
                         symbol += "CST";
                     }
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
-                    RongIMClient._storageProvider.setItem(symbol, sync);
+                    RongIMClient._cookieHelper.setItem(symbol, sync);
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
                     for (var i = 0; i < list.length; i++) {
@@ -425,7 +425,7 @@ export class Channel {
                 con: any;
             if (msg._name != "PublishMessage") {
                 entity = msg;
-                RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
+                RongIMClient._cookieHelper.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
             } else {
                 if (msg.getTopic() == "s_ntf") {
                     entity = Modules.NotifyMsg.decode(msg.getData());
@@ -433,7 +433,7 @@ export class Channel {
                     return;
                 } else if (msg.getTopic() == "s_msg") {
                     entity = Modules.DownStreamMessage.decode(msg.getData());
-                    RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
+                    RongIMClient._cookieHelper.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
                 } else {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;
@@ -464,16 +464,13 @@ export class Channel {
             if (message === null) {
                 return;
             }
-            //创建会话对象 TODO
-            con = RongIMClient.conversationMap.get(message.conversationType, message.targetId);
-            if (!con) {
-                con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
-            }
+            con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
+
             //根据messageTag判断是否进行消息数累加
             // if (/ISCOUNTED/.test(message.getMessageTag())) {
-                if (con.conversationType != 0) {
-                    con.unreadMessageCount = con.unreadMessageCount + 1;
-                }
+            if (con.conversationType != 0) {
+                con.unreadMessageCount = con.unreadMessageCount + 1;
+            }
             // }
             con.receivedTime = new Date().getTime();
             con.receivedStatus = ReceivedStatus.READ;
@@ -515,7 +512,7 @@ export class Channel {
                     var item = Bridge._client.handler.map[msg.getMessageId()];
                     if (item) {
                         //执行回调操作
-                        item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(),msg.getTimestamp(), item.Message);
+                        item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(), msg.getTimestamp(), item.Message);
                         delete Bridge._client.handler.map[msg.getMessageId()];
                     }
                     break;
