@@ -1,6 +1,6 @@
 module RongIMLib {
 
-    export class InformationNotificationMessage implements UserInfoAttachedMessage, ExtraAttachedMessage {
+    export class InformationNotificationMessage implements NotificationMessage, UserInfoAttachedMessage, ExtraAttachedMessage {
         userInfo: UserInfo;
         content: string;
         extra: string;

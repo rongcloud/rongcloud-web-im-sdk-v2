@@ -61,9 +61,7 @@ module RongIMLib {
          */
         NOTIFY
     }
-    /**
-     * @ignore
-     */
+
     export enum ConversationType {
         NONE = -1,
         CHATROOM = 0,
@@ -96,11 +94,6 @@ module RongIMLib {
          * 未知原因失败。
          */
         UNKNOWN = -2,
-
-        /**
-         * 连接成功。
-         */
-        CONNECTED = 0,
 
         /**
          * 不在讨论组。
@@ -200,7 +193,6 @@ module RongIMLib {
          * PING 超时。
          */
         RC_PONG_RECV_FAIL = 30013,
-
         /**
          * 消息发送失败。
          */
@@ -300,11 +292,18 @@ module RongIMLib {
          * 重新连接成功。
          */
         BIZ_ERROR_RECONNECT_SUCCESS = 33005,
-
         /**
          * 连接中，再调用 connect 被拒绝。
          */
         BIZ_ERROR_CONNECTING = 33006,
+        /**
+         * 消息漫游服务未开通
+         */
+        MSG_ROAMING_SERVICE_UNAVAILABLE = 33007,
+        /**
+         * 群组被禁言
+         */
+        FORBIDDEN_IN_GROUP = 22408,
         /**
          * 删除会话失败
          */
@@ -414,18 +413,6 @@ module RongIMLib {
          * 接收消息。
          */
         RECEIVE = 2
-    }
-
-
-    export enum PublicServiceType {
-        /**
-         * 应用公众服务。
-         */
-        APP_PUBLIC_SERVICE = 7,
-        /**
-         * 公共服务平台。
-         */
-        PUBLIC_SERVICE = 8
     }
 
     export enum RealTimeLocationErrorCode {
@@ -557,20 +544,7 @@ module RongIMLib {
         DESTROYED = 60
     }
 
-    export enum DisconnectionStatus {
 
-        RECONNECT = 0,
-
-        OTHER_DEVICE_LOGIN = 1,
-
-        CLOSURE = 2,
-
-        UNKNOWN_ERROR = 3,
-
-        LOGOUT = 4,
-
-        BLOCK = 5
-    }
     export enum ConnectionState {
 
         ACCEPTED = 0,
@@ -598,33 +572,5 @@ module RongIMLib {
         TOKEN_EXPIRE = 10,
 
         DEVICE_ERROR = 11
-    }
-    export enum MessageType {
-
-        DiscussionNotificationMessage = 0,
-
-        TextMessage = 1,
-
-        ImageMessage = 2,
-
-        VoiceMessage = 3,
-
-        RichContentMessage = 4,
-
-        HandshakeMessage = 5,
-
-        UnknownMessage = 6,
-
-        SuspendMessage = 7,
-
-        LocationMessage = 8,
-
-        InformationNotificationMessage = 9,
-
-        ContactNotificationMessage = 10,
-
-        ProfileNotificationMessage = 11,
-
-        CommandNotificationMessage = 12
     }
 }

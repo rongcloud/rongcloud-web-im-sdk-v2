@@ -44,8 +44,9 @@ module RongIMLib {
                 appKey: appKey,
                 publicServiceMap: new PublicServiceMap(),
                 listenerList: [],
-                choicePolling: choicePolling ? true : false
-            }
+                choicePolling: choicePolling ? true : false,
+                providerType: 1
+            };
             RongIMClient._cookieHelper = new CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
                 RongIMClient._dataAccessProvider = dataAccessProvider;
@@ -115,10 +116,10 @@ module RongIMLib {
             if (!messageType) {
                 throw new Error("messageType can't be empty,postion -> registerMessageType");
             }
-            if (Object.prototype.toString.call(messageContent) == '[object Array]') {
+            if (Object.prototype.toString.call(messageContent) == "[object Array]") {
                 var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent);
                 RongIMClient.RegisterMessage[messageType] = regMsg;
-            } else if (Object.prototype.toString.call(messageContent) == '[object Function]' || Object.prototype.toString.call(messageContent) == '[object Object]') {
+            } else if (Object.prototype.toString.call(messageContent) == "[object Function]" || Object.prototype.toString.call(messageContent) == "[object Object]") {
                 if (!messageContent.encode) {
                     throw new Error("encode method has not realized or messageName is undefined-> registerMessageType");
                 }
@@ -191,10 +192,14 @@ module RongIMLib {
         }
 
         /**
-         * 获取当前使用的本地储存提供者。 TODO 
+         * 获取当前使用的本地储存提供者。 TODO
          */
-        getStorageProvider(): StorageProvider {
-            return null;
+        getStorageProvider(): string {
+            if (RongIMClient._memoryStore.providerType == 1) {
+                return "ServerDataProvider";
+            } else {
+                return "OtherDataProvider";
+            }
         }
 
         /**
@@ -399,7 +404,7 @@ module RongIMLib {
                     callback.onSuccess(list, !!data.hasMsg);
                 },
                 onError: function() {
-                    callback.onError(ErrorCode.UNKNOWN);
+                    callback.onError(ErrorCode.MSG_ROAMING_SERVICE_UNAVAILABLE);
                 }
             }, "HistoryMessagesOuput");
         }
@@ -444,15 +449,15 @@ module RongIMLib {
         }
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+            RongIMClient._dataAccessProvider.setMessageExtra(messageId, value, callback);
         }
 
         setMessageReceivedStatus(messageId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+            RongIMClient._dataAccessProvider.setMessageReceivedStatus(messageId, receivedStatus, callback);
         }
 
         setMessageSentStatus(messageId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+            RongIMClient._dataAccessProvider.setMessageSentStatus(messageId, sentStatus, callback);
         }
 
         // #endregion Message
@@ -506,7 +511,7 @@ module RongIMLib {
                     RongIMLib.ConversationType.PUBLIC_SERVICE,
                     RongIMLib.ConversationType.APP_PUBLIC_SERVICE];
             }
-            RongIMClient._dataAccessProvider.clearConversations(conversationTypes,callback);
+            RongIMClient._dataAccessProvider.clearConversations(conversationTypes, callback);
         }
         /**
          * [getConversation 获取指定会话，此方法需在getConversationList之后执行]
@@ -994,24 +999,27 @@ module RongIMLib {
             var bits = 0;
             if (bussinessType == 0) {
                 bits |= 3;
-                if (searchType == 0)
+                if (searchType == 0) {
                     bits |= 12;
-                else
+                } else {
                     bits |= 48;
+                }
             }
             else if (bussinessType == 1) {
                 bits |= 1;
-                if (searchType == 0)
+                if (searchType == 0) {
                     bits |= 8;
-                else
+                } else {
                     bits |= 32;
+                }
             }
             else {
                 bits |= 2;
-                if (bussinessType == 0)
+                if (bussinessType == 0) {
                     bits |= 4;
-                else
+                } else {
                     bits |= 16;
+                }
             }
             return bits;
         }

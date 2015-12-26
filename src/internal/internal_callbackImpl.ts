@@ -112,7 +112,7 @@ module RongIMLib {
                 }
                 this._cb({ messageUId: messageUId, timestamp: timestamp });
             } else {
-                this._timeout(ErrorCode.UNKNOWN);
+                this._timeout(_status);
             }
         }
         readTimeOut(x?: any) {

@@ -119,5 +119,17 @@ module RongIMLib {
             var conver: Conversation = this.getConversation(conversationType, targetId);
             this.addConversation(conver, callback);
         }
+
+        setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {
+            callback.onSuccess(true);
+        }
+
+        setMessageReceivedStatus(messageId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
+            callback.onSuccess(true);
+        }
+
+        setMessageSentStatus(messageId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
+            callback.onSuccess(true);
+        }
     }
 }

@@ -24,7 +24,7 @@ module RongIMLib {
             throw new Error("Not implemented yet");
         }
 
-        getConversation(conversationType: ConversationType, targetId: string) :Conversation{
+        getConversation(conversationType: ConversationType, targetId: string): Conversation {
             throw new Error("Not implemented yet");
         }
 
@@ -53,6 +53,18 @@ module RongIMLib {
         }
 
         setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+            throw new Error("Not implemented yet");
+        }
+
+        setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {
+            throw new Error("Not implemented yet");
+        }
+
+        setMessageReceivedStatus(messageId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
+            throw new Error("Not implemented yet");
+        }
+
+        setMessageSentStatus(messageId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
             throw new Error("Not implemented yet");
         }
     }
