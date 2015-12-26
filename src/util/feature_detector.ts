@@ -16,13 +16,6 @@ module RongIMLib {
             }
             this.head.appendChild(this.script);
         }
-        supportWebSocket(): boolean {
-            return !(window["WEB_XHR_POLLING"] && window["WEB_XHR_POLLING"] == true);
-        }
-
-        supportXHRPolling(): boolean {
-            return window["WEB_XHR_POLLING"] && window["WEB_XHR_POLLING"] == true;
-        }
 
         supportWebStorage(): boolean {
             return false;

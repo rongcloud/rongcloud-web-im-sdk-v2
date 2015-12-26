@@ -23,10 +23,10 @@ module RongIMLib {
          */
         createTransport(url: string, method?: string): any {
             if (!url) { throw new Error("Url is empty,Please check it!"); };
-            var sid = RongIMClient._cookieHelper.getItem(Navigate.Endpoint.userId + "sId"), me = this;
+            var sid = RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId"), me = this;
             if (sid) {
                 setTimeout(function() {
-                    me.onPollingSuccess("{\"status\":0,\"userId\":\"" + Navigate.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
+                    me.onPollingSuccess("{\"status\":0,\"userId\":\"" + Navigation.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
                     me.connected = true;
                 }, 500);
                 return this;
@@ -84,7 +84,7 @@ module RongIMLib {
             var me: PollingTransportation = this;
             if (!this.connected) { this.queue.push(data); }
             if (this.isClose) { throw new Error("The Connection is closed,Please open the Connection!!!"); }
-            this._sendXhr = this._request(Navigate.Endpoint.host + "/websocket" + data.url, "POST");
+            this._sendXhr = this._request(Navigation.Endpoint.host + "/websocket" + data.url, "POST");
             if ("onload" in me._sendXhr) {
                 me._sendXhr.onload = function() {
                     me._sendXhr.onload = me.empty;
@@ -113,10 +113,10 @@ module RongIMLib {
             }
             var self = this, val = JSON.parse(data);
             if (val.userId) {
-                Navigate.Endpoint.userId = val.userId;
+                Navigation.Endpoint.userId = val.userId;
             }
             if (header) {
-                RongIMClient._cookieHelper.setItem(Navigate.Endpoint.userId + "sId", header);
+                RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "sId", header);
             }
             if (!MessageUtil.isArray(val)) {
                 val = [val];
@@ -183,7 +183,7 @@ module RongIMLib {
         onPollingSuccess(a: any, b?: any): void {
             this.onData(a, b);
             if (/"headerCode":-32,/.test(a)) { return; }
-            this._get(Navigate.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._cookieHelper.getItem(Navigate.Endpoint.userId + "sId"), true);
+            this._get(Navigation.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId"), true);
         }
         onPollingError(): void {
             this.disconnect();
@@ -196,7 +196,7 @@ module RongIMLib {
             arg || this._socket.fire("connect");
         }
         status400(self: any) {
-            RongIMClient._cookieHelper.removeItem(Navigate.Endpoint.userId + "sId");
+            RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
             this.disconnect();
             this._socket.fire("disconnect");
             this.connected = false;

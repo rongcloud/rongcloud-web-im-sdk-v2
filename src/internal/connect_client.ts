@@ -1,5 +1,46 @@
 //用于连接通道
 module RongIMLib {
+  export enum Qos {
+
+      AT_MOST_ONCE = 0,
+
+      AT_LEAST_ONCE = 1,
+
+      EXACTLY_ONCE = 2,
+
+      DEFAULT = 3
+  }
+
+  export enum Type {
+
+      CONNECT = 1,
+
+      CONNACK = 2,
+
+      PUBLISH = 3,
+
+      PUBACK = 4,
+
+      QUERY = 5,
+
+      QUERYACK = 6,
+
+      QUERYCON = 7,
+
+      SUBSCRIBE = 8,
+
+      SUBACK = 9,
+
+      UNSUBSCRIBE = 10,
+
+      UNSUBACK = 11,
+
+      PINGREQ = 12,
+
+      PINGRESP = 13,
+
+      DISCONNECT = 14
+  }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["chatMsg", "pcMsgP", "pdMsgP", "pgMsgP", "ppMsgP", "", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
         "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp"];
@@ -153,7 +194,7 @@ module RongIMLib {
             return this;
         }
         _encode(x: any) {
-            var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + RongIMClient._cookieHelper.getItem(Navigate.Endpoint.userId + "sId");
+            var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId");
             if (!/(PubAckMessage|QueryConMessage)/.test(x._name)) {
                 str += "&topic=" + x.getTopic() + "&targetid=" + (x.getTargetId() || "");
             }
@@ -209,7 +250,7 @@ module RongIMLib {
             }
         }
         connect(_callback: any) {
-            if (Navigate.Endpoint.host) {
+            if (Navigation.Endpoint.host) {
                 if (Transports._TransportType == Socket.WEBSOCKET) {
                     if (!window.WebSocket) {
                         _callback.onError(ConnectionState.UNACCEPTABLE_PROTOCOL_VERSION);
@@ -222,7 +263,7 @@ module RongIMLib {
                 this.handler.setConnectCallback(_callback);
                 //实例通道类型
                 var me = this;
-                this.channel = new Channel(Navigate.Endpoint, function() {
+                this.channel = new Channel(Navigation.Endpoint, function() {
                     Transports._TransportType == Socket.WEBSOCKET && me.keepLive();
                 }, this);
                 //触发状态改变观察者
@@ -345,7 +386,7 @@ module RongIMLib {
             }
         }
         __init(f: any) {
-            this.channel = new Channel(Navigate.Endpoint, f, this);
+            this.channel = new Channel(Navigation.Endpoint, f, this);
         }
     }
     //连接类，实现imclient与connect_client的连接
@@ -356,7 +397,7 @@ module RongIMLib {
         }
         //连接服务器
         connect(appKey: string, token: string, callback: any): Client {
-            Bridge._client = new Navigate().connect(appKey, token, callback);
+            Bridge._client = new Navigation().connect(appKey, token, callback);
             return Bridge._client;
         }
         setListener(_changer: any): void {
@@ -387,7 +428,7 @@ module RongIMLib {
             Bridge._client.publishMessage(_topic[10][topic], content, targetId, callback, msg);
         }
     }
-    export class MessageHandler implements InFMessageHandler {
+    export class MessageHandler {
         map: any = {};
         _onReceived: any;
         connectCallback: any = null;

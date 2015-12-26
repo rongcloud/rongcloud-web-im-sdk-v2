@@ -266,6 +266,11 @@ module RongIMLib {
         deleteMessages(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.removeMessage(conversationType, targetId, messageIds, callback);
         }
+        sendLocalMessage(message: Message, callback: SendMessageCallback) {
+            CheckParam.getInstance().check(["object", "object"], "sendLocalMessage");
+            RongIMClient._dataAccessProvider.updateMessage(message);
+            this.sendMessage(message.conversationType,message.targetId,message.content,callback);
+        }
         /**
          * [sendMessage 发送消息。]
          * @param  {ConversationType}        conversationType [会话类型]
@@ -276,12 +281,13 @@ module RongIMLib {
          * @param  {string}                  pushContent      []
          * @param  {string}                  pushData         []
          */
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, resultCallback: ResultCallback<Message>, pushContent?: string, pushData?: string) {
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, isFirstSendMsg?: boolean) {
             CheckParam.getInstance().check(["number", "string", "object", "null|object|global", "object"], "sendMessage");
             if (!Bridge._client.channel.socket.socket.connected) {
-                resultCallback.onError(ErrorCode.TIMEOUT);
+                sendCallback.onError(ErrorCode.TIMEOUT, null);
                 throw new Error("connect is timeout! postion:sendMessage");
             }
+            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, messageContent);
             var modules = new Modules.UpStreamMessage();
             modules.setSessionId(RongIMClient.MessageType[messageContent.messageName].msgTag.getMessageTag());
             modules.setClassname(RongIMClient.MessageType[messageContent.messageName].objectName);
@@ -311,7 +317,7 @@ module RongIMLib {
             c.latestMessage.content = messageContent;
             c.unreadMessageCount = 0;
             c.setTop();
-            RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, resultCallback, null);
+            RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, sendCallback, null);
         }
         /**
          * [sendStatusMessage description]
@@ -327,9 +333,9 @@ module RongIMLib {
          * @param  {string}                  content        [消息内容]
          * @param  {ResultCallback<Message>} resultCallback [返回值，参数回调]
          */
-        sendTextMessage(conversationType: ConversationType, targetId: string, content: string, resultCallback: ResultCallback<Message>) {
+        sendTextMessage(conversationType: ConversationType, targetId: string, content: string, sendMessageCallback: SendMessageCallback) {
             var msgContent = TextMessage.obtain(content);
-            this.sendMessage(conversationType, targetId, msgContent, null, resultCallback);
+            this.sendMessage(conversationType, targetId, msgContent, sendMessageCallback);
         }
         /**
          * [insertMessage 向本地插入一条消息，不发送到服务器。]
@@ -351,7 +357,7 @@ module RongIMLib {
          * @param  {ResultCallback<Message[]>} callback         [回调函数]
          * @param  {string}                    objectName       [objectName]
          */
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: ResultCallback<Message[]>) {
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
             CheckParam.getInstance().check(["number", "string", "number|null|global", "number", "object"], "getHistoryMessages");
             if (count > 20) {
                 throw new Error("HistroyMessage count must be less than or equal to 20!");
@@ -370,7 +376,7 @@ module RongIMLib {
          * @param  {number}                    count            [description]
          * @param  {ResultCallback<Message[]>} callback         [description]
          */
-        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: ResultCallback<Message[]>) {
+        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
             CheckParam.getInstance().check(["number", "string", "number|null|global", "number", "object"], "getRemoteHistoryMessages");
             if (count > 20) {
                 console.log("HistroyMessage count must be less than or equal to 20!");
@@ -411,7 +417,7 @@ module RongIMLib {
          */
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>) {
             var xss: any = null;
-            window.RCcallback = function(x: any) {
+            window.RCCallback = function(x: any) {
                 callback.onSuccess(!!+x.status);
                 xss.parentNode.removeChild(xss);
             };

@@ -8,11 +8,15 @@ module RongIMLib {
             throw new Error("Not implemented yet");
         }
 
-        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback: ResultCallback<Message>) {
+        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback?: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
         }
 
         removeMessage(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
+            throw new Error("Not implemented yet");
+        }
+
+        updateMessage(message: Message, callback?: ResultCallback<Message>) {
             throw new Error("Not implemented yet");
         }
 
@@ -36,7 +40,7 @@ module RongIMLib {
             throw new Error("Not implemented yet");
         }
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: ResultCallback<Message[]>) {
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
             throw new Error("Not implemented yet");
         }
 

@@ -25,12 +25,16 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
-        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback: ResultCallback<Message>) {
+        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback?: ResultCallback<Message>) {
             callback.onSuccess(new Message());
         }
 
         removeMessage(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
             callback.onSuccess(true);
+        }
+
+        updateMessage(message: Message, callback?: ResultCallback<Message>) {
+            callback.onSuccess(message);
         }
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
@@ -86,7 +90,7 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: ResultCallback<Message[]>) {
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
             RongIMClient.getInstance().getRemoteHistoryMessages(conversationType, targetId, timestamp, count, callback);
         }
 

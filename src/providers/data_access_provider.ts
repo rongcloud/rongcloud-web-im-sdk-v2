@@ -4,9 +4,11 @@ module RongIMLib {
 
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
-        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback: ResultCallback<Message>): void;
+        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback?: ResultCallback<Message>): void;
 
         removeMessage(conversationType: ConversationType, targetId: string, messageId: number[], callback: ResultCallback<boolean>): void;
+
+        updateMessage(message: Message, callback?: ResultCallback<Message>): void;
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
@@ -18,7 +20,7 @@ module RongIMLib {
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void;
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: ResultCallback<Message[]>): void;
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void;
 
         getTotalUnreadCount(callback: ResultCallback<number>): void;
 
