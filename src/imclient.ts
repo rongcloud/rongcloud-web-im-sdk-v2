@@ -102,12 +102,7 @@ module RongIMLib {
          * 注册消息类型，用于注册用户自定义的消息。
          * 内建的消息类型已经注册过，不需要再次注册。
          * 自定义消息声明需放在执行顺序最高的位置（在RongIMClient.init(appkey)之后即可）
-         * @param objectName  用户数据信息。
-         */
-        /** 增加方法
-          interface decodeFunc {
-              (message:any): MessageContent;
-            }
+         * @param objectName  消息内置名称
          */
         static registerMessageType(objectName: string, messageType: string, messageTag: MessageTag, messageContent: any): void {
             if (!objectName) {

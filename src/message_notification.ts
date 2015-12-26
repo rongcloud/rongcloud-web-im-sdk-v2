@@ -124,15 +124,22 @@ module RongIMLib {
     }
     export class DiscussionNotificationMessage implements MessageContent, NotificationMessage, UserInfoAttachedMessage, ExtraAttachedMessage {
         userInfo: UserInfo;
-        content: string;
         extra: string;
+        extension: string;
+        type: number;
+        isHasReceived: boolean;
+        operation: string;
         messageName: string = "DiscussionNotificationMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> DiscussionNotificationMessage.");
             }
             this.extra = message.extra;
-            this.content = message.content;
+            this.extension = message.extension;
+            this.type = message.type;
+            this.isHasReceived = message.isHasReceived;
+            this.operation = message.operation;
+            this.userInfo = message.userInfo;
             if (message.userInfo) {
                 this.userInfo = message.userInfo;
             }

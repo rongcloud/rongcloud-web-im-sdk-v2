@@ -59,12 +59,6 @@ module RongIMLib {
             public targetId?: string,
             public messageType?: string
         ) { }
-        setObjectName(objectName: string) {
-            this.objectName = objectName;
-        }
-        setMessage(content: MessageContent) {
-            this.content = content;
-        }
     }
     export class MessageTag {
         constructor(
@@ -84,41 +78,13 @@ module RongIMLib {
         }
     }
     export class PublicServiceMenuItem {
-        id: string;
-        name: string;
-        type: ConversationType;
-        sunMenuItems: Array<PublicServiceMenuItem>;
-        url: string;
-        getId(): string {
-            return this.id;
-        }
-        getName(): string {
-            return this.name;
-        }
-        getSubMenuItems(): Array<PublicServiceMenuItem> {
-            return this.sunMenuItems;
-        }
-        getUrl(): string {
-            return this.url;
-        }
-        getType(): ConversationType {
-            return this.type;
-        }
-        setId(id: string) {
-            this.id = id;
-        }
-        setType(type: ConversationType) {
-            this.type = type;
-        }
-        setName(name: string) {
-            this.name = name;
-        }
-        setSunMenuItems(sunMenuItems: Array<PublicServiceMenuItem>) {
-            this.sunMenuItems = sunMenuItems;
-        }
-        setUrl(url: string) {
-            this.url = url;
-        }
+        constructor(
+          public id?: string,
+          public name?: string,
+          public type?: ConversationType,
+          public sunMenuItems?: Array<PublicServiceMenuItem>,
+          public url?: string
+        ) { }
     }
     // TODO: TBD
     export class PublicServiceProfile {
