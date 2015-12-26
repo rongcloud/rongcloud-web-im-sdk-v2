@@ -20,9 +20,10 @@
   "homepage": "http://rong.io",
   "ignore": [
     "**/.*",
-    "node_modules",
     "bower_components",
+    "build",
+    "node_modules",
     "test",
-    "tests"
+    "typings"
   ]
 }
