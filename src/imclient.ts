@@ -275,7 +275,7 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.updateMessage(message);
             this.sendMessage(message.conversationType, message.targetId, message.content, callback);
         }
-        /**TODO callback
+        /**
          * [sendMessage 发送消息。]
          * @param  {ConversationType}        conversationType [会话类型]
          * @param  {string}                  targetId         [目标Id]
@@ -285,8 +285,8 @@ module RongIMLib {
          * @param  {string}                  pushContent      []
          * @param  {string}                  pushData         []
          */
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, isFirstSendMsg?: boolean) {
-            CheckParam.getInstance().check(["number", "string", "object", "null|object|global", "object"], "sendMessage");
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback) {
+            CheckParam.getInstance().check(["number", "string", "object", "object"], "sendMessage");
             if (!Bridge._client.channel.socket.socket.connected) {
                 sendCallback.onError(ErrorCode.TIMEOUT, null);
                 throw new Error("connect is timeout! postion:sendMessage");
