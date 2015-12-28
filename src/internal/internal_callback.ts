@@ -188,7 +188,7 @@ module RongIMLib {
                 new Navigation().getServerEndpoint(this._client.token, this._client.appId, function() {
                     this._client.clearHeartbeat();
                     new Client(this._client.token, this._client.appId).__init.call(x, function() {
-                        Transports._TransportType == "websocket" && this._client.keepLive();
+                        Transportations._TransportType == "websocket" && this._client.keepLive();
                     });
                     this._client.channel.socket.fire("StatusChanged", 2);
                 }, this._timeout, false);

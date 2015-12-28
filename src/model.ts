@@ -57,7 +57,8 @@ module RongIMLib {
             public sentStatus?: SentStatus,
             public sentTime?: number,
             public targetId?: string,
-            public messageType?: string
+            public messageType?: string,
+            public messageUId?:string
         ) { }
     }
     export class MessageTag {

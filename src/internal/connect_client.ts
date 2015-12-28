@@ -160,9 +160,9 @@ module RongIMLib {
          */
         checkTransport(): string {
             if (RongIMClient._memoryStore.choicePolling) {
-                Transports._TransportType = Socket.XHR_POLLING;
+                Transportations._TransportType = Socket.XHR_POLLING;
             }
-            return Transports._TransportType;
+            return Transportations._TransportType;
         }
         fire(x: any, args?: any) {
             if (x in this._events) {
@@ -251,7 +251,7 @@ module RongIMLib {
         }
         connect(_callback: any) {
             if (Navigation.Endpoint.host) {
-                if (Transports._TransportType == Socket.WEBSOCKET) {
+                if (Transportations._TransportType == Socket.WEBSOCKET) {
                     if (!window.WebSocket) {
                         _callback.onError(ConnectionState.UNACCEPTABLE_PROTOCOL_VERSION);
                         return;
@@ -264,7 +264,7 @@ module RongIMLib {
                 //实例通道类型
                 var me = this;
                 this.channel = new Channel(Navigation.Endpoint, function() {
-                    Transports._TransportType == Socket.WEBSOCKET && me.keepLive();
+                    Transportations._TransportType == Socket.WEBSOCKET && me.keepLive();
                 }, this);
                 //触发状态改变观察者
                 this.channel.socket.fire("StatusChanged", 1);

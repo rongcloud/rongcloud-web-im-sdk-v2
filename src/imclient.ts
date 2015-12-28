@@ -85,7 +85,11 @@ module RongIMLib {
                     callback.onSuccess(data);
                 },
                 onError: function(e: ConnectionState) {
-                    callback.onTokenIncorrect(e);
+                    if (e == ConnectionState.TOKEN_INCORRECT) {
+                        callback.onTokenIncorrect();
+                    } else {
+                        callback.onError(e);
+                    }
                 }
             });
             //循环设置监听事件，追加之后清空存放事件数据
@@ -104,12 +108,12 @@ module RongIMLib {
          * 自定义消息声明需放在执行顺序最高的位置（在RongIMClient.init(appkey)之后即可）
          * @param objectName  消息内置名称
          */
-        static registerMessageType(objectName: string, messageType: string, messageTag: MessageTag, messageContent: any): void {
-            if (!objectName) {
-                throw new Error("objectName can't be empty,postion -> registerMessageType");
-            }
+        static registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void {
             if (!messageType) {
                 throw new Error("messageType can't be empty,postion -> registerMessageType");
+            }
+            if (!objectName) {
+                throw new Error("objectName can't be empty,postion -> registerMessageType");
             }
             if (Object.prototype.toString.call(messageContent) == "[object Array]") {
                 var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent);
@@ -179,9 +183,9 @@ module RongIMLib {
          * 获取当前使用的连接通道。
          */
         getConnectionChannel(): ConnectionChannel {
-            if (Transports._TransportType == Socket.XHR_POLLING) {
+            if (Transportations._TransportType == Socket.XHR_POLLING) {
                 return ConnectionChannel.XHR_POLLING;
-            } else if (Transports._TransportType == Socket.WEBSOCKET) {
+            } else if (Transportations._TransportType == Socket.WEBSOCKET) {
                 return ConnectionChannel.WEBSOCKET;
             }
         }
@@ -269,9 +273,9 @@ module RongIMLib {
         sendLocalMessage(message: Message, callback: SendMessageCallback) {
             CheckParam.getInstance().check(["object", "object"], "sendLocalMessage");
             RongIMClient._dataAccessProvider.updateMessage(message);
-            this.sendMessage(message.conversationType,message.targetId,message.content,callback);
+            this.sendMessage(message.conversationType, message.targetId, message.content, callback);
         }
-        /**
+        /**TODO callback
          * [sendMessage 发送消息。]
          * @param  {ConversationType}        conversationType [会话类型]
          * @param  {string}                  targetId         [目标Id]
@@ -296,28 +300,36 @@ module RongIMLib {
             if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
                 content = [].slice.call(new Int8Array(content));
             }
-            var c: Conversation = null, me = this, msg: Message;
+            var c: Conversation = null, me = this, msg: Message = new RongIMLib.Message();
             this.getConversation(conversationType, targetId, <ResultCallback<Conversation>>{
                 onSuccess: function(conver: Conversation) {
                     c = conver;
                 }
             });
+            msg.content = messageContent;
             if (!c) {
                 c = me.createConversation(conversationType, targetId, "");
-                msg = new RongIMLib.Message();
                 msg.conversationType = conversationType;
                 msg.sentTime = new Date().getTime(); //TODO getDeltaTime 是否有关系
-                c.latestMessage = msg;
             }
             c.sentTime = new Date().getTime();
             c.sentStatus = SentStatus.SENDING;
             c.senderUserName = "";
             c.senderUserId = Bridge._client.userId;
             c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-            c.latestMessage.content = messageContent;
+            c.latestMessage = msg;
             c.unreadMessageCount = 0;
             c.setTop();
-            RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, sendCallback, null);
+            RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
+                onSuccess: function(data: any) {
+                    msg.messageUId = data.messageUId;
+                    msg.sentTime = data.timestamp;
+                    sendCallback.onSuccess(msg);
+                },
+                onError: function(errorCode: ErrorCode) {
+                    sendCallback.onError(errorCode, msg);
+                }
+            }, null);
         }
         /**
          * [sendStatusMessage description]
@@ -591,18 +603,22 @@ module RongIMLib {
             }
             RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
         }
-        getConversationList(callback: ResultCallback<Conversation[]>) {
-            CheckParam.getInstance().check(["object"], "getConversationList");
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[]) {
+            CheckParam.getInstance().check(["object", "null|object|global"], "getConversationList");
             var me = this;
             RongIMClient._dataAccessProvider.getConversationList(<ResultCallback<Conversation[]>>{
                 onSuccess: function(data: Conversation[]) {
-                    me.sortConversationList(RongIMClient._memoryStore.conversationList);
-                    callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                    if (conversationTypes) {
+                        callback.onSuccess(data);
+                    }else{
+                      me.sortConversationList(RongIMClient._memoryStore.conversationList);
+                      callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                    }
                 }
-            });
+            }, conversationTypes);
         }
-        getRemoteConversationList(callback: ResultCallback<Conversation[]>, ...conversationTypes: ConversationType[]) {
-            CheckParam.getInstance().check(["object"], "getConversationList");
+        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[]) {
+            CheckParam.getInstance().check(["object", "null|object|global"], "getRemoteConversationList");
             var modules = new Modules.RelationsInput(), self = this;
             modules.setType(1);
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
@@ -612,7 +628,19 @@ module RongIMLib {
                             setTimeout(self.pottingConversation(list.info[i]), 200);
                         }
                     }
-                    callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                    if (conversationTypes) {
+                        var convers: Conversation[] = [];
+                        Array.forEach(conversationTypes, function(converType: ConversationType) {
+                            Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
+                                if (item.conversationType == converType) {
+                                    convers.push(item);
+                                }
+                            });
+                        });
+                        callback.onSuccess(convers);
+                    } else {
+                        callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                    }
                 },
                 onError: function() {
                     callback.onError(ErrorCode.CONVER_GETLIST_ERROR);

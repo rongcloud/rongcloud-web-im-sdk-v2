@@ -32,7 +32,7 @@ module RongIMLib {
             throw new Error("Not implemented yet");
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>) {
+        getConversationList(callback: ResultCallback<Conversation[]>,conversationTypes?: ConversationType[]) {
             throw new Error("Not implemented yet");
         }
 

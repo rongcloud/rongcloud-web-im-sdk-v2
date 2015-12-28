@@ -34,7 +34,7 @@ module RongIMLib {
             this._get(url);
             return this;
         }
-        _request(url: string, method: string, multipart?: boolean) {
+        private _request(url: string, method: string, multipart?: boolean) {
             var req = this.XmlHttpRequest();
             if (multipart) { req.multipart = true; }
             req.open(method || "GET", MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://" + url);
@@ -43,7 +43,7 @@ module RongIMLib {
             }
             return req;
         }
-        _get(url: string, args?: any) {
+        private _get(url: string, args?: any) {
             var me = this;
             this._xhr = this._request(url, "GET");
             if ("onload" in this._xhr) {
@@ -189,13 +189,13 @@ module RongIMLib {
             this.disconnect();
         }
         addEvent() { }
-        status200(text: string, arg: any) {
+        private status200(text: string, arg: any) {
             var txt = text.match(/"sessionid":"\S+?(?=")/);
             this.onPollingSuccess(text, txt ? txt[0].slice(13) : void 0);
             this.connected = true;
             arg || this._socket.fire("connect");
         }
-        status400(self: any) {
+        private status400(self: any) {
             RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
             this.disconnect();
             this._socket.fire("disconnect");

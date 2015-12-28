@@ -25,27 +25,27 @@ describe "RongIMClient",->
                 console.log "token 无效"
               else
                 console.log error
-    # it "getRemotePublicServiceList",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.getInstance().getRemotePublicServiceList();
-    #         done()
-    #     ,500);
-    # it "registerMessageType",(done)->
-    #     setTimeout(->
-    #         RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',new RongIMLib.MessageTag(true,true),['Name','Age','Address']
-    #         done()
-    #     ,50);
-    # it "sendMessage",(done)->
-    #     setTimeout(->
-    #         message = RongIMLib.TextMessage.obtain("rongcloud")
-    #         #message = new EmptyMessage({Name:'悲伤2015',Age:18,Address:"beijing"});
-    #         RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "1005", message,null,
-    #           onSuccess: (data)->
-    #                 console.log "Send Successfully"
-    #                 done()
-    #           onError: (errorcode)->
-    #                 console.log errorcode
-    #     ,1000)
+    it "getRemotePublicServiceList",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.getInstance().getRemotePublicServiceList();
+            done()
+        ,500);
+    it "registerMessageType",(done)->
+        setTimeout(->
+            RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',new RongIMLib.MessageTag(true,true),['Name','Age','Address']
+            done()
+        ,50);
+    it "sendMessage",(done)->
+        setTimeout(->
+            message = RongIMLib.TextMessage.obtain("rongcloud")
+            #message = new EmptyMessage({Name:'悲伤2015',Age:18,Address:"beijing"});
+            RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "1005", message,
+              onSuccess: (data)->
+                    console.log JSON.stringify(data)
+                    done()
+              onError: (errorcode)->
+                    console.log errorcode
+        ,1000)
     # it "sendTextMessage",(done)->
     #     setTimeout(->
     #         RongIMLib.RongIMClient.getInstance().sendTextMessage RongIMLib.ConversationType.PRIVATE, "1005", "我是TextMessage123123",

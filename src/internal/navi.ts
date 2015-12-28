@@ -35,7 +35,7 @@ module RongIMLib {
                 var naviStr = MD5(_token).slice(8, 16),
                     _old = RongIMClient._cookieHelper.getItem(RongIMClient._cookieHelper.getItemKey("navi")),
                     _new = RongIMClient._cookieHelper.getItem("navi" + naviStr);
-                if (_old == _new && _new !== null && RongIMClient._cookieHelper.getItem("rongSDK") == Transports._TransportType) {
+                if (_old == _new && _new !== null && RongIMClient._cookieHelper.getItem("rongSDK") == Transportations._TransportType) {
                     var obj = encodeURIComponent(_old).split(",");
                     setTimeout(function() {
                         RongIMClient._cookieHelper._host = Navigation.Endpoint.host = obj[0];
