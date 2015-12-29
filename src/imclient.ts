@@ -307,26 +307,33 @@ module RongIMLib {
                 }
             });
             msg.content = messageContent;
+            msg.conversationType = conversationType;
+            msg.senderUserId = Bridge._client.userId;
+            msg.objectName = RongIMClient.MessageType[messageContent.messageName].objectName;
+            msg.targetId = targetId;
+            msg.sentTime = new Date().getTime();
+            msg.messageDirection = MessageDirection.SEND;
+            msg.sentStatus = SentStatus.SENT;
             if (!c) {
                 c = me.createConversation(conversationType, targetId, "");
-                msg.conversationType = conversationType;
-                msg.sentTime = new Date().getTime(); //TODO getDeltaTime 是否有关系
             }
             c.sentTime = new Date().getTime();
             c.sentStatus = SentStatus.SENDING;
             c.senderUserName = "";
             c.senderUserId = Bridge._client.userId;
             c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-            c.latestMessage = msg;
+            c.latestMessage.content = messageContent;
             c.unreadMessageCount = 0;
             c.setTop();
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
                     msg.messageUId = data.messageUId;
                     msg.sentTime = data.timestamp;
+                    msg.sentStatus = SentStatus.SENT;
                     sendCallback.onSuccess(msg);
                 },
                 onError: function(errorCode: ErrorCode) {
+                    msg.sentStatus = SentStatus.FAILED;
                     sendCallback.onError(errorCode, msg);
                 }
             }, null);
@@ -410,6 +417,7 @@ module RongIMLib {
             modules.setSize(count);
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function(data: any) {
+                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId,MessageUtil.int64ToTimestamp(data.syncTime));
                     var list = data.list.reverse();
                     for (var i = 0, len = list.length; i < len; i++) {
                         list[i] = MessageUtil.messageParser(list[i]);
@@ -481,22 +489,22 @@ module RongIMLib {
          * @param  {ConversationType}        conversationType 会话类型
          * @param  {string}                  targetId         目标Id
          */
-        clearTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+        clearTextMessageDraft(conversationType: ConversationType, targetId: string) :boolean{
             CheckParam.getInstance().check(["number", "string", "object"], "clearTextMessageDraft");
             RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId];
-            callback.onSuccess(true);
+            return true;
         }
         /**
          * [getTextMessageDraft 获取指定消息和会话的草稿。]
          * @param  {ConversationType}       conversationType [会话类型]
          * @param  {string}                 targetId         [目标Id]
          */
-        getTextMessageDraft(conversationType: ConversationType, targetId: string, callback: ResultCallback<string>) {
+        getTextMessageDraft(conversationType: ConversationType, targetId: string) :string{
             CheckParam.getInstance().check(["number", "string", "object"], "getTextMessageDraft");
             if (targetId == "" || conversationType < 0) {
                 throw new Error("params error : " + ErrorCode.DRAF_GET_ERROR);
             }
-            callback.onSuccess(RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId]);
+           return RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId];
         }
         /**
          * [saveTextMessageDraft description]
@@ -504,10 +512,10 @@ module RongIMLib {
          * @param  {string}                  targetId         [目标Id]
          * @param  {string}                  value            [草稿值]
          */
-        saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string, callback: ResultCallback<boolean>) {
+        saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string):boolean {
             CheckParam.getInstance().check(["number", "string", "string", "object"], "saveTextMessageDraft");
             RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId] = value;
-            callback.onSuccess(true);
+            return true;
         }
 
         // #endregion TextMessage Draft
@@ -610,9 +618,9 @@ module RongIMLib {
                 onSuccess: function(data: Conversation[]) {
                     if (conversationTypes) {
                         callback.onSuccess(data);
-                    }else{
-                      me.sortConversationList(RongIMClient._memoryStore.conversationList);
-                      callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                    } else {
+                        me.sortConversationList(RongIMClient._memoryStore.conversationList);
+                        callback.onSuccess(RongIMClient._memoryStore.conversationList);
                     }
                 }
             }, conversationTypes);
