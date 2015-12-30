@@ -285,7 +285,7 @@ module RongIMLib {
             _in.read();
             var result = +_in.read();
             if (result >= 0 && result <= 5) {
-                this.setStatus(result);
+                this.setStatus(disconnectStatus[result] ? disconnectStatus[result] : result);
             } else {
                 throw new Error("Unsupported CONNACK code:" + result);
             }
@@ -300,8 +300,7 @@ module RongIMLib {
             }
         }
         setStatus(x: any) {
-            //TODO
-            //status = x instanceof DisconnectionStatus ? x : DisconnectionStatus.setValue(x);
+            this.status = x;
         };
         getStatus() {
             return this.status;
@@ -402,7 +401,7 @@ module RongIMLib {
         setTimestamp(timestamp: number) {
             this.timestamp = timestamp;
         }
-        setMessageUId(messageUId:string) {
+        setMessageUId(messageUId: string) {
             this.messageUId = messageUId;
         }
         getStatus(): any {

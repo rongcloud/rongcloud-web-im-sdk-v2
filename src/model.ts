@@ -10,7 +10,7 @@ module RongIMLib {
             public notificationStatus?: ConversationNotificationStatus,
             public objectName?: string,
             public receivedStatus?: ReceivedStatus,
-            public receivedTime?: Date,
+            public receivedTime?: number,
             public senderUserId?: string,
             public senderUserName?: string,
             public sentStatus?: SentStatus,

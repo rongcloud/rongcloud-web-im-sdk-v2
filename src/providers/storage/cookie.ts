@@ -1,5 +1,5 @@
 module RongIMLib {
-    export class CookieProvider{
+    export class CookieProvider implements StorageProvider {
         _host: string;
         setItem(composedKey: string, object: any): void {
             var exp = new Date();
@@ -21,14 +21,6 @@ module RongIMLib {
             }
         }
 
-        clearItem(): void {
-            var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
-            if (keys) {
-                for (var i = keys.length; i--;) {
-                    document.cookie = keys[i] + "=0;path=/;expires=" + new Date(0).toUTCString();
-                }
-            }
-        }
         getItemKey(regStr: string): any {
             var arrs = document.cookie.match(new RegExp("(^| )navi\\w+?=([^;]*)(;|$)")), val: string = "";
             if (arrs) {
@@ -40,6 +32,14 @@ module RongIMLib {
                 }
             }
             return val ? val.split("=")[0].replace(/^\s/, "") : null;
+        }
+        clearItem(): void {
+            var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+            if (keys) {
+                for (var i = keys.length; i--;) {
+                    document.cookie = keys[i] + "=0;path=/;expires=" + new Date(0).toUTCString();
+                }
+            }
         }
         //单位：字节
         onOutOfQuota(): number {

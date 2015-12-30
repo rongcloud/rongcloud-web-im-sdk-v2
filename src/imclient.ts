@@ -24,13 +24,16 @@ module RongIMLib {
             }
             return RongIMClient._instance;
         }
+        private static loadJS() {
 
+        }
         /**
          * 初始化 SDK，在整个应用全局只需要调用一次。
          * @param appKey    开发者后台申请的 AppKey，用来标识应用。
          * @param  choicePolling 是否选择comet方式连接，默认为false
          * @param dataAccessProvider 必须是DataAccessProvider的实例
          */
+
         static init(appKey: string, choicePolling: boolean, dataAccessProvider?: DataAccessProvider): void {
             if (!RongIMClient._instance) {
                 RongIMClient._instance = new RongIMClient();
@@ -39,6 +42,7 @@ module RongIMLib {
             pather.patchAll();
             RongIMClient._memoryStore = {
                 token: "",
+                global: window,
                 lastReadTime: new LimitableMap(),
                 conversationList: [],
                 appKey: appKey,
@@ -85,7 +89,7 @@ module RongIMLib {
                     callback.onSuccess(data);
                 },
                 onError: function(e: ConnectionState) {
-                    if (e == ConnectionState.TOKEN_INCORRECT) {
+                    if (e == ConnectionState.TOKEN_INCORRECT || !e) {
                         callback.onTokenIncorrect();
                     } else {
                         callback.onError(e);
@@ -322,7 +326,7 @@ module RongIMLib {
             c.senderUserName = "";
             c.senderUserId = Bridge._client.userId;
             c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-            c.latestMessage.content = messageContent;
+            c.latestMessage = msg;
             c.unreadMessageCount = 0;
             c.setTop();
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
@@ -330,10 +334,12 @@ module RongIMLib {
                     msg.messageUId = data.messageUId;
                     msg.sentTime = data.timestamp;
                     msg.sentStatus = SentStatus.SENT;
+                    c.latestMessage = msg;
                     sendCallback.onSuccess(msg);
                 },
                 onError: function(errorCode: ErrorCode) {
                     msg.sentStatus = SentStatus.FAILED;
+                    c.latestMessage = msg;
                     sendCallback.onError(errorCode, msg);
                 }
             }, null);
@@ -417,7 +423,7 @@ module RongIMLib {
             modules.setSize(count);
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function(data: any) {
-                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId,MessageUtil.int64ToTimestamp(data.syncTime));
+                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
                     var list = data.list.reverse();
                     for (var i = 0, len = list.length; i < len; i++) {
                         list[i] = MessageUtil.messageParser(list[i]);
@@ -489,7 +495,7 @@ module RongIMLib {
          * @param  {ConversationType}        conversationType 会话类型
          * @param  {string}                  targetId         目标Id
          */
-        clearTextMessageDraft(conversationType: ConversationType, targetId: string) :boolean{
+        clearTextMessageDraft(conversationType: ConversationType, targetId: string): boolean {
             CheckParam.getInstance().check(["number", "string", "object"], "clearTextMessageDraft");
             RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId];
             return true;
@@ -499,12 +505,12 @@ module RongIMLib {
          * @param  {ConversationType}       conversationType [会话类型]
          * @param  {string}                 targetId         [目标Id]
          */
-        getTextMessageDraft(conversationType: ConversationType, targetId: string) :string{
+        getTextMessageDraft(conversationType: ConversationType, targetId: string): string {
             CheckParam.getInstance().check(["number", "string", "object"], "getTextMessageDraft");
             if (targetId == "" || conversationType < 0) {
                 throw new Error("params error : " + ErrorCode.DRAF_GET_ERROR);
             }
-           return RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId];
+            return RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId];
         }
         /**
          * [saveTextMessageDraft description]
@@ -512,7 +518,7 @@ module RongIMLib {
          * @param  {string}                  targetId         [目标Id]
          * @param  {string}                  value            [草稿值]
          */
-        saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string):boolean {
+        saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string): boolean {
             CheckParam.getInstance().check(["number", "string", "string", "object"], "saveTextMessageDraft");
             RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId] = value;
             return true;
@@ -670,6 +676,7 @@ module RongIMLib {
             conver.conversationTitle = converTitle;
             conver.latestMessage = {};
             conver.unreadMessageCount = 0;
+            RongIMClient._dataAccessProvider.addConversation(conver, <ResultCallback<boolean>>{ onSuccess: function(data) { } });
             return conver;
         }
         //TODO 删除本地和服务器、删除本地和服务器分开

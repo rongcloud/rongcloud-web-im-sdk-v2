@@ -100,7 +100,7 @@ module RongIMLib {
             self.socket.onerror = function(ev) {
                 self.onError(ev);
             };
-            self.socket.close = function() {
+            self.socket.onclose = function() {
                 self.onClose();
             };
         }

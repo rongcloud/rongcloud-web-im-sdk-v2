@@ -4,6 +4,7 @@ declare var require: any;
 declare var module: any;
 declare var define: any;
 declare var exports: any;
+declare var dcodeIO:any;
 declare class XDomainRequest { }
 declare interface Window {
     WebSocket: WebSocket;

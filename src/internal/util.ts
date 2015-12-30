@@ -37,7 +37,8 @@ var mapping: any = {
         2: 2,
         3: 3,
         5: 1
-    };
+    },
+    disconnectStatus : { [s: number]: any } = {1:6};
 module RongIMLib {
     /**
      * 通道标识类
