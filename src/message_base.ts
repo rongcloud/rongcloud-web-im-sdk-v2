@@ -22,20 +22,22 @@ module RongIMLib {
     }
 
     export interface ExtraAttachedMessage {
-        extra: string
+        extra: string;
     }
 
     export class ModelUtil {
         static modelClone(object: any): any {
             var obj: any = {};
             for (var item in object) {
-                obj[item] = object[item];
+                if (item != "messageName") {
+                    obj[item] = object[item];
+                }
             }
             return obj;
         }
         static modleCreate(fields: string[]): any {
             if (fields.length < 1) {
-                throw new Error('Array is empty  -> registerMessageType.modleCreate');
+                throw new Error("Array is empty  -> registerMessageType.modleCreate");
             }
             var Object = function(message: any) {
                 for (var index in fields) {

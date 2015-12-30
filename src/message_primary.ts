@@ -76,7 +76,7 @@ module RongIMLib {
         latiude: number;
         longitude: number;
         poi: string;
-        content: string;
+        imgUri: string;
         extra: string;
         messageName: string = "LocationMessage";
         constructor(message: any) {
@@ -85,8 +85,8 @@ module RongIMLib {
             }
             this.latiude = message.latitude;
             this.longitude = message.longitude;
-            this.poi = message.pot;
-            this.content = message.content;
+            this.poi = message.poi;
+            this.imgUri = message.imgUri;
             this.extra = message.extra;
             if (message.userInfo) {
                 this.userInfo = message.userInfo;

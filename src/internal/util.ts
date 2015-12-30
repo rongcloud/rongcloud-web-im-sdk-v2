@@ -12,10 +12,7 @@ var mapping: any = {
         "RC:ImgMsg": "ImageMessage",
         "RC:VcMsg": "VoiceMessage",
         "RC:ImgTextMsg": "RichContentMessage",
-        "RC:LBSMsg": "LocationMessage"
-    },
-    //通知类型映射
-    sysNtf: { [s: string]: any } = {
+        "RC:LBSMsg": "LocationMessage",
         "RC:InfoNtf": "InformationNotificationMessage",
         "RC:ContactNtf": "ContactNotificationMessage",
         "RC:ProfileNtf": "ProfileNotificationMessage",
@@ -45,7 +42,7 @@ module RongIMLib {
     /**
      * 通道标识类
      */
-    export class Transports {
+    export class Transportations {
         static _TransportType: string = Socket.WEBSOCKET;
     }
     export class PublicServiceMap {
@@ -251,10 +248,6 @@ module RongIMLib {
                 var str = "new RongIMLib." + typeMapping[objectName] + "(de)";
                 message.content = eval(str);
                 message.messageType = typeMapping[objectName];
-            } else if (objectName in sysNtf) {
-                var str = "new RongIMLib." + sysNtf[objectName] + "(de)";
-                message.content = eval(str);
-                message.messageType = sysNtf[objectName];
             } else if (objectName in registerMessageTypeMapping) {
                 var str = "new RongIMLib.RongIMClient.RegisterMessage." + registerMessageTypeMapping[objectName] + "(de)";
                 if (isUseDef) {
@@ -291,7 +284,7 @@ module RongIMLib {
     }
     export class MessageIdHandler {
         static messageId: number = 0;
-        static isXHR: boolean = Transports._TransportType === Socket.XHR_POLLING;
+        static isXHR: boolean = Transportations._TransportType === Socket.XHR_POLLING;
         static init() {
             this.messageId = +(RongIMClient._cookieHelper.getItem("msgId") || RongIMClient._cookieHelper.setItem("msgId", 0) || 0);
         }

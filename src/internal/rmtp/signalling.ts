@@ -273,7 +273,7 @@ module RongIMLib {
         constructor(header: any) {
             super(header instanceof Header ? header : Type.DISCONNECT);
             if (!(header instanceof Header)) {
-                if (header in RongIMLib.DisconnectionStatus) {
+                if (header in RongIMLib.ConnectionStatus) {
                     this.status = header;
                 }
             }

@@ -3,39 +3,17 @@ module RongIMLib {
         script: any = document.createElement("script");
         head: any = document.getElementsByTagName("head")[0];
         global: any = window;
-        //TODO 设置WEB_XHR_POLLING 为true时为成功，和时机有关系
         constructor() {
-            Transports._TransportType = Socket.WEBSOCKET;
+            Transportations._TransportType = Socket.WEBSOCKET;
             if ("WebSocket" in this.global && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !RongIMClient._memoryStore.choicePolling) {
                 //http://res.websdk.rongcloud.cn/protobuf-0.2.min.js
-                this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://localhost:9876/base/src/internal/protobuf.js";
+                this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://localhost:9876/base/src/3rd/protobuf.js";
 
             } else {
-                Transports._TransportType = "xhr-polling";
-                this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://localhost:9876/base/src/internal/xhrpolling.js";
+                Transportations._TransportType = "xhr-polling";
+                this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://localhost:9876/base/src/3rd/xhrpolling.js";
             }
             this.head.appendChild(this.script);
-        }
-        supportWebSocket(): boolean {
-            return !(window["WEB_XHR_POLLING"] && window["WEB_XHR_POLLING"] == true);
-        }
-
-        supportXHRPolling(): boolean {
-            return window["WEB_XHR_POLLING"] && window["WEB_XHR_POLLING"] == true;
-        }
-
-        supportWebStorage(): boolean {
-            return false;
-        }
-
-        supportWebNotification(): boolean {
-            return window.Notifications;
-        }
-        /**
-         * [isCookieEnabled 是否禁用Cookie]
-         */
-        isCookieEnabled(): boolean {
-            return navigator.cookieEnabled;
         }
 
     }

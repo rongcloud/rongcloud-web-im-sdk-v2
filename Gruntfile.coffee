@@ -24,9 +24,13 @@ module.exports = (grunt) ->
           './dist/*.*'
         ]
 
+    concat:
+      dist:
+        src: ['./src/3rd/MD5.js','./dist/RongIMLib.js']
+        dest: './dist/RongIMLib.js'
     # concat:
     #   dist:
-    #     src: './src/**/*.ts'
+    #     src: ['./src/**/*.ts']
     #     dest: './dist/RongIMLib.ts'
 
     connect:
@@ -114,7 +118,8 @@ module.exports = (grunt) ->
   grunt.registerTask 'release', [
     'clean:release'
     'typescript:release'
-    'uglify:release'
+    'concat'
+    # 'uglify:release'
     # 'typedoc:release'
     # 'jsdoc'
   ]

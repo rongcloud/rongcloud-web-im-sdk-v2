@@ -25,12 +25,18 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
-        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback: ResultCallback<Message>) {
-            callback.onSuccess(new Message());
+        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback?: ResultCallback<Message>) {
+            if (callback) {
+                callback.onSuccess(new Message());
+            }
         }
 
         removeMessage(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
             callback.onSuccess(true);
+        }
+
+        updateMessage(message: Message, callback?: ResultCallback<Message>) {
+            callback.onSuccess(message);
         }
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
@@ -63,15 +69,27 @@ module RongIMLib {
             return conver;
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>) {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]) {
             if (RongIMClient._memoryStore.conversationList.length == 0) {
                 RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
                         callback.onSuccess(list);
                     }
-                });
+                }, conversationTypes);
             } else {
-                callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                if (conversationTypes) {
+                    var convers: Conversation[] = [];
+                    Array.forEach(conversationTypes, function(converType: ConversationType) {
+                        Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
+                            if (item.conversationType == converType) {
+                                convers.push(item);
+                            }
+                        });
+                    });
+                    callback.onSuccess(convers);
+                } else {
+                    callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                }
             }
         }
 
@@ -86,7 +104,7 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: ResultCallback<Message[]>) {
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
             RongIMClient.getInstance().getRemoteHistoryMessages(conversationType, targetId, timestamp, count, callback);
         }
 

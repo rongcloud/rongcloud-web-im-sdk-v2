@@ -1,6 +1,6 @@
 module RongIMLib {
     export interface ConnectionStatusListener {
-        onChanged(status: ConnectionStatus): void;
+        onChanged(status: number): void;
     }
 
     export interface OnReceiveMessageListener {
