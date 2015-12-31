@@ -1,4 +1,4 @@
-declare function MD5(str: string): any;
+declare function md5(str: string): any;
 declare var Modules: any;
 declare var require: any;
 declare var module: any;
@@ -12,6 +12,7 @@ declare interface Window {
     RCCallback: any;
     RongIMClient: any;
     getServerEndpoint: any;
+    WEB_XHR_POLLING:any;
     XDomainRequest: any;
     JSON: any;
 }

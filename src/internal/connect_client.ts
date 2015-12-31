@@ -159,7 +159,7 @@ module RongIMLib {
          * WEB_XHR_POLLING:是否选择comet方式进行连接
          */
         checkTransport(): string {
-            if (RongIMClient._memoryStore.choicePolling) {
+            if (RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
                 Transportations._TransportType = Socket.XHR_POLLING;
             }
             return Transportations._TransportType;

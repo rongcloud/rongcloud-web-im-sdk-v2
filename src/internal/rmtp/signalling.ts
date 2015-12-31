@@ -224,6 +224,8 @@ module RongIMLib {
             }
             if (msglength > this.MESSAGE_LENGTH) {
                 this.setUserId(_in.readUTF());
+                var sessionId=_in.readUTF();
+                var timestamp = _in.readLong();
             }
         }
         writeMessage(out: any) {

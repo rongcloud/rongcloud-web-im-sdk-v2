@@ -46,15 +46,17 @@ module RongIMLib {
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>) {
             var me = this;
             if (key == "readStatus") {
-                me.getConversationList(<ResultCallback<Conversation[]>>{
-                    onSuccess: function(list: Conversation[]) {
-                        Array.forEach(list, function(conver: Conversation) {
-                            if (conver.conversationType == conversationType && conver.targetId == targetId) {
-                                conver.unreadMessageCount = 0;
-                            }
-                        });
-                    }
-                });
+                if (RongIMClient._memoryStore.conversationList.length >0) {
+                      me.getConversationList(<ResultCallback<Conversation[]>>{
+                          onSuccess: function(list: Conversation[]) {
+                              Array.forEach(list, function(conver: Conversation) {
+                                  if (conver.conversationType == conversationType && conver.targetId == targetId) {
+                                      conver.unreadMessageCount = 0;
+                                  }
+                              });
+                          }
+                      },null);
+                }
             }
             callback.onSuccess(true);
         }

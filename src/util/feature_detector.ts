@@ -6,13 +6,13 @@ module RongIMLib {
         constructor() {
 
             Transportations._TransportType = Socket.WEBSOCKET;
-            if ("WebSocket" in window && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !RongIMClient._memoryStore.choicePolling) {
+            if ("WebSocket" in window && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !window["WEB_XHR_POLLING"]) {
                 //http://res.websdk.rongcloud.cn/protobuf-0.2.min.js
-                this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://cdn.ronghub.com/protobuf-min-2.0.js";
+                this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://cdn.ronghub.com/protobuf-min-2.1.js";
 
             } else {
                 Transportations._TransportType = "xhr-polling";
-                this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + ":////cdn.ronghub.com/xhrpolling-min.js";
+                this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://cdn.ronghub.com/xhrpolling-min.js";
             }
             this.head.appendChild(this.script);
         }

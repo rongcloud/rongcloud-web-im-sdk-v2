@@ -233,6 +233,27 @@ module RongIMLib {
       }
       return parseInt(end, 16);
     }
+    readLong():number{
+      if (this.check()) {
+        return -1;
+      }
+      var end = "";
+      for (var i = 0; i < 8; i++) {
+        end += this.pool[this.position++].toString(16);
+      }
+      return parseInt(end, 16);
+    }
+    readTimestamp():number{
+      if (this.check()) {
+        return -1;
+      }
+      var end = "";
+      for (var i = 0; i < 8; i++) {
+        end += this.pool[this.position++].toString(16);
+      }
+      end=end.substring(2,8);
+      return parseInt(end, 16);
+    }
     readUTF(): any {
       if (this.check()) {
         return -1;

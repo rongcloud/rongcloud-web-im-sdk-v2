@@ -30,11 +30,10 @@ module RongIMLib {
         /**
          * 初始化 SDK，在整个应用全局只需要调用一次。
          * @param appKey    开发者后台申请的 AppKey，用来标识应用。
-         * @param  choicePolling 是否选择comet方式连接，默认为false
          * @param dataAccessProvider 必须是DataAccessProvider的实例
          */
 
-        static init(appKey: string, choicePolling: boolean, dataAccessProvider?: DataAccessProvider): void {
+        static init(appKey: string,dataAccessProvider?: DataAccessProvider): void {
             if (!RongIMClient._instance) {
                 RongIMClient._instance = new RongIMClient();
             }
@@ -48,7 +47,6 @@ module RongIMLib {
                 appKey: appKey,
                 publicServiceMap: new PublicServiceMap(),
                 listenerList: [],
-                choicePolling: choicePolling ? true : false,
                 providerType: 1
             };
             RongIMClient._cookieHelper = new CookieProvider();
@@ -910,7 +908,7 @@ module RongIMLib {
             }
             var modules = new Modules.GroupHashInput();
             modules.setUserId(Bridge._client.userId);
-            modules.setGroupHashCode(MD5(part.sort().join("")));
+            modules.setGroupHashCode(md5(part.sort().join("")));
             RongIMClient.bridge.queryMsg(13, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(result: number) {
                     //1为群信息不匹配需要发送给服务器进行同步，0不需要同步
@@ -1257,10 +1255,10 @@ module RongIMLib {
     }
     //兼容AMD CMD
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
-        module.exports = RongIMClient;
+        module.exports = RongIMLib;
     } else if ("function" === typeof define && define.amd) {
         define("RongIMLib", [], function() {
-            return RongIMClient;
+            return RongIMLib;
         });
     } else {
         window.RongIMClient = RongIMClient;

@@ -226,7 +226,7 @@ module RongIMLib {
         static messageParser(entity: any, onReceived?: any): any {
             var message: Message = new Message(), content: any = entity.content, de: any, objectName: string = entity.classname, val: any, isUseDef = false;
             try {
-                if (RongIMClient._memoryStore.choicePolling) {
+                if (RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
                     val = new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content);
                     de = JSON.parse(val);
                 } else {

@@ -48,7 +48,8 @@ module RongIMLib {
         static CONTACT_OPERATION_REQUEST: string = "ContactOperationRequest";
         operation: string;
         targetUserId: string;
-        content: string;
+        sourceUserId: string;
+        message: string;
         extra: string;
         messageName: string = "ContactNotificationMessage";
         constructor(message: any) {
@@ -57,14 +58,15 @@ module RongIMLib {
             }
             this.operation = message.operation;
             this.targetUserId = message.targetUserId;
-            this.content = message.content;
+            this.message = message.message;
             this.extra = message.extra;
+            this.sourceUserId = message.sourceUserId;
             if (message.userInfo) {
                 this.userInfo = message.userInfo;
             }
         }
-        static obtain(operation: string, sourceUserId: string, targetUserId: string, content: string): InformationNotificationMessage {
-            return new InformationNotificationMessage({ operation: operation, sourceUserId: sourceUserId, targetUserId: targetUserId, content: content });
+        static obtain(operation: string, sourceUserId: string, targetUserId: string, message: string): InformationNotificationMessage {
+            return new InformationNotificationMessage({ operation: operation, sourceUserId: sourceUserId, targetUserId: targetUserId, message: message });
         }
 
         encode() {
