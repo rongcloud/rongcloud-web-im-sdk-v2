@@ -46,16 +46,19 @@ module RongIMLib {
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>) {
             var me = this;
             if (key == "readStatus") {
-                if (RongIMClient._memoryStore.conversationList.length >0) {
-                      me.getConversationList(<ResultCallback<Conversation[]>>{
-                          onSuccess: function(list: Conversation[]) {
-                              Array.forEach(list, function(conver: Conversation) {
-                                  if (conver.conversationType == conversationType && conver.targetId == targetId) {
-                                      conver.unreadMessageCount = 0;
-                                  }
-                              });
-                          }
-                      },null);
+                if (RongIMClient._memoryStore.conversationList.length > 0) {
+                    me.getConversationList(<ResultCallback<Conversation[]>>{
+                        onSuccess: function(list: Conversation[]) {
+                            Array.forEach(list, function(conver: Conversation) {
+                                if (conver.conversationType == conversationType && conver.targetId == targetId) {
+                                    conver.unreadMessageCount = 0;
+                                }
+                            });
+                        },
+                        onError: function(errorCode: ErrorCode) {
+                            callback.onError(errorCode);
+                        }
+                    }, null);
                 }
             }
             callback.onSuccess(true);
@@ -76,6 +79,9 @@ module RongIMLib {
                 RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
                         callback.onSuccess(list);
+                    },
+                    onError: function(errorcode: ErrorCode) {
+                        callback.onError(errorcode);
                     }
                 }, conversationTypes);
             } else {

@@ -11,6 +11,7 @@ module RongIMLib {
          */
         static schemeType: number = ConnectionChannel.HTTP;
         static MessageType: { [s: string]: any };
+        static MessageParams: { [s: string]: any };
         static RegisterMessage: { [s: string]: any } = {};
         static _memoryStore: any = {};
         static isNotPullMsg: boolean = false;
@@ -24,16 +25,13 @@ module RongIMLib {
             }
             return RongIMClient._instance;
         }
-        private static loadJS() {
-
-        }
         /**
          * 初始化 SDK，在整个应用全局只需要调用一次。
          * @param appKey    开发者后台申请的 AppKey，用来标识应用。
          * @param dataAccessProvider 必须是DataAccessProvider的实例
          */
 
-        static init(appKey: string,dataAccessProvider?: DataAccessProvider): void {
+        static init(appKey: string, dataAccessProvider?: DataAccessProvider): void {
             if (!RongIMClient._instance) {
                 RongIMClient._instance = new RongIMClient();
             }
@@ -55,21 +53,37 @@ module RongIMLib {
             } else {
                 RongIMClient._dataAccessProvider = new ServerDataProvider();
             }
+            RongIMClient.MessageParams = {
+                TextMessage: { objectName: "RC:TxtMsg", msgTag: new MessageTag(true, true) },
+                ImageMessage: { objectName: "RC:ImgMsg", msgTag: new MessageTag(true, true) },
+                DiscussionNotificationMessage: { objectName: "RC:DizNtf", msgTag: new MessageTag(true, true) },
+                VoiceMessage: { objectName: "RC:VcMsg", msgTag: new MessageTag(true, true) },
+                RichContentMessage: { objectName: "RC:ImgTextMsg", msgTag: new MessageTag(true, true) },
+                HandshakeMessage: { objectName: "", msgTag: new MessageTag(true, true) },
+                UnknownMessage: { objectName: "", msgTag: new MessageTag(true, true) },
+                SuspendMessage: { objectName: "", msgTag: new MessageTag(true, true) },
+                LocationMessage: { objectName: "RC:LBSMsg", msgTag: new MessageTag(true, true) },
+                InformationNotificationMessage: { objectName: "RC:InfoNtf", msgTag: new MessageTag(true, true) },
+                ContactNotificationMessage: { objectName: "RC:ContactNtf", msgTag: new MessageTag(true, true) },
+                ProfileNotificationMessage: { objectName: "RC:ProfileNtf", msgTag: new MessageTag(true, true) },
+                CommandNotificationMessage: { objectName: "RC:CmdNtf", msgTag: new MessageTag(true, true) },
+                CommandMessage: { objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) }
+            };
             RongIMClient.MessageType = {
-                TextMessage: { typeName: "TextMessage", objectName: "RC:TxtMsg", msgTag: new MessageTag(true, true) },
-                ImageMessage: { typeName: "ImageMessage", objectName: "RC:ImgMsg", msgTag: new MessageTag(true, true) },
-                DiscussionNotificationMessage: { typeName: "DiscussionNotificationMessage", objectName: "RC:DizNtf", msgTag: new MessageTag(true, true) },
-                VoiceMessage: { typeName: "VoiceMessage", objectName: "RC:VcMsg", msgTag: new MessageTag(true, true) },
-                RichContentMessage: { typeName: "RichContentMessage", objectName: "RC:ImgTextMsg", msgTag: new MessageTag(true, true) },
-                HandshakeMessage: { typeName: "HandshakeMessage", objectName: "", msgTag: new MessageTag(true, true) },
-                UnknownMessage: { typeName: "UnknownMessage", objectName: "", msgTag: new MessageTag(true, true) },
-                SuspendMessage: { typeName: "SuspendMessage", objectName: "", msgTag: new MessageTag(true, true) },
-                LocationMessage: { typeName: "LocationMessage", objectName: "RC:LBSMsg", msgTag: new MessageTag(true, true) },
-                InformationNotificationMessage: { typeName: "InformationNotificationMessage", objectName: "RC:InfoNtf", msgTag: new MessageTag(true, true) },
-                ContactNotificationMessage: { typeName: "ContactNotificationMessage", objectName: "RC:ContactNtf", msgTag: new MessageTag(true, true) },
-                ProfileNotificationMessage: { typeName: "ProfileNotificationMessage", objectName: "RC:ProfileNtf", msgTag: new MessageTag(true, true) },
-                CommandNotificationMessage: { typeName: "CommandNotificationMessage", objectName: "RC:CmdNtf", msgTag: new MessageTag(true, true) },
-                CommandMessage: { typeName: "CommandNotificationMessage", objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) }
+                TextMessage: "TextMessage",
+                ImageMessage: "ImageMessage",
+                DiscussionNotificationMessage: "DiscussionNotificationMessage",
+                VoiceMessage: "VoiceMessage",
+                RichContentMessage: "RichContentMessage",
+                HandshakeMessage: "HandshakeMessage",
+                UnknownMessage: "UnknownMessage",
+                SuspendMessage: "SuspendMessage",
+                LocationMessage: "LocationMessage",
+                InformationNotificationMessage: "InformationNotificationMessage",
+                ContactNotificationMessage: "ContactNotificationMessage",
+                ProfileNotificationMessage: "ProfileNotificationMessage",
+                CommandNotificationMessage: "CommandNotificationMessage",
+                CommandMessage: "CommandNotificationMessage"
             };
         }
 
@@ -131,7 +145,8 @@ module RongIMLib {
                 throw new Error("The index of 3 parameter was wrong type  must be object or function or array-> registerMessageType");
             }
             RongIMClient.RegisterMessage[messageType].messageName = messageType;
-            RongIMClient.MessageType[messageType] = { typeName: messageType, objectName: objectName, msgTag: messageTag };
+            RongIMClient.MessageType[messageType] = messageType;
+            RongIMClient.MessageParams[messageType] = { objectName: objectName, msgTag: messageTag };
             registerMessageTypeMapping[objectName] = messageType;
         }
 
@@ -295,8 +310,8 @@ module RongIMLib {
             }
             RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, messageContent);
             var modules = new Modules.UpStreamMessage();
-            modules.setSessionId(RongIMClient.MessageType[messageContent.messageName].msgTag.getMessageTag());
-            modules.setClassname(RongIMClient.MessageType[messageContent.messageName].objectName);
+            modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
+            modules.setClassname(RongIMClient.MessageParams[messageContent.messageName].objectName);
             modules.setContent(messageContent.encode());
             var content: any = modules.toArrayBuffer();
             if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
@@ -311,7 +326,7 @@ module RongIMLib {
             msg.content = messageContent;
             msg.conversationType = conversationType;
             msg.senderUserId = Bridge._client.userId;
-            msg.objectName = RongIMClient.MessageType[messageContent.messageName].objectName;
+            msg.objectName = RongIMClient.MessageParams[messageContent.messageName].objectName;
             msg.targetId = targetId;
             msg.sentTime = new Date().getTime();
             msg.messageDirection = MessageDirection.SEND;

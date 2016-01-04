@@ -1,14 +1,4 @@
-/**
- * Created by yataozhang on 15/1/23.
- */
-(function (d) {
-    if (!('now' in Date)) {
-        Date.now = function () {
-            var d = new Date();
-            return d.getTime();
-        }
-    }
-    var e = {
+var Polling = {
         SearchMpInput:function(){
             var a = {};
             this.setType = function (b) {
@@ -638,8 +628,8 @@
             }
         }
     };
-    for (var f in e) {
-        e[f].decode = function (b) {
+    for (var f in Polling) {
+        Polling[f].decode = function (b) {
             var back = {}, val = JSON.parse(b) || eval("(" + b + ")");
             for (var i in val) {
                 back[i]=val[i];
@@ -650,18 +640,3 @@
             return back;
         }
     }
-    d.Modules = e;
-})(window);
-(function (g) {
-    if (g.RongIMClient) {
-        if (RongIMClient.connect.token) {
-            RongIMClient.getInstance().connect(RongIMClient.connect.token, RongIMClient.connect.callback);
-        }
-    } else {
-        require(['RongIMLib'], function (r) {
-            if (r.connect.token) {
-                r.getInstance().connect(r.connect.token, r.connect.callback);
-            }
-        })
-    }
-})(this);

@@ -1,11 +1,22 @@
 /**@overview 融云 RongCloud Web SDK API 开发文档 2.0.0*/
+/** @global */
+/**
+ * 消息通道强制设置为长链接方式，默认为web socket->xhr-polling层层降级方式.设置方式为window.WEB_XHR_POLLING=true;
+ * @example
+ * //在引入RongIMLib.js之前加入如下代码：
+ * <script>window["WEB_XHR_POLLING"] = true</script>
+ */
+var WEB_XHR_POLLING = true;
+
+
+
 /**
  *RongIMClient对象，web SDK 核心处理类；SDK 上所有的方法、对象、属性、模块都是依附于该对象。
  * @constructor
  */
 function RongIMClient() {
   /**
-   * [schemeType 选择连接方式]
+   * schemeType 选择连接方式
    * SSL需要设置schemeType为ConnectionChannel.HTTPS
    * HTTP或WS需要设置 schemeType为ConnectionChannel.HTTP(默认)
    * 若改变连接方式此属性必须在RongIMClient.init之前赋值
@@ -20,48 +31,20 @@ function RongIMClient() {
    * 自消息类型，接收消息用到。
    */
   RongIMClient.MessageType = {
-    TextMessage: {
-      typeName: "TextMessage"
-    },
-    ImageMessage: {
-      typeName: "ImageMessage"
-    },
-    DiscussionNotificationMessage: {
-      typeName: "DiscussionNotificationMessage"
-    },
-    VoiceMessage: {
-      typeName: "VoiceMessage"
-    },
-    RichContentMessage: {
-      typeName: "RichContentMessage"
-    },
-    HandshakeMessage: {
-      typeName: "HandshakeMessage"
-    },
-    UnknownMessage: {
-      typeName: "UnknownMessage"
-    },
-    SuspendMessage: {
-      typeName: "SuspendMessage"
-    },
-    LocationMessage: {
-      typeName: "LocationMessage"
-    },
-    InformationNotificationMessage: {
-      typeName: "InformationNotificationMessage"
-    },
-    ContactNotificationMessage: {
-      typeName: "ContactNotificationMessage"
-    },
-    ProfileNotificationMessage: {
-      typeName: "ProfileNotificationMessage"
-    },
-    CommandNotificationMessage: {
-      typeName: "CommandNotificationMessage"
-    },
-    CommandMessage: {
-      typeName: "CommandNotificationMessage"
-    }
+    TextMessage:"TextMessage",
+    ImageMessage:"ImageMessage",
+    DiscussionNotificationMessage: "DiscussionNotificationMessage",
+    VoiceMessage:"VoiceMessage",
+    RichContentMessage: "RichContentMessage",
+    HandshakeMessage: "HandshakeMessage",
+    UnknownMessage: "UnknownMessage",
+    SuspendMessage:"SuspendMessage",
+    LocationMessage:"LocationMessage",
+    InformationNotificationMessage:"InformationNotificationMessage",
+    ContactNotificationMessage: "ContactNotificationMessage",
+    ProfileNotificationMessage:"ProfileNotificationMessage",
+    CommandNotificationMessage:  "CommandNotificationMessage",
+    CommandMessage: "CommandNotificationMessage"
   };
 }
 /**
@@ -78,7 +61,7 @@ RongIMClient.getInstance = function() {
 };
 /**
  * 初始化 SDK，在整个应用全局只需要调用一次。
- * @param  {string} appKey  开发者后台申请的 AppKey，用来标识应用。
+ * @param  {string} appKey  开发者后台申请的 AppKey，用来标识应用
  * @param {object} dataAccessProvider 必须是DataAccessProvider的实例
  */
 RongIMClient.init = function(appKey, dataAccessProvider) {};
@@ -87,35 +70,58 @@ RongIMClient.init = function(appKey, dataAccessProvider) {};
  * @param  {string}   token   从服务端获取的用户身份令牌（Token）。
  * @param  {object}  callback 连接回调，返回连接的成功或者失败状态。
  * @example
- * RongIMClient.connect('TOKEN',{
- * onSuccess:function(){
- * 	//连接成功
- * },
- * onError:function(){
- * 	//连接失败
- * }
- * });
+  RongIMClient.connect('TOKEN', {
+    onSuccess: function(userId) {
+      console.log("Login successfully." + userId);
+    },
+    onTokenIncorrect: function() {
+      console.log('token无效');
+    },
+    onError:function(errorCode){
+          var info = '';
+          switch (errorCode) {
+            case RongIMLib.ErrorCode.TIMEOUT:
+              info = '超时';
+              break;
+            case RongIMLib.ErrorCode.UNKNOWN_ERROR:
+              info = '未知错误';
+              break;
+            case RongIMLib.ErrorCode.UNACCEPTABLE_PaROTOCOL_VERSION:
+              info = '不可接受的协议版本';
+              break;
+            case RongIMLib.ErrorCode.IDENTIFIER_REJECTED:
+              info = 'appkey不正确';
+              break;
+            case RongIMLib.ErrorCode.SERVER_UNAVAILABLE:
+              info = '服务器不可用';
+              break;
+          }
+          console.log(errorCode);
+        }
+  });
  */
 RongIMClient.connect = function(token, callback) {
-  RongIMLib.CheckParam.getInstance().check(["string", "object"], "connect",
-    true);
-  RongIMClient.bridge = RongIMLib.Bridge.getInstance();
-  RongIMClient.bridge.connect(RongIMClient._memoryStore.appKey, token, {
-    onSuccess: function(data) {
-      callback.onSuccess(data);
-    },
-    onError: function(e) {
-      callback.onTokenIncorrect(e);
+    RongIMLib.CheckParam.getInstance().check(["string", "object"], "connect", true);
+    RongIMClient.bridge = RongIMLib.Bridge.getInstance();
+    RongIMClient.bridge.connect(RongIMClient._memoryStore.appKey, token, {
+        onSuccess: function (data) {
+            callback.onSuccess(data);
+        },
+        onError: function (e) {
+            if (e == RongIMLib.ConnectionState.TOKEN_INCORRECT || !e) {
+                callback.onTokenIncorrect();
+            }
+            else {
+                callback.onError(e);
+            }
+        }
+    });
+    //循环设置监听事件，追加之后清空存放事件数据
+    for (var i = 0, len = RongIMClient._memoryStore.listenerList.length; i < len; i++) {
+        RongIMClient.bridge["setListener"](RongIMClient._memoryStore.listenerList[i]);
     }
-  });
-  //循环设置监听事件，追加之后清空存放事件数据
-  for (var i = 0, len = RongIMClient._memoryStore.listenerList.length; i <
-    len; i++) {
-    RongIMClient.bridge["setListener"](RongIMClient._memoryStore.listenerList[
-      i]);
-  }
-  RongIMClient._memoryStore.listenerList.length = 0;
-  return RongIMClient._instance;
+    RongIMClient._memoryStore.listenerList.length = 0;
+    return RongIMClient._instance;
 };
 /**
  * 重新连接服务器，需在connect之后才能执行reconnect。
@@ -137,76 +143,98 @@ RongIMClient.reconnect = function(callback) {
  * 注册消息类型，用于注册用户自定义的消息。
  * 内建的消息类型已经注册过，不需要再次注册。
  * 自定义消息声明需放在执行顺序最高的位置（在RongIMClient.init(appkey)之后即可）
- * @param {string}  objectName 内置消息名称。
  * @param {string}  messageType 消息类型（与自定义消息类名一致）。
- * @param {MessageTag}  messageTag设置是否保存是否计数
- * @param {string|array}  messageContent 此参数有一参二用的功效，自定义消息结构及解析方式请传入自定义消息的实例，使用融云内置消息结构及解析方式，直接传入属性数组即可，例如：["col1","col2"]。
+ * @param {string}  objectName 内置消息名称。
+ * @param {MessageTag}  messageTag 设置是否保存是否计数
+ * @param {string|array}  messageContent 此参数有一参二用的功能，自定义消息结构及解析方式请传入自定义消息的实例，使用融云内置消息结构及解析方式，直接传入属性数组即可，例如：["name","age"]。
  * @example
- * //以下两种方式2选1即可：
- * //(1) 自定义消息结构及解析方式
-   //  自定义消息结构，首先要定义消息类，其次是注册，EmptyMessage为自定义消息名称。
-   //  以下代码为示例代码，实际应用中可能有不规范之处，敬请谅解，自定义消息类型，格式必须与此一样，可修改的内容有：
- 	//  1、消息类名称可修改为 RongIMClient.RegisterMessage.***Message=function(message){
- 	  			// do something...
- 	//  }。
- 	//  2、messageName需要与消息类名称一致。
- 	//  3、encode方法的实现可以自定义（封装消息，发送消息时用到）。
- 	//  4、decode方法的实现可以自定义（解析消息，接受消息时用到）。
-     RongIMClient.RegisterMessage.EmptyMessage = function(message){
-        this.messageName = "EmptyMessage";
-        this.encode = function(){
-           return "name="+message.name+";age="+message.age;
-        }
-        this.decode = function(message){
-          if (typeof message != "string") {
-             return message;
-          }
-          var strArrs = message.split(";"),msg = new RongIMClient.RegisterMessage.EmptyMessage();
-          for(var p in strArrs){
-             msg[strArrs[p].split("=")[0]]=strArrs[p].split("=")[1];
-          }
-          return msg;
-        }
-    }
-     RongIMClient.registerMessageType('s:empty','EmptyMessage',new RongIMLib.MessageTag(true,true),new RongIMClient.RegisterMessage.EmptyMessage);
-   //(2) SDK内置消息结构及解析方式
-     RongIMClient.registerMessageType('s:empty','EmptyMessage',new RongIMLib.MessageTag(true,true),["name","age"]);
+//自定义消息支持方式
+//(1) 自定义消息结构及解析方式。<br/>
+//(2) SDK 内置消息结构及解析方式。<br/>
+//自定消息类型参数说明
+//`RongIMClient.registerMessageType('messageType','objectName','messageTag','message|[]')`<br/>
+//(1) `messageType`:消息类型（与自定义消息类名一致）。<br/>
+//(2) `objectName`:消息内置名称。<br/>
+//(3) `messageTag`:设置是否保存是否计数。<br/>
+//(4) `message|[]`:此参数有一参二用的功能，自定义消息结构及解析方式请传入自定义消息的实例，使用融云内置消息结构及解析方式，直接传入属性数组即可["name","age"]。<br/>
+//自定消息注意事项
+//(1) 自定义消息结构: 任意形式，在 decode 中解析可即可。<br/>
+//(2) SDK 内置消息结构: JSON 类型的字符串 `JSON.stringify({name:"zhangsan",age:12})`<br/>
+//(3) 自定义消息注册位置: RongIMClient.init("appkey") 之后的第一行位置注册即可。<br/>
+
+//注册自定义消息示例(消息结构自定义)
+//自定义消息结构，首先要定义消息类，其次是注册，EmptyMessage为自定义消息名称。<br/>
+//以下代码为示例代码，实际应用中可能有不规范之处，敬请谅解，自定义消息类型，格式必须与此一样，可修改的内容有：<br/>
+//1、消息类名称可修改为 RongIMClient.RegisterMessage.***Message=function(message){<br/>
+//	dosomething....<br/>
+//}。<br/>
+//2、messageName的值必须与消息类名称一致。<br/>
+//3、encode方法的实现可以自定义（编译消息，发送消息时用到）。<br/>
+//4、decode方法的实现可以自定义（解析消息，接受消息时用到）。<br/>
+//1、创建消息
+RongIMClient.RegisterMessage.PersonMessage = function(message){
+       this.messageName = "PersonMessage";
+       this.encode = function(){
+          return "name="+message.name+";age="+message.age;
+       }
+       this.decode = function(message){
+         if (typeof message != "string") {
+            return message;
+         }
+         var strArrs = message.split(";"),msg = new RongIMClient.RegisterMessage.PersonMessage();
+         for(var p in strArrs){
+            msg[strArrs[p].split("=")[0]]=strArrs[p].split("=")[1];
+         }
+         return msg;
+       }
+   }
+RongIMClient.registerMessageType('PersonMessage','s:empty',new RongIMLib.MessageTag(true,true),new RongIMClient.RegisterMessage.PersonMessage);
+//发送消息
+var msg = new RongIMClient.RegisterMessage.PersonMessage({name:"zhang",age:12});
+RongIMClient.getInstance().sendMessage('convertype','targetId', msg, null, {
+            onSuccess: function (data) {
+            },
+            onError: function (errorCode) {
+            }
+        });
+
+//注册自定义消息示例(内置消息结构)
+//创建消息
+RongIMClient.registerMessageType('s:empty','PersonMessage',new RongIMLib.MessageTag(true,true),["name","age"]);
+//发送消息
+var msg = new RongIMClient.RegisterMessage.PersonMessage({name:"zhang",age:12});
+RongIMClient.getInstance().sendMessage('convertype','targetId', msg, null, {
+            onSuccess: function (data) {
+            },
+            onError: function (errorCode) {
+            }
+        });
  */
-RongIMClient.registerMessageType = function(objectName, messageType, messageTag,
-  messageContent) {
-  if (!objectName) {
-    throw new Error(
-      "objectName can't be empty,postion -> registerMessageType");
-  }
+RongIMClient.registerMessageType = function(messageType, objectName, messageTag,  messageContent) {
   if (!messageType) {
-    throw new Error(
-      "messageType can't be empty,postion -> registerMessageType");
+      throw new Error("messageType can't be empty,postion -> registerMessageType");
+  }
+  if (!objectName) {
+      throw new Error("objectName can't be empty,postion -> registerMessageType");
   }
   if (Object.prototype.toString.call(messageContent) == "[object Array]") {
-    var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent);
-    RongIMClient.RegisterMessage[messageType] = regMsg;
-  } else if (Object.prototype.toString.call(messageContent) ==
-    "[object Function]" || Object.prototype.toString.call(messageContent) ==
-    "[object Object]") {
-    if (!messageContent.encode) {
-      throw new Error(
-        "encode method has not realized or messageName is undefined-> registerMessageType"
-      );
-    }
-    if (!messageContent.decode) {
-      throw new Error("decode method has not realized -> registerMessageType");
-    }
-  } else {
-    throw new Error(
-      "The index of 3 parameter was wrong type  must be object or function or array-> registerMessageType"
-    );
+      var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent);
+      RongIMClient.RegisterMessage[messageType] = regMsg;
+  }
+  else if (Object.prototype.toString.call(messageContent) == "[object Function]" || Object.prototype.toString.call(messageContent) == "[object Object]") {
+      if (!messageContent.encode) {
+          throw new Error("encode method has not realized or messageName is undefined-> registerMessageType");
+      }
+      if (!messageContent.decode) {
+          throw new Error("decode method has not realized -> registerMessageType");
+      }
+  }
+  else {
+      throw new Error("The index of 3 parameter was wrong type  must be object or function or array-> registerMessageType");
   }
   RongIMClient.RegisterMessage[messageType].messageName = messageType;
-  RongIMClient.MessageType[messageType] = {
-    typeName: messageType,
-    objectName: objectName,
-    msgTag: messageTag
-  };
+  RongIMClient.MessageType[messageType] = messageType;
+  RongIMClient.MessageParams[messageType] = { objectName: objectName, msgTag: messageTag };
   registerMessageTypeMapping[objectName] = messageType;
 };
 /**
@@ -227,7 +255,7 @@ RongIMClient.setConnectionStatusListener = function(listener) {
 };
 /**
  * 设置接收消息的监听器。
- * @param {object} listener  接收消息的监听器。
+ * @param {object} listener  接收消息的监听器
  * @example
  * RongIMClient.getInstance().setOnReceiveMessageListener({
  * onReceived:function(message){
@@ -293,7 +321,7 @@ RongIMClient.prototype.getCurrentUserId = function() {
 };
 /**
  * getCurrentUserInfo 获取当前用户信息
- * @param  {ResultCallback<UserInfo>} callback [回调函数]
+ * @param  {ResultCallback<UserInfo>} callback 回调函数
  * @example
  * RongIMClient.getInstance().getCurrentUserInfo({
  * 		onSuccess:function(info){
@@ -310,8 +338,8 @@ RongIMClient.prototype.getCurrentUserInfo = function(callback) {
 };
 /**
  * 获得用户信息
- * @param  {string}                   userId [用户Id]
- * @param  {ResultCallback<UserInfo>} callback [回调函数]
+ * @param  {string}                   userId 用户Id
+ * @param  {ResultCallback<UserInfo>} callback 回调函数
  * @example
  * RongIMClient.getInstance().getCurrentUserInfo('targetId',{
  * 		onSuccess:function(info){
@@ -341,16 +369,16 @@ RongIMClient.prototype.getUserInfo = function(userId, callback) {
 };
 /**
  * 获取本地时间与服务器时间的差值，单位为毫秒。
- * @param {object} callback  获取的回调，返回时间差值。
+ * @param {object} callback  获取的回调，返回时间差值
  */
 RongIMClient.prototype.getDeltaTime = function(callback) {
 
 };
 /**
  * 指定清除本地会话中的历史消息。
- * @param {number} conversationType 会话类型。
- * @param {string} targetId 目标Id。
- * @param {object} callback 获取的回调。
+ * @param {number} conversationType 会话类型
+ * @param {string} targetId 目标Id
+ * @param {object} callback 获取的回调
  * @example
  * RongIMClient.getInstance().clearMessages("conversationType","targetId",{
  *    onSuccess:function(isClear){
@@ -368,9 +396,9 @@ RongIMClient.prototype.clearMessages = function(conversationType, targetId,
 };
 /**
  * 指定清除本地会话中的未读消息状态。
- * @param {number} conversationType 会话类型。
- * @param {string} targetId 目标Id。
- * @param {object} callback 获取的回调。
+ * @param {number} conversationType 会话类型
+ * @param {string} targetId 目标Id
+ * @param {object} callback 获取的回调
  * @example
  * RongIMClient.getInstance().clearMessagesUnreadStatus("conversationType","targetId",{
  *    onSuccess:function(isClear){
@@ -388,10 +416,10 @@ RongIMClient.prototype.clearMessagesUnreadStatus = function(conversationType,
 };
 /**
  * 指定删除本地会话中的一条货多条消息。
- * @param {number} conversationType 会话类型。
- * @param {string} targetId 目标Id。
- * @param {array}  messageIds 消息Id数组。
- * @param {object} callback获取的回调。
+ * @param {number} conversationType 会话类型
+ * @param {string} targetId 目标Id
+ * @param {array}  messageIds 消息Id数组
+ * @param {object} callback获取的回调
  * @example
  * RongIMClient.getInstance().deleteMessages("conversationType","targetId",["messageId1","messageId2"],{
  *    onSuccess:function(){
@@ -413,58 +441,69 @@ RongIMClient.prototype.deleteMessages = function(conversationType, targetId,
  * @param  {SendMessageCallback}     sendCallback
  * @param  {ResultCallback<Message>} resultCallback   返回值，函数回调
  * @example
- * RongIMLib.RongIMClient.getInstance().sendMessage("conversationType", "targetId", "msg对象", null, {
- *  onSuccess: function(data) {
- *    console.log("Send Successfully" +JSON.stringify(data));
+ * RongIMLib.RongIMClient.getInstance().sendMessage("conversationType", "targetId", "msg对象",{
+ *  onSuccess: function(message) {
+ *    console.log("Send Successfully" +JSON.stringify(message));
  *  },
- *  onError: function(errorcode) {
+ *  onError: function(errorcode,message) {
  *     console.log("SendMessage,errorcode:" + errorcode);
  *   }
  * });
  */
-RongIMClient.prototype.sendMessage = function(conversationType, targetId,
-  messageContent, sendCallback, resultCallback, pushContent, pushData) {
-  RongIMLib.CheckParam.getInstance().check(["number", "string", "object",
-    "null|object|global", "object"
-  ], "sendMessage");
-  if (!RongIMLib.Bridge._client.channel.socket.socket.connected) {
-    resultCallback.onError(RongIMLib.ErrorCode.TIMEOUT);
-    throw new Error("connect is timeout! postion:sendMessage");
-  }
-  var modules = new Modules.UpStreamMessage();
-  modules.setSessionId(RongIMClient.MessageType[messageContent.messageName].msgTag
-    .getMessageTag());
-  modules.setClassname(RongIMClient.MessageType[messageContent.messageName].objectName);
-  modules.setContent(messageContent.encode());
-  var content = modules.toArrayBuffer();
-  if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
-    content = [].slice.call(new Int8Array(content));
-  }
-  var c = null,
-    me = this,
-    msg;
-  this.getConversation(conversationType, targetId, {
-    onSuccess: function(conver) {
-      c = conver;
+RongIMClient.prototype.sendMessage = function(conversationType, targetId,messageContent, sendCallback, resultCallback, pushContent, pushData) {
+   RongIMLib.CheckParam.getInstance().check(["number", "string", "object", "object"], "sendMessage");
+    if (!RongIMLib.Bridge._client.channel.socket.socket.connected) {
+        sendCallback.onError(RongIMLib.ErrorCode.TIMEOUT, null);
+        throw new Error("connect is timeout! postion:sendMessage");
     }
-  });
-  if (!c) {
-    c = me.createConversation(conversationType, targetId, "");
-    msg = new RongIMLib.Message();
+    RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, messageContent);
+    var modules = new Modules.UpStreamMessage();
+    modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
+    modules.setClassname(RongIMClient.MessageParams[messageContent.messageName].objectName);
+    modules.setContent(messageContent.encode());
+    var content = modules.toArrayBuffer();
+    if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
+        content = [].slice.call(new Int8Array(content));
+    }
+    var c = null, me = this, msg = new RongIMLib.Message();
+    this.getConversation(conversationType, targetId, {
+        onSuccess: function (conver) {
+            c = conver;
+        }
+    });
+    msg.content = messageContent;
     msg.conversationType = conversationType;
-    msg.sentTime = new Date().getTime(); //TODO getDeltaTime 是否有关系
+    msg.senderUserId = RongIMLib.Bridge._client.userId;
+    msg.objectName = RongIMClient.MessageParams[messageContent.messageName].objectName;
+    msg.targetId = targetId;
+    msg.sentTime = new Date().getTime();
+    msg.messageDirection = RongIMLib.MessageDirection.SEND;
+    msg.sentStatus = RongIMLib.SentStatus.SENT;
+    if (!c) {
+        c = me.createConversation(conversationType, targetId, "");
+    }
+    c.sentTime = new Date().getTime();
+    c.sentStatus = RongIMLib.SentStatus.SENDING;
+    c.senderUserName = "";
+    c.senderUserId = RongIMLib.Bridge._client.userId;
+    c.notificationStatus = RongIMLib.ConversationNotificationStatus.DO_NOT_DISTURB;
     c.latestMessage = msg;
-  }
-  c.sentTime = new Date().getTime();
-  c.sentStatus = RongIMLib.SentStatus.SENDING;
-  c.senderUserName = "";
-  c.senderUserId = RongIMLib.Bridge._client.userId;
-  c.notificationStatus = RongIMLib.ConversationNotificationStatus.DO_NOT_DISTURB;
-  c.latestMessage.content = messageContent;
-  c.unreadMessageCount = 0;
-  c.setTop();
-  RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId,
-    resultCallback, null);
+    c.unreadMessageCount = 0;
+    c.setTop();
+    RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
+        onSuccess: function (data) {
+            msg.messageUId = data.messageUId;
+            msg.sentTime = data.timestamp;
+            msg.sentStatus = RongIMLib.SentStatus.SENT;
+            c.latestMessage = msg;
+            sendCallback.onSuccess(msg);
+        },
+        onError: function (errorCode) {
+            msg.sentStatus = RongIMLib.SentStatus.FAILED;
+            c.latestMessage = msg;
+            sendCallback.onError(errorCode, msg);
+        }
+    }, null);
 };
 /**
  * sendTextMessage 发送TextMessage快捷方式。
@@ -487,6 +526,25 @@ RongIMClient.prototype.sendTextMessage = function(conversationType, targetId,
   var msgContent = RongIMLib.TextMessage.obtain(content);
   this.sendMessage(conversationType, targetId, msgContent, null,
     resultCallback);
+};
+/**
+ * sendLocalMessage 发送本地消息
+ * @param  {MessageContent}                  message        消息对象
+ * @param  {object}  resultCallback  返回值，函数回调
+ * @example
+ * RongIMLib.RongIMClient.getInstance().sendLocalMessage(message, {
+ *   onSuccess: function(message) {
+ *     console.log("SendTextMessage Successfully");
+ *   },
+ *   onError: function(errorcode) {
+ *     console.log("SendTextMessage,errorcode:" + errorcode);
+ * }
+ * });
+ */
+RongIMClient.prototype.sendLocalMessage = function (message, callback) {
+    RongIMLib.CheckParam.getInstance().check(["object", "object"], "sendLocalMessage");
+    RongIMClient._dataAccessProvider.updateMessage(message);
+    this.sendMessage(message.conversationType, message.targetId, message.content, callback);
 };
 /**
  * insertMessage 向本地插入一条消息，不发送到服务器。
@@ -711,9 +769,9 @@ RongIMClient.prototype.clearTextMessageDraft = function(conversationType,
 };
 /**
  * getTextMessageDraft 获取指定消息和会话的草稿。
- * @param  {ConversationType}       conversationType [会话类型]
- * @param  {string}                 targetId         [目标Id]
- * @param  {ResultCallback<string>} callback         [返回值，参数回调]
+ * @param  {ConversationType}       conversationType 会话类型
+ * @param  {string}                 targetId         目标Id
+ * @param  {ResultCallback<string>} callback         返回值，参数回调
  * @example
  *   RongIMClient.getInstance().getTextMessageDraft("conversationType", "targetId", {
  *         onSuccess: function(draf) {
@@ -920,7 +978,7 @@ RongIMClient.prototype.setConversationToTop = function(conversationType,
 /**
  * 加入讨论组。
  * @param  {string}            discussionId 讨论组Id
- * @param  {string[]}          userIdList   讨论中成员
+ * @param  {array}          userIdList   讨论中成员
  * @param  {OperationCallback} callback     返回值，函数回调
  * @example
  * RongIMClient.getInstance().addMemberToDiscussion("讨论组Id", ["targetId1","targetId2"], {
@@ -950,9 +1008,9 @@ RongIMClient.prototype.addMemberToDiscussion = function(discussionId,
 };
 /**
  * 创建讨论组。
- * @param  {string}                   name       [讨论组名称]
- * @param  {string[]}                 userIdList [讨论组成员]
- * @param  {CreateDiscussionCallback} callback   [返回值，函数回调]
+ * @param  {string}                   name       讨论组名称
+ * @param  {string[]}                 userIdList 讨论组成员
+ * @param  {CreateDiscussionCallback} callback   返回值，函数回调
  * @example
  * RongIMClient.getInstance().createDiscussion("讨论组名称", ["targetId1", "targetId2"], {
  *   onSuccess: function(discussId) {
@@ -1275,7 +1333,7 @@ RongIMClient.prototype.getRemotePublicServiceList = function(callback) {
 };
 /**
  * 本地获取已经的公共账号列表
- * @param  {ResultCallback<PublicServiceProfile[]>} callback [返回值，参数回调]
+ * @param  {ResultCallback<PublicServiceProfile[]>} callback 返回值，参数回调
  * @example
  * RongIMClient.getInstance().getPublicServiceList({
  * 		onSuccess:function(list){
@@ -1292,9 +1350,9 @@ RongIMClient.prototype.getPublicServiceList = function(callback) {
 };
 /**
  * 获取某公共服务信息。
- * @param  {PublicServiceType}                    publicServiceType [公众服务类型。]
- * @param  {string}                               publicServiceId   [公共服务 Id。]
- * @param  {ResultCallback<PublicServiceProfile>} callback          [公共账号信息回调。]
+ * @param  {PublicServiceType}                    publicServiceType 公众服务类型
+ * @param  {string}                               publicServiceId   公共服务 Id
+ * @param  {ResultCallback<PublicServiceProfile>} callback          公共账号信息回调
  * @example
  * RongIMClient.getInstance().getPublicServiceProfile("conversationType","公众帐号Id",{
  * 		onSuccess:function(profile){
@@ -1314,11 +1372,11 @@ RongIMClient.prototype.getPublicServiceProfile = function(publicServiceType,
   callback.onSuccess(profile);
 };
 /**
- * [searchPublicServiceByType ]按公众服务类型搜索公众服务。
- * @param  {PublicServiceType}                      publicServiceType [公众服务类型。]
- * @param  {SearchType}                             searchType        [搜索类型枚举。]
- * @param  {string}                                 keywords          [搜索关键字。]
- * @param  {ResultCallback<PublicServiceProfile[]>} callback          [搜索结果回调。]
+ * searchPublicServiceByType 按公众服务类型搜索公众服务。
+ * @param  {PublicServiceType}                      publicServiceType 公众服务类型
+ * @param  {SearchType}                             searchType        搜索类型枚举
+ * @param  {string}                                 keywords          搜索关键字
+ * @param  {ResultCallback<PublicServiceProfile[]>} callback          搜索结果回调
  * @example
  * RongIMClient.getInstance().searchPublicServiceByType("conversationType","searchType","keywords",{
  * 		onSuccess:function(list){
@@ -1340,10 +1398,10 @@ RongIMClient.prototype.searchPublicService = function(searchType, keywords,
     RongIMLib.Bridge._client.userId, callback, "SearchMpOutput");
 };
 /**
- * [subscribePublicService ] 订阅公众号。
- * @param  {PublicServiceType} publicServiceType [公众服务类型。]
- * @param  {string}            publicServiceId   [公共服务 Id。]
- * @param  {OperationCallback} callback          [订阅公众号回调。]
+ * subscribePublicService 订阅公众号。
+ * @param  {PublicServiceType} publicServiceType 公众服务类型
+ * @param  {string}            publicServiceId   公共服务 Id
+ * @param  {OperationCallback} callback          订阅公众号回调
  * @example
  * RongIMClient.getInstance().subscribePublicService("conversationType","公众账号Id",{
  * 		onSuccess:function(){
@@ -1379,10 +1437,10 @@ RongIMClient.prototype.subscribePublicService = function(publicServiceType,
   }, "MPFollowOutput");
 };
 /**
- * [unsubscribePublicService ] 取消订阅公众号。
- * @param  {PublicServiceType} publicServiceType [公众服务类型。]
- * @param  {string}            publicServiceId   [公共服务 Id。]
- * @param  {OperationCallback} callback          [取消订阅公众号回调。]
+ * unsubscribePublicService 取消订阅公众号。
+ * @param  {PublicServiceType} publicServiceType 公众服务类型
+ * @param  {string}            publicServiceId   公共服务 Id
+ * @param  {OperationCallback} callback          取消订阅公众号回调
  * @example
  * RongIMClient.getInstance().unsubscribePublicService("conversationType","公众账号Id",{
  * 		onSuccess:function(){
@@ -1415,9 +1473,9 @@ RongIMClient.prototype.unsubscribePublicService = function(publicServiceType,
   }, "MPFollowOutput");
 };
 /**
- * [加入黑名单]
- * @param  {string}            userId   [将被加入黑名单的用户Id]
- * @param  {OperationCallback} callback [返回值，函数回调]
+ * 加入黑名单
+ * @param  {string}            userId   将被加入黑名单的用户Id
+ * @param  {OperationCallback} callback 返回值，函数回调
  * @example
  * RongIMClient.getInstance().addToBlacklist("targetId", {
  *   onSuccess: function() {
@@ -1445,8 +1503,8 @@ RongIMClient.prototype.addToBlacklist = function(userId, callback) {
   });
 };
 /**
- * [获取黑名单列表]
- * @param  {GetBlacklistCallback} callback [返回值，函数回调]
+ * 获取黑名单列表
+ * @param  {GetBlacklistCallback} callback 返回值，函数回调
  * @example
  * RongIMClient.getInstance().getBlacklist({
  *  onSuccess: function(data) {
@@ -1465,9 +1523,9 @@ RongIMClient.prototype.getBlacklist = function(callback) {
     RongIMLib.Bridge._client.userId, callback, "QueryBlackListOutput");
 };
 /**
- * [得到指定人员再黑名单中的状态]
- * @param  {string}                          userId   [description]
- * @param  {ResultCallback<BlacklistStatus>} callback [返回值，函数回调]
+ * 得到指定人员再黑名单中的状态
+ * @param  {string}                          userId   用户Id
+ * @param  {ResultCallback<BlacklistStatus>} callback 返回值，函数回调
  * @example
  * RongIMClient.getInstance().getBlacklistStatus({
  *  onSuccess: function(data) {
@@ -1502,9 +1560,9 @@ RongIMClient.prototype.getBlacklistStatus = function(userId, callback) {
   });
 };
 /**
- * [将指定用户移除黑名单]
- * @param  {string}            userId   [将被移除的用户Id]
- * @param  {OperationCallback} callback [返回值，函数回调]
+ * 将指定用户移除黑名单
+ * @param  {string}            userId   将被移除的用户Id
+ * @param  {OperationCallback} callback 返回值，函数回调
  * @example
  * RongIMClient.getInstance().removeFromBlacklist("targetId", {
  *   onSuccess: function() {
@@ -2065,6 +2123,22 @@ MessageContent.obtain = function() {
 /**
  * 会话的实体，用来容纳和存储客户端的会话信息，对应会话列表中的会话。
  * @constructor
+  * @param {string} conversationTitle         会话标题
+  * @param {number} conversationType 会话类型
+  * @param {string} draft           草稿
+  * @param {MesssageContent} latestMessage    最后一条消息
+  * @param {string} latestMessageId 最后一条消息Id
+  * @param {ConversationNotificationStatus} notificationStatus     消息通知状态
+  * @param {string} objectName   内置消息名称
+  * @param {number} receivedTime     消息接收时间
+  * @param {string} senderUserId     发送者Id
+  * @param {string} senderUserName   发送者名称
+  * @param {SentStatus} sentStatus    消息发送状态
+  * @param {string} senderPortraitUri     发送者头像
+  * @param {number} sentTime         发送时间
+  * @param {string} targetId     目标Id
+  * @param {number} unreadMessageCount    未读消息数量
+
  */
 function Conversation(conversationTitle, conversationType, draft, isTop,
   latestMessage, latestMessageId, notificationStatus, objectName,
@@ -2164,9 +2238,15 @@ Conversation.prototype.setTop = function() {
     onSuccess: function(data) {}
   });
 };
+
 /**
  *讨论组实体，用来容纳和存储讨论组的信息和设置。
  * @constructor
+  * @param {string} creatorId         创建者Id
+  * @param {array} id 讨论组Id
+  * @param {array} memberIdList 成员数组
+  * @param {string} name           讨论组名称
+  * @param {string} isOpen       是否打开邀请
  */
 function Discussion(creatorId, id, memberIdList, name, isOpen) {
   /**
@@ -2198,6 +2278,9 @@ function Discussion(creatorId, id, memberIdList, name, isOpen) {
 /**
  * 群组实体，用来容纳和存储群组的信息。
  * @constructor
+ *  @param {string} id         群组Id
+  * @param {string} name 群组名称
+  * @param {string} portraitUri    群组头像
  */
 function Group(id, name, portraitUri) {
   /**
@@ -2410,3 +2493,559 @@ function UserInfo(userId, name, portraitUri) {
    */
   this.portraitUri = portraitUri;
 }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var BlacklistStatus  = {
+      /**
+       * 在黑名单中。
+       */
+      IN_BLACK_LIST = 0,
+
+      /**
+       * 不在黑名单中。
+       */
+      NOT_IN_BLACK_LIST = 1
+  };
+  /**
+   * @enum
+   * @type {number}
+   */
+  var ConnectionChannel ={
+      /**
+       * 使用Htpp
+       */
+      HTTP = 0,
+        /**
+         * 使用Htpps
+         */
+      HTTPS = 1
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var ConnectionStatus= {
+      /**
+       * 连接成功。
+       */
+      CONNECTED = 0,
+
+      /**
+       * 连接中。
+       */
+      CONNECTING = 1,
+
+      /**
+       * 断开连接。
+       */
+      DISCONNECTED = 2,
+
+      /**
+       * 用户账户在其他设备登录，本机会被踢掉线。
+       */
+      KICKED_OFFLINE_BY_OTHER_CLIENT = 6,
+
+      /**
+       * 网络不可用。
+       */
+      NETWORK_UNAVAILABLE = -1
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var ConversationNotificationStatus ={
+      /**
+       * 免打扰状态，关闭对应会话的通知提醒。
+       */
+      DO_NOT_DISTURB,
+
+      /**
+       * 提醒。
+       */
+      NOTIFY
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var ConversationType ={
+      /**
+       * none
+       */
+      NONE = -1,
+      /**
+       * 聊天室
+       */
+      CHATROOM = 0,
+      /**
+       * 讨论组
+       */
+      DISCUSSION = 2,
+      /**
+       * 群组
+       */
+      GROUP = 3,
+      /**
+       * 私聊
+       */
+      PRIVATE = 4,
+      /**
+       * 系统消息
+       */
+      SYSTEM = 5,
+      /**
+       * 应用内公众账号（默认关注）
+       */
+      APP_PUBLIC_SERVICE = 7,
+      /**
+       * 公众账号（手动关注）
+       */
+      PUBLIC_SERVICE = 8
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var DiscussionInviteStatus = {
+      /**
+       * 开放邀请。
+       */
+      OPENED = 0,
+
+      /**
+       * 关闭邀请。
+       */
+      CLOSED = 1
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var ErrorCode = {
+  /**
+   * 超时
+   */
+   TIMEOUT = -1,
+      /**
+       * 未知原因失败。
+       */
+      UNKNOWN = -2,
+
+      /**
+       * 不在讨论组。
+       */
+      NOT_IN_DISCUSSION = 21406,
+      /**
+       * 加入讨论失败
+       */
+      JOIN_IN_DISCUSSION = 21407,
+      /**
+       * 创建讨论组失败
+       */
+      CREATE_DISCUSSION = 21408,
+      /**
+       * 设置讨论组邀请状态失败
+       */
+      INVITE_DICUSSION = 21409,
+      /**
+       * 不在群组。
+       */
+      NOT_IN_GROUP = 22406,
+
+      /**
+       * 不在聊天室。
+       */
+      NOT_IN_CHATROOM = 23406,
+      /**
+       *获取用户失败
+       */
+      GET_USERINFO_ERROR = 23407,
+      /**
+       * 在黑名单中。
+       */
+      REJECTED_BY_BLACKLIST = 405,
+
+      /**
+       * 通信过程中，当前 Socket 不存在。
+       */
+      RC_NET_CHANNEL_INVALID = 30001,
+
+      /**
+       * Socket 连接不可用。
+       */
+      RC_NET_UNAVAILABLE = 30002,
+
+      /**
+       * 通信超时。
+       */
+      RC_MSG_RESP_TIMEOUT = 30003,
+
+      /**
+       * 导航操作时，Http 请求失败。
+       */
+      RC_HTTP_SEND_FAIL = 30004,
+
+      /**
+       * HTTP 请求失败。
+       */
+      RC_HTTP_REQ_TIMEOUT = 30005,
+
+      /**
+       * HTTP 接收失败。
+       */
+      RC_HTTP_RECV_FAIL = 30006,
+
+      /**
+       * 导航操作的 HTTP 请求，返回不是200。
+       */
+      RC_NAVI_RESOURCE_ERROR = 30007,
+
+      /**
+       * 导航数据解析后，其中不存在有效数据。
+       */
+      RC_NODE_NOT_FOUND = 30008,
+
+      /**
+       * 导航数据解析后，其中不存在有效 IP 地址。
+       */
+      RC_DOMAIN_NOT_RESOLVE = 30009,
+
+      /**
+       * 创建 Socket 失败。
+       */
+      RC_SOCKET_NOT_CREATED = 30010,
+
+      /**
+       * Socket 被断开。
+       */
+      RC_SOCKET_DISCONNECTED = 30011,
+
+      /**
+       * PING 操作失败。
+       */
+      RC_PING_SEND_FAIL = 30012,
+
+      /**
+       * PING 超时。
+       */
+      RC_PONG_RECV_FAIL = 30013,
+      /**
+       * 消息发送失败。
+       */
+      RC_MSG_SEND_FAIL = 30014,
+
+      /**
+       * 做 connect 连接时，收到的 ACK 超时。
+       */
+      RC_CONN_ACK_TIMEOUT = 31000,
+
+      /**
+       * 参数错误。
+       */
+      RC_CONN_PROTO_VERSION_ERROR = 31001,
+
+      /**
+       * 参数错误，App Id 错误。
+       */
+      RC_CONN_ID_REJECT = 31002,
+
+      /**
+       * 服务器不可用。
+       */
+      RC_CONN_SERVER_UNAVAILABLE = 31003,
+
+      /**
+       * Token 错误。
+       */
+      RC_CONN_USER_OR_PASSWD_ERROR = 31004,
+
+      /**
+       * App Id 与 Token 不匹配。
+       */
+      RC_CONN_NOT_AUTHRORIZED = 31005,
+
+      /**
+       * 重定向，地址错误。
+       */
+      RC_CONN_REDIRECTED = 31006,
+
+      /**
+       * NAME 与后台注册信息不一致。
+       */
+      RC_CONN_PACKAGE_NAME_INVALID = 31007,
+
+      /**
+       * APP 被屏蔽、删除或不存在。
+       */
+      RC_CONN_APP_BLOCKED_OR_DELETED = 31008,
+
+      /**
+       * 用户被屏蔽。
+       */
+      RC_CONN_USER_BLOCKED = 31009,
+
+      /**
+       * Disconnect，由服务器返回，比如用户互踢。
+       */
+      RC_DISCONN_KICK = 31010,
+
+      /**
+       * Disconnect，由服务器返回，比如用户互踢。
+       */
+      RC_DISCONN_EXCEPTION = 31011,
+
+      /**
+       * 协议层内部错误。query，上传下载过程中数据错误。
+       */
+      RC_QUERY_ACK_NO_DATA = 32001,
+
+      /**
+       * 协议层内部错误。
+       */
+      RC_MSG_DATA_INCOMPLETE = 32002,
+
+      /**
+       * 未调用 init 初始化函数。
+       */
+      BIZ_ERROR_CLIENT_NOT_INIT = 33001,
+
+      /**
+       * 数据库初始化失败。
+       */
+      BIZ_ERROR_DATABASE_ERROR = 33002,
+
+      /**
+       * 传入参数无效。
+       */
+      BIZ_ERROR_INVALID_PARAMETER = 33003,
+
+      /**
+       * 通道无效。
+       */
+      BIZ_ERROR_NO_CHANNEL = 33004,
+
+      /**
+       * 重新连接成功。
+       */
+      BIZ_ERROR_RECONNECT_SUCCESS = 33005,
+      /**
+       * 连接中，再调用 connect 被拒绝。
+       */
+      BIZ_ERROR_CONNECTING = 33006,
+      /**
+       * 消息漫游服务未开通
+       */
+      MSG_ROAMING_SERVICE_UNAVAILABLE = 33007,
+      /**
+       * 群组被禁言
+       */
+      FORBIDDEN_IN_GROUP = 22408,
+      /**
+       * 删除会话失败
+       */
+      CONVER_REMOVE_ERROR = 34001,
+      /**
+       *拉取历史消息
+       */
+      CONVER_GETLIST_ERROR = 34002,
+      /**
+       * 会话指定异常
+       */
+      CONVER_SETOP_ERROR = 34003,
+      /**
+       * 获取会话未读消息总数失败
+       */
+      CONVER_TOTAL_UNREAD_ERROR = 34004,
+      /**
+       * 获取指定会话类型未读消息数异常
+       */
+      CONVER_TYPE_UNREAD_ERROR = 34005,
+      /**
+       * 获取指定用户ID&会话类型未读消息数异常
+       */
+      CONVER_ID_TYPE_UNREAD_ERROR = 34006,
+      //群组异常信息
+      /**
+       *
+       */
+      GROUP_SYNC_ERROR = 35001,
+      /**
+       * 匹配群信息系异常
+       */
+      GROUP_MATCH_ERROR = 35002,
+      //聊天室异常
+      /**
+       * 加入聊天室Id为空
+       */
+      CHATROOM_ID_ISNULL = 36001,
+      /**
+       * 加入聊天室失败
+       */
+      CHARTOOM_JOIN_ERROR = 36002,
+      /**
+       * 拉取聊天室历史消息失败
+       */
+      CHATROOM_HISMESSAGE_ERROR = 36003,
+      //黑名单异常
+      /**
+       * 加入黑名单异常
+       */
+      BLACK_ADD_ERROR = 37001,
+      /**
+       * 获得指定人员再黑名单中的状态异常
+       */
+      BLACK_GETSTATUS_ERROR = 37002,
+      /**
+       * 移除黑名单异常
+       */
+      BLACK_REMOVE_ERROR = 37003,
+      /**
+       * 获取草稿失败
+       */
+      DRAF_GET_ERROR = 38001,
+      /**
+       * 保存草稿失败
+       */
+      DRAF_SAVE_ERROR = 38002,
+      /**
+       * 删除草稿失败
+       */
+      DRAF_REMOVE_ERROR = 38003,
+      /**
+       * 关注公众号失败
+       */
+      SUBSCRIBE_ERROR = 39001
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+
+  var MessageDirection =  {
+      /**
+       * 发送消息。
+       */
+      SEND = 1,
+
+      /**
+       * 接收消息。
+       */
+      RECEIVE = 2
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var ReceivedStatus = {
+      /**
+       * 读取
+       */
+      READ = 0x1,
+      /**
+       *
+       */
+      LISTENED = 0x2,
+        /**
+         *
+         */
+      DOWNLOADED = 0x4
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var SearchType = {
+      /**
+       * 精确。
+       */
+      EXACT = 0,
+
+      /**
+       * 模糊。
+       */
+      FUZZY = 1
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var SentStatus  = {
+      /**
+       * 发送中。
+       */
+      SENDING = 10,
+
+      /**
+       * 发送失败。
+       */
+      FAILED = 20,
+
+      /**
+       * 已发送。
+       */
+      SENT = 30,
+
+      /**
+       * 对方已接收。
+       */
+      RECEIVED = 40,
+
+      /**
+       * 对方已读。
+       */
+      READ = 50,
+
+      /**
+       * 对方已销毁。
+       */
+      DESTROYED = 60
+  }
+  /**
+   * @enum
+   * @type {number}
+   */
+  var ConnectionState = {
+      /**
+       *不可接受的协议版本
+       */
+      UNACCEPTABLE_PROTOCOL_VERSION = 1,
+      /**
+       *服务器不可用
+       */
+      SERVER_UNAVAILABLE = 3,
+      /**
+       * token无效
+       */
+      TOKEN_INCORRECT = 4,
+      /**
+       *未认证
+       */
+      NOT_AUTHORIZED = 5,
+      /**
+       *重新获取导航
+       */
+      REDIRECT = 6,
+      /**
+       *包名错误
+       */
+      PACKAGE_ERROR = 7,
+      /**
+       *应用已被封禁或已被删除
+       */
+      APP_BLOCK_OR_DELETE = 8,
+      /**
+       *用户被封禁
+       */
+      BLOCK = 9,
+      /**
+       * token过期
+       */
+      TOKEN_EXPIRE = 10,
+      /**
+       *设备号错误
+       */
+      DEVICE_ERROR = 11
+  }

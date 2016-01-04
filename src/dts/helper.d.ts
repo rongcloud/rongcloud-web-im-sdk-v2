@@ -4,7 +4,8 @@ declare var require: any;
 declare var module: any;
 declare var define: any;
 declare var exports: any;
-declare var dcodeIO:any;
+declare var dcodeIO: any;
+declare var Polling: any;
 declare class XDomainRequest { }
 declare interface Window {
     WebSocket: WebSocket;
@@ -12,9 +13,10 @@ declare interface Window {
     RCCallback: any;
     RongIMClient: any;
     getServerEndpoint: any;
-    WEB_XHR_POLLING:any;
+    WEB_XHR_POLLING: any;
     XDomainRequest: any;
     JSON: any;
+    Modules: any;
 }
 declare interface HTMLScriptElement {
     onreadystatechange: any;
