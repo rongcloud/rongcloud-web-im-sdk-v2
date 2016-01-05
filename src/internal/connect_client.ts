@@ -281,7 +281,6 @@ module RongIMLib {
             this.heartbeat = setInterval(function() {
                 me.resumeTimer();
                 me.channel.writeAndFlush(new PingReqMessage());
-                console.log("keep live pingReqMessage sending appId " + me.appId);
             }, 180000);
         }
         clearHeartbeat() {
@@ -328,11 +327,11 @@ module RongIMLib {
                 return;
             }
             if (!window["Modules"]) {
-              var exitDateTime = new Date().getTime() + 200,
-                  countTime = new Date().getTime();
-              while (countTime < exitDateTime) {
-                  countTime = new Date().getTime();
-              }
+                var exitDateTime = new Date().getTime() + 200,
+                    countTime = new Date().getTime();
+                while (countTime < exitDateTime) {
+                    countTime = new Date().getTime();
+                }
             }
             this.SyncTimeQueue.state = "pending";
             if (temp.type != 2) {
@@ -404,6 +403,10 @@ module RongIMLib {
         }
         //连接服务器
         connect(appKey: string, token: string, callback: any): Client {
+            if (!window["Modules"]) {
+                RongIMClient._memoryStore.hasModules = false;
+                return;
+            }
             Bridge._client = new Navigation().connect(appKey, token, callback);
             return Bridge._client;
         }

@@ -39,6 +39,8 @@ module RongIMLib {
             pather.patchAll();
             RongIMClient._memoryStore = {
                 token: "",
+                callback: null,
+                hasModules: true,
                 global: window,
                 lastReadTime: new LimitableMap(),
                 conversationList: [],
@@ -96,6 +98,8 @@ module RongIMLib {
         static connect(token: string, callback: ConnectCallback): RongIMClient {
             CheckParam.getInstance().check(["string", "object"], "connect", true);
             RongIMClient.bridge = Bridge.getInstance();
+            RongIMClient._memoryStore.token = token;
+            RongIMClient._memoryStore.callback = callback;
             RongIMClient.bridge.connect(RongIMClient._memoryStore.appKey, token, {
                 onSuccess: function(data: string) {
                     callback.onSuccess(data);
@@ -682,7 +686,7 @@ module RongIMLib {
          * @param  {boolean} islocal          [是否同步到服务器，ture：同步，false:不同步]
          */
         createConversation(conversationType: number, targetId: string, converTitle: string): Conversation {
-            CheckParam.getInstance().check(["number", "string", "string", "boolean"], "createConversation");
+            CheckParam.getInstance().check(["number", "string", "string"], "createConversation");
             var conver = new Conversation();
             conver.targetId = targetId;
             conver.conversationType = conversationType;
