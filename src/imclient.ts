@@ -308,6 +308,10 @@ module RongIMLib {
          */
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback) {
             CheckParam.getInstance().check(["number", "string", "object", "object"], "sendMessage");
+            if (!Bridge._client.channel) {
+                sendCallback.onError(RongIMLib.ErrorCode.RC_NET_UNAVAILABLE, null);
+                return;
+            }
             if (!Bridge._client.channel.socket.socket.connected) {
                 sendCallback.onError(ErrorCode.TIMEOUT, null);
                 throw new Error("connect is timeout! postion:sendMessage");
@@ -448,7 +452,7 @@ module RongIMLib {
                     callback.onSuccess(list, !!data.hasMsg);
                 },
                 onError: function() {
-                    callback.onError(ErrorCode.MSG_ROAMING_SERVICE_UNAVAILABLE);
+                    callback.onSuccess([], false);
                 }
             }, "HistoryMessagesOuput");
         }
@@ -674,7 +678,7 @@ module RongIMLib {
                     }
                 },
                 onError: function() {
-                    callback.onError(ErrorCode.CONVER_GETLIST_ERROR);
+                    callback.onSuccess([]);
                 }
             }, "RelationsOutput");
         }
@@ -1276,7 +1280,7 @@ module RongIMLib {
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
         module.exports = RongIMLib;
     } else if ("function" === typeof define && define.amd) {
-        define("RongIMLib", [], function() {
+        define("RongIMLib", ['md5','Long','ByteBuffer','ProtoBuf'], function() {
             return RongIMLib;
         });
     } else {

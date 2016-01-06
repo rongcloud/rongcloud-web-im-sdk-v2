@@ -81,7 +81,7 @@ module RongIMLib {
                         callback.onSuccess(list);
                     },
                     onError: function(errorcode: ErrorCode) {
-                        callback.onError(errorcode);
+                        callback.onSuccess([]);
                     }
                 }, conversationTypes);
             } else {
