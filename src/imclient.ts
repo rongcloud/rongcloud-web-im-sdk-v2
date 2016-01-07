@@ -339,6 +339,7 @@ module RongIMLib {
             msg.sentTime = new Date().getTime();
             msg.messageDirection = MessageDirection.SEND;
             msg.sentStatus = SentStatus.SENT;
+            msg.messageType = messageContent.messageName;
             if (!c) {
                 c = me.createConversation(conversationType, targetId, "");
             }
@@ -425,12 +426,10 @@ module RongIMLib {
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
             CheckParam.getInstance().check(["number", "string", "number|null|global", "number", "object"], "getRemoteHistoryMessages");
             if (count > 20) {
-                console.log("HistroyMessage count must be less than or equal to 20!");
                 callback.onError(ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
                 return;
             }
             if (conversationType.valueOf() < 0) {
-                console.log("ConversationType must be greater than -1");
                 callback.onError(ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
                 return;
             }
@@ -603,18 +602,14 @@ module RongIMLib {
                         conver.senderUserId = info.userId;
                         conver.senderPortraitUri = info.portraitUri;
                     },
-                    onError: function(error: ErrorCode) {
-                        console.log("getUserInfo error:" + error + ",postion->getConversationList.getUserInfo");
-                    }
+                    onError: function(error: ErrorCode) { }
                 });
             } else if (conver.conversationType == ConversationType.DISCUSSION) {
                 self.getDiscussion(tempConver.userId, {
                     onSuccess: function(info: Discussion) {
                         conver.conversationTitle = info.name;
                     },
-                    onError: function(error: ErrorCode) {
-                        console.log("getDiscussion error:" + error + ",postion->getConversationList.getDiscussion");
-                    }
+                    onError: function(error: ErrorCode) { }
                 });
             }
             RongIMClient._dataAccessProvider.addConversation(conver, <ResultCallback<boolean>>{ onSuccess: function(data: boolean) { } });
@@ -1280,7 +1275,7 @@ module RongIMLib {
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
         module.exports = RongIMLib;
     } else if ("function" === typeof define && define.amd) {
-        define("RongIMLib", ['md5','Long','ByteBuffer','ProtoBuf'], function() {
+        define("RongIMLib", ['md5', 'Long', 'ByteBuffer', 'ProtoBuf'], function() {
             return RongIMLib;
         });
     } else {
