@@ -48,7 +48,7 @@ module RongIMLib {
             this._xhr = this._request(url, "GET");
             if ("onload" in this._xhr) {
                 this._xhr.onload = function() {
-                    this.onload = this.empty;
+                    me._xhr.onload = me.empty;
                     if (this.responseText == "lost params") {
                         me.status400(me);
                     } else {

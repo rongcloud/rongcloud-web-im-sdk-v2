@@ -42,7 +42,7 @@ module RongIMLib {
         DISCONNECT = 14
     }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
-        ["chatMsg", "pcMsgP", "pdMsgP", "pgMsgP", "ppMsgP", "", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
+        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg","pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
         "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp"];
     export class Channel {
         socket: Socket;

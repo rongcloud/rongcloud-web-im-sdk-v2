@@ -1,13 +1,6 @@
-var mapping: any = {
-    "1": 4,
-    "2": 2,
-    "3": 3,
-    "4": 0,
-    "5": 1,
-    "6": 5
-},
+
     //objectname映射
-    typeMapping: { [s: string]: any } = {
+var  typeMapping: { [s: string]: any } = {
         "RC:TxtMsg": "TextMessage",
         "RC:ImgMsg": "ImageMessage",
         "RC:VcMsg": "VoiceMessage",
@@ -22,25 +15,14 @@ var mapping: any = {
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
     HistoryMsgType: { [s: number]: any } = {
-        0: "qryCMsg",
+        4: "qryCMsg",
         2: "qryDMsg",
         3: "qryGMsg",
-        4: "qryPMsg",
-        5: "qrySMsg",
+        1: "qryPMsg",
+        6: "qrySMsg",
         7: "qryPMsg",
         8: "qryPMsg"
-    }, C2S: { [s: number]: any } = {
-        4: 1,
-        2: 2,
-        3: 3,
-        1: 5
-    }, S2C: { [s: number]: any } = {
-        1: 4,
-        2: 2,
-        3: 3,
-        5: 1
-    },
-    disconnectStatus: { [s: number]: any } = { 1: 6 };
+    },disconnectStatus: { [s: number]: any } = { 1: 6 };
 module RongIMLib {
     /**
      * 通道标识类
@@ -266,7 +248,7 @@ module RongIMLib {
             //根据实体对象设置message对象
             message.sentTime = MessageUtil.int64ToTimestamp(entity.dataTime);
             message.senderUserId = entity.fromUserId;
-            message.conversationType = mapping[entity.type] || entity.type;
+            message.conversationType = entity.type;
             if (entity.fromUserId == Bridge._client.userId) {
                 message.targetId = entity.groupId;
             } else {

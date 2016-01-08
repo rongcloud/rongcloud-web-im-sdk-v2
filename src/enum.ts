@@ -63,13 +63,13 @@ module RongIMLib {
     }
 
     export enum ConversationType {
-        NONE = -1,
-        CHATROOM = 0,
-        CUSTOMER_SERVICE = 1,
+        NONE = 0,
+        CHATROOM = 4,
+        CUSTOMER_SERVICE = 5,
         DISCUSSION = 2,
         GROUP = 3,
-        PRIVATE = 4,
-        SYSTEM = 5,
+        PRIVATE = 1,
+        SYSTEM = 6,
         //默认关注 MC
         APP_PUBLIC_SERVICE = 7,
         //手工关注 MP

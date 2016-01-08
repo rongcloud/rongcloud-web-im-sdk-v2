@@ -578,13 +578,13 @@ module RongIMLib {
          * msg_conversationType_targetId_no.
          */
         private pottingConversation(tempConver: any): void {
-            var conver: Conversation = RongIMClient._dataAccessProvider.getConversation(S2C[tempConver.type], tempConver.userId), self = this, isUseReplace: boolean = false;
+            var conver: Conversation = RongIMClient._dataAccessProvider.getConversation(tempConver.type, tempConver.userId), self = this, isUseReplace: boolean = false;
             if (!conver) {
                 conver = new Conversation();
             } else {
                 isUseReplace = true;
             }
-            conver.conversationType = S2C[tempConver.type];
+            conver.conversationType = tempConver.type;
             conver.targetId = tempConver.userId;
             conver.latestMessage = MessageUtil.messageParser(tempConver.msg);
             conver.latestMessageId = conver.latestMessage.messageId;
@@ -699,7 +699,7 @@ module RongIMLib {
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["number", "string", "object"], "removeConversation");
             var mod = new Modules.RelationsInput();
-            mod.setType(C2S[conversationType]);
+            mod.setType(conversationType);
             RongIMClient.bridge.queryMsg(27, MessageUtil.ArrayForm(mod.toArrayBuffer()), targetId, {
                 onSuccess: function() {
                     RongIMClient._dataAccessProvider.removeConversation(conversationType, targetId, {
