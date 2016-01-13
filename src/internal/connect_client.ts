@@ -42,7 +42,7 @@ module RongIMLib {
         DISCONNECT = 14
     }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
-        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg","pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
+        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
         "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp"];
     export class Channel {
         socket: Socket;
@@ -523,6 +523,10 @@ module RongIMLib {
             // if (/ISCOUNTED/.test(message.getMessageTag())) {
             if (con.conversationType != 0) {
                 con.unreadMessageCount = con.unreadMessageCount + 1;
+                if (MessageUtil.supportLargeStorage()) {
+                    var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
+                    LocalStorageProvider.getInstance().setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
+                }
             }
             // }
             con.receivedTime = new Date().getTime();

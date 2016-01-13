@@ -19,6 +19,9 @@ module RongIMLib {
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType === conversationType && RongIMClient._memoryStore.conversationList[i].targetId === targetId) {
                     RongIMClient._memoryStore.conversationList.splice(i, 1);
+                    if (MessageUtil.supportLargeStorage()) {
+                        LocalStorageProvider.getInstance().removeItem("cu" + Bridge._client.userId + conversationType + targetId);
+                    }
                     break;
                 }
             }
@@ -69,6 +72,10 @@ module RongIMLib {
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType == conversationType && RongIMClient._memoryStore.conversationList[i].targetId == targetId) {
                     conver = RongIMClient._memoryStore.conversationList[i];
+                    if (MessageUtil.supportLargeStorage()) {
+                        var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + conversationType + targetId);
+                        conver.unreadMessageCount == 0 ? conver.unreadMessageCount = Number(count) : null;
+                    }
                 }
             }
             return conver;
@@ -78,6 +85,12 @@ module RongIMLib {
             if (RongIMClient._memoryStore.conversationList.length == 0) {
                 RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
+                        if (MessageUtil.supportLargeStorage()) {
+                            Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
+                                var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + item.conversationType + item.targetId);
+                                item.unreadMessageCount == 0 ? item.unreadMessageCount = Number(count) : null;
+                            });
+                        }
                         callback.onSuccess(list);
                     },
                     onError: function(errorcode: ErrorCode) {
@@ -139,6 +152,17 @@ module RongIMLib {
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>) {
             var conver: Conversation = this.getConversation(conversationType, targetId);
             callback.onSuccess(conver ? conver.unreadMessageCount : 0);
+        }
+
+        clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+            var conver: Conversation = this.getConversation(conversationType, targetId);
+            if (conver) {
+                if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                    LocalStorageProvider.getInstance().removeItem("cu" + Bridge._client.userId +conversationType + targetId);
+                }
+                conver.unreadMessageCount = 0;
+            }
+            callback.onSuccess(true);
         }
 
         setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {

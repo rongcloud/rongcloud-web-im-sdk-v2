@@ -1,71 +1,64 @@
 module RongIMLib {
     export class PollingTransportation implements Transportation {
-        allowWithCrendentials: boolean;
-        isXHR: boolean = true;
         empty: Function = new Function;
-        //连接状态 true:已连接 ,false:未连接
-        connected: boolean = false;
-        //是否关闭： true:已关闭 ,false：未关闭
-        isClose: boolean = false;
-        //存放请求连接对象
-        requestParams: any;
         queue: Array<any>;
-        _sendXhr: any;
-        _xhr: any;
-        _socket: Socket;
+        sendxhr: any;
+        xhr: any;
+        socket: Socket;
+        url: string;
+        connected: boolean = false;
         constructor(socket: Socket) {
             this.queue = [];
-            this._socket = socket;
+            this.socket = socket;
             return this;
         }
-        /**
-         * [createTransport 创建Polling，打开请求连接]
-         */
+
         createTransport(url: string, method?: string): any {
             if (!url) { throw new Error("Url is empty,Please check it!"); };
+            this.url = url;
             var sid = RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId"), me = this;
             if (sid) {
                 setTimeout(function() {
-                    me.onPollingSuccess("{\"status\":0,\"userId\":\"" + Navigation.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
+                    me.onSuccess("{\"status\":0,\"userId\":\"" + Navigation.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
                     me.connected = true;
                 }, 500);
                 return this;
             }
-            this._get(url);
+            this.getRequest(url, true);
             return this;
         }
-        private _request(url: string, method: string, multipart?: boolean) {
-            var req = this.XmlHttpRequest();
-            if (multipart) { req.multipart = true; }
-            req.open(method || "GET", MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://" + url);
-            if (method == "POST" && "setRequestHeader" in req) {
-                req.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
+        private requestFactory(url: string, method: string, multipart?: boolean) {
+            var reqest = this.XmlHttpRequest();
+            if (multipart) { reqest.multipart = true; }
+            reqest.open(method || "GET", MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://" + url);
+            if (method == "POST" && "setRequestHeader" in reqest) {
+                reqest.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
             }
-            return req;
+            return reqest;
         }
-        private _get(url: string, args?: any) {
+        private getRequest(url: string, isconnect?: boolean) {
             var me = this;
-            this._xhr = this._request(url, "GET");
-            if ("onload" in this._xhr) {
-                this._xhr.onload = function() {
-                    me._xhr.onload = me.empty;
+            me.xhr = this.requestFactory(url, "GET");
+            if ("onload" in me.xhr) {
+                me.xhr.onload = function() {
+                    me.xhr.onload = me.empty;
                     if (this.responseText == "lost params") {
-                        me.status400(me);
+                        me.onError();
                     } else {
-                        me.status200(this.responseText, args);
+                        me.onSuccess(this.responseText, isconnect);
                     }
                 };
-                this._xhr.onerror = function() {
+                me.xhr.onerror = function() {
                     me.disconnect();
                 };
             } else {
-                me._xhr.onreadystatechange = function() {
-                    if (me._xhr.readyState == 4) {
-                        me._xhr.onreadystatechange = me.empty;
-                        if (/^(200|202)$/.test(me._xhr.status)) {
-                            me.status200(me._xhr.responseText, args);
-                        } else if (/^(400|403)$/.test(me._xhr.status)) {
-                            me.status400(me);
+                me.xhr.onreadystatechange = function() {
+                    if (me.xhr.readyState == 4) {
+                        me.xhr.onreadystatechange = me.empty;
+                        if (/^(200|202)$/.test(me.xhr.status)) {
+                            me.onSuccess(me.xhr.responseText, isconnect);
+                        } else if (/^(400|403)$/.test(me.xhr.status)) {
+                            me.onError();
                         } else {
                             me.disconnect();
                         }
@@ -73,40 +66,38 @@ module RongIMLib {
                     }
                 };
             }
-            this._xhr.send();
+            me.xhr.send();
         }
         /**
          * [send 发送消息，Method:POST]
          * queue 为消息队列，待通道可用发送所有等待消息
          * @param  {string} data [需要传入comet格式数据，此处只负责通讯通道，数据转换在外层处理]
          */
-        send(data: any, url?: string, method?: string): void {
-            var me: PollingTransportation = this;
-            if (!this.connected) { this.queue.push(data); }
-            if (this.isClose) { throw new Error("The Connection is closed,Please open the Connection!!!"); }
-            this._sendXhr = this._request(Navigation.Endpoint.host + "/websocket" + data.url, "POST");
-            if ("onload" in me._sendXhr) {
-                me._sendXhr.onload = function() {
-                    me._sendXhr.onload = me.empty;
-                    me.onData(me._sendXhr.responseText);
+        send(data: any): void {
+            var me = this;
+            this.sendxhr = this.requestFactory(Navigation.Endpoint.host + "/websocket" + data.url, "POST");
+            if ("onload" in me.sendxhr) {
+                me.sendxhr.onload = function() {
+                    me.sendxhr.onload = me.empty;
+                    me.onData(me.sendxhr.responseText);
                 };
-                me._sendXhr.onerror = function() {
-                    me._sendXhr.onerror = me.empty;
+                me.sendxhr.onerror = function() {
+                    me.sendxhr.onerror = me.empty;
                 };
             } else {
-                me._sendXhr.onreadystatechange = function() {
-                    if (me._sendXhr.readyState == 4) {
+                me.sendxhr.onreadystatechange = function() {
+                    if (me.sendxhr.readyState == 4) {
                         this.onreadystatechange = this.empty;
-                        if (/^(202|200)$/.test(me._sendXhr.status)) {
-                            me.onData(me._sendXhr.responseText);
+                        if (/^(202|200)$/.test(me.sendxhr.status)) {
+                            me.onData(me.sendxhr.responseText);
                         }
                     }
                 };
             }
 
-            this._sendXhr.send(JSON.stringify(data.data));
+            me.sendxhr.send(JSON.stringify(data.data));
         }
-        //接收服务器返回消息
+
         onData(data?: any, header?: any): string {
             if (!data || data == "lost params") {
                 return;
@@ -121,86 +112,71 @@ module RongIMLib {
             if (!MessageUtil.isArray(val)) {
                 val = [val];
             }
-            Array.forEach(val, function(x: any) {
-                self._socket.fire("message", new RongIMLib.MessageInputStream(x, true).readMessage());
+            Array.forEach(val, function(m: any) {
+                self.socket.fire("message", new RongIMLib.MessageInputStream(m, true).readMessage());
             });
             return "";
         }
-        onClose(isrecon?: boolean): any {
-            if (this._xhr) {
-                if (this._xhr.onload) {
-                    this._xhr.onreadystatechange = this._xhr.onload = this.empty;
-                } else {
-                    this._xhr.onreadystatechange = this.empty;
-                }
-                this._xhr.abort();
-                this._xhr = null;
-            }
-            if (this._sendXhr) {
-                if (this._sendXhr.onload) {
-                    this._sendXhr.onreadystatechange = this._sendXhr.onload = this.empty;
-                } else {
-                    this._sendXhr.onreadystatechange = this.empty;
-                }
-                this._sendXhr.abort();
-                this._sendXhr = null;
-            }
-        }
-        onError(error: any): void {
-            throw new Error(error);
-        }
+
         XmlHttpRequest(): any {
             var hasCORS = typeof XMLHttpRequest !== "undefined" && "withCredentials" in new XMLHttpRequest(), self = this;
             if ("undefined" != typeof XMLHttpRequest && hasCORS) {
-                self.allowWithCrendentials = true;
-                //isXHR 此处无需设置，默认true
                 return new XMLHttpRequest();
             } else if ("undefined" != typeof XDomainRequest) {
-                self.isXHR = false;
                 return new XDomainRequest();
             } else {
                 return new ActiveXObject("Microsoft.XMLHTTP");
             }
         }
-        checkWithCredentials(): boolean {
-            if (!("XMLHttpRequest" in window)) { return false; }
-            var xmlRequest = new XMLHttpRequest();
-            return xmlRequest.withCredentials !== undefined;
-        }
-        doQueue(key?: string): void {
-            if (this.connected) {
-                for (let i = 0, len = this.queue.length; i < len; i++) {
-                    this.send(this.queue[i], this.requestParams[key].url, this.requestParams[key].method);
+
+        onClose(): void {
+            if (this.xhr) {
+                if (this.xhr.onload) {
+                    this.xhr.onreadystatechange = this.xhr.onload = this.empty;
+                } else {
+                    this.xhr.onreadystatechange = this.empty;
                 }
+                this.xhr.abort();
+                this.xhr = null;
+            }
+            if (this.sendxhr) {
+                if (this.sendxhr.onload) {
+                    this.sendxhr.onreadystatechange = this.sendxhr.onload = this.empty;
+                } else {
+                    this.sendxhr.onreadystatechange = this.empty;
+                }
+                this.sendxhr.abort();
+                this.sendxhr = null;
             }
         }
         disconnect(): void {
-            this.onClose(false);
-        }
-        reconnect(): any {
-            return null;
-        }
-        onPollingSuccess(a: any, b?: any): void {
-            this.onData(a, b);
-            if (/"headerCode":-32,/.test(a)) { return; }
-            this._get(Navigation.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId"), true);
-        }
-        onPollingError(): void {
-            this.disconnect();
-        }
-        addEvent() { }
-        private status200(text: string, arg: any) {
-            var txt = text.match(/"sessionid":"\S+?(?=")/);
-            this.onPollingSuccess(text, txt ? txt[0].slice(13) : void 0);
-            this.connected = true;
-            arg || this._socket.fire("connect");
-        }
-        private status400(self: any) {
             RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
-            this.disconnect();
-            this._socket.fire("disconnect");
-            this.connected = false;
-            this.isClose = true;
+            this.onClose();
         }
+
+        reconnect():void {
+            this.disconnect();
+            this.createTransport(this.url);
+        }
+
+        onSuccess(responseText: string, isconnect?: any): void {
+            var txt = responseText.match(/"sessionid":"\S+?(?=")/);
+            this.onData(responseText, txt ? txt[0].slice(13) : 0);
+            if (/"headerCode":-32,/.test(responseText)) {
+                RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
+                return;
+            }
+            this.getRequest(Navigation.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId"));
+            this.connected = true;
+            isconnect && this.socket.fire("connect");
+        }
+
+        onError(): void {
+            RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
+            this.onClose();
+            this.connected = false;
+            this.socket.fire("disconnect");
+        }
+
     }
 }

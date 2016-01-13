@@ -2575,11 +2575,11 @@ function UserInfo(userId, name, portraitUri) {
       /**
        * none
        */
-      NONE = -1,
+      NONE = 0,
       /**
-       * 聊天室
+       * 私聊
        */
-      CHATROOM = 0,
+      PRIVATE = 1,
       /**
        * 讨论组
        */
@@ -2589,13 +2589,17 @@ function UserInfo(userId, name, portraitUri) {
        */
       GROUP = 3,
       /**
-       * 私聊
+       * 聊天室
        */
-      PRIVATE = 4,
+      CHATROOM = 4,
+      /**
+       * 客服
+       */
+      CUSTOMER_SERVICE = 5,
       /**
        * 系统消息
        */
-      SYSTEM = 5,
+      SYSTEM = 6,
       /**
        * 应用内公众账号（默认关注）
        */

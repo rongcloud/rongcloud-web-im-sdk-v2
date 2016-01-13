@@ -1,5 +1,10 @@
 module RongIMLib {
     export class LocalStorageProvider implements StorageProvider {
+
+        static getInstance(): LocalStorageProvider {
+            return new LocalStorageProvider();
+        }
+
         setItem(composedKey: string, object: any): void {
             if (localStorage.length == 20) { localStorage.removeItem(localStorage.key(0)); }
             localStorage.setItem(composedKey.toString(), object);

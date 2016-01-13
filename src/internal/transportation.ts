@@ -10,8 +10,6 @@ module RongIMLib {
         onClose(): any;
         //通道异常操作
         onError(error: any): void;
-        //绑定事件
-        addEvent(): void;
         //断开连接
         disconnect(): void;
     }

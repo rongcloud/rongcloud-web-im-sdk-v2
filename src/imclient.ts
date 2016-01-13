@@ -468,7 +468,7 @@ module RongIMLib {
                 xss.parentNode.removeChild(xss);
             };
             xss = document.createElement("script");
-            xss.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://api.cn.rong.io/message/exist.js?appKey=" + encodeURIComponent(RongIMClient._memoryStore.appKey) + "&token=" + encodeURIComponent(token) + "&callBack=RCcallback&_=" + Date.now();
+            xss.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://api.cn.rong.io/message/exist.js?appKey=" + encodeURIComponent(RongIMClient._memoryStore.appKey) + "&token=" + encodeURIComponent(token) + "&callBack=RCCallback&_=" + Date.now();
             document.body.appendChild(xss);
             xss.onerror = function() {
                 callback.onError(ErrorCode.UNKNOWN);
@@ -493,6 +493,15 @@ module RongIMLib {
          */
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>) {
             RongIMClient._dataAccessProvider.getUnreadCount(conversationType, targetId, callback);
+        }
+        /**
+         * 清楚会话未读消息数
+         * @param  {ConversationType}        conversationType 会话类型
+         * @param  {string}                  targetId         目标Id
+         * @param  {ResultCallback<boolean>} callback         返回值，函数回调
+         */
+        clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.clearUnreadCount(conversationType, targetId, callback);
         }
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {
@@ -634,7 +643,7 @@ module RongIMLib {
             RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
         }
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[]) {
-            CheckParam.getInstance().check(["object", "null|object|global"], "getConversationList");
+            CheckParam.getInstance().check(["object", "null|array|global"], "getConversationList");
             var me = this;
             RongIMClient._dataAccessProvider.getConversationList(<ResultCallback<Conversation[]>>{
                 onSuccess: function(data: Conversation[]) {
@@ -648,7 +657,7 @@ module RongIMLib {
             }, conversationTypes);
         }
         getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[]) {
-            CheckParam.getInstance().check(["object", "null|object|global"], "getRemoteConversationList");
+            CheckParam.getInstance().check(["object", "null|array|global"], "getRemoteConversationList");
             var modules = new Modules.RelationsInput(), self = this;
             modules.setType(1);
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {

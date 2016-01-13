@@ -29,7 +29,7 @@ module RongIMLib {
         static modelClone(object: any): any {
             var obj: any = {};
             for (var item in object) {
-                if (item != "messageName") {
+                if (item != "messageName" && "encode" != item) {
                     obj[item] = object[item];
                 }
             }

@@ -73,7 +73,11 @@ module RongIMLib {
                     return "set" + (tt >= 0x61 ? String.fromCharCode(tt & ~32) : x);
                 });
                 if (valName in me) {
-                    me[valName](args[nana]);
+                    if (nana == "status") {
+                        me[valName](disconnectStatus[args[nana]] ? disconnectStatus[args[nana]] : args[nana]);
+                    } else {
+                        me[valName](args[nana]);
+                    }
                 }
             }
         }
@@ -224,7 +228,7 @@ module RongIMLib {
             }
             if (msglength > this.MESSAGE_LENGTH) {
                 this.setUserId(_in.readUTF());
-                var sessionId=_in.readUTF();
+                var sessionId = _in.readUTF();
                 var timestamp = _in.readLong();
             }
         }

@@ -26,7 +26,7 @@ module.exports = (grunt) ->
 
     concat:
       dist:
-        src: ['./src/3rd/MD5.js','./dist/RongIMLib.js']
+        src: ['./src/internal/transportation/xhrpolling-min.js','./src/3rd/md5.min.js','./dist/RongIMLib.js']
         dest: './dist/RongIMLib.js'
     # concat:
     #   dist:

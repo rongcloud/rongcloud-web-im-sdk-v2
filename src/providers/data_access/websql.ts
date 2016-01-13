@@ -32,7 +32,7 @@ module RongIMLib {
             throw new Error("Not implemented yet");
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>,conversationTypes?: ConversationType[]) {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]) {
             throw new Error("Not implemented yet");
         }
 
@@ -53,6 +53,10 @@ module RongIMLib {
         }
 
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>) {
+            throw new Error("Not implemented yet");
+        }
+
+        clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             throw new Error("Not implemented yet");
         }
 

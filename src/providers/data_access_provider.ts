@@ -28,6 +28,8 @@ module RongIMLib {
 
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>): void;
 
+        clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>):void;
+
         setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>): void;
