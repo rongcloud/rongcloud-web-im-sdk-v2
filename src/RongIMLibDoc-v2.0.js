@@ -341,7 +341,7 @@ RongIMClient.prototype.getCurrentUserInfo = function(callback) {
  * @param  {string}                   userId 用户Id
  * @param  {ResultCallback<UserInfo>} callback 回调函数
  * @example
- * RongIMClient.getInstance().getCurrentUserInfo('targetId',{
+ * RongIMClient.getInstance().getUserInfo('targetId',{
  * 		onSuccess:function(info){
  * 				//info 用户的信息。
  * 		},
@@ -368,11 +368,11 @@ RongIMClient.prototype.getUserInfo = function(userId, callback) {
     }, "GetUserInfoOutput");
 };
 /**
- * 获取本地时间与服务器时间的差值，单位为毫秒。
- * @param {object} callback  获取的回调，返回时间差值
+ * 获取本地时间与服务器时间，单位为毫秒。
+ * @param {object} callback  获取的回调，返回服务器时间。
  */
 RongIMClient.prototype.getDeltaTime = function(callback) {
-
+    callback.onSuccess(RongIMClient._memoryStore.deltaTime);
 };
 /**
  * 指定清除本地会话中的历史消息。
@@ -752,13 +752,7 @@ RongIMClient.prototype.getUnreadCount = function(conversationType, targetId,
  * @param  {string}                  targetId         目标Id
  * @param  {ResultCallback<boolean>} callback         返回值，参数回调
  * @example
- * RongIMClient.getInstance().clearTextMessageDraft("conversationType","targetId",{
- *  onSuccess: function(isClear) {
- *      // isClear true:清除成功   false:清除失败
- *  },
- *  onError: function(error) {
- *  }
- * });
+ * RongIMClient.getInstance().clearTextMessageDraft("conversationType","targetId");
  */
 RongIMClient.prototype.clearTextMessageDraft = function(conversationType,
   targetId, callback) {
@@ -773,14 +767,7 @@ RongIMClient.prototype.clearTextMessageDraft = function(conversationType,
  * @param  {string}                 targetId         目标Id
  * @param  {ResultCallback<string>} callback         返回值，参数回调
  * @example
- *   RongIMClient.getInstance().getTextMessageDraft("conversationType", "targetId", {
- *         onSuccess: function(draf) {
- *             //do something
- *         },
- *         onError: function(error) {
- *           //do something
- *         }
- *       });
+ *   var darf = RongIMClient.getInstance().getTextMessageDraft("conversationType", "targetId");
  */
 RongIMClient.prototype.getTextMessageDraft = function(conversationType,
   targetId, callback) {
@@ -799,14 +786,7 @@ RongIMClient.prototype.getTextMessageDraft = function(conversationType,
  * @param  {string}                  value            草稿值
  * @param  {ResultCallback<boolean>} callback         返回值，参数回调
  * @example
- * RongIMClient.getInstance().saveTextMessageDraft("conversationType", "targetId", "草稿内容", {
- *   onSuccess: function() {
- *      //成功
- *   },
- *   onError: function(error) {
- *     //失败
- *   }
- * });
+ * RongIMClient.getInstance().saveTextMessageDraft("conversationType", "targetId", "草稿内容");
  */
 RongIMClient.prototype.saveTextMessageDraft = function(conversationType,
   targetId, value, callback) {
@@ -817,6 +797,23 @@ RongIMClient.prototype.saveTextMessageDraft = function(conversationType,
     value;
   callback.onSuccess(true);
 };
+  /**
+   * 清除本地缓存会话未读消息数
+   * @param  {ConversationType}        conversationType 会话类型
+   * @param  {string}                  targetId         目标Id
+   * @param  {ResultCallback<boolean>} callback         返回值，函数回调
+   * @example
+   * RongIMClient.getInstance().clearUnreadCount("conversationType","targetId",{
+   * 	onSuccess:function(isClear){
+   * 			  console.log(isClear);
+   *     },
+   *     onError:function(){
+   *     }
+   * });
+   */
+  RongIMClient.prototype.clearUnreadCount = function (conversationType, targetId, callback) {
+      RongIMClient._dataAccessProvider.clearUnreadCount(conversationType, targetId, callback);
+  };
 /**
  * 清除会话列表
  */
@@ -865,6 +862,7 @@ RongIMClient.prototype.getConversation = function(conversationType, targetId,
 /**
  * 从本地拉取会话列表。
  * @param  {ResultCallback} callback 返回值，参数回调
+ * @param {array} conversationTypes 可选参数，可以获取指定会话类型的会话，默认请传null
  * @example
  * RongIMClient.getInstance().getConversationList({
  *    onSuccess: function(list) {
@@ -873,11 +871,11 @@ RongIMClient.prototype.getConversation = function(conversationType, targetId,
  *    onError: function(error) {
  *      //GetConversationList error
  *    }
- *  });
+ *  },null);
  *
  */
-RongIMClient.prototype.getConversationList = function(callback) {
-  RongIMLib.CheckParam.getInstance().check(["object"], "getConversationList");
+RongIMClient.prototype.getConversationList = function(callback,conversationTypes) {
+  RongIMLib.CheckParam.getInstance().check(["object","null|array|global|object"], "getConversationList");
   var me = this;
   RongIMClient._dataAccessProvider.getConversationList({
     onSuccess: function(data) {
@@ -897,14 +895,14 @@ RongIMClient.prototype.getConversationList = function(callback) {
  *    onError: function(error) {
  *      //getRemoteConversationList error
  *    }
- *  });
+ *  },null);
  */
-RongIMClient.prototype.getRemoteConversationList = function(callback) {
+RongIMClient.prototype.getRemoteConversationList = function(callback,conversationTypes) {
   var conversationTypes = [];
   for (var _i = 1; _i < arguments.length; _i++) {
     conversationTypes[_i - 1] = arguments[_i];
   }
-  RongIMLib.CheckParam.getInstance().check(["object"], "getConversationList");
+  RongIMLib.CheckParam.getInstance().check(["object","null|array|global|object"], "getConversationList");
   var modules = new Modules.RelationsInput(),
     self = this;
   modules.setType(1);

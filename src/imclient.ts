@@ -643,7 +643,7 @@ module RongIMLib {
             RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
         }
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[]) {
-            CheckParam.getInstance().check(["object", "null|array|global"], "getConversationList");
+            CheckParam.getInstance().check(["object", "null|array|object|global"], "getConversationList");
             var me = this;
             RongIMClient._dataAccessProvider.getConversationList(<ResultCallback<Conversation[]>>{
                 onSuccess: function(data: Conversation[]) {
@@ -657,7 +657,7 @@ module RongIMLib {
             }, conversationTypes);
         }
         getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[]) {
-            CheckParam.getInstance().check(["object", "null|array|global"], "getRemoteConversationList");
+            CheckParam.getInstance().check(["object", "null|array|object|global"], "getRemoteConversationList");
             var modules = new Modules.RelationsInput(), self = this;
             modules.setType(1);
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
