@@ -58,7 +58,8 @@ module RongIMLib {
             public sentTime?: number,
             public targetId?: string,
             public messageType?: string,
-            public messageUId?:string
+            public messageUId?: string,
+            public hasReceivedByOtherClient?: boolean
         ) { }
     }
     export class MessageTag {
@@ -80,11 +81,11 @@ module RongIMLib {
     }
     export class PublicServiceMenuItem {
         constructor(
-          public id?: string,
-          public name?: string,
-          public type?: ConversationType,
-          public sunMenuItems?: Array<PublicServiceMenuItem>,
-          public url?: string
+            public id?: string,
+            public name?: string,
+            public type?: ConversationType,
+            public sunMenuItems?: Array<PublicServiceMenuItem>,
+            public url?: string
         ) { }
     }
     // TODO: TBD

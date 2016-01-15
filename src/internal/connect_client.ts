@@ -59,7 +59,7 @@ module RongIMLib {
             //注册状态改变观察者
             if (typeof Channel._ConnectionStatusListener == "object" && "onChanged" in Channel._ConnectionStatusListener) {
                 var me = this;
-                this.socket.on("StatusChanged", function(code: any) {
+                me.socket.on("StatusChanged", function(code: any) {
                     //如果参数为DisconnectionStatus，就停止心跳，其他的不停止心跳。每3min连接一次服务器
                     if (code === ConnectionStatus.DISCONNECTED) {
                         Channel._ConnectionStatusListener.onChanged(ConnectionStatus.DISCONNECTED);
@@ -69,6 +69,13 @@ module RongIMLib {
                     me.connectionStatus = code;
                     Channel._ConnectionStatusListener.onChanged(code);
                 });
+                me.socket.on("startCountDeltaTime", function(deltaTime: number) {
+                    RongIMClient._memoryStore.deltaTime = deltaTime;
+                    setInterval(function() {
+                        RongIMClient._memoryStore.deltaTime += 1000;
+                    }, 1000);
+                });
+
             } else {
                 throw new Error("setConnectStatusListener:Parameter format is incorrect");
             }
@@ -545,7 +552,7 @@ module RongIMLib {
             }
             switch (msg._name) {
                 case "ConnAckMessage":
-                    Bridge._client.handler.connectCallback.process(msg.getStatus(), msg.getUserId());
+                    Bridge._client.handler.connectCallback.process(msg.getStatus(), msg.getUserId(), msg.getTimestamp());
                     break;
                 case "PublishMessage":
                     if (msg.getQos() != 0) {

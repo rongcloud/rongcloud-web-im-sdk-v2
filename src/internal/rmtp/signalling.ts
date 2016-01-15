@@ -193,6 +193,7 @@ module RongIMLib {
         status: any;
         userId: string;
         MESSAGE_LENGTH = 2;
+        timestrap: number;
         binaryHelper: BinaryHelper = new BinaryHelper();
         constructor(header: any) {
             super(arguments.length == 0 ? Type.CONNACK : arguments.length == 1 ? arguments[0] instanceof Header ? arguments[0] : Type.CONNACK : null);
@@ -210,15 +211,15 @@ module RongIMLib {
                     }
                     break;
             }
-        }
+        };
         messageLength(): number {
             var length = this.MESSAGE_LENGTH;
             if (this.userId) {
                 length += this.binaryHelper.toMQttString(this.userId).length;
             }
             return length;
-        }
-        readMessage(_in: any, msglength: number) {
+        };
+        readMessage(_in: RongIMStream, msglength: number) {
             _in.read();
             var result = +_in.read();
             if (result >= 0 && result <= 9) {
@@ -230,8 +231,9 @@ module RongIMLib {
                 this.setUserId(_in.readUTF());
                 var sessionId = _in.readUTF();
                 var timestamp = _in.readLong();
+                this.setTimestamp(timestamp);
             }
-        }
+        };
         writeMessage(out: any) {
             var stream = this.binaryHelper.convertStream(out);
             stream.write(128);
@@ -254,18 +256,24 @@ module RongIMLib {
                 stream.writeUTF(this.userId);
             }
             return stream;
-        }
+        };
         setStatus(x: any) {
             this.status = x;
-        }
+        };
         setUserId(_userId: string) {
             this.userId = _userId;
-        }
+        };
         getStatus() {
             return this.status;
-        }
+        };
         getUserId() {
             return this.userId;
+        };
+        setTimestamp(x: number) {
+            this.timestrap = x;
+        };
+        getTimestamp(): number {
+            return this.timestrap;
         }
     }
     /**

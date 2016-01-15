@@ -47,7 +47,8 @@ module RongIMLib {
                 appKey: appKey,
                 publicServiceMap: new PublicServiceMap(),
                 listenerList: [],
-                providerType: 1
+                providerType: 1,
+                deltaTime: 0
             };
             RongIMClient._cookieHelper = new CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
@@ -259,13 +260,12 @@ module RongIMLib {
             }, "GetUserInfoOutput");
         }
         /**
-         * 获取本地时间与服务器时间的差值，单位为毫秒。
+         * 获取服务器时间的差值，单位为毫秒。
          *
-         * @param callback  获取的回调，返回时间差值。
-         * TODO 问王平
+         * @param callback  获取的回调，返回时间。
          */
         getDeltaTime(callback: ResultCallback<number>) {
-            throw new Error("Not implemented yet");
+            callback.onSuccess(RongIMClient._memoryStore.deltaTime);
         }
 
         // #region Message

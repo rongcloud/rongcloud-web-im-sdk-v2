@@ -170,6 +170,9 @@ var Polling = {
             this.setStatus = function (b) {
                 a.status = b
             };
+            this.setMsgId = function (b) {
+                a.msgId = b
+            };
             this.toArrayBuffer = function () {
                 return a
             }

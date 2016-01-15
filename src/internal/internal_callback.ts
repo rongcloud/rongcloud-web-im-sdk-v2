@@ -159,7 +159,7 @@ module RongIMLib {
             this._cb = _cb;
             this._timeout = _timeout;
         }
-        process(status: number, userId: string) {
+        process(status: number, userId: string,timestamp:number) {
             this.readTimeOut();
             if (status == 0) {
                 var naviStr = RongIMClient._cookieHelper.getItem(RongIMClient._cookieHelper.getItemKey("navi"));
@@ -179,9 +179,11 @@ module RongIMLib {
                     this._client.reconnectObj.onSuccess(userId);
                     delete this._client.reconnectObj.onSuccess;
                 } else {
-                    this._cb(userId);
+                    var me = this;
+                    setTimeout(function(){me._cb(userId);},500);
                 }
-                RongIMLib.Bridge._client.channel.socket.fire("StatusChanged", 0);
+                Bridge._client.channel.socket.fire("StatusChanged", 0);
+                Bridge._client.channel.socket.fire("startCountDeltaTime",timestamp);
             } else if (status == 6) {
                 //重定向
                 var x: any = {};

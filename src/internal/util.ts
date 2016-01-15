@@ -1,17 +1,17 @@
 
-    //objectname映射
-var  typeMapping: { [s: string]: any } = {
-        "RC:TxtMsg": "TextMessage",
-        "RC:ImgMsg": "ImageMessage",
-        "RC:VcMsg": "VoiceMessage",
-        "RC:ImgTextMsg": "RichContentMessage",
-        "RC:LBSMsg": "LocationMessage",
-        "RC:InfoNtf": "InformationNotificationMessage",
-        "RC:ContactNtf": "ContactNotificationMessage",
-        "RC:ProfileNtf": "ProfileNotificationMessage",
-        "RC:CmdNtf": "CommandNotificationMessage",
-        "RC:DizNtf": "DiscussionNotificationMessage"
-    },
+//objectname映射
+var typeMapping: { [s: string]: any } = {
+    "RC:TxtMsg": "TextMessage",
+    "RC:ImgMsg": "ImageMessage",
+    "RC:VcMsg": "VoiceMessage",
+    "RC:ImgTextMsg": "RichContentMessage",
+    "RC:LBSMsg": "LocationMessage",
+    "RC:InfoNtf": "InformationNotificationMessage",
+    "RC:ContactNtf": "ContactNotificationMessage",
+    "RC:ProfileNtf": "ProfileNotificationMessage",
+    "RC:CmdNtf": "CommandNotificationMessage",
+    "RC:DizNtf": "DiscussionNotificationMessage"
+},
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
     HistoryMsgType: { [s: number]: any } = {
@@ -22,7 +22,7 @@ var  typeMapping: { [s: string]: any } = {
         6: "qrySMsg",
         7: "qryPMsg",
         8: "qryPMsg"
-    },disconnectStatus: { [s: number]: any } = { 1: 6 };
+    }, disconnectStatus: { [s: number]: any } = { 1: 6 };
 module RongIMLib {
     /**
      * 通道标识类
@@ -259,6 +259,10 @@ module RongIMLib {
             } else {
                 message.messageDirection = MessageDirection.RECEIVE;
             }
+            if ((entity.status & 2) == 2) {
+                message.hasReceivedByOtherClient = true;
+            }
+            message.messageUId = entity.msgId;
             message.receivedTime = new Date().getTime();
             message.messageId = (message.conversationType + "_" + ~~(Math.random() * 0xffffff));
             message.receivedStatus = ReceivedStatus.LISTENED;
