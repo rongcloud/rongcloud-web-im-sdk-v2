@@ -64,11 +64,11 @@ module RongIMLib {
 
     export enum ConversationType {
         NONE = 0,
-        CHATROOM = 4,
-        CUSTOMER_SERVICE = 5,
+        PRIVATE = 1,
         DISCUSSION = 2,
         GROUP = 3,
-        PRIVATE = 1,
+        CHATROOM = 4,
+        CUSTOMER_SERVICE = 5,
         SYSTEM = 6,
         //默认关注 MC
         APP_PUBLIC_SERVICE = 7,
@@ -378,7 +378,15 @@ module RongIMLib {
         /**
          * 关注公众号失败
          */
-        SUBSCRIBE_ERROR = 39001
+        SUBSCRIBE_ERROR = 39001,
+        /**
+         * 关注公众号失败
+         */
+        QNTKN_FILETYPE_ERROR = 41001,
+        /**
+         * 关注公众号失败
+         */
+        QNTKN_GET_ERROR = 41002
     }
 
     export enum MediaType {
@@ -413,6 +421,12 @@ module RongIMLib {
          * 接收消息。
          */
         RECEIVE = 2
+    }
+
+    export enum FileType {
+        IMAGE = 1,
+        AUDIO = 2,
+        VIDEO = 3
     }
 
     export enum RealTimeLocationErrorCode {

@@ -2314,10 +2314,12 @@ function Group(id, name, portraitUri) {
  * @param {number} sentTime        消息发送时间
  * @param {string} targetId         目标Id
  * @param {string} messageType     消息类型
+ * @param {string} messageUId     消息唯一Id
+ * @param {boolean} hasReceivedByOtherClient     是否是离线消息
  */
 function Message(content, conversationType, extra, objectName, messageDirection,
   messageId, receivedStatus, receivedTime, senderUserId, sentStatus, sentTime,
-  targetId, messageType) {
+  targetId, messageType,messageUId,hasReceivedByOtherClient) {
   /**
    *消息内容。
    * @type {MessageContent}

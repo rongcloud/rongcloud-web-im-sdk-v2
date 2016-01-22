@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
-        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp"];
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp","qnTkn"];
     export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
@@ -68,12 +68,6 @@ module RongIMLib {
                     }
                     me.connectionStatus = code;
                     Channel._ConnectionStatusListener.onChanged(code);
-                });
-                me.socket.on("startCountDeltaTime", function(deltaTime: number) {
-                    RongIMClient._memoryStore.deltaTime = deltaTime;
-                    setInterval(function() {
-                        RongIMClient._memoryStore.deltaTime += 1000;
-                    }, 1000);
                 });
 
             } else {
@@ -439,6 +433,9 @@ module RongIMLib {
                 topic = _topic[topic];
             }
             Bridge._client.queryMessage(topic, content, targetId, Qos.AT_MOST_ONCE, callback, pbname);
+        }
+        pullSendBoxMsg(topic: string, content: any, targetId: string, callback: any, pbname?: string): void {
+            Bridge._client.queryMessage(topic, content, targetId, Qos.AT_LEAST_ONCE, callback, pbname);
         }
         //发送消息 执行publishMessage 请求
         pubMsg(topic: number, content: string, targetId: string, callback: any, msg: any): void {

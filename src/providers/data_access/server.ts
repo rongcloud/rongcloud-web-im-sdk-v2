@@ -74,7 +74,9 @@ module RongIMLib {
                     conver = RongIMClient._memoryStore.conversationList[i];
                     if (MessageUtil.supportLargeStorage()) {
                         var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + conversationType + targetId);
-                        conver.unreadMessageCount == 0 ? conver.unreadMessageCount = Number(count) : null;
+                        if (conver.unreadMessageCount == 0) {
+                            conver.unreadMessageCount = Number(count);
+                        }
                     }
                 }
             }
@@ -88,7 +90,9 @@ module RongIMLib {
                         if (MessageUtil.supportLargeStorage()) {
                             Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
                                 var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + item.conversationType + item.targetId);
-                                item.unreadMessageCount == 0 ? item.unreadMessageCount = Number(count) : null;
+                                if (item.unreadMessageCount == 0) {
+                                    item.unreadMessageCount = Number(count);
+                                }
                             });
                         }
                         callback.onSuccess(list);
@@ -158,7 +162,7 @@ module RongIMLib {
             var conver: Conversation = this.getConversation(conversationType, targetId);
             if (conver) {
                 if (RongIMLib.MessageUtil.supportLargeStorage()) {
-                    LocalStorageProvider.getInstance().removeItem("cu" + Bridge._client.userId +conversationType + targetId);
+                    LocalStorageProvider.getInstance().removeItem("cu" + Bridge._client.userId + conversationType + targetId);
                 }
                 conver.unreadMessageCount = 0;
             }

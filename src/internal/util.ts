@@ -254,9 +254,9 @@ module RongIMLib {
             } else {
                 message.targetId = (/^[234]$/.test(entity.type || entity.getType()) ? entity.groupId : message.senderUserId);
             }
-            if (entity.fromUserId == Bridge._client.userId) {
+            if (entity.direction == 1) {
                 message.messageDirection = MessageDirection.SEND;
-            } else {
+            } else if (entity.direction == 0) {
                 message.messageDirection = MessageDirection.RECEIVE;
             }
             if ((entity.status & 2) == 2) {
@@ -265,9 +265,7 @@ module RongIMLib {
             message.messageUId = entity.msgId;
             message.receivedTime = new Date().getTime();
             message.messageId = (message.conversationType + "_" + ~~(Math.random() * 0xffffff));
-            message.receivedStatus = ReceivedStatus.LISTENED;
             message.objectName = objectName;
-            message.sentStatus = SentStatus.SENT;
             return message;
         }
     }

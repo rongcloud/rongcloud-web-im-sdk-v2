@@ -1,6 +1,6 @@
 /// <reference path="../dts/helper.d.ts"/>
 module RongIMLib {
-    export class MessageCallback{
+    export class MessageCallback {
         timeoutMillis: number;
         timeout: any = null;
         onError: any = null;
@@ -57,7 +57,7 @@ module RongIMLib {
         mapping(entity: any, tag: string): any {
             switch (tag) {
                 case "GetUserInfoOutput":
-                    var userInfo = new UserInfo(entity.userId,entity.userName,entity.userPortrait);
+                    var userInfo = new UserInfo(entity.userId, entity.userName, entity.userPortrait);
                     return userInfo;
                 case "GetQNupTokenOutput":
                     return {
@@ -159,7 +159,7 @@ module RongIMLib {
             this._cb = _cb;
             this._timeout = _timeout;
         }
-        process(status: number, userId: string,timestamp:number) {
+        process(status: number, userId: string, timestamp: number) {
             this.readTimeOut();
             if (status == 0) {
                 var naviStr = RongIMClient._cookieHelper.getItem(RongIMClient._cookieHelper.getItemKey("navi"));
@@ -180,10 +180,10 @@ module RongIMLib {
                     delete this._client.reconnectObj.onSuccess;
                 } else {
                     var me = this;
-                    setTimeout(function(){me._cb(userId);},500);
+                    setTimeout(function() { me._cb(userId); }, 500);
                 }
                 Bridge._client.channel.socket.fire("StatusChanged", 0);
-                Bridge._client.channel.socket.fire("startCountDeltaTime",timestamp);
+                RongIMClient._memoryStore.deltaTime = new Date().getTime() - timestamp;
             } else if (status == 6) {
                 //重定向
                 var x: any = {};

@@ -1,5 +1,4 @@
 module.exports = (grunt) ->
-
   # Project configuration.
   grunt.initConfig
     pkg: grunt.file.readJSON('package.json')
@@ -28,6 +27,7 @@ module.exports = (grunt) ->
       dist:
         src: ['./src/internal/transportation/xhrpolling-min.js','./src/3rd/md5.min.js','./dist/RongIMLib.js']
         dest: './dist/RongIMLib.js'
+
     # concat:
     #   dist:
     #     src: ['./src/**/*.ts']
@@ -93,10 +93,11 @@ module.exports = (grunt) ->
           sourceMap: true
           suppressImplicitAnyIndexErrors: false
           target: 'es3'
-        src: './src/**/*.ts'
+        src: ['./src/**/*.ts','!./src/extensions/*.ts']
         dest: './dist/RongIMLib.js'
 
   # These plugins provide necessary tasks.
+  # grunt.loadNpmTasks 'google-closure-compiler'
   grunt.loadNpmTasks 'grunt-contrib-clean'
   grunt.loadNpmTasks 'grunt-contrib-concat'
   grunt.loadNpmTasks 'grunt-contrib-connect'
@@ -119,7 +120,7 @@ module.exports = (grunt) ->
     'clean:release'
     'typescript:release'
     'concat'
-    # 'uglify:release'
+    'uglify:release'
     # 'typedoc:release'
     # 'jsdoc'
   ]

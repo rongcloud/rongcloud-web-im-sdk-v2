@@ -44,6 +44,6 @@ module RongIMLib {
     }
     export interface GetHistoryMessagesCallback {
         onError(error: ErrorCode): void;
-        onSuccess(result: Message[], hasMoreMessages: boolean): void;
+        onSuccess(result: Message[], hasMoreMessages?: boolean): void;
     }
 }

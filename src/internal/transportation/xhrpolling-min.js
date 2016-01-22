@@ -112,6 +112,9 @@ var Polling = {
             this.setIspolling = function (b) {
                 a.ispolling = !!b
             };
+            this.setIsweb = function (b) {
+                a.isweb = !!b
+            };
             this.toArrayBuffer = function () {
                 return a
             }

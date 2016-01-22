@@ -233,39 +233,37 @@ module RongIMLib {
         /**
          * [getCurrentUserInfo 获取当前用户信息]
          * @param  {ResultCallback<UserInfo>} callback [回调函数]
-         * TODO 待讨论
          */
-        getCurrentUserInfo(callback: ResultCallback<UserInfo>) {
-            CheckParam.getInstance().check(["object"], "getCurrentUserInfo");
-            this.getUserInfo(Bridge._client.userId, callback);
-        }
+        // getCurrentUserInfo(callback: ResultCallback<UserInfo>) {
+        //     CheckParam.getInstance().check(["object"], "getCurrentUserInfo");
+        //     this.getUserInfo(Bridge._client.userId, callback);
+        // }
         /**
          * 获得用户信息
          * @param  {string}                   userId [用户Id]
          * @param  {ResultCallback<UserInfo>} callback [回调函数]
-         * TODO 待讨论
          */
-        getUserInfo(userId: string, callback: ResultCallback<UserInfo>) {
-            CheckParam.getInstance().check(["string", "object"], "getUserInfo");
-            var user = new Modules.GetUserInfoInput();
-            user.setNothing(1);
-            RongIMClient.bridge.queryMsg(5, MessageUtil.ArrayForm(user.toArrayBuffer()), userId, {
-                onSuccess: function(info: any) {
-                    var userInfo = new UserInfo(info.userId, info.name, info.portraitUri);
-                    callback.onSuccess(userInfo);
-                },
-                onError: function(err: any) {
-                    callback.onError(err);
-                }
-            }, "GetUserInfoOutput");
-        }
+        // getUserInfo(userId: string, callback: ResultCallback<UserInfo>) {
+        //     CheckParam.getInstance().check(["string", "object"], "getUserInfo");
+        //     var user = new Modules.GetUserInfoInput();
+        //     user.setNothing(1);
+        //     RongIMClient.bridge.queryMsg(5, MessageUtil.ArrayForm(user.toArrayBuffer()), userId, {
+        //         onSuccess: function(info: any) {
+        //             var userInfo = new UserInfo(info.userId, info.name, info.portraitUri);
+        //             callback.onSuccess(userInfo);
+        //         },
+        //         onError: function(err: any) {
+        //             callback.onError(err);
+        //         }
+        //     }, "GetUserInfoOutput");
+        // }
         /**
-         * 获取服务器时间的差值，单位为毫秒。
-         *
-         * @param callback  获取的回调，返回时间。
+         * 获取服务器时间与本地时间的差值，单位为毫秒。
+         * 计算公式：差值 = 本地时间毫秒数 - 服务器时间毫秒数
+         * @param callback  获取的回调，返回差值。
          */
-        getDeltaTime(callback: ResultCallback<number>) {
-            callback.onSuccess(RongIMClient._memoryStore.deltaTime);
+        getDeltaTime(): number {
+            return RongIMClient._memoryStore.deltaTime;
         }
 
         // #region Message
@@ -455,6 +453,26 @@ module RongIMLib {
                 }
             }, "HistoryMessagesOuput");
         }
+        getSendingBox(callback: GetHistoryMessagesCallback) {
+            CheckParam.getInstance().check(["object"], "getSendingBox");
+            var modules = new Modules.SyncRequestMsg(), self = this;
+            modules.setIspolling(false);
+            modules.setIsweb(true);
+            modules.setSyncTime(RongIMClient._memoryStore.lastReadTime.get("sendbox" + Bridge._client.userId));
+            RongIMClient.bridge.pullSendBoxMsg("pullMsg", MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(data: any) {
+                    RongIMClient._memoryStore.lastReadTime.set("sendbox" + Bridge._client.userId, MessageUtil.int64ToTimestamp(data.syncTime));
+                    var list = data.list.reverse();
+                    for (var i = 0, len = list.length; i < len; i++) {
+                        list[i] = MessageUtil.messageParser(list[i]);
+                    }
+                    callback.onSuccess(list);
+                },
+                onError: function() {
+                    callback.onSuccess([]);
+                }
+            }, "DownStreamMessages");
+        }
         /**
          * [hasRemoteUnreadMessages 是否有未接收的消息，jsonp方法]
          * @param  {string}          appkey   [appkey]
@@ -468,7 +486,7 @@ module RongIMLib {
                 xss.parentNode.removeChild(xss);
             };
             xss = document.createElement("script");
-            xss.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://api.cn.rong.io/message/exist.js?appKey=" + encodeURIComponent(RongIMClient._memoryStore.appKey) + "&token=" + encodeURIComponent(token) + "&callBack=RCCallback&_=" + Date.now();
+            xss.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://api.cn.ronghub.com/message/exist.js?appKey=" + encodeURIComponent(RongIMClient._memoryStore.appKey) + "&token=" + encodeURIComponent(token) + "&callBack=RCCallback&_=" + Date.now();
             document.body.appendChild(xss);
             xss.onerror = function() {
                 callback.onError(ErrorCode.UNKNOWN);
@@ -526,7 +544,8 @@ module RongIMLib {
          */
         clearTextMessageDraft(conversationType: ConversationType, targetId: string): boolean {
             CheckParam.getInstance().check(["number", "string", "object"], "clearTextMessageDraft");
-            RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId];
+            var key: string = "darf_" + conversationType + "_" + targetId;
+            delete RongIMClient._memoryStore[key];
             return true;
         }
         /**
@@ -539,7 +558,8 @@ module RongIMLib {
             if (targetId == "" || conversationType < 0) {
                 throw new Error("params error : " + ErrorCode.DRAF_GET_ERROR);
             }
-            return RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId];
+            var key: string = "darf_" + conversationType + "_" + targetId;
+            return RongIMClient._memoryStore[key];
         }
         /**
          * [saveTextMessageDraft description]
@@ -549,7 +569,8 @@ module RongIMLib {
          */
         saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string): boolean {
             CheckParam.getInstance().check(["number", "string", "string", "object"], "saveTextMessageDraft");
-            RongIMClient._memoryStore["darf_" + conversationType + "_" + targetId] = value;
+            var key: string = "darf_" + conversationType + "_" + targetId;
+            RongIMClient._memoryStore[key] = value;
             return true;
         }
 
@@ -602,18 +623,21 @@ module RongIMLib {
             conver.receivedTime = conver.latestMessage.receiveTime;
             conver.sentStatus = conver.latestMessage.sentStatus;
             conver.sentTime = conver.latestMessage.sentTime;
-            !isUseReplace ? conver.unreadMessageCount = 0 : null;
-            if (conver.conversationType == ConversationType.PRIVATE) {
-                self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{
-                    onSuccess: function(info: UserInfo) {
-                        conver.conversationTitle = info.name;
-                        conver.senderUserName = info.name;
-                        conver.senderUserId = info.userId;
-                        conver.senderPortraitUri = info.portraitUri;
-                    },
-                    onError: function(error: ErrorCode) { }
-                });
-            } else if (conver.conversationType == ConversationType.DISCUSSION) {
+            if (!isUseReplace) {
+                conver.unreadMessageCount = 0;
+            }
+            // if (conver.conversationType == ConversationType.PRIVATE) {
+            //     self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{
+            //         onSuccess: function(info: UserInfo) {
+            //             conver.conversationTitle = info.name;
+            //             conver.senderUserName = info.name;
+            //             conver.senderUserId = info.userId;
+            //             conver.senderPortraitUri = info.portraitUri;
+            //         },
+            //         onError: function(error: ErrorCode) { }
+            //     });
+            // } else
+            if (conver.conversationType == ConversationType.DISCUSSION) {
                 self.getDiscussion(tempConver.userId, {
                     onSuccess: function(info: Discussion) {
                         conver.conversationTitle = info.name;
@@ -1175,11 +1199,10 @@ module RongIMLib {
         addToBlacklist(userId: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["string", "object"], "addToBlacklist");
             var modules = new Modules.Add2BlackListInput();
-            this.getCurrentUserInfo(<ResultCallback<UserInfo>>{
-                onSuccess: function(info: UserInfo) {
-                    var uId = info.userId;
-                    modules.setUserId(userId);
-                    RongIMClient.bridge.queryMsg(21, MessageUtil.ArrayForm(modules.toArrayBuffer()), uId, callback);
+            modules.setUserId(userId);
+            RongIMClient.bridge.queryMsg(21, MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
+                onSuccess: function() {
+                    callback.onSuccess();
                 },
                 onError: function() {
                     callback.onError(ErrorCode.BLACK_ADD_ERROR);
@@ -1205,19 +1228,11 @@ module RongIMLib {
         getBlacklistStatus(userId: string, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["string", "object"], "getBlacklistStatus");
             var modules = new Modules.BlackListStatusInput();
-            this.getCurrentUserInfo({
-                onSuccess: function(info) {
-                    var uId = info.userId;
-                    modules.setUserId(userId);
-                    RongIMClient.bridge.queryMsg(24, MessageUtil.ArrayForm(modules.toArrayBuffer()), uId, {
-                        onSuccess: function(status: number) {
-                            callback.onSuccess(BlacklistStatus[status]);
-                        }, onError: function() {
-                            callback.onError(ErrorCode.BLACK_GETSTATUS_ERROR);
-                        }
-                    });
-                },
-                onError: function() {
+            modules.setUserId(userId);
+            RongIMClient.bridge.queryMsg(24, MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
+                onSuccess: function(status: number) {
+                    callback.onSuccess(BlacklistStatus[status]);
+                }, onError: function() {
                     callback.onError(ErrorCode.BLACK_GETSTATUS_ERROR);
                 }
             });
@@ -1230,11 +1245,10 @@ module RongIMLib {
         removeFromBlacklist(userId: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["string", "object"], "removeFromBlacklist");
             var modules = new Modules.RemoveFromBlackListInput();
-            this.getCurrentUserInfo({
-                onSuccess: function(info) {
-                    var uId = info.userId;
-                    modules.setUserId(userId);
-                    RongIMClient.bridge.queryMsg(22, MessageUtil.ArrayForm(modules.toArrayBuffer()), uId, callback);
+            modules.setUserId(userId);
+            RongIMClient.bridge.queryMsg(22, MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
+                onSuccess: function() {
+                    callback.onSuccess();
                 },
                 onError: function() {
                     callback.onError(ErrorCode.BLACK_REMOVE_ERROR);
@@ -1242,6 +1256,16 @@ module RongIMLib {
             });
         }
 
+        getFileToken(fileType: FileType, callback: ResultCallback<String>) {
+            CheckParam.getInstance().check(["number", "object"], "getQnTkn");
+            if (!(/(1|2|3)/.test(fileType.toString()))) {
+                callback.onError(ErrorCode.QNTKN_FILETYPE_ERROR);
+                return;
+            }
+            var modules = new Modules.GetQNupTokenInput();
+            modules.setType(fileType);
+            RongIMClient.bridge.queryMsg(30, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId,callback,"GetQNupTokenOutput");
+        }
         // #endregion Blacklist
 
         // #region Real-time Location Service
