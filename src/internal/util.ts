@@ -256,7 +256,7 @@ module RongIMLib {
             }
             if (entity.direction == 1) {
                 message.messageDirection = MessageDirection.SEND;
-            } else if (entity.direction == 0) {
+            } else {
                 message.messageDirection = MessageDirection.RECEIVE;
             }
             if ((entity.status & 2) == 2) {

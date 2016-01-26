@@ -102,7 +102,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a;
-            }
+            };
         },
         SyncRequestMsg: function () {
             var a = {};
@@ -110,14 +110,17 @@ var Polling = {
                 a.syncTime = b || 0;
             };
             this.setIspolling = function (b) {
-                a.ispolling = !!b
+                a.ispolling = !!b;
             };
             this.setIsweb = function (b) {
-                a.isweb = !!b
+                a.isweb = !!b;
+            };
+            this.setIsPullSend = function (b) {
+                a.isPullSend = !!b;
             };
             this.toArrayBuffer = function () {
-                return a
-            }
+                return a;
+            };
         },
         UpStreamMessage: function () {
             var a = {};
@@ -135,7 +138,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         DownStreamMessages: function () {
             var a = {};
@@ -147,7 +150,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         DownStreamMessage: function () {
             var a = {};
@@ -168,17 +171,17 @@ var Polling = {
                     a.content = b
             };
             this.setDataTime = function (b) {
-                a.dataTime = b
+                a.dataTime = b;
             };
             this.setStatus = function (b) {
-                a.status = b
+                a.status = b;
             };
             this.setMsgId = function (b) {
-                a.msgId = b
+                a.msgId = b;
             };
             this.toArrayBuffer = function () {
-                return a
-            }
+                return a;
+            };
         },
         CreateDiscussionInput: function () {
             var a = {};
@@ -196,7 +199,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         ChannelInvitationInput: function () {
             var a = {};
@@ -205,7 +208,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         LeaveChannelInput: function () {
             var a = {};
@@ -214,7 +217,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         ChannelEvictionInput: function () {
             var a = {};
@@ -223,7 +226,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         RenameChannelInput: function () {
             var a = {};
@@ -277,7 +280,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         ChannelInfosOutput: function () {
             var a = {};
@@ -289,7 +292,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         MemberInfo: function () {
             var a = {};
@@ -307,7 +310,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GroupMembersInput: function () {
             var a = {};
@@ -319,7 +322,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GroupMembersOutput: function () {
             var a = {};
@@ -331,7 +334,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GetUserInfoInput: function () {
             var a = {};
@@ -340,7 +343,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GetUserInfoOutput: function () {
             var a = {};
@@ -355,7 +358,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GetSessionIdInput: function () {
             var a = {};
@@ -364,7 +367,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GetSessionIdOutput: function () {
             var a = {};
@@ -373,7 +376,7 @@ var Polling = {
             };
             this.toArrayBuffer = function () {
                 return a
-            }
+            };
         },
         GetQNupTokenInput: function () {
             var a = {};

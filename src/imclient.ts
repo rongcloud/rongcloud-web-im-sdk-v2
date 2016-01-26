@@ -453,26 +453,6 @@ module RongIMLib {
                 }
             }, "HistoryMessagesOuput");
         }
-        getSendingBox(callback: GetHistoryMessagesCallback) {
-            CheckParam.getInstance().check(["object"], "getSendingBox");
-            var modules = new Modules.SyncRequestMsg(), self = this;
-            modules.setIspolling(false);
-            modules.setIsweb(true);
-            modules.setSyncTime(RongIMClient._memoryStore.lastReadTime.get("sendbox" + Bridge._client.userId));
-            RongIMClient.bridge.pullSendBoxMsg("pullMsg", MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(data: any) {
-                    RongIMClient._memoryStore.lastReadTime.set("sendbox" + Bridge._client.userId, MessageUtil.int64ToTimestamp(data.syncTime));
-                    var list = data.list.reverse();
-                    for (var i = 0, len = list.length; i < len; i++) {
-                        list[i] = MessageUtil.messageParser(list[i]);
-                    }
-                    callback.onSuccess(list);
-                },
-                onError: function() {
-                    callback.onSuccess([]);
-                }
-            }, "DownStreamMessages");
-        }
         /**
          * [hasRemoteUnreadMessages 是否有未接收的消息，jsonp方法]
          * @param  {string}          appkey   [appkey]
@@ -1264,8 +1244,20 @@ module RongIMLib {
             }
             var modules = new Modules.GetQNupTokenInput();
             modules.setType(fileType);
-            RongIMClient.bridge.queryMsg(30, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId,callback,"GetQNupTokenOutput");
+            RongIMClient.bridge.queryMsg(30, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "GetQNupTokenOutput");
         }
+
+        getFileUrl(fileType: FileType, fileName: String, callback: ResultCallback<String>) {
+            CheckParam.getInstance().check(["number", "string", "object"], "getQnTkn");
+            if (!(/(1|2|3)/.test(fileType.toString()))) {
+                callback.onError(ErrorCode.QNTKN_FILETYPE_ERROR);
+                return;
+            }
+            var modules = new Modules.GetQNdownloadUrlInput();
+            modules.setType(fileType);
+            modules.setKey(fileName);
+            RongIMClient.bridge.queryMsg(31, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "GetQNdownloadUrlOutput");
+        };
         // #endregion Blacklist
 
         // #region Real-time Location Service

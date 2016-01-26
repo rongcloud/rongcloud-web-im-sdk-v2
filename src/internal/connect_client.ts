@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
-        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp","qnTkn"];
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl"];
     export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
@@ -211,7 +211,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "1.1.1";
+        sdkVer: string = "2.0.6";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
@@ -322,7 +322,7 @@ module RongIMLib {
             this.handler.putCallback(new QueryCallback(_callback.onSuccess, _callback.onError), msg.getMessageId(), pbtype);
             this.channel.writeAndFlush(msg);
         }
-        invoke() {
+        invoke(isPullMsg?: boolean) {
             var time: string, modules: any, str: string, me = this, target: string, temp: any = this.SyncTimeQueue.shift();
             if (temp == undefined) {
                 return;
@@ -360,6 +360,11 @@ module RongIMLib {
                 this.invoke();
                 return;
             }
+            if (isPullMsg) {
+                modules.setIsPullSend(true);
+            } else {
+                modules.setIsPullSend(false);
+            }
             modules.setSyncTime(time);
             //发送queryMessage请求
             this.queryMessage(str, MessageUtil.ArrayForm(modules.toArrayBuffer()), target, Qos.AT_LEAST_ONCE, {
@@ -389,7 +394,7 @@ module RongIMLib {
             this.SyncTimeQueue.push({ type: _type, pulltime: pullTime });
             //如果队列中只有一个成员并且状态已经完成就执行invoke方法
             if (this.SyncTimeQueue.length == 1 && this.SyncTimeQueue.state == "complete") {
-                this.invoke();
+                this.invoke(!_type);
             }
         }
         __init(f: any) {
@@ -433,9 +438,6 @@ module RongIMLib {
                 topic = _topic[topic];
             }
             Bridge._client.queryMessage(topic, content, targetId, Qos.AT_MOST_ONCE, callback, pbname);
-        }
-        pullSendBoxMsg(topic: string, content: any, targetId: string, callback: any, pbname?: string): void {
-            Bridge._client.queryMessage(topic, content, targetId, Qos.AT_LEAST_ONCE, callback, pbname);
         }
         //发送消息 执行publishMessage 请求
         pubMsg(topic: number, content: string, targetId: string, callback: any, msg: any): void {
