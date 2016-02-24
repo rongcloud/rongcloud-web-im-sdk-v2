@@ -76,7 +76,7 @@ module RongIMLib {
         latiude: number;
         longitude: number;
         poi: string;
-        imgUri: string;
+        content: string;
         extra: string;
         messageName: string = "LocationMessage";
         constructor(message: any) {
@@ -86,15 +86,15 @@ module RongIMLib {
             this.latiude = message.latitude;
             this.longitude = message.longitude;
             this.poi = message.poi;
-            this.imgUri = message.imgUri;
+            this.content = message.content;
             this.extra = message.extra;
             if (message.userInfo) {
                 this.userInfo = message.userInfo;
             }
         }
 
-        static obtain(latitude: number, longitude: number, poi: string, imgUri: string): LocationMessage {
-            return new LocationMessage({ latitude: longitude, longitude: longitude, poi: poi, imgUri: imgUri, extra: "" });
+        static obtain(latitude: number, longitude: number, poi: string, content: string): LocationMessage {
+            return new LocationMessage({ latitude: longitude, longitude: longitude, poi: poi, content: content, extra: "" });
         }
 
         encode(): string {

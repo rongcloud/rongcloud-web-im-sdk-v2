@@ -94,7 +94,10 @@ module RongIMLib {
          * 未知原因失败。
          */
         UNKNOWN = -2,
-
+        /**
+         * 发送频率过快
+         */
+        SEND_FREQUENCY_TOO_FAST = 20604,
         /**
          * 不在讨论组。
          */
@@ -386,7 +389,11 @@ module RongIMLib {
         /**
          * 关注公众号失败
          */
-        QNTKN_GET_ERROR = 41002
+        QNTKN_GET_ERROR = 41002,
+        /**
+         * cookie被禁用
+         */
+        COOKIE_ENABLE = 51001
     }
 
     export enum MediaType {

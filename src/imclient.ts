@@ -86,7 +86,7 @@ module RongIMLib {
                 ContactNotificationMessage: "ContactNotificationMessage",
                 ProfileNotificationMessage: "ProfileNotificationMessage",
                 CommandNotificationMessage: "CommandNotificationMessage",
-                CommandMessage: "CommandNotificationMessage"
+                CommandMessage: "CommandMessage"
             };
         }
 
@@ -101,6 +101,10 @@ module RongIMLib {
             RongIMClient.bridge = Bridge.getInstance();
             RongIMClient._memoryStore.token = token;
             RongIMClient._memoryStore.callback = callback;
+            if (!navigator.cookieEnabled) {
+                callback.onError(ErrorCode.COOKIE_ENABLE);
+                return;
+            }
             RongIMClient.bridge.connect(RongIMClient._memoryStore.appKey, token, {
                 onSuccess: function(data: string) {
                     callback.onSuccess(data);
@@ -667,8 +671,8 @@ module RongIMLib {
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(list: any) {
                     if (list.info) {
-                        for (let i = 0, len = list.info.length; i < len; i++) {
-                            setTimeout(self.pottingConversation(list.info[i]), 200);
+                        for (var i = 0, len = list.info.length; i < len; i++) {
+                            self.pottingConversation(list.info[i]);
                         }
                     }
                     if (conversationTypes) {
@@ -1300,7 +1304,7 @@ module RongIMLib {
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
         module.exports = RongIMLib;
     } else if ("function" === typeof define && define.amd) {
-        define("RongIMLib", ['md5', 'Long', 'ByteBuffer', 'ProtoBuf'], function() {
+        define("RongIMLib", ['md5', "http://cdn.ronghub.com/Long.js", "http://cdn.ronghub.com/byteBuffer.js", "http://cdn.ronghub.com/protobuf-min-2.7.js"], function() {
             return RongIMLib;
         });
     } else {

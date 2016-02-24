@@ -362,13 +362,13 @@ module RongIMLib {
             }
             if (isPullMsg) {
                 modules.setIsPullSend(true);
-            } else {
-                modules.setIsPullSend(false);
             }
             modules.setSyncTime(time);
             //发送queryMessage请求
             this.queryMessage(str, MessageUtil.ArrayForm(modules.toArrayBuffer()), target, Qos.AT_LEAST_ONCE, {
                 onSuccess: function(collection: any) {
+                    me.SyncTimeQueue.state = "complete";
+                    me.invoke();
                     var sync = MessageUtil.int64ToTimestamp(collection.syncTime),
                         symbol = me.userId;
                     if (str == "chrmPull") {
@@ -381,8 +381,6 @@ module RongIMLib {
                     for (var i = 0; i < list.length; i++) {
                         Bridge._client.handler.onReceived(list[i]);
                     }
-                    me.SyncTimeQueue.state = "complete";
-                    me.invoke();
                 },
                 onError: function() {
                     me.SyncTimeQueue.state = "complete";

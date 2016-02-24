@@ -21,7 +21,7 @@ module RongIMLib {
       	"u1F616":{"en":"confounded","zh":"\u56F0\u60D1\u7684","tag":"\uD83D\uDE16","bp":"-308px 0px"},
       	"u1F618":{"en":"kissing_heart","zh":"\u4EB2\u4E00\u4E2A","tag":"\uD83D\uDE18","bp":"-330px 0px"},
       	"u1F621":{"en":"rage","zh":"\u6124\u6012","tag":"\uD83D\uDE21","bp":"-352px 0px"},
-      	"u1F622":{"en":"cry","zh":"\u54ED","tag":"\uD83D\uDE22","bp":"-374px 0px"},
+      	"u1F62D":{"en":"sob","zh":"\u54ED\u6CE3","tag":"\uD83D\uDE2D","bp":"-1826px 0px"},
       	"u1F623":{"en":"persevere","zh":"\u4F7F\u52B2","tag":"\uD83D\uDE23","bp":"-396px 0px"},
       	"u1F624":{"en":"triumph","zh":"\u751F\u6C14","tag":"\uD83D\uDE24","bp":"-418px 0px"},
       	"u1F628":{"en":"fearful","zh":"\u53EF\u6015","tag":"\uD83D\uDE28","bp":"-440px 0px"},
@@ -58,14 +58,14 @@ module RongIMLib {
       	"u1F35A":{"en":"rice","zh":"\u996D","tag":"\uD83C\uDF5A","bp":"-1122px 0px"},
       	"u1F36B":{"en":"chocolate_bar","zh":"\u5DE7\u514B\u529B","tag":"\uD83C\uDF6B","bp":"-1144px 0px"},
       	"u1F37B":{"en":"beers","zh":"\u5564\u9152","tag":"\uD83C\uDF7B","bp":"-1166px 0px"},
-      	"u1F44A":{"en":"punch","zh":"\u62F3","tag":"\uD83D\uDC4A","bp":"-1188px 0px"},
+        "u270A":{"en":"fist","zh":"\u62F3\u5934","tag":"\u270A","bp":"-2618px 0px"},
       	"u1F44C":{"en":"ok_hand","zh":"\u6CA1\u95EE\u9898","tag":"\uD83D\uDC4C","bp":"-1210px 0px"},
       	"u1F44D":{"en":"1","zh":"1","tag":"\uD83D\uDC4D","bp":"-1232px 0px"},
       	"u1F44E":{"en":"-1","zh":"-1","tag":"\uD83D\uDC4E","bp":"-1254px 0px"},
       	"u1F44F":{"en":"clap","zh":"\u62CD","tag":"\uD83D\uDC4F","bp":"-1276px 0px"},
       	"u1F46A":{"en":"family","zh":"\u5BB6\u5EAD","tag":"\uD83D\uDC6A","bp":"-1298px 0px"},
       	"u1F46B":{"en":"couple","zh":"\u60C5\u4FA3","tag":"\uD83D\uDC6B","bp":"-1320px 0px"},
-      	"u1F47B":{"en":"ghost","zh":"\u9B3C","tag":"\uD83D\uDC7B","bp":"-1342px 0px"},
+        "u1F62C":{"en":"grimacing","zh":"\u9B3C\u8138","tag":"\uD83D\uDE2C","bp":"-1804px 0px"},
       	"u1F47C":{"en":"angel","zh":"\u5929\u4F7F","tag":"\uD83D\uDC7C","bp":"-1364px 0px"},
       	"u1F47D":{"en":"alien","zh":"\u5916\u661F\u4EBA","tag":"\uD83D\uDC7D","bp":"-1386px 0px"},
       	"u1F47F":{"en":"imp","zh":"\u6076\u9B54","tag":"\uD83D\uDC7F","bp":"-1408px 0px"},
@@ -86,8 +86,8 @@ module RongIMLib {
       	"u1F61F":{"en":"anguished","zh":"\u82E6\u6DA9","tag":"\uD83D\uDE1F","bp":"-1738px 0px"},
       	"u1F62A":{"en":"sleepy","zh":"\u56F0","tag":"\uD83D\uDE2A","bp":"-1760px 0px"},
       	"u1F62B":{"en":"tired_face","zh":"\u6293\u72C2","tag":"\uD83D\uDE2B","bp":"-1782px 0px"},
-      	"u1F62C":{"en":"grimacing","zh":"\u9B3C\u8138","tag":"\uD83D\uDE2C","bp":"-1804px 0px"},
-      	"u1F62D":{"en":"sob","zh":"\u54ED\u6CE3","tag":"\uD83D\uDE2D","bp":"-1826px 0px"},
+        "u1F47B":{"en":"ghost","zh":"\u9B3C","tag":"\uD83D\uDC7B","bp":"-1342px 0px"},
+        "u1F622":{"en":"cry","zh":"\u54ED","tag":"\uD83D\uDE22","bp":"-374px 0px"},
       	"u1F62F":{"en":"hushed","zh":"\u5BC2\u9759","tag":"\uD83D\uDE2F","bp":"-1848px 0px"},
       	"u1F64A":{"en":"speak_no_evil","zh":"\u4E0D\u8BF4\u8BDD","tag":"\uD83D\uDE4A","bp":"-1870px 0px"},
       	"u1F64F":{"en":"pray","zh":"\u7948\u7977","tag":"\uD83D\uDE4F","bp":"-1892px 0px"},
@@ -123,9 +123,9 @@ module RongIMLib {
       	"u26C5":{"en":"partly_sunny","zh":"\u591A\u4E91","tag":"\u26C5","bp":"-2552px 0px"},
       	"u261D":{"en":"point_up","zh":"\u7B2C\u4E00","tag":"\u261D","bp":"-2574px 0px"},
       	"u263A":{"en":"relaxed","zh":"\u8F7B\u677E","tag":"\u263A","bp":"-2596px 0px"},
-      	"u270A":{"en":"fist","zh":"\u62F3\u5934","tag":"\u270A","bp":"-2618px 0px"},
+      	"u1F44A":{"en":"punch","zh":"\u62F3","tag":"\uD83D\uDC4A","bp":"-1188px 0px"},
       	"u270B":{"en":"hand","zh":"\u624B","tag":"\u270B","bp":"-2640px 0px"},
-      	"u270C":{"en":"v","zh":"v\20","tag":"\u270C","bp":"-2662px 0px"},
+      	"u270C":{"en":"v","zh":"v","tag":"\u270C","bp":"-2662px 0px"},
       	"u270F":{"en":"pencil2","zh":"\u7B14","tag":"\u270F","bp":"-2684px 0px"},
       	"u2600":{"en":"sunny","zh":"\u6674\u6717","tag":"\u2600","bp":"-2706px 0px"},
       	"u2601":{"en":"cloud","zh":"\u4E91","tag":"\u2601","bp":"-2728px 0px"},
@@ -148,6 +148,7 @@ module RongIMLib {
          * 判断是否支持emoji
          */
         private static supportEmoji: boolean = false;
+
         /**
          * 初始化CSS
          */
@@ -201,14 +202,14 @@ module RongIMLib {
         static init(emoji?:any) {
             var me = this;
             if (emoji) {
-			         me.emojiFactory = emoji.emojiFactory;
+			         me.emojiFactory = emoji.dataSource;
 			         me.url = emoji.url;
             }
             if (me.pixelRatio > 1) {
                 me.size = 48;
                 //TODO 这是高清URL
             }
-            if (navigator.userAgent.match(/Mac\s+OS/i)) {
+            if (!emoji && navigator.userAgent.match(/Mac\s+OS/i)) {
                 me.supportEmoji = true;
             }
             me.initCSS();
@@ -221,7 +222,7 @@ module RongIMLib {
             tagStr = tagStr.substring(0, tagStr.length - 1);
             tagStr = tagStr.replace(regExp, function(x) { return "\\"; });
             me.regExpTag = new RegExp("(" + tagStr + ")", "g");
-            nameStr = nameStr.substring(0, tagStr.length - 1);
+            nameStr = nameStr.substring(0, nameStr.length - 1);
             nameStr = nameStr.replace(regExp, function(x) { return "\\"; });
             me.regExpName = new RegExp("(" + nameStr + ")", "g");
         }

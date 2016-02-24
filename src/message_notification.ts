@@ -2,21 +2,21 @@ module RongIMLib {
 
     export class InformationNotificationMessage implements NotificationMessage, UserInfoAttachedMessage, ExtraAttachedMessage {
         userInfo: UserInfo;
-        content: string;
+        message: string;
         extra: string;
         messageName: string = "InformationNotificationMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> InformationNotificationMessage.");
             }
-            this.content = message.content;
+            this.message = message.message;
             this.extra = message.extra;
             if (message.userInfo) {
                 this.userInfo = message.userInfo;
             }
         }
-        static obtain(content: string): InformationNotificationMessage {
-            return new InformationNotificationMessage({ content: content, extra: "" });
+        static obtain(message: string): InformationNotificationMessage {
+            return new InformationNotificationMessage({ message: message, extra: "" });
         }
 
         encode() {
@@ -24,18 +24,20 @@ module RongIMLib {
         }
     }
     export class CommandMessage implements MessageContent, ExtraAttachedMessage {
-        content: string;
+        data: string;
         extra: string;
+        name:string;
         messageName: string = "CommandMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> CommandMessage.");
             }
-            this.content = message.content;
+            this.data = JSON.parse(message.data);
+            this.name = message.name;
             this.extra = message.extra;
         }
-        static obtain(content: string): CommandMessage {
-            return new CommandMessage({ content: content, extra: "" });
+        static obtain(data: string): CommandMessage {
+            return new CommandMessage({ data: data, extra: "" });
         }
         encode() {
             return JSON.stringify(ModelUtil.modelClone(this));
@@ -84,7 +86,7 @@ module RongIMLib {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ProfileNotificationMessage.");
             }
             this.operation = message.operation;
-            this.data = message.data;
+            this.data = JSON.parse(message.data);
             this.extra = message.extra;
             if (message.userInfo) {
                 this.userInfo = message.userInfo;
@@ -108,7 +110,7 @@ module RongIMLib {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ProfileNotificationMessage.");
             }
-            this.data = message.data;
+            this.data = JSON.parse(message.data);
             this.name = message.name;
             this.extra = message.extra;
             if (message.userInfo) {

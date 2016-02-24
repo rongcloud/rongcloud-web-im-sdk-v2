@@ -6,7 +6,8 @@ declare var define: any;
 declare var exports: any;
 declare var dcodeIO: any;
 declare var Polling: any;
-declare var escape:any;
+declare var escape: any;
+declare var AMR: any;
 declare class XDomainRequest { }
 declare interface Window {
     WebSocket: WebSocket;
@@ -18,6 +19,7 @@ declare interface Window {
     XDomainRequest: any;
     JSON: any;
     Modules: any;
+    handleFileSelect: any;
 }
 declare interface Document {
     createStyleSheet: any;

@@ -10,7 +10,8 @@ var typeMapping: { [s: string]: any } = {
     "RC:ContactNtf": "ContactNotificationMessage",
     "RC:ProfileNtf": "ProfileNotificationMessage",
     "RC:CmdNtf": "CommandNotificationMessage",
-    "RC:DizNtf": "DiscussionNotificationMessage"
+    "RC:DizNtf": "DiscussionNotificationMessage",
+    "RC:CmdMsg": "CommandMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
