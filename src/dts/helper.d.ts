@@ -8,7 +8,9 @@ declare var dcodeIO: any;
 declare var Polling: any;
 declare var escape: any;
 declare var AMR: any;
+declare var swfobject:any;
 declare class XDomainRequest { }
+
 declare interface Window {
     WebSocket: WebSocket;
     Notifications: any;

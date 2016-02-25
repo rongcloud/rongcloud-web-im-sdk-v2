@@ -407,7 +407,7 @@ module RongIMLib {
          * @param  {string}                    objectName       [objectName]
          */
         getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
-            CheckParam.getInstance().check(["number", "string", "number|null|global", "number", "object"], "getHistoryMessages");
+            CheckParam.getInstance().check(["number", "string", "number|null|global|object", "number", "object"], "getHistoryMessages");
             if (count > 20) {
                 throw new Error("HistroyMessage count must be less than or equal to 20!");
             }
@@ -426,7 +426,7 @@ module RongIMLib {
          * @param  {ResultCallback<Message[]>} callback         [description]
          */
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
-            CheckParam.getInstance().check(["number", "string", "number|null|global", "number", "object"], "getRemoteHistoryMessages");
+            CheckParam.getInstance().check(["number", "string", "number|null|global|object", "number", "object"], "getRemoteHistoryMessages");
             if (count > 20) {
                 callback.onError(ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
                 return;

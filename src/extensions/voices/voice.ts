@@ -1,10 +1,31 @@
 module RongIMLib {
     export class RongIMVoice {
+        private static isIE: boolean = /IE/.test(navigator.userAgent);
         static init() {
-            if (/IE/.test(navigator.userAgent)) {
-                //TODO
+            if (this.isIE) {
+                var div = document.createElement("div");
+                div.setAttribute("id", "flashContent");
+                document.body.appendChild(div);
+                var script = document.createElement("script");
+                script.src = "lib/swfobject.js";
+                var header = document.getElementsByTagName("head")[0];
+                header.appendChild(script);
+                setTimeout(function() {
+                    var swfVersionStr = "11.4.0";
+                    var flashvars = {};
+                    var params: any = {};
+                    params.quality = "high";
+                    params.bgcolor = "#ffffff";
+                    params.allowscriptaccess = "sameDomain";
+                    params.allowfullscreen = "true";
+                    var attributes: any = {};
+                    attributes.id = "player";
+                    attributes.name = "player";
+                    attributes.align = "middle";
+                    swfobject.embedSWF("lib/player.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
+                }, 120);
             } else {
-                var list = ["lib/pcmdata.min.js","lib/libamr-min.js"];
+                var list = ["lib/pcmdata.min.js", "lib/libamr-min.js"];
                 for (let i = 0, len = list.length; i < len; i++) {
                     var script = document.createElement("script");
                     script.src = list[i];
@@ -14,21 +35,38 @@ module RongIMLib {
         }
 
         static play(data: string, duration: number) {
-            this.palyVoice(data);
-            var self = this;
-            var timer = setInterval(function() {
-                var count: number = 0;
-                self.onprogress();
-                count++;
-                if (count >= duration) {
-                    clearInterval(timer);
-                }
-            }, 1000);
+            var me = this;
+            if (me.isIE) {
+                me.thisMovie().doAction("init", data);
+            }
+            else {
+                me.palyVoice(data);
+                me.onCompleted(duration);
+            }
         }
 
         static onprogress() {
 
         }
+
+        private static thisMovie(): any {
+            return eval("window['player']");
+        }
+        private static onCompleted(duration: number): void {
+            var me = this;
+            var count = 0;
+            var timer = setInterval(function() {
+                count++;
+                me.onprogress();
+                if (count >= duration) {
+                    clearInterval(timer);
+                }
+            }, 1000);
+            if (me.isIE) {
+                me.thisMovie().doAction("play");
+            }
+        }
+
 
         private static base64ToBlob(base64Data: string, type: string) {
             var mimeType: any;

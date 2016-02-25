@@ -3,7 +3,7 @@ module RongIMLib {
         static Endpoint: any = new Object;
         constructor() {
             window.getServerEndpoint = function(x: any) {
-                //把导航返回的server字段赋值给CookieHelper._host，因为flash widget需要使用
+                //把导航返回的server字段赋值给CookieHelper._host，因为flash widget需要使用 decodeURIComponent
                 RongIMClient._cookieHelper._host = Navigation.Endpoint.host = x["server"];
                 //替换本地存储的导航信息
                 var temp = RongIMClient._cookieHelper.getItemKey("navi");
@@ -36,7 +36,7 @@ module RongIMLib {
                     _old = RongIMClient._cookieHelper.getItem(RongIMClient._cookieHelper.getItemKey("navi")),
                     _new = RongIMClient._cookieHelper.getItem("navi" + naviStr);
                 if (_old == _new && _new !== null && RongIMClient._cookieHelper.getItem("rongSDK") == Transportations._TransportType) {
-                    var obj = encodeURIComponent(_old).split(",");
+                    var obj = decodeURIComponent(_old).split(",");
                     setTimeout(function() {
                         RongIMClient._cookieHelper._host = Navigation.Endpoint.host = obj[0];
                         Navigation.Endpoint.userId = obj[1];

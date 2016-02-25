@@ -26,13 +26,23 @@ module RongIMLib {
     export class CommandMessage implements MessageContent, ExtraAttachedMessage {
         data: string;
         extra: string;
-        name:string;
+        name: string;
         messageName: string = "CommandMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> CommandMessage.");
             }
-            this.data = JSON.parse(message.data);
+            try {
+                if (Object.prototype.toString.call(message.data) == "[object String]") {
+                    this.data = JSON.parse(message.data);
+                }
+                else {
+                    this.data = message.data;
+                }
+            }
+            catch (e) {
+                this.data = message.data;
+            }
             this.name = message.name;
             this.extra = message.extra;
         }
@@ -86,7 +96,17 @@ module RongIMLib {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ProfileNotificationMessage.");
             }
             this.operation = message.operation;
-            this.data = JSON.parse(message.data);
+            try {
+                if (Object.prototype.toString.call(message.data) == "[object String]") {
+                    this.data = JSON.parse(message.data);
+                }
+                else {
+                    this.data = message.data;
+                }
+            }
+            catch (e) {
+                this.data = message.data;
+            }
             this.extra = message.extra;
             if (message.userInfo) {
                 this.userInfo = message.userInfo;
@@ -110,7 +130,17 @@ module RongIMLib {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ProfileNotificationMessage.");
             }
-            this.data = JSON.parse(message.data);
+            try {
+                if (Object.prototype.toString.call(message.data) == "[object String]") {
+                    this.data = JSON.parse(message.data);
+                }
+                else {
+                    this.data = message.data;
+                }
+            }
+            catch (e) {
+                this.data = message.data;
+            }
             this.name = message.name;
             this.extra = message.extra;
             if (message.userInfo) {

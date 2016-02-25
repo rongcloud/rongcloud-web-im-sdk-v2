@@ -165,7 +165,7 @@ module RongIMLib {
                 var naviStr = RongIMClient._cookieHelper.getItem(RongIMClient._cookieHelper.getItemKey("navi"));
                 var naviKey = RongIMClient._cookieHelper.getItemKey("navi");
 
-                var arr = encodeURIComponent(naviStr).split(",");
+                var arr = decodeURIComponent(naviStr).split(",");
                 if (!arr[1]) {
                     naviStr = encodeURIComponent(naviStr) + userId;
                     RongIMClient._cookieHelper.setItem(naviKey, naviStr);
