@@ -1,6 +1,7 @@
 module RongIMLib {
     export class RongIMVoice {
         private static isIE: boolean = /IE/.test(navigator.userAgent);
+        private static element: any;
         static init() {
             if (this.isIE) {
                 var div = document.createElement("div");
@@ -42,6 +43,17 @@ module RongIMLib {
             else {
                 me.palyVoice(data);
                 me.onCompleted(duration);
+            }
+        }
+
+        static stop() {
+            var me = this;
+            if (me.isIE) {
+                me.thisMovie().doAction("stop");
+            } else {
+                if (me.element) {
+                    me.element.stop();
+                }
             }
         }
 
@@ -93,14 +105,22 @@ module RongIMLib {
         }
 
         private static palyVoice(base64Data: string) {
-            var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr");
+            var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr"), me = this;
             reader.onload = function() {
                 var samples = new AMR({
                     benchmark: true
                 }).decode(reader.result);
-                AMR.util.play(samples);
+                me.element = AMR.util.play(samples);
             };
             reader.readAsBinaryString(blob);
         }
+    }
+    //兼容AMD CMD
+    if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
+        module.exports = RongIMVoice;
+    } else if ("function" === typeof define && define.amd) {
+        define("RongIMVoice", [], function() {
+            return RongIMVoice;
+        });
     }
 }

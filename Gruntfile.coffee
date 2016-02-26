@@ -93,7 +93,7 @@ module.exports = (grunt) ->
           sourceMap: true
           suppressImplicitAnyIndexErrors: false
           target: 'es3'
-        src: ['./src/**/*.ts','!./src/extensions/*.ts']
+        src: ['./src/**/*.ts','!./src/extensions/*.ts','!./src/extensions/**/*.ts']
         dest: './dist/RongIMLib.js'
 
   # These plugins provide necessary tasks.

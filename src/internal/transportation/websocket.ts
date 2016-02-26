@@ -69,6 +69,7 @@ module RongIMLib {
         onClose(): any {
             this.isClose = true;
             this.socket = this.empty;
+            this._socket.disconnect(ConnectionStatus.DISCONNECTED);
         }
         /**
          * [onError 通道报错时触发的方法]

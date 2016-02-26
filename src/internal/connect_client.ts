@@ -374,6 +374,8 @@ module RongIMLib {
                     if (str == "chrmPull") {
                         symbol += "CST";
                     }
+                    //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
+                    RongIMClient._memoryStore.isSyncRemoteConverList = true;
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
                     RongIMClient._cookieHelper.setItem(symbol, sync);
                     //把拉取到的消息逐条传给消息监听器
@@ -381,6 +383,7 @@ module RongIMLib {
                     for (var i = 0; i < list.length; i++) {
                         Bridge._client.handler.onReceived(list[i]);
                     }
+
                 },
                 onError: function() {
                     me.SyncTimeQueue.state = "complete";

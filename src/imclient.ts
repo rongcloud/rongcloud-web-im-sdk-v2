@@ -48,7 +48,9 @@ module RongIMLib {
                 publicServiceMap: new PublicServiceMap(),
                 listenerList: [],
                 providerType: 1,
-                deltaTime: 0
+                deltaTime: 0,
+                filterMessages: [],
+                isSyncRemoteConverList:false
             };
             RongIMClient._cookieHelper = new CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
@@ -224,6 +226,16 @@ module RongIMLib {
                 return "ServerDataProvider";
             } else {
                 return "OtherDataProvider";
+            }
+        }
+
+        /**
+         * 过滤聊天室消息（拉取最近聊天消息）
+         * @param {string[]} msgFilterNames [description]
+         */
+        setFilterMessages(msgFilterNames: string[]): void {
+            if (Object.prototype.toString.call(msgFilterNames) == "[object Array]") {
+                RongIMClient._memoryStore.filterMessages = msgFilterNames;
             }
         }
 
@@ -999,9 +1011,20 @@ module RongIMLib {
                             var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
                             RongIMClient._cookieHelper.setItem(Bridge._client.userId + "CST", sync);
                             var list = collection.list;
-                            for (var i = 0, len = list.length; i < len; i++) {
-                                Bridge._client.handler.onReceived(list[i]);
+                            if (RongIMClient._memoryStore.filterMessages.length > 0) {
+                                for (var i = 0, mlen = list.length; i < mlen; i++) {
+                                    for (let j = 0, flen = RongIMClient._memoryStore.filterMessages.length; j < flen; j++) {
+                                        if (RongIMClient.MessageParams[RongIMClient._memoryStore.filterMessages[j]].objectName != list[i].classname) {
+                                            Bridge._client.handler.onReceived(list[i]);
+                                        }
+                                    }
+                                }
+                            } else {
+                                for (var i = 0, len = list.length; i < len; i++) {
+                                    Bridge._client.handler.onReceived(list[i]);
+                                }
                             }
+
                         },
                         onError: function(x: any) {
                             callback.onError(ErrorCode.CHATROOM_HISMESSAGE_ERROR);

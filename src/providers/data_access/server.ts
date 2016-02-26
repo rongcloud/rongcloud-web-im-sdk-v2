@@ -84,7 +84,7 @@ module RongIMLib {
         }
 
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]) {
-            if (RongIMClient._memoryStore.conversationList.length == 0) {
+            if (RongIMClient._memoryStore.conversationList.length == 0 || RongIMClient._memoryStore.isSyncRemoteConverList) {
                 RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
                         if (MessageUtil.supportLargeStorage()) {
@@ -95,6 +95,7 @@ module RongIMLib {
                                 }
                             });
                         }
+                        RongIMClient._memoryStore.isSyncRemoteConverList = false;
                         callback.onSuccess(list);
                     },
                     onError: function(errorcode: ErrorCode) {
