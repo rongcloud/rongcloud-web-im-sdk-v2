@@ -1,14 +1,15 @@
 module RongIMLib {
     export class RongIMVoice {
-        private static isIE: boolean = /IE/.test(navigator.userAgent);
+        private static isIE: boolean = /Trident/.test(navigator.userAgent);
         private static element: any;
+        private static isInit: boolean = false;
         static init() {
             if (this.isIE) {
                 var div = document.createElement("div");
                 div.setAttribute("id", "flashContent");
                 document.body.appendChild(div);
                 var script = document.createElement("script");
-                script.src = "lib/swfobject.js";
+                script.src = "http://cdn.ronghub.com/swfobject-2.0.0.min.js";
                 var header = document.getElementsByTagName("head")[0];
                 header.appendChild(script);
                 setTimeout(function() {
@@ -17,25 +18,28 @@ module RongIMLib {
                     var params: any = {};
                     params.quality = "high";
                     params.bgcolor = "#ffffff";
-                    params.allowscriptaccess = "sameDomain";
+                    params.allowscriptaccess = "always";
+                    params.allowScriptAccess = "always";
                     params.allowfullscreen = "true";
                     var attributes: any = {};
                     attributes.id = "player";
                     attributes.name = "player";
                     attributes.align = "middle";
-                    swfobject.embedSWF("lib/player.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
-                }, 120);
+                    swfobject.embedSWF("http://cdn.ronghub.com/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
+                }, 200);
             } else {
-                var list = ["lib/pcmdata.min.js", "lib/libamr-min.js"];
+                var list = ["http://cdn.ronghub.com/pcmdata-2.0.0.min.js", "http://cdn.ronghub.com/libamr-2.0.1.min.js"];
                 for (let i = 0, len = list.length; i < len; i++) {
                     var script = document.createElement("script");
                     script.src = list[i];
                     document.head.appendChild(script);
                 }
             }
+            this.isInit = true;
         }
 
         static play(data: string, duration: number) {
+            this.checkInit("play");
             var me = this;
             if (me.isIE) {
                 me.thisMovie().doAction("init", data);
@@ -47,6 +51,7 @@ module RongIMLib {
         }
 
         static stop() {
+            this.checkInit("stop");
             var me = this;
             if (me.isIE) {
                 me.thisMovie().doAction("stop");
@@ -60,7 +65,11 @@ module RongIMLib {
         static onprogress() {
 
         }
-
+        private static checkInit(position: string) {
+            if (!this.isInit) {
+                throw new Error("RongIMVoice is not init,position:" + position);
+            }
+        }
         private static thisMovie(): any {
             return eval("window['player']");
         }

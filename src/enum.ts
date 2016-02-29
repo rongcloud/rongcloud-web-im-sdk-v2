@@ -387,7 +387,7 @@ module RongIMLib {
          */
         QNTKN_FILETYPE_ERROR = 41001,
         /**
-         * 关注公众号失败
+         * 获取七牛token失败
          */
         QNTKN_GET_ERROR = 41002,
         /**
