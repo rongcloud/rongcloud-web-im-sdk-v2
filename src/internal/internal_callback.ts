@@ -8,7 +8,7 @@ module RongIMLib {
             if (error && typeof error == "number") {
                 this.timeoutMillis = error;
             } else {
-                this.timeoutMillis = 6000;
+                this.timeoutMillis = 30000;
                 this.onError = error;
             }
         }
@@ -170,7 +170,9 @@ module RongIMLib {
                     naviStr = encodeURIComponent(naviStr) + userId;
                     RongIMClient._cookieHelper.setItem(naviKey, naviStr);
                 }
-
+                if (RongIMClient._dataAccessProvider) {
+                    RongIMClient._dataAccessProvider.database.init(userId);
+                }
                 this._client.userId = userId;
                 if (!RongIMClient.isNotPullMsg) {
                     this._client.syncTime();
@@ -187,13 +189,14 @@ module RongIMLib {
             } else if (status == 6) {
                 //重定向
                 var x: any = {};
+                var me = this;
                 new Navigation().getServerEndpoint(this._client.token, this._client.appId, function() {
-                    this._client.clearHeartbeat();
-                    new Client(this._client.token, this._client.appId).__init.call(x, function() {
-                        Transportations._TransportType == "websocket" && this._client.keepLive();
+                    me._client.clearHeartbeat();
+                    new Client(me._client.token, me._client.appId).__init.call(x, function() {
+                        Transportations._TransportType == "websocket" && me._client.keepLive();
                     });
-                    this._client.channel.socket.fire("StatusChanged", 2);
-                }, this._timeout, false);
+                    me._client.channel.socket.fire("StatusChanged", 2);
+                }, me._timeout, false);
             } else {
                 if (this._client.reconnectObj.onError) {
                     this._client.reconnectObj.onError(status);

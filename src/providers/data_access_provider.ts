@@ -1,12 +1,15 @@
 module RongIMLib {
     export interface DataAccessProvider {
+
+        database: DBUtil;
+
         addConversation(conversation: Conversation, callback: ResultCallback<boolean>): void;
 
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
-        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback?: ResultCallback<Message>): void;
+        addMessage(conversationType: ConversationType, targetId: string, message: Message, callback?: ResultCallback<Message>): void;
 
-        removeMessage(conversationType: ConversationType, targetId: string, messageId: number[], callback: ResultCallback<boolean>): void;
+        removeMessage(conversationType: ConversationType, targetId: string, messageId: string[], callback: ResultCallback<boolean>): void;
 
         updateMessage(message: Message, callback?: ResultCallback<Message>): void;
 
@@ -28,7 +31,7 @@ module RongIMLib {
 
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>): void;
 
-        clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>):void;
+        clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
         setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 

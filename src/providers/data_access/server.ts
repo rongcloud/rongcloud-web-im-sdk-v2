@@ -1,5 +1,6 @@
 module RongIMLib {
     export class ServerDataProvider implements DataAccessProvider {
+        database: DBUtil = new DBUtil();
         addConversation(conversation: Conversation, callback: ResultCallback<boolean>) {
             var isAdd: boolean = true;
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
@@ -28,13 +29,13 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
-        addMessage(conversationType: ConversationType, targetId: string, message: MessageContent, callback?: ResultCallback<Message>) {
+        addMessage(conversationType: ConversationType, targetId: string, message: Message, callback?: ResultCallback<Message>) {
             if (callback) {
                 callback.onSuccess(new Message());
             }
         }
 
-        removeMessage(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
+        removeMessage(conversationType: ConversationType, targetId: string, messageIds: string[], callback: ResultCallback<boolean>) {
             callback.onSuccess(true);
         }
 

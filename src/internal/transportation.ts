@@ -7,7 +7,7 @@ module RongIMLib {
         //接收服务器返回消息
         onData(data?: any): string;
         //处理通道关闭操作
-        onClose(): any;
+        onClose(ev?:any): any;
         //通道异常操作
         onError(error: any): void;
         //断开连接

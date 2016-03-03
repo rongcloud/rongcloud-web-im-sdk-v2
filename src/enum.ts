@@ -47,7 +47,7 @@ module RongIMLib {
         /**
          * 网络不可用。
          */
-        NETWORK_UNAVAILABLE = -1
+        NETWORK_UNAVAILABLE = 3
     }
 
     export enum ConversationNotificationStatus {
@@ -127,6 +127,10 @@ module RongIMLib {
          *获取用户失败
          */
         GET_USERINFO_ERROR = 23407,
+        /**
+         *获取用户失败
+         */
+        FORBIDDEN_IN_CHATROOM = 23408,
         /**
          * 在黑名单中。
          */

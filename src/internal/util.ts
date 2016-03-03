@@ -11,7 +11,8 @@ var typeMapping: { [s: string]: any } = {
     "RC:ProfileNtf": "ProfileNotificationMessage",
     "RC:CmdNtf": "CommandNotificationMessage",
     "RC:DizNtf": "DiscussionNotificationMessage",
-    "RC:CmdMsg": "CommandMessage"
+    "RC:CmdMsg": "CommandMessage",
+    "RC:TypSts": "TypingStatusMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},

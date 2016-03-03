@@ -144,7 +144,7 @@ module RongIMLib {
             this.fire("message", data);
         }
         disconnect(status: number) {
-            this.socket.disconnect();
+            this.socket.disconnect(status);
             this.fire("disconnect", status);
             return this;
         }
@@ -282,7 +282,7 @@ module RongIMLib {
             this.heartbeat = setInterval(function() {
                 me.resumeTimer();
                 me.channel.writeAndFlush(new PingReqMessage());
-            }, 180000);
+            }, 30000);
         }
         clearHeartbeat() {
             clearInterval(this.heartbeat);
@@ -522,27 +522,26 @@ module RongIMLib {
             if (message === null) {
                 return;
             }
-            con = RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId);
-            if (!con) {
-                con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
-            }
-            //根据messageTag判断是否进行消息数累加
-            // if (/ISCOUNTED/.test(message.getMessageTag())) {
-            if (con.conversationType != 0) {
-                con.unreadMessageCount = con.unreadMessageCount + 1;
-                if (MessageUtil.supportLargeStorage()) {
-                    var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
-                    LocalStorageProvider.getInstance().setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
+            if (message.messageType != "TypingStatusMessage") {
+                con = RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId);
+                if (!con) {
+                    con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
                 }
+                if (con.conversationType != 0) {
+                    con.unreadMessageCount = con.unreadMessageCount + 1;
+                    if (MessageUtil.supportLargeStorage()) {
+                        var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
+                        LocalStorageProvider.getInstance().setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
+                    }
+                }
+                con.receivedTime = new Date().getTime();
+                con.receivedStatus = ReceivedStatus.READ;
+                con.senderUserId = message.sendUserId;
+                con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
+                con.latestMessageId = message.messageId;
+                con.latestMessage = message;
+                RongIMClient._dataAccessProvider.addConversation(con, <ResultCallback<boolean>>{ onSuccess: function(data) { } });
             }
-            // }
-            con.receivedTime = new Date().getTime();
-            con.receivedStatus = ReceivedStatus.READ;
-            con.senderUserId = message.sendUserId;
-            con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-            con.latestMessageId = message.messageId;
-            con.latestMessage = message;
-            con.setTop();
             this._onReceived(message);
         }
 

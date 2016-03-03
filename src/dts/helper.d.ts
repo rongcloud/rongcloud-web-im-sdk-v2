@@ -9,6 +9,7 @@ declare var Polling: any;
 declare var escape: any;
 declare var AMR: any;
 declare var swfobject:any;
+declare var openDatabase:any;
 declare class XDomainRequest { }
 
 declare interface Window {
@@ -18,6 +19,7 @@ declare interface Window {
     RongIMClient: any;
     getServerEndpoint: any;
     WEB_XHR_POLLING: any;
+    SCHEMETYPE:any;
     XDomainRequest: any;
     JSON: any;
     Modules: any;

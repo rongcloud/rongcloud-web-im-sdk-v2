@@ -21,6 +21,26 @@ module RongIMLib {
             return JSON.stringify(ModelUtil.modelClone(this));
         }
     }
+
+    export class TypingStatusMessage implements MessageContent {
+        typingContentType: string;
+        data: string;
+        messageName: string = "TypingStatusMessage";
+        constructor(message: any) {
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> TypingStatusMessage.");
+            }
+            this.typingContentType = message.typingContentType;
+            this.data = message.data;
+        }
+        static obtain(typingContentType: string, data: string): TypingStatusMessage {
+            return new TypingStatusMessage({ typingContentType: typingContentType, data: data });
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
+
     export class VoiceMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
         userInfo: UserInfo;
         content: string;
@@ -108,6 +128,7 @@ module RongIMLib {
         content: string;
         imageUri: string;
         extra: string;
+        url: string;
         messageName: string = "RichContentMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
@@ -117,12 +138,13 @@ module RongIMLib {
             this.content = message.content;
             this.imageUri = message.imageUri;
             this.extra = message.extra;
+            this.url = message.url;
             if (message.userInfo) {
                 this.userInfo = message.userInfo;
             }
         }
-        static obtain(title: string, content: string, imageUri: string): RichContentMessage {
-            return new RichContentMessage({ title: title, content: content, imageUri: imageUri, extra: "" });
+        static obtain(title: string, content: string, imageUri: string, url: string): RichContentMessage {
+            return new RichContentMessage({ title: title, content: content, imageUri: imageUri, url: url, extra: "" });
         }
 
         encode() {

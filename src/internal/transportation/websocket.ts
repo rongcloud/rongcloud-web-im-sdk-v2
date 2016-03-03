@@ -12,6 +12,7 @@ module RongIMLib {
         queue: Array<any> = [];
         empty: any = new Function;
         _socket: Socket;
+        _status: number;
         /**
          * [constructor]
          * @param  {string} url [连接地址：包含token、version]
@@ -24,9 +25,9 @@ module RongIMLib {
          * [createTransport 创建WebScoket对象]
          */
         createTransport(url: string, method?: string): any {
-            if (!url){throw new Error("URL can't be empty");};
+            if (!url) { throw new Error("URL can't be empty"); };
             this.url = url;
-            this.socket = new WebSocket(MessageUtil.schemeArrs[RongIMClient.schemeType][1]+"://" + url);
+            this.socket = new WebSocket(MessageUtil.schemeArrs[RongIMClient.schemeType][1] + "://" + url);
             this.socket.binaryType = "arraybuffer";
             this.addEvent();
             return this.socket;
@@ -44,7 +45,7 @@ module RongIMLib {
             if (this.isClose) {
                 throw new Error("The Connection is closed,Please open the Connection!!!");
             }
-            var stream:RongIMStream = new RongIMStream([]),msg:MessageOutputStream = new MessageOutputStream(stream);
+            var stream: RongIMStream = new RongIMStream([]), msg: MessageOutputStream = new MessageOutputStream(stream);
             msg.writeMessage(data);
             var val = stream.getBytesArray(true);
             var binary = new Int8Array(val);
@@ -66,10 +67,19 @@ module RongIMLib {
         /**
          * [onClose 通道关闭时触发的方法]
          */
-        onClose(): any {
-            this.isClose = true;
-            this.socket = this.empty;
-            this._socket.disconnect(ConnectionStatus.DISCONNECTED);
+        onClose(ev: any): any {
+            var me = this;
+            me.isClose = true;
+            me.socket = this.empty;
+
+            RongIMLib.Bridge._client.clearHeartbeat();
+            if (ev.code == 1006 && !this._status) {
+                me._socket.fire("StatusChanged", RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE);
+            }
+            else {
+                me._status = 0;
+                me._socket.fire("StatusChanged", RongIMLib.ConnectionStatus.DISCONNECTED);
+            }
         }
         /**
          * [onError 通道报错时触发的方法]
@@ -101,8 +111,8 @@ module RongIMLib {
             self.socket.onerror = function(ev) {
                 self.onError(ev);
             };
-            self.socket.onclose = function() {
-                self.onClose();
+            self.socket.onclose = function(ev) {
+                self.onClose(ev);
             };
         }
         /**
@@ -117,9 +127,13 @@ module RongIMLib {
         /**
          * [disconnect 断开连接]
          */
-        disconnect(): void {
-            if (this.socket.readyState) {
-                this.isClose = true;
+        disconnect(status?: number): void {
+            var me = this;
+            if (me.socket.readyState) {
+                me.isClose = true;
+                if (status) {
+                    me._status = status;
+                }
                 this.socket.close();
             }
         }

@@ -4,7 +4,7 @@ module RongIMLib {
         static emojis: any[] = [];
 
         private static emojiFactory: { [s: string]: any } = {
-      	"u1F600":{"en":"grinning","zh":"\u72DE\u7B11","tag":"\uD83D\uDE00","bp":"0px 0px"},
+      	"u1F600":{"en":"grinning","zh":"\u5927\u7B11","tag":"\uD83D\uDE00","bp":"0px 0px"},
       	"u1F601":{"en":"grin","zh":"\u9732\u9F7F\u800C\u7B11","tag":"\uD83D\uDE01","bp":"-22px 0px"},
       	"u1F602":{"en":"joy","zh":"\u6B22\u4E50","tag":"\uD83D\uDE02","bp":"-44px 0px"},
       	"u1F603":{"en":"smile","zh":"\u5FAE\u7B11","tag":"\uD83D\uDE03","bp":"-66px 0px"},
@@ -181,6 +181,7 @@ module RongIMLib {
             var str = "", span = document.createElement("span"), p = document.createElement("span");
             if (this.supportEmoji) {
                 span.textContent = emojiObj.tag;
+                span.setAttribute("style","font-size:20px;");
             } else {
                 var img = this.createBTag(emojiObj.bp);
                 span.appendChild(img);
@@ -205,10 +206,10 @@ module RongIMLib {
 			         me.emojiFactory = emoji.dataSource;
 			         me.url = emoji.url;
             }
-            if (me.pixelRatio > 1) {
-                me.size = 48;
-                //TODO 这是高清URL
-            }
+            // if (me.pixelRatio > 1) {
+            //     me.size = 48;
+            //     //TODO 这是高清URL
+            // }
             if (!emoji && navigator.userAgent.match(/Mac\s+OS/i)) {
                 me.supportEmoji = true;
             }

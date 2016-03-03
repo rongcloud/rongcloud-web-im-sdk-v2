@@ -9,7 +9,7 @@ module RongIMLib {
          * RongIMLib.RongIMClient.schemeType = RongIMLib.ConnectionChannel.HTTP
          * @type {number}
          */
-        static schemeType: number = ConnectionChannel.HTTP;
+        static schemeType: number = window["SCHEMETYPE"] ? ConnectionChannel.HTTPS : ConnectionChannel.HTTP;
         static MessageType: { [s: string]: any };
         static MessageParams: { [s: string]: any };
         static RegisterMessage: { [s: string]: any } = {};
@@ -50,7 +50,7 @@ module RongIMLib {
                 providerType: 1,
                 deltaTime: 0,
                 filterMessages: [],
-                isSyncRemoteConverList:false
+                isSyncRemoteConverList: false
             };
             RongIMClient._cookieHelper = new CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
@@ -72,7 +72,8 @@ module RongIMLib {
                 ContactNotificationMessage: { objectName: "RC:ContactNtf", msgTag: new MessageTag(true, true) },
                 ProfileNotificationMessage: { objectName: "RC:ProfileNtf", msgTag: new MessageTag(true, true) },
                 CommandNotificationMessage: { objectName: "RC:CmdNtf", msgTag: new MessageTag(true, true) },
-                CommandMessage: { objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) }
+                CommandMessage: { objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) },
+                TypingStatusMessage: { objectName: "RC:TypSts", msgTag: new MessageTag(false, false) }
             };
             RongIMClient.MessageType = {
                 TextMessage: "TextMessage",
@@ -88,7 +89,8 @@ module RongIMLib {
                 ContactNotificationMessage: "ContactNotificationMessage",
                 ProfileNotificationMessage: "ProfileNotificationMessage",
                 CommandNotificationMessage: "CommandNotificationMessage",
-                CommandMessage: "CommandMessage"
+                CommandMessage: "CommandMessage",
+                TypingStatusMessage: "TypingStatusMessage"
             };
         }
 
@@ -302,7 +304,7 @@ module RongIMLib {
          * @param  {number[]}                messageIds       [description]
          * @param  {ResultCallback<boolean>} callback         [description]
          */
-        deleteMessages(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
+        deleteMessages(conversationType: ConversationType, targetId: string, messageIds: string[], callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.removeMessage(conversationType, targetId, messageIds, callback);
         }
         sendLocalMessage(message: Message, callback: SendMessageCallback) {
@@ -330,7 +332,7 @@ module RongIMLib {
                 sendCallback.onError(ErrorCode.TIMEOUT, null);
                 throw new Error("connect is timeout! postion:sendMessage");
             }
-            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, messageContent);
+
             var modules = new Modules.UpStreamMessage();
             modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
             modules.setClassname(RongIMClient.MessageParams[messageContent.messageName].objectName);
@@ -365,6 +367,7 @@ module RongIMLib {
             c.latestMessage = msg;
             c.unreadMessageCount = 0;
             c.setTop();
+            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg);
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
                     msg.messageUId = data.messageUId;
@@ -379,6 +382,20 @@ module RongIMLib {
                     sendCallback.onError(errorCode, msg);
                 }
             }, null);
+        }
+
+        sendTypingStatusMessage(conversationType: ConversationType, targetId: string, messageName: string, sendCallback: SendMessageCallback) {
+            var me = this;
+            if (messageName in RongIMClient.MessageParams) {
+                me.sendMessage(conversationType, targetId, TypingStatusMessage.obtain(RongIMClient.MessageParams[messageName].objectName, ""), {
+                    onSuccess: function() {
+                        sendCallback.onSuccess();
+                    },
+                    onError: function(errorCode: ErrorCode) {
+                        sendCallback.onError(errorCode, null);
+                    }
+                });
+            }
         }
         /**
          * [sendStatusMessage description]
@@ -406,7 +423,7 @@ module RongIMLib {
          * @param  {MessageContent}          content          [description]
          * @param  {ResultCallback<Message>} callback         [description]
          */
-        insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
+        insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: Message, callback: ResultCallback<Message>) {
             RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, content, callback);
         }
         /**
