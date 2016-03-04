@@ -39,6 +39,10 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
+        removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>) {
+            callback.onSuccess(true);
+        }
+
         updateMessage(message: Message, callback?: ResultCallback<Message>) {
             callback.onSuccess(message);
         }

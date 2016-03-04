@@ -10,7 +10,7 @@ module RongIMLib {
          * @type {number}
          */
         static schemeType: number = window["SCHEMETYPE"] ? ConnectionChannel.HTTPS : ConnectionChannel.HTTP;
-        static MessageType: { [s: string]: any };
+        static MessageType: { [s: string]: any } = {};
         static MessageParams: { [s: string]: any };
         static RegisterMessage: { [s: string]: any } = {};
         static _memoryStore: any = {};
@@ -50,11 +50,13 @@ module RongIMLib {
                 providerType: 1,
                 deltaTime: 0,
                 filterMessages: [],
-                isSyncRemoteConverList: false
+                isSyncRemoteConverList: false,
+                isUseWebSQLProvider: false
             };
             RongIMClient._cookieHelper = new CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
                 RongIMClient._dataAccessProvider = dataAccessProvider;
+                RongIMClient._memoryStore.isUseWebSQLProvider = true;
             } else {
                 RongIMClient._dataAccessProvider = new ServerDataProvider();
             }
@@ -356,24 +358,28 @@ module RongIMLib {
             msg.messageDirection = MessageDirection.SEND;
             msg.sentStatus = SentStatus.SENT;
             msg.messageType = messageContent.messageName;
-            if (!c) {
-                c = me.createConversation(conversationType, targetId, "");
+            if (messageContent.messageName != "TypingStatusMessage") {
+                if (!c) {
+                    c = me.createConversation(conversationType, targetId, "");
+                }
+                c.sentTime = new Date().getTime();
+                c.sentStatus = SentStatus.SENDING;
+                c.senderUserName = "";
+                c.senderUserId = Bridge._client.userId;
+                c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
+                c.latestMessage = msg;
+                c.unreadMessageCount = 0;
+                c.setTop();
             }
-            c.sentTime = new Date().getTime();
-            c.sentStatus = SentStatus.SENDING;
-            c.senderUserName = "";
-            c.senderUserId = Bridge._client.userId;
-            c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-            c.latestMessage = msg;
-            c.unreadMessageCount = 0;
-            c.setTop();
             RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg);
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
                     msg.messageUId = data.messageUId;
                     msg.sentTime = data.timestamp;
                     msg.sentStatus = SentStatus.SENT;
-                    c.latestMessage = msg;
+                    if (messageContent.messageName != "TypingStatusMessage") {
+                        c.latestMessage = msg;
+                    }
                     sendCallback.onSuccess(msg);
                 },
                 onError: function(errorCode: ErrorCode) {

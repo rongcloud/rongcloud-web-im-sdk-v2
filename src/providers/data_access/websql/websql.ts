@@ -33,21 +33,32 @@ module RongIMLib {
             var localmsg: number = message.messageUId ? 0 : 1;
             this.database.execUpdateByParams(sql, [message.messageType, message.messageUId, message.conversationType, message.targetId, message.sentTime, JSON.stringify(message), localmsg]);
         }
-        //TODO 删除发送失败的消息
+
         removeMessage(conversationType: ConversationType, targetId: string, messageIds: string[], callback: ResultCallback<boolean>) {
-            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.";
+            if (messageIds.length == 0) {
+                return;
+            }
+            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.MESSAGEUID IN (?)";
+            this.database.execUpdateByParams(sql, [messageIds.join(",")]);
         }
-
+        removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>) {
+            if (timestamps.length == 0) {
+                return;
+            }
+            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.SENTTIME IN (?) AND T.MESSAGEUID IS NULL AND T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
+            this.database.execUpdateByParams(sql, [timestamps.join(","), conversationType, targetId]);
+        }
         updateMessage(message: Message, callback?: ResultCallback<Message>) {
-            throw new Error("Not implemented yet");
-        }
-
-        clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             throw new Error("Not implemented yet");
         }
 
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>) {
             throw new Error("Not implemented yet");
+        }
+
+        clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
+            this.database.execUpdateByParams(sql, [conversationType, targetId]);
         }
 
         getConversation(conversationType: ConversationType, targetId: string): Conversation {

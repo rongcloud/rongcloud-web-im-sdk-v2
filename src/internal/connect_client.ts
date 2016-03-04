@@ -368,7 +368,6 @@ module RongIMLib {
             this.queryMessage(str, MessageUtil.ArrayForm(modules.toArrayBuffer()), target, Qos.AT_LEAST_ONCE, {
                 onSuccess: function(collection: any) {
                     me.SyncTimeQueue.state = "complete";
-                    me.invoke();
                     var sync = MessageUtil.int64ToTimestamp(collection.syncTime),
                         symbol = me.userId;
                     if (str == "chrmPull") {
@@ -378,6 +377,7 @@ module RongIMLib {
                     RongIMClient._memoryStore.isSyncRemoteConverList = true;
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
                     RongIMClient._cookieHelper.setItem(symbol, sync);
+                    me.invoke();
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
                     for (var i = 0; i < list.length; i++) {
@@ -540,7 +540,8 @@ module RongIMLib {
                 con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
                 con.latestMessageId = message.messageId;
                 con.latestMessage = message;
-                RongIMClient._dataAccessProvider.addConversation(con, <ResultCallback<boolean>>{ onSuccess: function(data) { } });
+                con.sentTime = message.sentTime;
+                con.setTop();
             }
             this._onReceived(message);
         }

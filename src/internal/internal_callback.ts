@@ -170,7 +170,7 @@ module RongIMLib {
                     naviStr = encodeURIComponent(naviStr) + userId;
                     RongIMClient._cookieHelper.setItem(naviKey, naviStr);
                 }
-                if (RongIMClient._dataAccessProvider) {
+                if (RongIMClient._memoryStore.isUseWebSQLProvider) {
                     RongIMClient._dataAccessProvider.database.init(userId);
                 }
                 this._client.userId = userId;
