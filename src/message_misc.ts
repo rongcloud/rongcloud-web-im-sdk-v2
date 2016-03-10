@@ -8,7 +8,6 @@ module RongIMLib {
             return undefined;
         }
         getMessage(): any {
-var str = "{\"content\": \"法轮功杯子rongcloud\", \"extra\": null}"
             return null;
         }
     }

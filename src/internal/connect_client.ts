@@ -367,7 +367,6 @@ module RongIMLib {
             //发送queryMessage请求
             this.queryMessage(str, MessageUtil.ArrayForm(modules.toArrayBuffer()), target, Qos.AT_LEAST_ONCE, {
                 onSuccess: function(collection: any) {
-                    me.SyncTimeQueue.state = "complete";
                     var sync = MessageUtil.int64ToTimestamp(collection.syncTime),
                         symbol = me.userId;
                     if (str == "chrmPull") {
@@ -377,6 +376,7 @@ module RongIMLib {
                     RongIMClient._memoryStore.isSyncRemoteConverList = true;
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
                     RongIMClient._cookieHelper.setItem(symbol, sync);
+                    me.SyncTimeQueue.state = "complete";
                     me.invoke();
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
@@ -447,6 +447,7 @@ module RongIMLib {
     }
     export class MessageHandler {
         map: any = {};
+        syncMsgMap: any;
         _onReceived: any;
         connectCallback: any = null;
         _client: Client;
@@ -456,6 +457,7 @@ module RongIMLib {
             }
             this._onReceived = Channel._ReceiveMessageListener.onReceived;
             this._client = client;
+            this.syncMsgMap = new Object;
         }
         //把对象推入回调对象队列中，并启动定时器
         putCallback(callbackObj: any, _publishMessageId: any, _msg: any): any {
@@ -474,7 +476,7 @@ module RongIMLib {
             }
         }
 
-        onReceived(msg: any): void {
+        onReceived(msg: any, pubAckItem?: any): void {
             //实体对象
             var entity: any,
                 //解析完成的消息对象
@@ -519,6 +521,10 @@ module RongIMLib {
             }
             //解析实体对象为消息对象。
             message = MessageUtil.messageParser(entity, this._onReceived);
+            if (pubAckItem) {
+                message.messageUId = pubAckItem.getMessageUId();
+                message.sentTime = pubAckItem.getTimestamp();
+            }
             if (message === null) {
                 return;
             }
@@ -557,9 +563,14 @@ module RongIMLib {
                 case "PublishMessage":
                     if (msg.getQos() != 0) {
                         Bridge._client.channel.writeAndFlush(new PubAckMessage(msg.getMessageId()));
+
                     }
-                    //如果是PublishMessage就把该对象给onReceived方法执行处理
-                    Bridge._client.handler.onReceived(msg);
+                    if (msg.getSyncMsg() && msg.getQos() != 0) {
+                        Bridge._client.handler.syncMsgMap[msg.getMessageId()] = msg;
+                    } else {
+                        //如果是PublishMessage就把该对象给onReceived方法执行处理
+                        Bridge._client.handler.onReceived(msg);
+                    }
                     break;
                 case "QueryAckMessage":
                     if (msg.getQos() != 0) {
@@ -575,9 +586,11 @@ module RongIMLib {
                 case "PubAckMessage":
                     var item = Bridge._client.handler.map[msg.getMessageId()];
                     if (item) {
-                        //执行回调操作
                         item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(), msg.getTimestamp(), item.Message);
                         delete Bridge._client.handler.map[msg.getMessageId()];
+                    } else {
+                        Bridge._client.handler.onReceived(Bridge._client.handler.syncMsgMap[msg.messageId], msg);
+                        delete Bridge._client.handler.syncMsgMap[msg.getMessageId()];
                     }
                     break;
                 case "PingRespMessage":

@@ -1,7 +1,7 @@
 module RongIMLib {
 
     export class InformationNotificationMessage implements NotificationMessage, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         message: string;
         extra: string;
         messageName: string = "InformationNotificationMessage";
@@ -11,8 +11,8 @@ module RongIMLib {
             }
             this.message = message.message;
             this.extra = message.extra;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
         static obtain(message: string): InformationNotificationMessage {
@@ -54,7 +54,7 @@ module RongIMLib {
         }
     }
     export class ContactNotificationMessage implements NotificationMessage, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         static CONTACT_OPERATION_ACCEPT_RESPONSE: string = "ContactOperationAcceptResponse";
         static CONTACT_OPERATION_REJECT_RESPONSE: string = "ContactOperationRejectResponse";
         static CONTACT_OPERATION_REQUEST: string = "ContactOperationRequest";
@@ -73,8 +73,8 @@ module RongIMLib {
             this.message = message.message;
             this.extra = message.extra;
             this.sourceUserId = message.sourceUserId;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
         static obtain(operation: string, sourceUserId: string, targetUserId: string, message: string): InformationNotificationMessage {
@@ -86,7 +86,7 @@ module RongIMLib {
         }
     }
     export class ProfileNotificationMessage implements MessageContent, NotificationMessage, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         operation: string;
         data: string;
         extra: string;
@@ -108,8 +108,8 @@ module RongIMLib {
                 this.data = message.data;
             }
             this.extra = message.extra;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
         static obtain(operation: string, data: string): ProfileNotificationMessage {
@@ -121,7 +121,7 @@ module RongIMLib {
         }
     }
     export class CommandNotificationMessage implements MessageContent, NotificationMessage, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         data: string;
         name: string;
         extra: string;
@@ -143,8 +143,8 @@ module RongIMLib {
             }
             this.name = message.name;
             this.extra = message.extra;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
 
@@ -157,7 +157,7 @@ module RongIMLib {
         }
     }
     export class DiscussionNotificationMessage implements MessageContent, NotificationMessage, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         extra: string;
         extension: string;
         type: number;
@@ -173,9 +173,9 @@ module RongIMLib {
             this.type = message.type;
             this.isHasReceived = message.isHasReceived;
             this.operation = message.operation;
-            this.userInfo = message.userInfo;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            this.user = message.user;
+            if (message.user) {
+                this.user = message.user;
             }
         }
         encode() {

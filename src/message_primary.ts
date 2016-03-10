@@ -1,6 +1,6 @@
 module RongIMLib {
     export class TextMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         extra: string;
         content: string;
         messageName: string = "TextMessage";
@@ -10,8 +10,8 @@ module RongIMLib {
             }
             this.content = message.content;
             this.extra = message.extra;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
         static obtain(text: string): TextMessage {
@@ -42,7 +42,7 @@ module RongIMLib {
     }
 
     export class VoiceMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         content: string;
         duration: number;
         extra: string;
@@ -54,8 +54,8 @@ module RongIMLib {
             this.content = message.content;
             this.duration = message.duration;
             this.extra = message.extra;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
         static obtain(base64Content: string, duration: number): VoiceMessage {
@@ -67,7 +67,7 @@ module RongIMLib {
     }
 
     export class ImageMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         content: string;
         imageUri: string;
         extra: string;
@@ -79,8 +79,8 @@ module RongIMLib {
             this.content = message.content;
             this.imageUri = message.imageUri;
             this.extra = message.extra;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
         static obtain(content: string, imageUri: string): ImageMessage {
@@ -92,7 +92,7 @@ module RongIMLib {
     }
 
     export class LocationMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         latiude: number;
         longitude: number;
         poi: string;
@@ -108,8 +108,8 @@ module RongIMLib {
             this.poi = message.poi;
             this.content = message.content;
             this.extra = message.extra;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
 
@@ -123,7 +123,7 @@ module RongIMLib {
     }
 
     export class RichContentMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         title: string;
         content: string;
         imageUri: string;
@@ -139,8 +139,8 @@ module RongIMLib {
             this.imageUri = message.imageUri;
             this.extra = message.extra;
             this.url = message.url;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
         static obtain(title: string, content: string, imageUri: string, url: string): RichContentMessage {
@@ -168,7 +168,7 @@ module RongIMLib {
 
 
     export class PublicServiceCommandMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         menuItem: PublicServiceMenuItem;
         content: string;
         extra: string;
@@ -180,8 +180,8 @@ module RongIMLib {
             this.content = message.content;
             this.extra = message.extra;
             this.menuItem = message.menuItem;
-            if (message.userInfo) {
-                this.userInfo = message.userInfo;
+            if (message.user) {
+                this.user = message.user;
             }
         }
         static obtain(item: PublicServiceMenuItem): PublicServiceCommandMessage {
@@ -193,7 +193,7 @@ module RongIMLib {
     }
 
     export class PublicServiceMultiRichContentMessage implements MessageContent, UserInfoAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         richContentMessages: Array<RichContentMessage>;
         messageName: string = "PublicServiceMultiRichContentMessage";
         constructor(messages: Array<RichContentMessage>) {
@@ -205,7 +205,7 @@ module RongIMLib {
     }
 
     export class PublicServiceRichContentMessage implements MessageContent, UserInfoAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
         richContentMessage: RichContentMessage;
         messageName: string = "PublicServiceRichContentMessage";
         constructor(message: RichContentMessage) {

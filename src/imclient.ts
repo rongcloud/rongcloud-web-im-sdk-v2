@@ -2,14 +2,11 @@ module RongIMLib {
     export class RongIMClient {
         /**
          * [schemeType 选择连接方式]
-         * SSL需要设置schemeType为ConnectionChannel.HTTPS
-         * HTTP或WS需要设置 schemeType为ConnectionChannel.HTTP(默认)
-         * 若改变连接方式此属性必须在RongIMClient.init之前赋值
-         * expmale:
-         * RongIMLib.RongIMClient.schemeType = RongIMLib.ConnectionChannel.HTTP
+         * SSL自动设置schemeType为ConnectionChannel.HTTPS
+         * HTTP或WS自动设置 schemeType为ConnectionChannel.HTTP
          * @type {number}
          */
-        static schemeType: number = window["SCHEMETYPE"] ? ConnectionChannel.HTTPS : ConnectionChannel.HTTP;
+        static schemeType: number;
         static MessageType: { [s: string]: any } = {};
         static MessageParams: { [s: string]: any };
         static RegisterMessage: { [s: string]: any } = {};
@@ -34,6 +31,11 @@ module RongIMLib {
         static init(appKey: string, dataAccessProvider?: DataAccessProvider): void {
             if (!RongIMClient._instance) {
                 RongIMClient._instance = new RongIMClient();
+            }
+            if (document.location.protocol == "http:") {
+                RongIMClient.schemeType = ConnectionChannel.HTTP;
+            } else {
+                RongIMClient.schemeType = ConnectionChannel.HTTPS;
             }
             var pather = new FeaturePatcher();
             pather.patchAll();
@@ -1350,7 +1352,7 @@ module RongIMLib {
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
         module.exports = RongIMLib;
     } else if ("function" === typeof define && define.amd) {
-        define("RongIMLib", ['md5', "http://cdn.ronghub.com/Long.js", "http://cdn.ronghub.com/byteBuffer.js", "http://cdn.ronghub.com/protobuf-min-2.7.js"], function() {
+        define("RongIMLib", ['md5', "//cdn.ronghub.com/Long.js", "//cdn.ronghub.com/byteBuffer.js", "//cdn.ronghub.com/protobuf-min-2.7.js"], function() {
             return RongIMLib;
         });
     } else {

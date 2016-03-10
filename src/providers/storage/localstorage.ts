@@ -6,7 +6,6 @@ module RongIMLib {
         }
 
         setItem(composedKey: string, object: any): void {
-            if (localStorage.length == 20) { localStorage.removeItem(localStorage.key(0)); }
             localStorage.setItem(composedKey.toString(), object);
         }
 

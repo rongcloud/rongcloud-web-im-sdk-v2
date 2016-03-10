@@ -18,7 +18,7 @@ module RongIMLib {
     export abstract class StatusMessage extends MessageContent { }
 
     export interface UserInfoAttachedMessage {
-        userInfo: UserInfo;
+        user: UserInfo;
     }
 
     export interface ExtraAttachedMessage {

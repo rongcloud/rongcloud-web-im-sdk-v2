@@ -441,6 +441,7 @@ module RongIMLib {
         targetId: string;
         date: any;
         binaryHelper: BinaryHelper = new BinaryHelper();
+        syncMsg: boolean = false;
         constructor(header: any, two?: any, three?: any) {
             super((arguments.length == 1 && header instanceof Header) ? header : arguments.length == 3 ? Type.PUBLISH : 0);
             if (arguments.length == 3) {
@@ -485,6 +486,13 @@ module RongIMLib {
         }
         setDate(x: any) {
             this.date = x;
+        }
+        setSyncMsg(x: boolean) {
+            this.syncMsg = x;
+        }
+        //是否是其他端同步过来的消息
+        getSyncMsg() {
+          return this.syncMsg;
         }
         getTopic() {
             return this.topic;

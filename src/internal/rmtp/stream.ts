@@ -49,6 +49,7 @@ module RongIMLib {
                     break;
                 case 3:
                     this.msg = new PublishMessage(this.header);
+                    this.msg.setSyncMsg(this.header.getSyncMsg());
                     break;
                 case 4:
                     this.msg = new PubAckMessage(this.header);
@@ -91,18 +92,23 @@ module RongIMLib {
         retain: boolean = false;
         qos: any = Qos.AT_LEAST_ONCE;
         dup: boolean = false;
+        syncMsg: boolean = false;
         constructor(_type: any, _retain?: any, _qos?: any, _dup?: any) {
             if (_type && +_type == _type && arguments.length == 1) {
                 this.retain = (_type & 1) > 0;
                 this.qos = (_type & 6) >> 1;
                 this.dup = (_type & 8) > 0;
                 this.type = (_type >> 4) & 15;
+                this.syncMsg = (_type & 8) == 8;
             } else {
                 this.type = _type;
                 this.retain = _retain;
                 this.qos = _qos;
                 this.dup = _dup;
             }
+        }
+        getSyncMsg():boolean {
+            return this.syncMsg;
         }
         getType(): number {
             return this.type;

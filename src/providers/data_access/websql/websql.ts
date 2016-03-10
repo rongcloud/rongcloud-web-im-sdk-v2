@@ -41,15 +41,15 @@ module RongIMLib {
             var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.MESSAGEUID IN (?)";
             this.database.execUpdateByParams(sql, [messageIds.join(",")]);
         }
-        removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>) {
-            if (timestamps.length == 0) {
+        removeLocalMessage(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
+            if (messageIds.length == 0) {
                 return;
             }
-            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.SENTTIME IN (?) AND T.MESSAGEUID IS NULL AND T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
-            this.database.execUpdateByParams(sql, [timestamps.join(","), conversationType, targetId]);
+            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.ID IN (?) AND T.MESSAGEUID IS NULL AND T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
+            this.database.execUpdateByParams(sql, [messageIds.join(","), conversationType, targetId]);
         }
         updateMessage(message: Message, callback?: ResultCallback<Message>) {
-            throw new Error("Not implemented yet");
+            var sql: string = "UPDATE T_MESSAGE_"+this.database.userId+" T SET T.MESSAGEUID = ?,T.SENTTIME = ? ";
         }
 
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>) {
@@ -57,7 +57,7 @@ module RongIMLib {
         }
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
+            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.CONVERSATIONTYPE = ? AND T.TARGETID = ? ";
             this.database.execUpdateByParams(sql, [conversationType, targetId]);
         }
 
