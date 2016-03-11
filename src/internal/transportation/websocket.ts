@@ -78,7 +78,6 @@ module RongIMLib {
             }
             else {
                 me._status = 0;
-                me._socket.fire("StatusChanged", RongIMLib.ConnectionStatus.DISCONNECTED);
             }
         }
         /**

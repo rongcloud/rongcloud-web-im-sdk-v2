@@ -53,7 +53,8 @@ module RongIMLib {
                 deltaTime: 0,
                 filterMessages: [],
                 isSyncRemoteConverList: false,
-                isUseWebSQLProvider: false
+                isUseWebSQLProvider: false,
+                otherDevice:false
             };
             RongIMClient._cookieHelper = new CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {

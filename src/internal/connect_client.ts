@@ -60,14 +60,18 @@ module RongIMLib {
             if (typeof Channel._ConnectionStatusListener == "object" && "onChanged" in Channel._ConnectionStatusListener) {
                 var me = this;
                 me.socket.on("StatusChanged", function(code: any) {
-                    //如果参数为DisconnectionStatus，就停止心跳，其他的不停止心跳。每3min连接一次服务器
-                    if (code === ConnectionStatus.DISCONNECTED) {
+                    me.connectionStatus = code;
+                    if (code === ConnectionStatus.DISCONNECTED && !RongIMClient._memoryStore.otherDevice) {
                         Channel._ConnectionStatusListener.onChanged(ConnectionStatus.DISCONNECTED);
                         self.clearHeartbeat();
                         return;
+                    } else if (code === ConnectionStatus.DISCONNECTED && RongIMClient._memoryStore.otherDevice) {
+                        return;
                     }
-                    me.connectionStatus = code;
                     Channel._ConnectionStatusListener.onChanged(code);
+                    if (RongIMClient._memoryStore.otherDevice) {
+                        delete Channel._ConnectionStatusListener["onChanged"];
+                    }
                 });
 
             } else {
@@ -144,6 +148,9 @@ module RongIMLib {
             this.fire("message", data);
         }
         disconnect(status: number) {
+            if (ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT === status) {
+                RongIMClient._memoryStore.otherDevice = true;
+            }
             this.socket.disconnect(status);
             this.fire("disconnect", status);
             return this;
