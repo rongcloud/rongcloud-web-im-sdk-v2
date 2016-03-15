@@ -1,7 +1,7 @@
 module RongIMLib {
     export class RongIMVoice {
         private static isIE: boolean = /Trident/.test(navigator.userAgent);
-        private static element: any;
+        private static element: any = {};
         private static isInit: boolean = false;
         static init() {
             if (this.isIE) {
@@ -9,7 +9,7 @@ module RongIMLib {
                 div.setAttribute("id", "flashContent");
                 document.body.appendChild(div);
                 var script = document.createElement("script");
-                script.src = "http://cdn.ronghub.com/swfobject-2.0.0.min.js";
+                script.src = "//cdn.ronghub.com/swfobject-2.0.0.min.js";
                 var header = document.getElementsByTagName("head")[0];
                 header.appendChild(script);
                 setTimeout(function() {
@@ -25,10 +25,10 @@ module RongIMLib {
                     attributes.id = "player";
                     attributes.name = "player";
                     attributes.align = "middle";
-                    swfobject.embedSWF("http://cdn.ronghub.com/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
-                }, 200);
+                    swfobject.embedSWF("//cdn.ronghub.com/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
+                }, 500);
             } else {
-                var list = ["http://cdn.ronghub.com/pcmdata-2.0.0.min.js", "http://cdn.ronghub.com/libamr-2.0.1.min.js"];
+                var list = ["//cdn.ronghub.com/pcmdata-2.0.0.min.js", "//cdn.ronghub.com/libamr-2.0.12.min.js"];
                 for (let i = 0, len = list.length; i < len; i++) {
                     var script = document.createElement("script");
                     script.src = list[i];
@@ -45,23 +45,49 @@ module RongIMLib {
                 me.thisMovie().doAction("init", data);
             }
             else {
-                me.palyVoice(data);
+                var key: string = data.substr(-10);
+                if (this.element[key]) {
+                    this.element[key].play();
+                }
                 me.onCompleted(duration);
             }
         }
 
-        static stop() {
+        static stop(base64Data: string) {
             this.checkInit("stop");
             var me = this;
             if (me.isIE) {
                 me.thisMovie().doAction("stop");
             } else {
-                if (me.element) {
-                    me.element.stop();
+                var key:string = base64Data.substr(-10);
+                if (me.element[key]) {
+                    me.element[key].pause();
                 }
             }
         }
-
+        static preLoaded(base64Data: string) {
+            var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr"),
+                str: string = base64Data.substr(-10),
+                me = this;
+            reader.onload = function() {
+                var samples = new AMR({
+                    benchmark: true
+                }).decode(reader.result);
+                var audio = AMR.util.getWave(samples);
+                me.element[str] = audio;
+            };
+            reader.readAsBinaryString(blob);
+        }
+        private static palyVoice(base64Data: string) {
+            var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr"), me = this;
+            reader.onload = function() {
+                var samples = new AMR({
+                    benchmark: true
+                }).decode(reader.result);
+                me.element = AMR.util.play(samples);
+            };
+            reader.readAsBinaryString(blob);
+        }
         static onprogress() {
 
         }
@@ -113,16 +139,6 @@ module RongIMLib {
             return new Blob(byteArrays, mimeType);
         }
 
-        private static palyVoice(base64Data: string) {
-            var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr"), me = this;
-            reader.onload = function() {
-                var samples = new AMR({
-                    benchmark: true
-                }).decode(reader.result);
-                me.element = AMR.util.play(samples);
-            };
-            reader.readAsBinaryString(blob);
-        }
     }
     //兼容AMD CMD
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
