@@ -23,6 +23,19 @@ module RongIMLib {
         HTTPS = 1
     }
 
+    export enum CustomerType {
+
+        ONLY_ROBOT = 1,
+
+        ONLY_HUMAN = 2,
+
+        ROBOT_FIRST = 3,
+
+        HUMAN_FIRST = 4
+
+
+    }
+
     export enum ConnectionStatus {
         /**
          * 连接成功。

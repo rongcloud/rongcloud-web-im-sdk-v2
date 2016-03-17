@@ -535,7 +535,7 @@ module RongIMLib {
             if (message === null) {
                 return;
             }
-            if (message.messageType != "TypingStatusMessage") {
+            if (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() == 3) {
                 con = RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId);
                 if (!con) {
                     con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
@@ -555,6 +555,25 @@ module RongIMLib {
                 con.latestMessage = message;
                 con.sentTime = message.sentTime;
                 con.setTop();
+            }
+            if (message.messageType === RongIMClient.MessageType["HandShakeResponseMessage"]) {
+                var session = message.content.data, bool: boolean = false;
+                if (session.serviceType == CustomerType.ONLY_ROBOT || session.serviceType == CustomerType.ROBOT_FIRST) {
+                    // TODO 业务逻辑
+                    if (!session["robotWelcome"]) {
+                        session["robotWelcome"] = RongIMClient._memoryStore.custStore["robotWelcome"] || "您好，很高兴为您服务，请问有什么可以帮您的？";
+                        bool = true;
+                    }
+                } else if (session.serviceType == CustomerType.ONLY_HUMAN || session.serviceType == CustomerType.HUMAN_FIRST) {
+                    if (!session["humanWelcome"]) {
+                        session["humanWelcome"] = RongIMClient._memoryStore.custStore["humanWelcome"] || "您好，请问有什么可以帮您的？";
+                        bool = true;
+                    }
+                }
+                if (bool) {
+                    message.content.data = session;
+                }
+                RongIMClient._memoryStore.custStore[message.targetId] = session;
             }
             this._onReceived(message);
         }

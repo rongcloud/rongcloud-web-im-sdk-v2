@@ -1,4 +1,22 @@
 module RongIMLib {
+    export class CustomServiceConfig {
+        constructor(
+          isBlack?: boolean,
+          companyName?: string,
+          companyUrl?: string) {
+        }
+    }
+    export class CustomServiceSession {
+        constructor(uid?: string,
+            cid?: string,
+            pid?: string,
+            isQuited?: boolean,
+            type?: number,
+            adminHelloWord?: string,
+            adminOfflineWord?: string) {
+        }
+    }
+
     export class Conversation {
         constructor(
             public conversationTitle?: string,

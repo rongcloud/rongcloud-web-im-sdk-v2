@@ -12,29 +12,29 @@ module RongIMLib {
         }
     }
 
-    export class HandshakeMessage implements NotificationMessage {
-        messageName: string = "HandshakeMessage";
-        constructor(data: string) {
-            var msg = data;
-        }
-        encode(): string {
-            return undefined;
-        }
-        getMessage(): any {
-            return null;
-        }
-    }
-
-    export class SuspendMessage implements NotificationMessage {
-        messageName: string = "SuspendMessage";
-        constructor(data: string) {
-            var msg = data;
-        }
-        encode(): string {
-            return undefined;
-        }
-        getMessage(): any {
-            return null;
-        }
-    }
+    // export class HandshakeMessage implements NotificationMessage {
+    //     messageName: string = "HandshakeMessage";
+    //     constructor(data: string) {
+    //         var msg = data;
+    //     }
+    //     encode(): string {
+    //         return undefined;
+    //     }
+    //     getMessage(): any {
+    //         return null;
+    //     }
+    // }
+    //
+    // export class SuspendMessage implements NotificationMessage {
+    //     messageName: string = "SuspendMessage";
+    //     constructor(data: string) {
+    //         var msg = data;
+    //     }
+    //     encode(): string {
+    //         return undefined;
+    //     }
+    //     getMessage(): any {
+    //         return null;
+    //     }
+    // }
 }

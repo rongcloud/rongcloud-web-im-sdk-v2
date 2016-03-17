@@ -12,7 +12,10 @@ var typeMapping: { [s: string]: any } = {
     "RC:CmdNtf": "CommandNotificationMessage",
     "RC:DizNtf": "DiscussionNotificationMessage",
     "RC:CmdMsg": "CommandMessage",
-    "RC:TypSts": "TypingStatusMessage"
+    "RC:TypSts": "TypingStatusMessage",
+    "RC:CsChaR": "ChangeModeResponseMessage",
+    "RC:CsHsR": "HandShakeResponseMessage",
+    "RC:CsSp": "SuspendMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -23,7 +26,8 @@ var typeMapping: { [s: string]: any } = {
         1: "qryPMsg",
         6: "qrySMsg",
         7: "qryPMsg",
-        8: "qryPMsg"
+        8: "qryPMsg",
+        5: "qryPMsg"
     }, disconnectStatus: { [s: number]: any } = { 1: 6 };
 module RongIMLib {
     /**
@@ -224,12 +228,7 @@ module RongIMLib {
                 de = val;
                 isUseDef = true;
             }
-            //处理表情
-            if ("Expression" in RongIMLib && de.content) {
-                de.content = de.content.replace(/[\uf000-\uf700]/g, function(x: any) {
-                    return eval("RongIMLib.Expression.calcUTF(x) || x");
-                });
-            }
+        
             //映射为具体消息对象
             if (objectName in typeMapping) {
                 var str = "new RongIMLib." + typeMapping[objectName] + "(de)";
