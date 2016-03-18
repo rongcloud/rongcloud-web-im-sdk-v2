@@ -33,7 +33,6 @@ module RongIMLib {
 
         HUMAN_FIRST = 4
 
-
     }
 
     export enum ConnectionStatus {

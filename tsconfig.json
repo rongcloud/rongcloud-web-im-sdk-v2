@@ -27,7 +27,6 @@
         "./src/callback.ts",
         "./src/dts/helper.d.ts",
         "./src/enum.ts",
-        "./src/extensions/customer.ts",
         "./src/extensions/emoji.ts",
         "./src/extensions/image_uploader.ts",
         "./src/extensions/voices/voice.ts",
