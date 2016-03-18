@@ -15,7 +15,7 @@ var typeMapping: { [s: string]: any } = {
     "RC:TypSts": "TypingStatusMessage",
     "RC:CsChaR": "ChangeModeResponseMessage",
     "RC:CsHsR": "HandShakeResponseMessage",
-    "RC:CsSp": "SuspendMessage"
+    "RC:CsEnd": "TerminateMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -228,7 +228,7 @@ module RongIMLib {
                 de = val;
                 isUseDef = true;
             }
-        
+
             //映射为具体消息对象
             if (objectName in typeMapping) {
                 var str = "new RongIMLib." + typeMapping[objectName] + "(de)";

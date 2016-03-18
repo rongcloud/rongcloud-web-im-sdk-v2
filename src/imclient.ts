@@ -86,7 +86,7 @@ module RongIMLib {
                 EvaluateMessage: { objectName: "RC:CsEva", msgTag: new MessageTag(false, false) },
                 HandShakeMessage: { objectName: "RC:CsHs", msgTag: new MessageTag(false, false) },
                 HandShakeResponseMessage: { objectName: "RC:CsHsR", msgTag: new MessageTag(false, false) },
-                SuspendMessage: { objectName: "RC:CsSp", msgTag: new MessageTag(false, false) },
+                SuspendMessage: { objectName: "RC:CsSp", msgTag: new MessageTag(false, false) },//主动发送
                 TerminateMessage: { objectName: "RC:CsEnd", msgTag: new MessageTag(false, false) }
             };
             RongIMClient.MessageType = {
@@ -260,7 +260,7 @@ module RongIMLib {
             var msg = new SuspendMessage({ sid: session.sid, uid: session.uid, pid: session.pid });
             this.sendCustMessage(custId, msg, {
                 onSuccess: function() {
-                    delete RongIMClient._memoryStore.custStore[custId];
+                    // delete RongIMClient._memoryStore.custStore[custId];
                     setTimeout(function() {
                         callback.onSuccess();
                     });
