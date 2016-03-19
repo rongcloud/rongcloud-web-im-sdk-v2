@@ -558,6 +558,7 @@ module RongIMLib {
             }
             if (message.messageType === RongIMClient.MessageType["HandShakeResponseMessage"]) {
                 var session = message.content.data, bool: boolean = false;
+                RongIMClient._memoryStore.custStore[message.targetId] = session;
                 if (session.serviceType == CustomerType.ONLY_ROBOT || session.serviceType == CustomerType.ROBOT_FIRST) {
                     // TODO 业务逻辑
                     if (!session["robotWelcome"]) {
@@ -568,6 +569,12 @@ module RongIMLib {
                     if (!session["humanWelcome"]) {
                         session["humanWelcome"] = RongIMClient._memoryStore.custStore["humanWelcome"] || "您好，请问有什么可以帮您的？";
                         bool = true;
+                    }
+                    if (session.notAutoCha === "1") {
+                        RongIMClient.getInstance().switchToHumanMode(message.targetId, {
+                            onSuccess: function() { },
+                            onError: function() { }
+                        });
                     }
                 }
                 if (bool) {

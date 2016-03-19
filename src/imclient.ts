@@ -1639,7 +1639,7 @@ module RongIMLib {
             var modules = new Modules.GetQNupTokenInput();
             modules.setType(fileType);
             RongIMClient.bridge.queryMsg(30, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(data: string) {
+                onSuccess: function(data: any) {
                     setTimeout(function() {
                         callback.onSuccess(data);
                     });
@@ -1662,7 +1662,7 @@ module RongIMLib {
             modules.setType(fileType);
             modules.setKey(fileName);
             RongIMClient.bridge.queryMsg(31, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(data: string) {
+                onSuccess: function(data: any) {
                     setTimeout(function() {
                         callback.onSuccess(data);
                     });
