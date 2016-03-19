@@ -198,6 +198,7 @@ module RongIMLib {
                     me._client.channel.socket.fire("StatusChanged", 2);
                 }, me._timeout, false);
             } else {
+                Bridge._client.channel.socket.socket._status = status;
                 if (this._client.reconnectObj.onError) {
                     this._client.reconnectObj.onError(status);
                     delete this._client.reconnectObj.onError;

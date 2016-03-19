@@ -540,7 +540,7 @@ module RongIMLib {
                 if (!con) {
                     con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
                 }
-                if (con.conversationType != 0) {
+                if (con.conversationType != 0 && message.sendUserId != Bridge._client.userId && !message.hasReceivedByOtherClient) {
                     con.unreadMessageCount = con.unreadMessageCount + 1;
                     if (MessageUtil.supportLargeStorage()) {
                         var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
@@ -560,7 +560,6 @@ module RongIMLib {
                 var session = message.content.data, bool: boolean = false;
                 RongIMClient._memoryStore.custStore[message.targetId] = session;
                 if (session.serviceType == CustomerType.ONLY_ROBOT || session.serviceType == CustomerType.ROBOT_FIRST) {
-                    // TODO 业务逻辑
                     if (!session["robotWelcome"]) {
                         session["robotWelcome"] = RongIMClient._memoryStore.custStore["robotWelcome"] || "您好，很高兴为您服务，请问有什么可以帮您的？";
                         bool = true;
@@ -570,7 +569,7 @@ module RongIMLib {
                         session["humanWelcome"] = RongIMClient._memoryStore.custStore["humanWelcome"] || "您好，请问有什么可以帮您的？";
                         bool = true;
                     }
-                    if (session.notAutoCha === "1") {
+                    if (session.notAutoCha == "1") {
                         RongIMClient.getInstance().switchToHumanMode(message.targetId, {
                             onSuccess: function() { },
                             onError: function() { }

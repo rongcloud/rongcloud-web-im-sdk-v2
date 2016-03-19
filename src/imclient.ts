@@ -32,10 +32,27 @@ module RongIMLib {
             if (!RongIMClient._instance) {
                 RongIMClient._instance = new RongIMClient();
             }
-            if (document.location.protocol == "http:") {
+            if (window["SCHEMETYPE"] == "http") {
                 RongIMClient.schemeType = ConnectionChannel.HTTP;
-            } else {
+            } else if (window["SCHEMETYPE"] == "https") {
                 RongIMClient.schemeType = ConnectionChannel.HTTPS;
+            } else {
+                if (document.location.protocol == "http:") {
+                    RongIMClient.schemeType = ConnectionChannel.HTTP;
+                } else {
+                    RongIMClient.schemeType = ConnectionChannel.HTTPS;
+                }
+            }
+            if (!window["WEB_XHR_POLLING"]) {
+                var browser = navigator.appName;
+                var b_version = navigator.appVersion;
+                var version = b_version.split(";");
+                if (version.length > 1) {
+                    var trim_Version = parseInt(version[1].replace(/[ ]/g, "").replace(/MSIE/g, ""));
+                    if (trim_Version < 10) {
+                        window["WEB_XHR_POLLING"] = true;
+                    }
+                }
             }
             var pather = new FeaturePatcher();
             pather.patchAll();

@@ -59,24 +59,32 @@ module RongIMLib {
             if (me.isIE) {
                 me.thisMovie().doAction("stop");
             } else {
-                var key:string = base64Data.substr(-10);
+                var key: string = base64Data.substr(-10);
                 if (me.element[key]) {
                     me.element[key].pause();
                 }
             }
         }
         static preLoaded(base64Data: string) {
-            var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr"),
-                str: string = base64Data.substr(-10),
-                me = this;
-            reader.onload = function() {
-                var samples = new AMR({
-                    benchmark: true
-                }).decode(reader.result);
-                var audio = AMR.util.getWave(samples);
+            var str: string = base64Data.substr(-10), me = this;
+            if (/android/i.test(navigator.userAgent) && /MicroMessenger/i.test(navigator.userAgent)) {
+                var audio = new Audio();
+                audio.src = "data:audio/amr;base64," + base64Data;
                 me.element[str] = audio;
-            };
-            reader.readAsBinaryString(blob);
+            } else {
+                if (!me.isIE) {
+                    if (str in me.element) return;
+                    var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr");
+                    reader.onload = function() {
+                        var samples = new AMR({
+                            benchmark: true
+                        }).decode(reader.result);
+                        var audio = AMR.util.getWave(samples);
+                        me.element[str] = audio;
+                    };
+                    reader.readAsBinaryString(blob);
+                }
+            }
         }
         private static palyVoice(base64Data: string) {
             var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr"), me = this;
