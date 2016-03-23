@@ -3,16 +3,17 @@ module RongIMLib {
 
         database: DBUtil = new DBUtil();
 
-        private updateConversation(conversation: Conversation, callback: ResultCallback<boolean>) {
+        updateConversation(conversation: Conversation): Conversation {
             var sql: string = "UPDATE T_CONVERSATION_" + this.database.userId + " T SET T.CONTENT = ?,T.SENTTIME = ?,T.ISTOP = ? WHERE T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
             this.database.execUpdateByParams(sql, [JSON.stringify(conversation), conversation.sentTime, conversation.isTop, conversation.conversationType, conversation.targetId]);
+            return conversation;
         }
         addConversation(conver: Conversation, callback: ResultCallback<boolean>) {
             var me = this;
             var sSql: string = "SELECT * FROM T_CONVERSATION_" + me.database.userId + " T WHERE T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
             me.database.execSearchByParams(sSql, [String(conver.conversationType), conver.targetId], function(results: any[]) {
                 if (results.length > 0) {
-                    me.updateConversation(conver, callback);
+                    me.updateConversation(conver);
                 } else {
                     var iSql: string = "INSERT INTO T_CONVERSATION_" + this.database.userId + "(CONVERSATIONTYPE,TARGETID,CONTENT,SENTTIME,ISTOP) VALUES(?,?,?,?,?)";
                     me.database.execUpdateByParams(iSql, [conver.conversationTitle, conver.targetId, JSON.stringify(conver), conver.sentTime, conver.isTop]);
@@ -49,7 +50,7 @@ module RongIMLib {
             this.database.execUpdateByParams(sql, [messageIds.join(","), conversationType, targetId]);
         }
         updateMessage(message: Message, callback?: ResultCallback<Message>) {
-            var sql: string = "UPDATE T_MESSAGE_"+this.database.userId+" T SET T.MESSAGEUID = ?,T.SENTTIME = ? ";
+            var sql: string = "UPDATE T_MESSAGE_" + this.database.userId + " T SET T.MESSAGEUID = ?,T.SENTTIME = ? ";
         }
 
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>) {

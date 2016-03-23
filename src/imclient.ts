@@ -314,12 +314,6 @@ module RongIMLib {
             this.sendCustMessage(custId, msg, callback);
         }
 
-        setCustomerWelcome(robotWelcome: string, humanWelcome: string): void {
-            CheckParam.getInstance().check(["string", "string"], "setCustomerWelcome");
-            RongIMClient._memoryStore.custStore["robotWelcome"] = robotWelcome;
-            RongIMClient._memoryStore.custStore["humanWelcome"] = humanWelcome;
-        }
-
         private sendCustMessage(custId: string, msg: MessageContent, callback: any): void {
             RongIMClient.getInstance().sendMessage(ConversationType.CUSTOMER_SERVICE, custId, msg, {
                 onSuccess: function(data: any) {
@@ -994,6 +988,11 @@ module RongIMLib {
                 }
             }, "RelationsOutput");
         }
+
+        updateConversation(conversation: Conversation): Conversation {
+            return RongIMClient._dataAccessProvider.updateConversation(conversation);
+        }
+
         /**
          * [createConversation 创建会话。]
          * @param  {number}  conversationType [会话类型]

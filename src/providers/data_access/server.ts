@@ -16,6 +16,19 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
+        updateConversation(conversation: Conversation): Conversation {
+            var conver: Conversation;
+            for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
+                if (conversation.conversationType === RongIMClient._memoryStore.conversationList[i].conversationType && conversation.targetId === RongIMClient._memoryStore.conversationList[i].targetId) {
+                    RongIMClient._memoryStore.conversationList[i].conversationTitle = conversation.conversationTitle;
+                    RongIMClient._memoryStore.conversationList[i].senderUserName = conversation.senderUserName;
+                    RongIMClient._memoryStore.conversationList[i].senderPortraitUri = conversation.senderPortraitUri;
+                    break;
+                }
+            }
+            return conver;
+        }
+
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType === conversationType && RongIMClient._memoryStore.conversationList[i].targetId === targetId) {

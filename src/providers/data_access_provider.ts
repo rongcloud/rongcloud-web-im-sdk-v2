@@ -5,6 +5,8 @@ module RongIMLib {
 
         addConversation(conversation: Conversation, callback: ResultCallback<boolean>): void;
 
+        updateConversation(conversation: Conversation): Conversation;
+
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
         addMessage(conversationType: ConversationType, targetId: string, message: Message, callback?: ResultCallback<Message>): void;
@@ -13,7 +15,7 @@ module RongIMLib {
 
         removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>): void;
 
-        updateMessage(message: Message,callback?: ResultCallback<Message>): void;
+        updateMessage(message: Message, callback?: ResultCallback<Message>): void;
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
