@@ -86,19 +86,11 @@ module RongIMLib {
                 }
             }
         }
-        private static palyVoice(base64Data: string) {
-            var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr"), me = this;
-            reader.onload = function() {
-                var samples = new AMR({
-                    benchmark: true
-                }).decode(reader.result);
-                me.element = AMR.util.play(samples);
-            };
-            reader.readAsBinaryString(blob);
-        }
+
         static onprogress() {
 
         }
+
         private static checkInit(position: string) {
             if (!this.isInit) {
                 throw new Error("RongIMVoice is not init,position:" + position);

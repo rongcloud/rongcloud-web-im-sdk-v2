@@ -15,7 +15,8 @@ var typeMapping: { [s: string]: any } = {
     "RC:TypSts": "TypingStatusMessage",
     "RC:CsChaR": "ChangeModeResponseMessage",
     "RC:CsHsR": "HandShakeResponseMessage",
-    "RC:CsEnd": "TerminateMessage"
+    "RC:CsEnd": "TerminateMessage",
+    "RC:CsSp": "SuspendMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -272,9 +273,9 @@ module RongIMLib {
     }
     export class MessageIdHandler {
         static messageId: number = 0;
-        static isXHR: boolean = Transportations._TransportType === Socket.XHR_POLLING;
+        static isXHR: boolean = window["WEB_XHR_POLLING"];
         static init() {
-            this.messageId = +(RongIMClient._cookieHelper.getItem("msgId") || RongIMClient._cookieHelper.setItem("msgId", 0) || 0);
+            this.messageId = +(RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "msgId") || RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", 0) || 0);
         }
         static messageIdPlus(method: any): any {
             this.isXHR && this.init();
@@ -283,12 +284,12 @@ module RongIMLib {
                 return false;
             }
             this.messageId++;
-            this.isXHR && RongIMClient._cookieHelper.setItem("msgId", this.messageId);
+            this.isXHR && RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
             return this.messageId;
         }
         static clearMessageId() {
             this.messageId = 0;
-            this.isXHR && RongIMClient._cookieHelper.setItem("msgId", this.messageId);
+            this.isXHR && RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
         }
         static getMessageId() {
             this.isXHR && this.init();

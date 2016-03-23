@@ -151,10 +151,11 @@ module RongIMLib {
         }
         disconnect(): void {
             RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
+            RongIMLib.RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "msgId");
             this.onClose();
         }
 
-        reconnect():void {
+        reconnect(): void {
             this.disconnect();
             this.createTransport(this.url);
         }
@@ -164,6 +165,7 @@ module RongIMLib {
             this.onData(responseText, txt ? txt[0].slice(13) : 0);
             if (/"headerCode":-32,/.test(responseText)) {
                 RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
+                RongIMLib.RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "msgId");
                 return;
             }
             this.getRequest(Navigation.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId"));
@@ -173,6 +175,7 @@ module RongIMLib {
 
         onError(): void {
             RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
+            RongIMLib.RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "msgId");
             this.onClose();
             this.connected = false;
             this.socket.fire("disconnect");

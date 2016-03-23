@@ -218,7 +218,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "2.0.6";
+        sdkVer: string = "2.0.13";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
@@ -526,6 +526,9 @@ module RongIMLib {
                     return;
                 }
             }
+            if (entity.classname == "RC:CsSp") {
+                return;
+            }
             //解析实体对象为消息对象。
             message = MessageUtil.messageParser(entity, this._onReceived);
             if (pubAckItem) {
@@ -557,18 +560,9 @@ module RongIMLib {
                 con.setTop();
             }
             if (message.messageType === RongIMClient.MessageType["HandShakeResponseMessage"]) {
-                var session = message.content.data, bool: boolean = false;
+                var session = message.content.data;
                 RongIMClient._memoryStore.custStore[message.targetId] = session;
-                if (session.serviceType == CustomerType.ONLY_ROBOT || session.serviceType == CustomerType.ROBOT_FIRST) {
-                    if (!session["robotWelcome"]) {
-                        session["robotWelcome"] = RongIMClient._memoryStore.custStore["robotWelcome"] || "您好，很高兴为您服务，请问有什么可以帮您的？";
-                        bool = true;
-                    }
-                } else if (session.serviceType == CustomerType.ONLY_HUMAN || session.serviceType == CustomerType.HUMAN_FIRST) {
-                    if (!session["humanWelcome"]) {
-                        session["humanWelcome"] = RongIMClient._memoryStore.custStore["humanWelcome"] || "您好，请问有什么可以帮您的？";
-                        bool = true;
-                    }
+                if (session.serviceType == CustomerType.ONLY_HUMAN || session.serviceType == CustomerType.HUMAN_FIRST) {
                     if (session.notAutoCha == "1") {
                         RongIMClient.getInstance().switchToHumanMode(message.targetId, {
                             onSuccess: function() { },
@@ -576,12 +570,9 @@ module RongIMLib {
                         });
                     }
                 }
-                if (bool) {
-                    message.content.data = session;
-                }
-                RongIMClient._memoryStore.custStore[message.targetId] = session;
             }
             this._onReceived(message);
+
         }
 
         handleMessage(msg: any): void {

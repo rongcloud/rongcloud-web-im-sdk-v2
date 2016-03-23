@@ -639,10 +639,10 @@ module RongIMLib {
             }
             var modules = new Modules.HistoryMessageInput(), self = this;
             modules.setTargetId(targetId);
-            if (!timestamp) {
-                modules.setDataTime(RongIMClient._memoryStore.lastReadTime.get(conversationType + targetId));
-            } else {
+            if (timestamp === 0) {
                 modules.setDataTime(timestamp);
+            } else {
+                modules.setDataTime(RongIMClient._memoryStore.lastReadTime.get(conversationType + targetId));
             }
             modules.setSize(count);
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
