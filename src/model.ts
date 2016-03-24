@@ -77,7 +77,6 @@ module RongIMLib {
             public targetId?: string,
             public messageType?: string,
             public messageUId?: string,
-            public hasReceivedByOtherClient?: boolean,
             public isLocalMessage?: boolean
         ) { }
     }

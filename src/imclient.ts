@@ -104,7 +104,8 @@ module RongIMLib {
                 HandShakeMessage: { objectName: "RC:CsHs", msgTag: new MessageTag(false, false) },
                 HandShakeResponseMessage: { objectName: "RC:CsHsR", msgTag: new MessageTag(false, false) },
                 SuspendMessage: { objectName: "RC:CsSp", msgTag: new MessageTag(false, false) },//主动发送
-                TerminateMessage: { objectName: "RC:CsEnd", msgTag: new MessageTag(false, false) }
+                TerminateMessage: { objectName: "RC:CsEnd", msgTag: new MessageTag(false, false) },
+                CustomerStatusUpdateMessage: { objectName: "RC:CsUpdate", msgTag: new MessageTag(false, false) }
             };
             RongIMClient.MessageType = {
                 TextMessage: "TextMessage",
@@ -127,7 +128,8 @@ module RongIMLib {
                 HandShakeMessage: "HandShakeMessage",
                 HandShakeResponseMessage: "HandShakeResponseMessage",
                 SuspendMessage: "SuspendMessage",
-                TerminateMessage: "TerminateMessage"
+                TerminateMessage: "TerminateMessage",
+                CustomerStatusUpdateMessage: "CustomerStatusUpdateMessage"
             };
         }
 

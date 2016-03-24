@@ -534,7 +534,8 @@ module RongIMLib {
     export enum ReceivedStatus {
         READ = 0x1,
         LISTENED = 0x2,
-        DOWNLOADED = 0x4
+        DOWNLOADED = 0x4,
+        RETRIEVED = 0x8
     }
 
     export enum SearchType {

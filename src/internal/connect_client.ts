@@ -526,9 +526,6 @@ module RongIMLib {
                     return;
                 }
             }
-            if (entity.classname == "RC:CsSp") {
-                return;
-            }
             //解析实体对象为消息对象。
             message = MessageUtil.messageParser(entity, this._onReceived);
             if (pubAckItem) {

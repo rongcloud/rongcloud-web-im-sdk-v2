@@ -45,6 +45,22 @@ module RongIMLib {
         }
     }
 
+    export class CustomerStatusUpdateMessage implements MessageContent {
+        messageName: string = "CustomerStatusUpdateMessage";
+        serviceStatus: string;
+        sid: string;
+        constructor(message: any) {
+            this.serviceStatus = message.serviceStatus;
+            this.sid = message.sid;
+        }
+        static obtain(): CustomerStatusUpdateMessage {
+            return null;
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
+
     export class HandShakeMessage implements MessageContent {
         messageName: string = "HandShakeMessage";
         constructor() { }

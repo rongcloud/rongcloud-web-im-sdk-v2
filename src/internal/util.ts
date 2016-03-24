@@ -16,7 +16,8 @@ var typeMapping: { [s: string]: any } = {
     "RC:CsChaR": "ChangeModeResponseMessage",
     "RC:CsHsR": "HandShakeResponseMessage",
     "RC:CsEnd": "TerminateMessage",
-    "RC:CsSp": "SuspendMessage"
+    "RC:CsSp": "SuspendMessage",
+    "RC:CsUpdate": "CustomerStatusUpdateMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -262,7 +263,7 @@ module RongIMLib {
                 message.messageDirection = MessageDirection.RECEIVE;
             }
             if ((entity.status & 2) == 2) {
-                message.hasReceivedByOtherClient = true;
+                message.receivedStatus = ReceivedStatus.RETRIEVED;
             }
             message.messageUId = entity.msgId;
             message.receivedTime = new Date().getTime();

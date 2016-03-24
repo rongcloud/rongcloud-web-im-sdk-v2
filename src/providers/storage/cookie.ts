@@ -37,6 +37,7 @@ module RongIMLib {
             var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
             if (keys) {
                 for (var i = keys.length; i--;) {
+                    //TODO 条件判断，不要删除用户自己的 cookie
                     document.cookie = keys[i] + "=0;path=/;expires=" + new Date(0).toUTCString();
                 }
             }
