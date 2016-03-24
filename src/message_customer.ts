@@ -1,4 +1,18 @@
 module RongIMLib {
+
+    export class CustomerStatusMessage implements MessageContent {
+        messageName: string = "CustomerStatusMessage";
+        status: number;
+        constructor(message: any) {
+            this.status = message.status;
+        }
+        static obtain(): CustomerStatusMessage {
+            return null;
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
     /**
      * 客服转换响应消息的类型名
      */

@@ -568,8 +568,18 @@ module RongIMLib {
                     }
                 }
             }
+            // var me = this;
+            // switch (message.messageType) {
+            //     case RongIMClient.MessageType["HandShakeResponseMessage"]:
+            //         break;
+            //     case RongIMClient.MessageType["HandShakeResponseMessage"]:
+            //         break;
+            //     case RongIMClient.MessageType["HandShakeResponseMessage"]:
+            //         break;
+            //     default:
+            //         me._onReceived(message);
+            // }
             this._onReceived(message);
-
         }
 
         handleMessage(msg: any): void {
