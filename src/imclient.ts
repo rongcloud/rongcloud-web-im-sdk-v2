@@ -652,9 +652,13 @@ module RongIMLib {
                         callback.onSuccess(list, !!data.hasMsg);
                     });
                 },
-                onError: function() {
+                onError: function(error: ErrorCode) {
                     setTimeout(function() {
-                        callback.onSuccess([], false);
+                        if (error === ErrorCode.TIMEOUT) {
+                            callback.onError(error);
+                        } else {
+                            callback.onSuccess([], false);
+                        }
                     });
                 }
             }, "HistoryMessagesOuput");
@@ -900,7 +904,12 @@ module RongIMLib {
             conver.sentStatus = conver.latestMessage.sentStatus;
             conver.sentTime = conver.latestMessage.sentTime;
             if (!isUseReplace) {
-                conver.unreadMessageCount = 0;
+                if (MessageUtil.supportLargeStorage()) {
+                    var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + tempConver.type + tempConver.userId);
+                    conver.unreadMessageCount = Number(count);
+                } else {
+                    conver.unreadMessageCount = 0;
+                }
             }
             // if (conver.conversationType == ConversationType.PRIVATE) {
             //     self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{
@@ -957,6 +966,13 @@ module RongIMLib {
                             callback.onSuccess(RongIMClient._memoryStore.conversationList);
                         });
                     }
+                },
+                onError: function(error: ErrorCode) {
+                    if (error === ErrorCode.TIMEOUT) {
+                        callback.onError(error);
+                    } else {
+                        callback.onSuccess([]);
+                    }
                 }
             }, conversationTypes);
         }
@@ -985,8 +1001,12 @@ module RongIMLib {
                         callback.onSuccess(RongIMClient._memoryStore.conversationList);
                     }
                 },
-                onError: function() {
-                    callback.onSuccess([]);
+                onError: function(error: ErrorCode) {
+                    if (error === ErrorCode.TIMEOUT) {
+                        callback.onError(error);
+                    } else {
+                        callback.onSuccess([]);
+                    }
                 }
             }, "RelationsOutput");
         }
@@ -1732,7 +1752,10 @@ module RongIMLib {
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
         module.exports = RongIMLib;
     } else if ("function" === typeof define && define.amd) {
-        define("RongIMLib", ['md5', "//cdn.ronghub.com/Long.js", "//cdn.ronghub.com/byteBuffer.js", "//cdn.ronghub.com/protobuf-min-2.7.js"], function() {
+        var lurl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/Long.js" : "//cdn.ronghub.com/Long.js";
+        var burl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/byteBuffer.js" : "//cdn.ronghub.com/byteBuffer.js";
+        var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-min-2.7.js" : "//cdn.ronghub.com/protobuf-min-2.7.js";
+        define("RongIMLib", ['md5', lurl, burl, purl], function() {
             return RongIMLib;
         });
     } else {

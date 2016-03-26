@@ -51,6 +51,7 @@ module RongIMLib {
         connectionStatus: number = -1;
         url: string;
         self: any;
+        delOnChangedCount: number = 0;
         constructor(address: any, cb: any, self: Client) {
             this.url = address.host + "/websocket?appId=" + self.appId + "&token=" + encodeURIComponent(self.token) + "&sdkVer=" + self.sdkVer + "&apiVer=" + self.apiVer;
             this.self = self;
@@ -70,7 +71,10 @@ module RongIMLib {
                     }
                     Channel._ConnectionStatusListener.onChanged(code);
                     if (RongIMClient._memoryStore.otherDevice) {
-                        delete Channel._ConnectionStatusListener["onChanged"];
+                        if (me.delOnChangedCount > 5) {
+                            delete Channel._ConnectionStatusListener["onChanged"];
+                        }
+                        me.delOnChangedCount++;
                     }
                 });
 
@@ -591,11 +595,11 @@ module RongIMLib {
                     Bridge._client.handler.connectCallback.process(msg.getStatus(), msg.getUserId(), msg.getTimestamp());
                     break;
                 case "PublishMessage":
-                    if (msg.getQos() != 0) {
+                    if (!msg.getSyncMsg() && msg.getQos() != 0) {
                         Bridge._client.channel.writeAndFlush(new PubAckMessage(msg.getMessageId()));
-
                     }
-                    if (msg.getSyncMsg() && msg.getQos() != 0) {
+                    // TODO && ->
+                    if (msg.getSyncMsg() && !RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
                         Bridge._client.handler.syncMsgMap[msg.getMessageId()] = msg;
                     } else {
                         //如果是PublishMessage就把该对象给onReceived方法执行处理

@@ -178,7 +178,7 @@ module RongIMLib {
             return e;
         }
         private static createSpan(emojiObj: any): any {
-            var str = "", span = document.createElement("span"), p = document.createElement("span");
+            var span = document.createElement("span"), p = document.createElement("span");
             p.setAttribute("style","height: 22px; width: 22px; display: inline-block; font-size: 20px !important; text-align: center; line-height: 22px;");
             if (this.supportEmoji) {
                 span.textContent = emojiObj.tag;
@@ -187,7 +187,6 @@ module RongIMLib {
                 var img = this.createBTag(emojiObj.bp);
                 span.appendChild(img);
             }
-            str = '<span name = "' + emojiObj.en + '" class="RongIMExpression_' + emojiObj.en.substring(1, emojiObj.en.length) + '">' + span.innerHTML + '</span>';
             span.setAttribute("class", "RongIMExpression_" + emojiObj.en.substring(1, emojiObj.en.length));
             span.setAttribute("name", "[" + emojiObj.zh + "]");
             p.appendChild(span);

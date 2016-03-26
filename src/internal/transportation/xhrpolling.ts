@@ -7,6 +7,7 @@ module RongIMLib {
         socket: Socket;
         url: string;
         connected: boolean = false;
+        pid: string = +new Date + Math.random() + "";
         constructor(socket: Socket) {
             this.queue = [];
             this.socket = socket;
@@ -38,7 +39,7 @@ module RongIMLib {
         }
         private getRequest(url: string, isconnect?: boolean) {
             var me = this;
-            me.xhr = this.requestFactory(url, "GET");
+            me.xhr = this.requestFactory(url + "&pid=" + encodeURIComponent(me.pid), "GET");
             if ("onload" in me.xhr) {
                 me.xhr.onload = function() {
                     me.xhr.onload = me.empty;
@@ -75,7 +76,7 @@ module RongIMLib {
          */
         send(data: any): void {
             var me = this;
-            this.sendxhr = this.requestFactory(Navigation.Endpoint.host + "/websocket" + data.url, "POST");
+            this.sendxhr = this.requestFactory(Navigation.Endpoint.host + "/websocket" + data.url+ "&pid=" + encodeURIComponent(me.pid), "POST");
             if ("onload" in me.sendxhr) {
                 me.sendxhr.onload = function() {
                     me.sendxhr.onload = me.empty;
@@ -168,7 +169,7 @@ module RongIMLib {
                 RongIMLib.RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "msgId");
                 return;
             }
-            this.getRequest(Navigation.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId"));
+            this.getRequest(Navigation.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId") + "&timestrap=" + encodeURIComponent(new Date().getTime() + Math.random() + ""));
             this.connected = true;
             isconnect && this.socket.fire("connect");
         }
