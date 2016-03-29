@@ -139,7 +139,7 @@ module RongIMLib {
 
         private static size: number = 22;
 
-        private static url: string = "//cdn.ronghub.com/css-sprite_bg.png";
+        private static url: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"]+"://cdn.ronghub.com/css-sprite_bg.png":"//cdn.ronghub.com/css-sprite_bg.png";
         /**
          * 是否支持高清屏幕
          */

@@ -222,7 +222,7 @@ module RongIMLib {
         readMessage(_in: RongIMStream, msglength: number) {
             _in.read();
             var result = +_in.read();
-            if (result >= 0 && result <= 9) {
+            if (result >= 0 && result <= 12) {
                 this.setStatus(result);
             } else {
                 throw new Error("Unsupported CONNACK code:" + result);
