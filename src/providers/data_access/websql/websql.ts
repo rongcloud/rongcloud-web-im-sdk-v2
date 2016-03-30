@@ -50,9 +50,10 @@ module RongIMLib {
             this.database.execUpdateByParams(sql, [messageIds.join(","), conversationType, targetId]);
         }
         updateMessage(message: Message, callback?: ResultCallback<Message>) {
-            var sql: string = "UPDATE T_MESSAGE_" + this.database.userId + " T SET T.MESSAGEUID = ?,T.SENTTIME = ? ";
+            var sql: string = "UPDATE T_MESSAGE_" + this.database.userId + " T SET T.MESSAGEUID = ?,T.SENTTIME = ?,T.CONTENT = ?,T.LOCALMSG = ? WHERE ID = ?";
+            this.database.execUpdateByParams(sql, [message.messageUId, message.sentTime, JSON.stringify(message), message.isLocalMessage, message.messageId]);
         }
-
+        //TODO
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>) {
             throw new Error("Not implemented yet");
         }
