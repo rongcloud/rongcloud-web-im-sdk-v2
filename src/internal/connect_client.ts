@@ -583,6 +583,11 @@ module RongIMLib {
             //     default:
             //         me._onReceived(message);
             // }
+            if (message.messageType == "TerminateMessage") {
+                if (RongIMClient._memoryStore.custStore[message.targetId].sid != message.content.sid) {
+                    return;
+                }
+            }
             this._onReceived(message);
         }
 

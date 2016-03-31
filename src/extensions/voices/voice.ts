@@ -9,7 +9,7 @@ module RongIMLib {
                 div.setAttribute("id", "flashContent");
                 document.body.appendChild(div);
                 var script = document.createElement("script");
-                script.src = "//cdn.ronghub.com/swfobject-2.0.0.min.js";
+                script.src = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/swfobject-2.0.0.min.js" : "//cdn.ronghub.com/swfobject-2.0.0.min.js";
                 var header = document.getElementsByTagName("head")[0];
                 header.appendChild(script);
                 setTimeout(function() {
@@ -25,10 +25,10 @@ module RongIMLib {
                     attributes.id = "player";
                     attributes.name = "player";
                     attributes.align = "middle";
-                    swfobject.embedSWF("//cdn.ronghub.com/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
+                    swfobject.embedSWF(window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/player-2.0.2.swf" : "//cdn.ronghub.com/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
                 }, 500);
             } else {
-                var list = ["//cdn.ronghub.com/pcmdata-2.0.0.min.js", "//cdn.ronghub.com/libamr-2.0.12.min.js"];
+                var list = [window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/pcmdata-2.0.0.min.js" : "//cdn.ronghub.com/pcmdata-2.0.0.min.js", window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/libamr-2.0.12.min.js" : "//cdn.ronghub.com/libamr-2.0.12.min.js"];
                 for (let i = 0, len = list.length; i < len; i++) {
                     var script = document.createElement("script");
                     script.src = list[i];

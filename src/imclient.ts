@@ -192,7 +192,7 @@ module RongIMLib {
                 throw new Error("objectName can't be empty,postion -> registerMessageType");
             }
             if (Object.prototype.toString.call(messageContent) == "[object Array]") {
-                var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent);
+                var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent,messageType);
                 RongIMClient.RegisterMessage[messageType] = regMsg;
             } else if (Object.prototype.toString.call(messageContent) == "[object Function]" || Object.prototype.toString.call(messageContent) == "[object Object]") {
                 if (!messageContent.encode) {

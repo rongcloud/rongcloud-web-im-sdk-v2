@@ -35,20 +35,22 @@ module RongIMLib {
             }
             return obj;
         }
-        static modleCreate(fields: string[]): any {
+        static modleCreate(fields: string[], msgType: string): any {
             if (fields.length < 1) {
                 throw new Error("Array is empty  -> registerMessageType.modleCreate");
             }
             var Object = function(message: any) {
+                var me = this;
                 for (var index in fields) {
                     if (message[fields[index]]) {
-                        Object.prototype[fields[index]] = message[fields[index]];
+                        me[fields[index]] = message[fields[index]];
                     }
                 }
-                this.encode = function() {
+                Object.prototype.messageName = msgType;
+                Object.prototype.encode = function() {
                     return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
-                }
-            }
+                };
+            };
             return Object;
         }
     }
