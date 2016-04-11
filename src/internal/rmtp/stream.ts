@@ -236,7 +236,7 @@ module RongIMLib {
             var end = "";
             for (var i = 0; i < 4; i++) {
                 var t = this.pool[this.position++].toString(16);
-                if (t.length == 1 && i > 1) {
+                if (t.length == 1) {
                     t = "0" + t;
                 }
                 end += t.toString(16);
@@ -250,7 +250,7 @@ module RongIMLib {
             var end = "";
             for (var i = 0; i < 8; i++) {
                 var t = this.pool[this.position++].toString(16);
-                if (t.length == 1 && i > 1) {
+                if (t.length == 1) {
                     t = "0" + t;
                 }
                 end += t;

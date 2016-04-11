@@ -1,51 +1,51 @@
 #说明：
 #所有功能均已测试通过，若重新测试，删除注释重新运行karma即可(讨论组Id可能需要修改)
-describe "RongIMClient",->
-    RongIMLib.RongIMClient.init "8luwapkvucoil"
-    RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
-      console.log message.content.content
-      console.log message
-    RongIMLib.RongIMClient.setConnectionStatusListener onChanged: (status) ->
-      switch status
-          when RongIMLib.ConnectionStatus.CONNECTED
-            console.log "链接成功"
-          when RongIMLib.ConnectionStatus.CONNECTING
-            console.log "正在链接"
-          when RongIMLib.ConnectionStatus.DISCONNECTED
-            console.log "断开连接"
-          else console.log "状态为解析:"+status
-    RongIMLib.RongIMClient.connect "BIG85AHHpMAXYvnD2DSgnLrkPG6U/xPk3zvPIWf9le1hEGTTL55/U07yY3a+mzGazeB0RzEl9Y46MnCyDLVMAw==",
-        onSuccess:(userId)->
-            console.log("loginSuccess,userId."+userId)
-        onError:(error)->
-           switch error
-              when RongIMLib.ConnectionState.SERVER_UNAVAILABLE
-                console.log "SERVER_UNAVAILABLE"
-              when RongIMLib.ConnectionState.TOKEN_INCORRECT
-                console.log "token 无效"
-              else
-                console.log error
-    it "getRemotePublicServiceList",(done)->
-        setTimeout(->
-            RongIMLib.RongIMClient.getInstance().getRemotePublicServiceList();
-            done()
-        ,500);
-    it "registerMessageType",(done)->
-        setTimeout(->
-            RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',new RongIMLib.MessageTag(true,true),['Name','Age','Address']
-            done()
-        ,50);
-    it "sendMessage",(done)->
-        setTimeout(->
-            message = RongIMLib.TextMessage.obtain("rongcloud")
-            #message = new EmptyMessage({Name:'悲伤2015',Age:18,Address:"beijing"});
-            RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "1005", message,
-              onSuccess: (data)->
-                    console.log JSON.stringify(data)
-                    done()
-              onError: (errorcode)->
-                    console.log errorcode
-        ,1000)
+# describe "RongIMClient",->
+#     RongIMLib.RongIMClient.init "8luwapkvucoil"
+#     RongIMLib.RongIMClient.setOnReceiveMessageListener onReceived: (message) ->
+#       console.log message.content.content
+#       console.log message
+#     RongIMLib.RongIMClient.setConnectionStatusListener onChanged: (status) ->
+#       switch status
+#           when RongIMLib.ConnectionStatus.CONNECTED
+#             console.log "链接成功"
+#           when RongIMLib.ConnectionStatus.CONNECTING
+#             console.log "正在链接"
+#           when RongIMLib.ConnectionStatus.DISCONNECTED
+#             console.log "断开连接"
+#           else console.log "状态为解析:"+status
+#     RongIMLib.RongIMClient.connect "BIG85AHHpMAXYvnD2DSgnLrkPG6U/xPk3zvPIWf9le1hEGTTL55/U07yY3a+mzGazeB0RzEl9Y46MnCyDLVMAw==",
+#         onSuccess:(userId)->
+#             console.log("loginSuccess,userId."+userId)
+#         onError:(error)->
+#            switch error
+#               when RongIMLib.ConnectionState.SERVER_UNAVAILABLE
+#                 console.log "SERVER_UNAVAILABLE"
+#               when RongIMLib.ConnectionState.TOKEN_INCORRECT
+#                 console.log "token 无效"
+#               else
+#                 console.log error
+    # it "getRemotePublicServiceList",(done)->
+    #     setTimeout(->
+    #         RongIMLib.RongIMClient.getInstance().getRemotePublicServiceList();
+    #         done()
+    #     ,500);
+    # it "registerMessageType",(done)->
+    #     setTimeout(->
+    #         RongIMLib.RongIMClient.registerMessageType 's:empty','EmptyMessage',new RongIMLib.MessageTag(true,true),['Name','Age','Address']
+    #         done()
+    #     ,50);
+    # it "sendMessage",(done)->
+    #     setTimeout(->
+    #         message = RongIMLib.TextMessage.obtain("rongcloud")
+    #         #message = new EmptyMessage({Name:'悲伤2015',Age:18,Address:"beijing"});
+    #         RongIMLib.RongIMClient.getInstance().sendMessage RongIMLib.ConversationType.PRIVATE, "1005", message,
+    #           onSuccess: (data)->
+    #             console.log JSON.stringify(data)
+    #             done()
+    #           onError: (errorcode)->
+    #             console.log errorcode
+    #     ,1000)
     # it "sendTextMessage",(done)->
     #     setTimeout(->
     #         RongIMLib.RongIMClient.getInstance().sendTextMessage RongIMLib.ConversationType.PRIVATE, "1005", "我是TextMessage123123",

@@ -9,26 +9,30 @@ module RongIMLib {
             me.db = openDatabase("RongIMLibDB", "1.0", "RongIMLibDB", 10 * 1024 * 1024);
             if (me.db) {
                 isInit = true;
-                var converSql: string = "CREATE TABLE IF NOT EXISTS T_CONVERSATION_" + userId + " (CONVERSATIONTYPE,TARGETID,CONTENT,SENTTIME,ISTOP)";
-                var messageSql: string = "CREATE TABLE IF NOT EXISTS T_MESSAGE_" + userId + " (ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,MESSAGETYPE,MESSAGEUID,CONVERSATIONTYPE,TARGETID,SENTTIME,CONTENT,LOCALMSG)";
+                var converSql: string = "create table if not exists t_conversation_" + userId + " (conversationType,targetId,content,sentTime,isTop)";
+                var messageSql: string = "create table if not exists t_message_" + userId + " (id integer not null primary key autoincrement,messageType,messageUId,conversationType,targetId,sentTime,content,localMsg)";
                 me.execUpdate(converSql);
                 me.execUpdate(messageSql);
             }
             return isInit;
         }
 
-        execSearchByParams(sql: string, values: string[], callback: any) {
+        execSearchByParams(sql: string, values: any[], callback: any) {
             this.db.transaction(function(tx: any) {
                 tx.executeSql(sql, values, function(tx: any, results: any) {
                     callback(results.rows);
+                }, function(tx: any,results:any) {
+                    throw new Error("{errorCode:" + results.code + ",content:" + results.message + "}");
                 });
             });
         }
 
         execSearch(sql: string, callback: any) {
-            this.db.trasaction(function(tx: any) {
-                tx.executeSql(sql, function(tx: any, results: any) {
+            this.db.transaction(function(tx: any) {
+                tx.executeSql(sql, [],function(tx: any, results: any) {
                     callback(results.rows);
+                }, function(tx: any, result: any) {
+                    throw new Error("{errorCode:" + result.code + ",content:" + result.message + "}");
                 });
             });
         }
@@ -36,11 +40,15 @@ module RongIMLib {
         execUpdateByParams(sql: string, values: any[]) {
             this.db.transaction(function(tx: any) {
                 tx.executeSql(sql, values);
+            }, function(tx: any, result: any) {
+                throw new Error("{errorCode:" + tx.code + ",content:" + tx.message + "}");
             });
         }
         execUpdate(sql: string) {
             this.db.transaction(function(tx: any) {
                 tx.executeSql(sql);
+            }, function(tx: any, result: any) {
+                throw new Error("{errorCode:" + tx.code + ",content:" + tx.message + "}");
             });
         }
     }

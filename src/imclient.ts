@@ -192,7 +192,7 @@ module RongIMLib {
                 throw new Error("objectName can't be empty,postion -> registerMessageType");
             }
             if (Object.prototype.toString.call(messageContent) == "[object Array]") {
-                var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent,messageType);
+                var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent, messageType);
                 RongIMClient.RegisterMessage[messageType] = regMsg;
             } else if (Object.prototype.toString.call(messageContent) == "[object Function]" || Object.prototype.toString.call(messageContent) == "[object Object]") {
                 if (!messageContent.encode) {
@@ -408,6 +408,19 @@ module RongIMLib {
         }
 
         // #region Message
+
+        getMessage(messageId: string, callback: ResultCallback<Message>) {
+            RongIMClient._dataAccessProvider.getMessage(messageId, callback);
+        }
+
+        deleteLocalMessages(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.removeLocalMessage(conversationType, targetId, messageIds, callback);
+        }
+
+        updateMessage(message: Message, callback?: ResultCallback<Message>) {
+            RongIMClient._dataAccessProvider.updateMessage(message, callback);
+        }
+
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.clearMessages(conversationType, targetId, {
                 onSuccess: function(bool: boolean) {
@@ -442,15 +455,15 @@ module RongIMLib {
                 }
             });
         }
-        /**TODO
+        /**
          * [deleteMessages 删除消息记录。]
          * @param  {ConversationType}        conversationType [description]
          * @param  {string}                  targetId         [description]
          * @param  {number[]}                messageIds       [description]
          * @param  {ResultCallback<boolean>} callback         [description]
          */
-        deleteMessages(conversationType: ConversationType, targetId: string, messageIds: string[], callback: ResultCallback<boolean>) {
-            RongIMClient._dataAccessProvider.removeMessage(conversationType, targetId, messageIds, {
+        deleteMessages(conversationType: ConversationType, targetId: string, messageUIds: string[], callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.removeMessage(conversationType, targetId, messageUIds, {
                 onSuccess: function(bool: boolean) {
                     setTimeout(function() {
                         callback.onSuccess(bool);
@@ -501,6 +514,20 @@ module RongIMLib {
             this.getConversation(conversationType, targetId, <ResultCallback<Conversation>>{
                 onSuccess: function(conver: Conversation) {
                     c = conver;
+                    if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
+                        if (!c) {
+                            c = me.createConversation(conversationType, targetId, "");
+                        }
+                        c.sentTime = new Date().getTime();
+                        c.sentStatus = SentStatus.SENDING;
+                        c.senderUserName = "";
+                        c.senderUserId = Bridge._client.userId;
+                        c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
+                        c.latestMessage = msg;
+                        c.unreadMessageCount = 0;
+                        RongIMClient._dataAccessProvider.addConversation(c, <ResultCallback<boolean>>{ onSuccess: function(data) { } });
+                    }
+                    RongIMClient._memoryStore.converStore = c;
                 }
             });
             msg.content = messageContent;
@@ -512,28 +539,22 @@ module RongIMLib {
             msg.messageDirection = MessageDirection.SEND;
             msg.sentStatus = SentStatus.SENT;
             msg.messageType = messageContent.messageName;
-            if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
-                if (!c) {
-                    c = me.createConversation(conversationType, targetId, "");
-                }
-                c.sentTime = new Date().getTime();
-                c.sentStatus = SentStatus.SENDING;
-                c.senderUserName = "";
-                c.senderUserId = Bridge._client.userId;
-                c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-                c.latestMessage = msg;
-                c.unreadMessageCount = 0;
-                c.setTop();
-            }
-            RongIMClient._memoryStore.converStore = c;
-            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg);
+
+
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
-                    msg.messageUId = data.messageUId;
-                    msg.sentTime = data.timestamp;
-                    msg.sentStatus = SentStatus.SENT;
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
                         RongIMClient._memoryStore.converStore.latestMessage = msg;
+                        RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, {
+                            onSuccess: function(ret: Message) {
+                                msg = ret;
+                                msg.messageUId = data.messageUId;
+                                msg.sentTime = data.timestamp;
+                                msg.sentStatus = SentStatus.SENT;
+                                RongIMClient._dataAccessProvider.updateMessage(msg);
+                            },
+                            onError: function() { }
+                        });
                     }
                     setTimeout(function() {
                         sendCallback.onSuccess(msg);
@@ -592,8 +613,15 @@ module RongIMLib {
          * @param  {MessageContent}          content          [description]
          * @param  {ResultCallback<Message>} callback         [description]
          */
-        insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: Message, callback: ResultCallback<Message>) {
-            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, content, callback);
+        insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
+            var msg = new Message();
+            msg.conversationType = conversationType;
+            msg.targetId = targetId;
+            msg.senderUserId = senderUserId;
+            msg.content = content;
+            msg.sentTime = +new Date;
+            msg.messageType = content.messageName;
+            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, callback);
         }
         /**
          * [getHistoryMessages 拉取历史消息记录。]
@@ -771,8 +799,8 @@ module RongIMLib {
             });
         }
 
-        setMessageReceivedStatus(messageId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
-            RongIMClient._dataAccessProvider.setMessageReceivedStatus(messageId, receivedStatus, {
+        setMessageReceivedStatus(messageUId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.setMessageReceivedStatus(messageUId, receivedStatus, {
                 onSuccess: function(bool: boolean) {
                     setTimeout(function() {
                         callback.onSuccess(bool);
@@ -876,10 +904,19 @@ module RongIMLib {
          */
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>) {
             CheckParam.getInstance().check(["number", "string", "object"], "getConversation");
-            var conver: Conversation = RongIMClient._dataAccessProvider.getConversation(conversationType, targetId);
-            setTimeout(function() {
-                callback.onSuccess(conver);
+            RongIMClient._dataAccessProvider.getConversation(conversationType, targetId, {
+                onSuccess: function(conver: Conversation) {
+                    setTimeout(function() {
+                        callback.onSuccess(conver);
+                    });
+                },
+                onError: function(error: ErrorCode) {
+                    setTimeout(function() {
+                        callback.onError(error);
+                    });
+                }
             });
+
         }
         /**
          * [pottingConversation 组装会话列表]
@@ -888,49 +925,55 @@ module RongIMLib {
          * msg_conversationType_targetId_no.
          */
         private pottingConversation(tempConver: any): void {
-            var conver: Conversation = RongIMClient._dataAccessProvider.getConversation(tempConver.type, tempConver.userId), self = this, isUseReplace: boolean = false;
-            if (!conver) {
-                conver = new Conversation();
-            } else {
-                isUseReplace = true;
-            }
-            conver.conversationType = tempConver.type;
-            conver.targetId = tempConver.userId;
-            conver.latestMessage = MessageUtil.messageParser(tempConver.msg);
-            conver.latestMessageId = conver.latestMessage.messageId;
-            conver.objectName = conver.latestMessage.objectName;
-            conver.receivedStatus = conver.latestMessage.receivedStatus;
-            conver.receivedTime = conver.latestMessage.receiveTime;
-            conver.sentStatus = conver.latestMessage.sentStatus;
-            conver.sentTime = conver.latestMessage.sentTime;
-            if (!isUseReplace) {
-                if (MessageUtil.supportLargeStorage()) {
-                    var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + tempConver.type + tempConver.userId);
-                    conver.unreadMessageCount = Number(count);
-                } else {
-                    conver.unreadMessageCount = 0;
-                }
-            }
-            // if (conver.conversationType == ConversationType.PRIVATE) {
-            //     self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{
-            //         onSuccess: function(info: UserInfo) {
-            //             conver.conversationTitle = info.name;
-            //             conver.senderUserName = info.name;
-            //             conver.senderUserId = info.userId;
-            //             conver.senderPortraitUri = info.portraitUri;
-            //         },
-            //         onError: function(error: ErrorCode) { }
-            //     });
-            // } else
-            if (conver.conversationType == ConversationType.DISCUSSION) {
-                self.getDiscussion(tempConver.userId, {
-                    onSuccess: function(info: Discussion) {
-                        conver.conversationTitle = info.name;
-                    },
-                    onError: function(error: ErrorCode) { }
-                });
-            }
-            RongIMClient._dataAccessProvider.addConversation(conver, <ResultCallback<boolean>>{ onSuccess: function(data: boolean) { } });
+            var self = this, isUseReplace: boolean = false;
+            RongIMClient._dataAccessProvider.getConversation(tempConver.type, tempConver.userId, {
+                onSuccess: function(conver: Conversation) {
+                    if (!conver) {
+                        conver = new Conversation();
+                    } else {
+                        isUseReplace = true;
+                    }
+                    conver.conversationType = tempConver.type;
+                    conver.targetId = tempConver.userId;
+                    conver.latestMessage = MessageUtil.messageParser(tempConver.msg);
+                    conver.latestMessageId = conver.latestMessage.messageId;
+                    conver.objectName = conver.latestMessage.objectName;
+                    conver.receivedStatus = conver.latestMessage.receivedStatus;
+                    conver.receivedTime = conver.latestMessage.receiveTime;
+                    conver.sentStatus = conver.latestMessage.sentStatus;
+                    conver.sentTime = conver.latestMessage.sentTime;
+                    if (!isUseReplace) {
+                        if (MessageUtil.supportLargeStorage()) {
+                            var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + tempConver.type + tempConver.userId);
+                            conver.unreadMessageCount = Number(count);
+                        } else {
+                            conver.unreadMessageCount = 0;
+                        }
+                    }
+                    // if (conver.conversationType == ConversationType.PRIVATE) {
+                    //     self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{
+                    //         onSuccess: function(info: UserInfo) {
+                    //             conver.conversationTitle = info.name;
+                    //             conver.senderUserName = info.name;
+                    //             conver.senderUserId = info.userId;
+                    //             conver.senderPortraitUri = info.portraitUri;
+                    //         },
+                    //         onError: function(error: ErrorCode) { }
+                    //     });
+                    // } else
+                    if (conver.conversationType == ConversationType.DISCUSSION) {
+                        self.getDiscussion(tempConver.userId, {
+                            onSuccess: function(info: Discussion) {
+                                conver.conversationTitle = info.name;
+                            },
+                            onError: function(error: ErrorCode) { }
+                        });
+                    }
+                    RongIMClient._dataAccessProvider.addConversation(conver, <ResultCallback<boolean>>{ onSuccess: function(data: boolean) { } });
+                },
+                onError: function(error: ErrorCode) { }
+            });
+
         }
 
         private sortConversationList(conversationList: Conversation[]) {
@@ -961,7 +1004,9 @@ module RongIMLib {
                             callback.onSuccess(data);
                         });
                     } else {
-                        me.sortConversationList(RongIMClient._memoryStore.conversationList);
+                        if (RongIMClient._memoryStore.isUseWebSQLProvide) {
+                            me.sortConversationList(RongIMClient._memoryStore.conversationList);
+                        }
                         setTimeout(function() {
                             callback.onSuccess(RongIMClient._memoryStore.conversationList);
                         });
@@ -1030,7 +1075,6 @@ module RongIMLib {
             conver.conversationTitle = converTitle;
             conver.latestMessage = {};
             conver.unreadMessageCount = 0;
-            RongIMClient._dataAccessProvider.addConversation(conver, <ResultCallback<boolean>>{ onSuccess: function(data) { } });
             return conver;
         }
         //TODO 删除本地和服务器、删除本地和服务器分开

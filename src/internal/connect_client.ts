@@ -222,7 +222,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "2.0.13";
+        sdkVer: string = "2.0.15";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
@@ -540,25 +540,30 @@ module RongIMLib {
                 return;
             }
             if (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() == 3) {
-                con = RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId);
-                if (!con) {
-                    con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
-                }
-                if (con.conversationType != 0 && message.sendUserId != Bridge._client.userId && !message.hasReceivedByOtherClient) {
-                    con.unreadMessageCount = con.unreadMessageCount + 1;
-                    if (MessageUtil.supportLargeStorage()) {
-                        var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
-                        LocalStorageProvider.getInstance().setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
-                    }
-                }
-                con.receivedTime = new Date().getTime();
-                con.receivedStatus = ReceivedStatus.READ;
-                con.senderUserId = message.sendUserId;
-                con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-                con.latestMessageId = message.messageId;
-                con.latestMessage = message;
-                con.sentTime = message.sentTime;
-                con.setTop();
+                RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
+                    onSuccess: function(con: Conversation) {
+                        if (!con) {
+                            con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
+                        }
+                        if (con.conversationType != 0 && message.sendUserId != Bridge._client.userId && !message.hasReceivedByOtherClient) {
+                            con.unreadMessageCount = con.unreadMessageCount + 1;
+                            if (MessageUtil.supportLargeStorage()) {
+                                var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
+                                LocalStorageProvider.getInstance().setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
+                            }
+                        }
+                        con.receivedTime = new Date().getTime();
+                        con.receivedStatus = ReceivedStatus.READ;
+                        con.senderUserId = message.sendUserId;
+                        con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
+                        con.latestMessageId = message.messageId;
+                        con.latestMessage = message;
+                        con.sentTime = message.sentTime;
+                        RongIMClient._dataAccessProvider.addConversation(con, { onSuccess: function(data) { }, onError: function() { } });
+                    },
+                    onError: function(error: ErrorCode) { }
+                });
+
             }
             if (message.messageType === RongIMClient.MessageType["HandShakeResponseMessage"]) {
                 var session = message.content.data;
@@ -588,7 +593,16 @@ module RongIMLib {
                     return;
                 }
             }
-            this._onReceived(message);
+            var that = this;
+            RongIMClient._dataAccessProvider.addMessage(message.conversationType, message.targetId, message, {
+                onSuccess: function(ret: Message) {
+                    that._onReceived(ret);
+                },
+                onError: function(error: ErrorCode) {
+                    that._onReceived(message);
+                }
+            });
+
         }
 
         handleMessage(msg: any): void {

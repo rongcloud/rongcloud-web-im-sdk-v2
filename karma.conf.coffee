@@ -15,15 +15,15 @@ module.exports = (config) ->
 
     # list of files / patterns to load in the browser
     files: [
+      'src/3rd/protobuf.js',
       'dist/RongIMLib.js',
       {pattern: 'test/**/*Spec.coffee', included: false}
       'test/test-main.coffee'
-
     ]
 
 
     # list of files to exclude
-    exclude: ['http://cdn.ronghub.com/protobuf-min-2.5.js']
+    exclude: ['']
 
 
     # preprocess matching files before serving them to the browser

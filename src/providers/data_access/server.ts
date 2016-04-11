@@ -42,9 +42,13 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
+        getMessage(messageId: string, callback: ResultCallback<Message>) {
+            callback.onSuccess(new Message());
+        }
+
         addMessage(conversationType: ConversationType, targetId: string, message: Message, callback?: ResultCallback<Message>) {
             if (callback) {
-                callback.onSuccess(new Message());
+                callback.onSuccess(message);
             }
         }
 
@@ -57,7 +61,9 @@ module RongIMLib {
         }
 
         updateMessage(message: Message, callback?: ResultCallback<Message>) {
-            callback.onSuccess(message);
+            if (callback) {
+                callback.onSuccess(message);
+            }
         }
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
@@ -85,7 +91,7 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
-        getConversation(conversationType: ConversationType, targetId: string): Conversation {
+        getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>) {
             var conver: Conversation = null;
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType == conversationType && RongIMClient._memoryStore.conversationList[i].targetId == targetId) {
@@ -98,7 +104,7 @@ module RongIMLib {
                     }
                 }
             }
-            return conver;
+            callback.onSuccess(conver);
         }
 
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]) {
@@ -173,24 +179,46 @@ module RongIMLib {
         }
 
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>) {
-            var conver: Conversation = this.getConversation(conversationType, targetId);
-            callback.onSuccess(conver ? conver.unreadMessageCount : 0);
+            this.getConversation(conversationType, targetId, {
+                onSuccess: function(conver: Conversation) {
+                    callback.onSuccess(conver ? conver.unreadMessageCount : 0);
+                },
+                onError: function(error: ErrorCode) {
+                    callback.onError(error);
+                }
+            });
         }
 
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            var conver: Conversation = this.getConversation(conversationType, targetId);
-            if (conver) {
-                if (RongIMLib.MessageUtil.supportLargeStorage()) {
-                    LocalStorageProvider.getInstance().removeItem("cu" + Bridge._client.userId + conversationType + targetId);
+            this.getConversation(conversationType, targetId, {
+                onSuccess: function(conver: Conversation) {
+                    if (conver) {
+                        if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                            LocalStorageProvider.getInstance().removeItem("cu" + Bridge._client.userId + conversationType + targetId);
+                        }
+                        conver.unreadMessageCount = 0;
+                    }
+                    callback.onSuccess(true);
+                },
+                onError: function(error: ErrorCode) {
+                    callback.onError(error);
                 }
-                conver.unreadMessageCount = 0;
-            }
-            callback.onSuccess(true);
-        }
+            });
 
+
+        }
         setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            var conver: Conversation = this.getConversation(conversationType, targetId);
-            this.addConversation(conver, callback);
+            var me = this;
+            this.getConversation(conversationType, targetId, {
+                onSuccess: function(conver: Conversation) {
+                    me.addConversation(conver, callback);
+                    callback.onSuccess(true);
+                },
+                onError: function(error: ErrorCode) {
+                    callback.onError(error);
+                }
+            });
+
         }
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {

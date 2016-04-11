@@ -41,6 +41,26 @@ module RongIMLib {
         }
     }
 
+    export class ReadReceiptMessage implements MessageContent {
+        lastMessageSendTime: number;
+        messageUId: string;
+        type: number;
+        messageName: string = "ReadReceiptMessage";
+        constructor(message: any) {
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> ReadReceiptMessage.");
+            }
+            this.lastMessageSendTime = message.lastMessageSendTime;
+            this.messageUId = message.messageUId;
+            this.type = message.type;
+        }
+        static obtain(messageUId: string, lastMessageSendTime: number, type: ConversationType): ReadReceiptMessage {
+            return new ReadReceiptMessage({ messageUId: messageUId, lastMessageSendTime: lastMessageSendTime, type: type });
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
     export class VoiceMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
         user: UserInfo;
         content: string;

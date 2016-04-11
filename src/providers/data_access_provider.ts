@@ -15,13 +15,15 @@ module RongIMLib {
 
         removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>): void;
 
+        getMessage(messageId:string,callback: ResultCallback<Message>): void;
+
         updateMessage(message: Message, callback?: ResultCallback<Message>): void;
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>): void;
 
-        getConversation(conversationType: ConversationType, targetId: string): Conversation;
+        getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void;
 
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void;
 

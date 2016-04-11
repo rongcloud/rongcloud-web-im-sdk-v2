@@ -110,6 +110,7 @@ module RongIMLib {
                 if (_msg) {
                     _msg.setSentStatus = _status;
                 }
+                RongIMClient._cookieHelper.setItem(Bridge._client.userId,timestamp);
                 this._cb({ messageUId: messageUId, timestamp: timestamp });
             } else {
                 this._timeout(_status);

@@ -4,53 +4,139 @@ module RongIMLib {
         database: DBUtil = new DBUtil();
 
         updateConversation(conversation: Conversation): Conversation {
-            var sql: string = "UPDATE T_CONVERSATION_" + this.database.userId + " T SET T.CONTENT = ?,T.SENTTIME = ?,T.ISTOP = ? WHERE T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
+            var sql: string = "update t_conversation_" + this.database.userId + " set content = ?,sentTime = ?,istop = ? where conversationType = ? and targetId = ?";
             this.database.execUpdateByParams(sql, [JSON.stringify(conversation), conversation.sentTime, conversation.isTop, conversation.conversationType, conversation.targetId]);
             return conversation;
         }
         addConversation(conver: Conversation, callback: ResultCallback<boolean>) {
             var me = this;
-            var sSql: string = "SELECT * FROM T_CONVERSATION_" + me.database.userId + " T WHERE T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
-            me.database.execSearchByParams(sSql, [String(conver.conversationType), conver.targetId], function(results: any[]) {
+            var sSql: string = "select * from t_conversation_" + me.database.userId + " t where t.conversationType = ? and t.targetId = ?";
+            me.database.execSearchByParams(sSql, [Number(conver.conversationType), conver.targetId], function(results: any[]) {
                 if (results.length > 0) {
                     me.updateConversation(conver);
                 } else {
-                    var iSql: string = "INSERT INTO T_CONVERSATION_" + this.database.userId + "(CONVERSATIONTYPE,TARGETID,CONTENT,SENTTIME,ISTOP) VALUES(?,?,?,?,?)";
-                    me.database.execUpdateByParams(iSql, [conver.conversationTitle, conver.targetId, JSON.stringify(conver), conver.sentTime, conver.isTop]);
+                    var iSql: string = "insert into t_conversation_" + me.database.userId + "(conversationType,targetId,content,sentTime,isTop) values(?,?,?,?,?)";
+                    me.database.execUpdateByParams(iSql, [conver.conversationType, conver.targetId, JSON.stringify(conver), conver.sentTime, conver.isTop]);
                 }
                 callback.onSuccess(true);
             });
         }
 
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            var sql: string = "DELETE FROM T_CONVERSATION_" + this.database.userId + " T WHERE T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
+            var sql: string = "delete from t_conversation_" + this.database.userId + "  where conversationType = ? and targetId = ?";
             this.database.execUpdateByParams(sql, [conversationType, targetId]);
             callback.onSuccess(true);
         }
 
+
+        getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void {
+            var sql: string = "select t.content from t_conversation_" + this.database.userId + " t where t.conversationType = ? and t.targetId = ?",
+                conver: Conversation = null;
+            this.database.execSearchByParams(sql, [Number(conversationType), targetId], function(results: any[]) {
+                var conver: Conversation;
+                if (results.length > 0) {
+                    conver = JSON.parse(results[0].content);
+                }
+                callback.onSuccess(conver);
+            });
+        }
+
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]) {
+            if (RongIMClient._memoryStore.isSyncRemoteConverList) {
+                RongIMClient.getInstance().getRemoteConversationList({
+                    onSuccess: function(list) {
+                        RongIMClient._memoryStore.conversationList = list;
+                        for (let i = 0, len = list.length; i < len; i++) {
+                            me.addConversation(list[i], {
+                                onSuccess: function() { },
+                                onError: function() { }
+                            });
+                        }
+                        RongIMClient._memoryStore.isSyncRemoteConverList = false;
+                    },
+                    onError: function(errorCode: ErrorCode) {
+                        callback.onError(errorCode);
+                    }
+                }, null);
+            }
+            //查询置顶会话。
+            var tSql: string = "select * from t_conversation_" + this.database.userId + " t where t.isTop = 1 ";
+            //排序查询会话。
+            var oSql: string = "select * from t_conversation_" + this.database.userId + " c where c.isTop != 1 order by c.sentTime ";
+            var me = this;
+            if (conversationTypes) {
+                tSql += " and t.conversationType in (" + conversationTypes.join(",") + ")";
+                oSql += " and c.conversationType in (" + conversationTypes.join(",") + ")";
+            }
+            tSql += " union " + oSql;
+            this.database.execSearch(tSql, function(results: any[]) {
+                if (results.length > 0) {
+                    var convers: Conversation[] = [];
+                    for (let i = 0, len = results.length; i < len; i++) {
+                        convers.push(JSON.parse(results[i].content));
+                    }
+                    RongIMClient._memoryStore.conversationList = convers;
+                }
+                callback.onSuccess(RongIMClient._memoryStore.conversationList);
+            });
+        }
+
+        clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>) {
+            var sql: string = "delete from t_conversation_" + this.database.userId + " where conversationType in (?)";
+            this.database.execUpdateByParams(sql, [conversationTypes.join(",")]);
+            Array.forEach(conversationTypes, function(conversationType: ConversationType) {
+                Array.forEach(RongIMClient._memoryStore.conversationList, function(conver: Conversation) {
+                    if (conversationType == conver.conversationType) {
+                        RongIMClient.getInstance().removeConversation(conver.conversationType, conver.targetId, { onSuccess: function() { }, onError: function() { } });
+                    }
+                });
+            });
+            callback.onSuccess(true);
+        }
+
+        getMessage(messageId: string, callback: ResultCallback<Message>) {
+            var sql: string = "select * from t_message_" + this.database.userId + " t where t.id = ?";
+            this.database.execSearchByParams(sql, [messageId], function(results: any[]) {
+                if (results.length > 0) {
+                    var msg: Message = JSON.parse(results[0].content);
+                    callback.onSuccess(msg);
+                } else {
+                    callback.onSuccess(null);
+                }
+            });
+        }
+
         addMessage(conversationType: ConversationType, targetId: string, message: Message, callback?: ResultCallback<Message>) {
-            var sql: string = "INSERT INTO T_MESSAGE_" + this.database.userId + " T (MESSAGETYPE,MESSAGEUID,CONVERSATIONTYPE,TARGETID,SENTTIME,CONTENT,LOCALMSG)" +
-                "VALUES(?,?,?,?,?,?,?)";
+            var sql: string = "insert into t_message_" + this.database.userId + " (messageType,messageUId,conversationType,targetId,sentTime,content,localMsg)" +
+                "values(?,?,?,?,?,?,?)";
             var localmsg: number = message.messageUId ? 0 : 1;
             this.database.execUpdateByParams(sql, [message.messageType, message.messageUId, message.conversationType, message.targetId, message.sentTime, JSON.stringify(message), localmsg]);
+            if (callback) {
+                var searchSql: string = "select t.id from t_message_" + this.database.userId + " t where t.sentTime = ? and t.conversationType = ? and t.targetId = ?";
+                this.database.execSearchByParams(searchSql, [message.sentTime, conversationType, targetId], function(results: any[]) {
+                    message.messageId = results[0].id;
+                    callback.onSuccess(message);
+                });
+            }
         }
 
         removeMessage(conversationType: ConversationType, targetId: string, messageIds: string[], callback: ResultCallback<boolean>) {
             if (messageIds.length == 0) {
                 return;
             }
-            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.MESSAGEUID IN (?)";
+            var sql: string = "delete from t_message_" + this.database.userId + " where messageUId in (?)";
             this.database.execUpdateByParams(sql, [messageIds.join(",")]);
         }
         removeLocalMessage(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
             if (messageIds.length == 0) {
                 return;
             }
-            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.ID IN (?) AND T.MESSAGEUID IS NULL AND T.CONVERSATIONTYPE = ? AND T.TARGETID = ?";
-            this.database.execUpdateByParams(sql, [messageIds.join(","), conversationType, targetId]);
+            var sql: string = "delete from t_message_" + this.database.userId + " where id in (" + messageIds.join(",") + ") and conversationType = ? and targetId = ? and localMsg = 1";
+            this.database.execUpdateByParams(sql, [conversationType, targetId]);
+            callback.onSuccess(true);
         }
         updateMessage(message: Message, callback?: ResultCallback<Message>) {
-            var sql: string = "UPDATE T_MESSAGE_" + this.database.userId + " T SET T.MESSAGEUID = ?,T.SENTTIME = ?,T.CONTENT = ?,T.LOCALMSG = ? WHERE ID = ?";
+            var sql: string = "update t_message_" + this.database.userId + " set messageUId = ?,sentTime = ?,content = ?,localMsg = ? where id = ?";
             this.database.execUpdateByParams(sql, [message.messageUId, message.sentTime, JSON.stringify(message), message.isLocalMessage, message.messageId]);
         }
         //TODO
@@ -59,56 +145,160 @@ module RongIMLib {
         }
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            var sql: string = "DELETE FROM T_MESSAGE_" + this.database.userId + " T WHERE T.CONVERSATIONTYPE = ? AND T.TARGETID = ? ";
+            var sql: string = "delete from t_message_" + this.database.userId + " where conversationType = ? and targetId = ? ";
             this.database.execUpdateByParams(sql, [conversationType, targetId]);
+            callback.onSuccess(true);
         }
 
-        getConversation(conversationType: ConversationType, targetId: string): Conversation {
-            throw new Error("Not implemented yet");
-        }
-
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]) {
-            throw new Error("Not implemented yet");
-        }
-
-        clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
-        }
-
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
-            throw new Error("Not implemented yet");
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestrap: number, count: number, callback: GetHistoryMessagesCallback) {
+            var sql: string = "select * from (select * from t_message_" + this.database.userId + " t where t.conversationType = ? and t.targetId = ? ";
+            var params: any[] = [conversationType, targetId], results: Message[] = [], me = this;
+            if (timestrap !== 0) {
+                var times = RongIMClient._memoryStore.lastReadTime.get(conversationType + targetId);
+                if (times != 0) {
+                    sql += "and t.sentTime < ? ";
+                    params.push(times);
+                    timestrap = times;
+                }
+            }
+            sql += "order by t.sentTime desc limit ?) order by sentTime ";
+            params.push(count);
+            me.database.execSearchByParams(sql, params, function(result: any[]) {
+                for (var i = 0, len: number = result.length; i < len; i++) {
+                    results.push(JSON.parse(result[i].content));
+                }
+                if (len < count) {
+                    RongIMClient.getInstance().getRemoteHistoryMessages(conversationType, targetId, timestrap, count - result.length, {
+                        onSuccess: function(list: Message[], hasMsg: boolean) {
+                            for (var i = 0, len = list.length; i < len; i++) {
+                                !list[i].targetId ? list[i].targetId = targetId:null;
+                                RongIMClient._dataAccessProvider.addMessage(list[i].conversationType, list[i].targetId, list[i], {
+                                    onSuccess: function(message: Message) { },
+                                    onError: function() { }
+                                });
+                            }
+                            me.database.execSearchByParams(sql, params, function(result: any[]) {
+                                var ret: Message[] = [];
+                                for (var i = 0, len: number = result.length; i < len; i++) {
+                                    ret.push(JSON.parse(result[i].content));
+                                }
+                                callback.onSuccess(ret, hasMsg);
+                            });
+                        },
+                        onError: function(error: ErrorCode) { }
+                    });
+                } else {
+                    //TODO 可能存在 len 和 count 相等并且服务区没有历史消息，导致多拉取一次历史消息。
+                    callback.onSuccess(results, true);
+                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, result[len-1].sentTime);
+                }
+            });
         }
 
         getTotalUnreadCount(callback: ResultCallback<number>) {
-            throw new Error("Not implemented yet");
+            var sql: string = "select t.content from t_conversation_" + this.database.userId + " t";
+            this.database.execSearch(sql, function(results: any[]) {
+                var count: number = 0;
+                for (let i = 0, len = results.length; i < len; i++) {
+                    var conver: Conversation = JSON.parse(results[i].content);
+                    count += conver.unreadMessageCount;
+                }
+                callback.onSuccess(count);
+            });
         }
 
         getConversationUnreadCount(conversationTypes: ConversationType[], callback: ResultCallback<number>) {
-            throw new Error("Not implemented yet");
+            if (conversationTypes.length == 0) {
+                callback.onSuccess(0);
+                return;
+            }
+            var sql: string = "select t.content from t_conversation_" + this.database.userId + " t where t.conversationType in (" + conversationTypes.join(",") + ")";
+            this.database.execSearchByParams(sql, [], function(results: any[]) {
+                var count: number = 0;
+                for (let i = 0, len = results.length; i < len; i++) {
+                    var conver: Conversation = JSON.parse(results[i].content);
+                    count += conver.unreadMessageCount;
+                }
+                callback.onSuccess(count);
+            });
         }
 
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>) {
-            throw new Error("Not implemented yet");
+            var sql: string = "select t.content from t_conversation_" + this.database.userId + " t where t.conversationType = ? and t.targetId = ?";
+            this.database.execSearchByParams(sql, [conversationType, targetId], function(results: any[]) {
+                var count: number = 0;
+                for (let i = 0, len = results.length; i < len; i++) {
+                    var conver: Conversation = JSON.parse(results[i].content);
+                    count += conver.unreadMessageCount;
+                }
+                callback.onSuccess(count);
+            });
         }
 
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+            var sSql: string = "select * from t_conversation_" + this.database.userId + " t where t.conversationType = ? and t.targetId = ?";
+            var uSql: string = "update t_conversation_" + this.database.userId + " set content = ? where conversationType = ? and targetId = ?", me = this;
+            this.database.execSearchByParams(sSql, [conversationType, targetId], function(results: any[]) {
+                if (results.length == 0) {
+                    callback.onSuccess(false);
+                } else {
+                    var conver: Conversation = JSON.parse(results[0].content);
+                    conver.unreadMessageCount = 0;
+                    me.database.execUpdateByParams(uSql, [JSON.stringify(conver), conversationType, targetId]);
+                    callback.onSuccess(true);
+                }
+            });
         }
 
         setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+            var sql: string = "update t_conversation_" + this.database.userId + " set isTop = 1 where conversationType = ? and targetId = ?";
+            this.database.execUpdateByParams(sql, [conversationType, targetId]);
+            callback.onSuccess(true);
+        }
+        setMessageExtra(messageUId: string, value: string, callback: ResultCallback<boolean>) {
+            var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
+            var uSql: string = "UPADTE t_message_" + this.database.userId + " t SET t.content = ? where t.messageUId = ?";
+            this.database.execSearchByParams(sSql, [messageUId], function(results: any[]) {
+                if (results.length == 0) {
+                    callback.onSuccess(false);
+                } else {
+                    var msg: Message = JSON.parse(results[0].content);
+                    msg.extra = value;
+                    this.database.execUpdateByParams(uSql, [JSON.stringify(msg), messageUId]);
+                }
+            });
         }
 
-        setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+        setMessageReceivedStatus(messageUId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
+            var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
+            var uSql: string = "update t_message_" + this.database.userId + " set content = ? where messageUId = ?", me = this;
+            this.database.execSearchByParams(sSql, [messageUId], function(results: any[]) {
+                if (results.length == 0) {
+                    callback.onSuccess(false);
+                } else {
+                    var msg: Message = JSON.parse(results[0].content);
+                    msg.receivedStatus = receivedStatus;
+                    me.database.execUpdateByParams(uSql, [JSON.stringify(msg), messageUId]);
+                    callback.onSuccess(true);
+                }
+            });
         }
-
-        setMessageReceivedStatus(messageId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+        dropTable(sql: string): void {
+            this.database.execUpdate(sql);
         }
-
-        setMessageSentStatus(messageId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
-            throw new Error("Not implemented yet");
+        setMessageSentStatus(messageUId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
+            var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
+            var uSql: string = "update t_message_" + this.database.userId + " set content = ? where messageUId = ?";
+            this.database.execSearchByParams(sSql, [messageUId], function(results: any[]) {
+                if (results.length == 0) {
+                    callback.onSuccess(false);
+                } else {
+                    var msg: Message = JSON.parse(results[0].content);
+                    msg.sentStatus = sentStatus;
+                    this.database.execUpdateByParams(uSql, [JSON.stringify(msg), messageUId]);
+                    callback.onSuccess(true);
+                }
+            });
         }
     }
 }
