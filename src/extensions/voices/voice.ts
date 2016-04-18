@@ -59,9 +59,15 @@ module RongIMLib {
             if (me.isIE) {
                 me.thisMovie().doAction("stop");
             } else {
-                var key: string = base64Data.substr(-10);
-                if (me.element[key]) {
-                    me.element[key].pause();
+                if (base64Data) {
+                    var key: string = base64Data.substr(-10);
+                    if (me.element[key]) {
+                        me.element[key].pause();
+                    }
+                } else {
+                    for (let key in me.element) {
+                        me.element[key].pause();
+                    }
                 }
             }
         }

@@ -35,6 +35,15 @@ module RongIMLib {
 
     }
 
+    export enum GetChatRoomType {
+
+        NONE = 0,
+
+        SQQUENCE = 1,
+
+        REVERSE = 2
+    }
+
     export enum ConnectionStatus {
         /**
          * 连接成功。

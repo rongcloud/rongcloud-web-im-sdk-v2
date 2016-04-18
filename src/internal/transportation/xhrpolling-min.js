@@ -219,6 +219,30 @@ var Polling = {
                 return a
             };
         },
+        QueryChatroomInfoInput:function(){
+            var a = {};
+            this.setCount = function (b) {
+                a.count = b;
+            };
+            this.setOrder = function (b) {
+                a.order = b;
+            };
+            this.toArrayBuffer = function () {
+                return a
+            };
+        },
+        QueryChatroomInfoOutput:function(){
+            var a = {};
+            this.setUserTotalNums = function (b) {
+                a.userTotalNums = b;
+            };
+            this.setUserInfos = function (b) {
+                a.userInfos = b;
+            };
+            this.toArrayBuffer = function () {
+                return a;
+            };
+        },
         ChannelEvictionInput: function () {
             var a = {};
             this.setUser = function (b) {

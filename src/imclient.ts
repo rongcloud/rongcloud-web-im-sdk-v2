@@ -105,7 +105,8 @@ module RongIMLib {
                 HandShakeResponseMessage: { objectName: "RC:CsHsR", msgTag: new MessageTag(false, false) },
                 SuspendMessage: { objectName: "RC:CsSp", msgTag: new MessageTag(false, false) },//主动发送
                 TerminateMessage: { objectName: "RC:CsEnd", msgTag: new MessageTag(false, false) },
-                CustomerStatusUpdateMessage: { objectName: "RC:CsUpdate", msgTag: new MessageTag(false, false) }
+                CustomerStatusUpdateMessage: { objectName: "RC:CsUpdate", msgTag: new MessageTag(false, false) },
+                ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) }
             };
             RongIMClient.MessageType = {
                 TextMessage: "TextMessage",
@@ -563,6 +564,13 @@ module RongIMLib {
                 onError: function(errorCode: ErrorCode) {
                     msg.sentStatus = SentStatus.FAILED;
                     RongIMClient._memoryStore.converStore.latestMessage = msg;
+                    RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, {
+                        onSuccess: function(ret: Message) {
+                            msg.messageId = ret.messageId;
+                            RongIMClient._dataAccessProvider.updateMessage(msg);
+                        },
+                        onError: function() { }
+                    });
                     setTimeout(function() {
                         sendCallback.onError(errorCode, msg);
                     });
@@ -1472,6 +1480,23 @@ module RongIMLib {
                 }
             }, "ChrmOutput");
         }
+
+        getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>) {
+            CheckParam.getInstance().check(["string","number", "number", "object"], "getChatRoomInfo");
+            var modules = new Modules.QueryChatroomInfoInput();
+            modules.setCount(count);
+            modules.setOrder(order);
+            RongIMClient.bridge.queryMsg("queryChrmI", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatRoomId, {
+                onSuccess: function(list: any[]) {
+                    setTimeout(function() {
+                        callback.onSuccess(list);
+                    });
+                },
+                onError: function(errcode: ErrorCode) {
+                    callback.onError(errcode);
+                }
+            }, "QueryChatroomInfoOutput");
+        }
         /**
          * [退出聊天室]
          * @param  {string}            chatroomId [聊天室Id]
@@ -1796,12 +1821,18 @@ module RongIMLib {
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
         module.exports = RongIMLib;
     } else if ("function" === typeof define && define.amd) {
-        var lurl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/Long.js" : "//cdn.ronghub.com/Long.js";
-        var burl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/byteBuffer.js" : "//cdn.ronghub.com/byteBuffer.js";
-        var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-min-2.7.js" : "//cdn.ronghub.com/protobuf-min-2.7.js";
-        define("RongIMLib", ['md5', lurl, burl, purl], function() {
-            return RongIMLib;
-        });
+        if (window["WEB_XHR_POLLING"]) {
+            define("RongIMLib", ['md5'], function() {
+                return RongIMLib;
+            });
+        } else {
+            var lurl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/Long.js" : "//cdn.ronghub.com/Long.js";
+            var burl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/byteBuffer.js" : "//cdn.ronghub.com/byteBuffer.js";
+            var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-min-2.8.js" : "//cdn.ronghub.com/protobuf-min-2.8.js";
+            define("RongIMLib", ['md5', lurl, burl, purl], function() {
+                return RongIMLib;
+            });
+        }
     } else {
         window.RongIMClient = RongIMClient;
     }

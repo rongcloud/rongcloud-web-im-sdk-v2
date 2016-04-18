@@ -6,10 +6,8 @@ module RongIMLib {
         constructor() {
             Transportations._TransportType = Socket.WEBSOCKET;
             if ("WebSocket" in window && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !window["WEB_XHR_POLLING"]) {
-                //http://res.websdk.rongcloud.cn/protobuf-0.2.min.js
-                var str: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-min-2.7.js" : "//cdn.ronghub.com/protobuf-min-2.7.js";
+                var str: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-min-2.8.js" : "//cdn.ronghub.com/protobuf-min-2.8.js";
                 this.script.src = str;
-                // this.script.src = MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://localhost:9876/base/src/3rd/protobuf-min.js";
                 this.head.appendChild(this.script);
             } else {
                 Transportations._TransportType = "xhr-polling";

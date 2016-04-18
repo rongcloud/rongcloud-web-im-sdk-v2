@@ -124,6 +124,6 @@ module RongIMLib {
         constructor(
             public userId: string,
             public name: string,
-            public portraitUri: string) { }
+            public icon: string) { }
     }
 }

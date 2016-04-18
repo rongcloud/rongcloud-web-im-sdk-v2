@@ -17,7 +17,8 @@ var typeMapping: { [s: string]: any } = {
     "RC:CsHsR": "HandShakeResponseMessage",
     "RC:CsEnd": "TerminateMessage",
     "RC:CsSp": "SuspendMessage",
-    "RC:CsUpdate": "CustomerStatusUpdateMessage"
+    "RC:CsUpdate": "CustomerStatusUpdateMessage",
+    "RC:ReadNtf": "ReadReceiptMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -259,8 +260,13 @@ module RongIMLib {
             }
             if (entity.direction == 1) {
                 message.messageDirection = MessageDirection.SEND;
+                message.senderUserId = Bridge._client.userId;
             } else {
-                message.messageDirection = MessageDirection.RECEIVE;
+                if (message.senderUserId == Bridge._client.userId) {
+                    message.messageDirection = MessageDirection.SEND;
+                } else {
+                    message.messageDirection = MessageDirection.RECEIVE;
+                }
             }
             if ((entity.status & 2) == 2) {
                 message.receivedStatus = ReceivedStatus.RETRIEVED;

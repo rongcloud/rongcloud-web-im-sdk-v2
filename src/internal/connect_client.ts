@@ -62,6 +62,9 @@ module RongIMLib {
                 var me = this;
                 me.socket.on("StatusChanged", function(code: any) {
                     me.connectionStatus = code;
+                    if (code === ConnectionStatus.NETWORK_UNAVAILABLE) {
+                        RongIMClient._cookieHelper.setItem("rongSDK", "");
+                    }
                     if (code === ConnectionStatus.DISCONNECTED && !RongIMClient._memoryStore.otherDevice) {
                         Channel._ConnectionStatusListener.onChanged(ConnectionStatus.DISCONNECTED);
                         self.clearHeartbeat();
@@ -115,6 +118,7 @@ module RongIMLib {
         connect(url: string, cb: any): any {
             if (this.socket) {
                 if (url) {
+                    RongIMLib.RongIMClient._cookieHelper.setItem("rongSDK", this.checkTransport());
                     this.on("connect", cb || new Function);
                 }
                 if (url) {
@@ -222,7 +226,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "2.0.15";
+        sdkVer: string = "2.1.0";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
@@ -512,17 +516,19 @@ module RongIMLib {
                     entity = Modules.UpStreamMessage.decode(msg.getData());
                     var tmpTopic = msg.getTopic();
                     var tmpType = tmpTopic.substr(0, 2);
-                    //复用字段，targetId 以此为准
-                    entity.groupId = msg.getTargetId();
                     if (tmpType == "pp") {
                         entity.type = 1;
                     } else if (tmpType == "pd") {
                         entity.type = 2;
                     } else if (tmpType == "pg") {
                         entity.type = 3;
-                    } else if (tmpType == "chat") {
+                    } else if (tmpType == "ch") {
                         entity.type = 4;
+                    } else if (tmpType == "pc") {
+                        entity.type = 5;
                     }
+                    //复用字段，targetId 以此为准
+                    entity.groupId = msg.getTargetId();
                     entity.fromUserId = this._client.userId;
                     entity.dataTime = Date.parse(new Date().toString());
                 }
@@ -545,7 +551,7 @@ module RongIMLib {
                         if (!con) {
                             con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
                         }
-                        if (con.conversationType != 0 && message.sendUserId != Bridge._client.userId && !message.hasReceivedByOtherClient) {
+                        if (con.conversationType != 0 && message.senderUserId != Bridge._client.userId && message.receivedStatus != ReceivedStatus.RETRIEVED) {
                             con.unreadMessageCount = con.unreadMessageCount + 1;
                             if (MessageUtil.supportLargeStorage()) {
                                 var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
