@@ -110,7 +110,7 @@ module RongIMLib {
                 if (_msg) {
                     _msg.setSentStatus = _status;
                 }
-                RongIMClient._cookieHelper.setItem(Bridge._client.userId,timestamp);
+                RongIMClient._cookieHelper.setItem(Bridge._client.userId, timestamp);
                 this._cb({ messageUId: messageUId, timestamp: timestamp });
             } else {
                 this._timeout(_status);
@@ -186,7 +186,12 @@ module RongIMLib {
                     setTimeout(function() { me._cb(userId); }, 500);
                 }
                 Bridge._client.channel.socket.fire("StatusChanged", 0);
-                RongIMClient._memoryStore.deltaTime = new Date().getTime() - timestamp;
+                if (!(new Date().getTime() - timestamp)) {
+                    RongIMClient._memoryStore.deltaTime = 0;
+                } else {
+                    RongIMClient._memoryStore.deltaTime = new Date().getTime() - timestamp;
+                }
+
             } else if (status == 6) {
                 //重定向
                 var x: any = {};
