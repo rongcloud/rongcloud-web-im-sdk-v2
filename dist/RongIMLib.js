@@ -1274,7 +1274,7 @@ var RongIMLib;
          */
         ErrorCode[ErrorCode["QNTKN_FILETYPE_ERROR"] = 41001] = "QNTKN_FILETYPE_ERROR";
         /**
-         * 关注公众号失败
+         * 获取七牛token失败
          */
         ErrorCode[ErrorCode["QNTKN_GET_ERROR"] = 41002] = "QNTKN_GET_ERROR";
         /**
@@ -1485,7 +1485,9 @@ var RongIMLib;
                 publicServiceMap: new RongIMLib.PublicServiceMap(),
                 listenerList: [],
                 providerType: 1,
-                deltaTime: 0
+                deltaTime: 0,
+                filterMessages: [],
+                isSyncRemoteConverList: false
             };
             RongIMClient._cookieHelper = new RongIMLib.CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
@@ -1666,6 +1668,15 @@ var RongIMLib;
             }
         };
         /**
+         * 过滤聊天室消息（拉取最近聊天消息）
+         * @param {string[]} msgFilterNames [description]
+         */
+        RongIMClient.prototype.setFilterMessages = function (msgFilterNames) {
+            if (Object.prototype.toString.call(msgFilterNames) == "[object Array]") {
+                RongIMClient._memoryStore.filterMessages = msgFilterNames;
+            }
+        };
+        /**
          * 获取当前连接用户的 UserId。
          */
         RongIMClient.prototype.getCurrentUserId = function () {
@@ -1843,7 +1854,7 @@ var RongIMLib;
          * @param  {string}                    objectName       [objectName]
          */
         RongIMClient.prototype.getHistoryMessages = function (conversationType, targetId, timestamp, count, callback) {
-            RongIMLib.CheckParam.getInstance().check(["number", "string", "number|null|global", "number", "object"], "getHistoryMessages");
+            RongIMLib.CheckParam.getInstance().check(["number", "string", "number|null|global|object", "number", "object"], "getHistoryMessages");
             if (count > 20) {
                 throw new Error("HistroyMessage count must be less than or equal to 20!");
             }
@@ -1861,7 +1872,7 @@ var RongIMLib;
          * @param  {ResultCallback<Message[]>} callback         [description]
          */
         RongIMClient.prototype.getRemoteHistoryMessages = function (conversationType, targetId, timestamp, count, callback) {
-            RongIMLib.CheckParam.getInstance().check(["number", "string", "number|null|global", "number", "object"], "getRemoteHistoryMessages");
+            RongIMLib.CheckParam.getInstance().check(["number", "string", "number|null|global|object", "number", "object"], "getRemoteHistoryMessages");
             if (count > 20) {
                 callback.onError(RongIMLib.ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
                 return;
@@ -2427,8 +2438,19 @@ var RongIMLib;
                             var sync = RongIMLib.MessageUtil.int64ToTimestamp(collection.syncTime);
                             RongIMClient._cookieHelper.setItem(RongIMLib.Bridge._client.userId + "CST", sync);
                             var list = collection.list;
-                            for (var i = 0, len = list.length; i < len; i++) {
-                                RongIMLib.Bridge._client.handler.onReceived(list[i]);
+                            if (RongIMClient._memoryStore.filterMessages.length > 0) {
+                                for (var i = 0, mlen = list.length; i < mlen; i++) {
+                                    for (var j = 0, flen = RongIMClient._memoryStore.filterMessages.length; j < flen; j++) {
+                                        if (RongIMClient.MessageParams[RongIMClient._memoryStore.filterMessages[j]].objectName != list[i].classname) {
+                                            RongIMLib.Bridge._client.handler.onReceived(list[i]);
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                for (var i = 0, len = list.length; i < len; i++) {
+                                    RongIMLib.Bridge._client.handler.onReceived(list[i]);
+                                }
                             }
                         },
                         onError: function (x) {
@@ -3104,6 +3126,8 @@ var RongIMLib;
                     if (str == "chrmPull") {
                         symbol += "CST";
                     }
+                    //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
+                    RongIMLib.RongIMClient._memoryStore.isSyncRemoteConverList = true;
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
                     RongIMLib.RongIMClient._cookieHelper.setItem(symbol, sync);
                     //把拉取到的消息逐条传给消息监听器
@@ -4680,6 +4704,7 @@ var RongIMLib;
         SocketTransportation.prototype.onClose = function () {
             this.isClose = true;
             this.socket = this.empty;
+            this._socket.disconnect(RongIMLib.ConnectionStatus.DISCONNECTED);
         };
         /**
          * [onError 通道报错时触发的方法]
@@ -5951,7 +5976,7 @@ var RongIMLib;
             return conver;
         };
         ServerDataProvider.prototype.getConversationList = function (callback, conversationTypes) {
-            if (RongIMLib.RongIMClient._memoryStore.conversationList.length == 0) {
+            if (RongIMLib.RongIMClient._memoryStore.conversationList.length == 0 || RongIMLib.RongIMClient._memoryStore.isSyncRemoteConverList) {
                 RongIMLib.RongIMClient.getInstance().getRemoteConversationList({
                     onSuccess: function (list) {
                         if (RongIMLib.MessageUtil.supportLargeStorage()) {
@@ -5962,6 +5987,7 @@ var RongIMLib;
                                 }
                             });
                         }
+                        RongIMLib.RongIMClient._memoryStore.isSyncRemoteConverList = false;
                         callback.onSuccess(list);
                     },
                     onError: function (errorcode) {
