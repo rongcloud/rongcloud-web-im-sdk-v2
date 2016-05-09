@@ -337,7 +337,7 @@ module RongIMLib {
             this.handler.putCallback(new QueryCallback(_callback.onSuccess, _callback.onError), msg.getMessageId(), pbtype);
             this.channel.writeAndFlush(msg);
         }
-        invoke(isPullMsg?: boolean) {
+        invoke(isPullMsg?: boolean, chrmId?: string) {
             var time: string, modules: any, str: string, me = this, target: string, temp: any = this.SyncTimeQueue.shift();
             if (temp == undefined) {
                 return;
@@ -363,11 +363,10 @@ module RongIMLib {
                 modules = new Modules.ChrmPullMsg();
                 modules.setCount(0);
                 str = "chrmPull";
-                if (this.chatroomId === "") {
-                    //受到聊天室消息，但是本地没有加入聊天室就手动抛出一个错误
+                if (!chrmId) {
                     throw new Error("syncTime:Received messages of chatroom but was not init");
                 }
-                target = this.chatroomId;
+                target = chrmId;
             }
             //判断服务器给的时间是否消息本地存储的时间，小于的话不执行拉取操作，进行一下步队列操作
             if (temp.pulltime <= time) {
@@ -406,11 +405,11 @@ module RongIMLib {
                 }
             }, "DownStreamMessages");
         }
-        syncTime(_type?: any, pullTime?: any) {
+        syncTime(_type?: any, pullTime?: any, chrmId?: string) {
             this.SyncTimeQueue.push({ type: _type, pulltime: pullTime });
             //如果队列中只有一个成员并且状态已经完成就执行invoke方法
             if (this.SyncTimeQueue.length == 1 && this.SyncTimeQueue.state == "complete") {
-                this.invoke(!_type);
+                this.invoke(!_type, chrmId);
             }
         }
         __init(f: any) {
@@ -504,7 +503,7 @@ module RongIMLib {
             } else {
                 if (msg.getTopic() == "s_ntf") {
                     entity = Modules.NotifyMsg.decode(msg.getData());
-                    this._client.syncTime(entity.type, MessageUtil.int64ToTimestamp(entity.time));
+                    this._client.syncTime(entity.type, MessageUtil.int64ToTimestamp(entity.time), entity.chrmId);
                     return;
                 } else if (msg.getTopic() == "s_msg") {
                     entity = Modules.DownStreamMessage.decode(msg.getData());

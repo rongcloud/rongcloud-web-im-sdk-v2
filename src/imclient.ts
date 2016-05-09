@@ -1429,9 +1429,7 @@ module RongIMLib {
          */
         joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback) {
             CheckParam.getInstance().check(["string", "number", "object"], "joinChatRoom");
-            if (chatroomId != "") {
-                Bridge._client.chatroomId = chatroomId;
-            } else {
+            if (chatroomId == ""){
                 setTimeout(function() {
                     callback.onError(ErrorCode.CHATROOM_ID_ISNULL);
                 });
@@ -1446,7 +1444,7 @@ module RongIMLib {
                     messageCount == 0 && (messageCount = -1);
                     modules.setCount(messageCount);
                     modules.setSyncTime(0);
-                    Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
+                    Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()),chatroomId, 1, {
                         onSuccess: function(collection: any) {
                             var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
                             RongIMClient._cookieHelper.setItem(Bridge._client.userId + "CST", sync);
