@@ -1,5 +1,7 @@
 # 融云 RongCloud Web IM SDK v2.0
 
+Baixing 私信第三方服务
+
 ## Environment Setup
 
 ### 初始化开发工具
