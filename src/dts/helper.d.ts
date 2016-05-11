@@ -11,7 +11,18 @@ declare var AMR: any;
 declare var swfobject: any;
 declare var openDatabase: any;
 declare class XDomainRequest { }
-
+declare interface Navigator {
+    webkitGetUserMedia: any;
+    mozGetUserMedia: any;
+    msGetUserMedia: any;
+    getUserMedia: any;
+    cancelAnimationFrame:any;
+    webkitCancelAnimationFrame:any;
+    mozCancelAnimationFrame:any;
+    requestAnimationFrame:any;
+    webkitRequestAnimationFrame:any;
+    mozRequestAnimationFrame:any;
+}
 declare interface Window {
     WebSocket: WebSocket;
     Notifications: any;
@@ -24,6 +35,8 @@ declare interface Window {
     JSON: any;
     Modules: any;
     handleFileSelect: any;
+    AudioContext: any;
+    webkitAudioContext: any;
 }
 declare interface Document {
     createStyleSheet: any;

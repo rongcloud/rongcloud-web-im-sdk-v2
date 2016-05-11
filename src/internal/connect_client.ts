@@ -236,6 +236,7 @@ module RongIMLib {
         chatroomId: string = "";
         static userInfoMapping: any = {};
         SyncTimeQueue: any = [];
+        cacheMessageIds: any = [];
         constructor(token: string, appId: string) {
             this.token = token;
             this.appId = appId;
@@ -342,13 +343,6 @@ module RongIMLib {
             if (temp == undefined) {
                 return;
             }
-            if (!window["Modules"]) {
-                var exitDateTime = new Date().getTime() + 200,
-                    countTime = new Date().getTime();
-                while (countTime < exitDateTime) {
-                    countTime = new Date().getTime();
-                }
-            }
             this.SyncTimeQueue.state = "pending";
             if (temp.type != 2) {
                 //普通消息
@@ -359,7 +353,7 @@ module RongIMLib {
                 target = this.userId;
             } else {
                 //聊天室消息
-                time = RongIMClient._cookieHelper.getItem(this.userId + "CST") || "0";
+                time = RongIMClient._cookieHelper.getItem(chrmId + "CST") || "0";
                 modules = new Modules.ChrmPullMsg();
                 modules.setCount(0);
                 str = "chrmPull";
@@ -381,8 +375,7 @@ module RongIMLib {
             //发送queryMessage请求
             this.queryMessage(str, MessageUtil.ArrayForm(modules.toArrayBuffer()), target, Qos.AT_LEAST_ONCE, {
                 onSuccess: function(collection: any) {
-                    var sync = MessageUtil.int64ToTimestamp(collection.syncTime),
-                        symbol = me.userId;
+                    var sync = MessageUtil.int64ToTimestamp(collection.syncTime), symbol = target;
                     if (str == "chrmPull") {
                         symbol += "CST";
                     }
@@ -394,10 +387,19 @@ module RongIMLib {
                     me.invoke();
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
-                    for (var i = 0; i < list.length; i++) {
-                        Bridge._client.handler.onReceived(list[i]);
+                    if (str == "chrmPull") {
+                        for (let i = 0, len = list.length; i < len; i++) {
+                            if (!(list[i].msgId in me.cacheMessageIds)) {
+                                Bridge._client.handler.onReceived(list[i]);
+                                var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
+                                if (arrLen > 20) me.cacheMessageIds.length = 20;
+                            }
+                        }
+                    } else {
+                        for (let i = 0, len = list.length; i < len; i++) {
+                            Bridge._client.handler.onReceived(list[i]);
+                        }
                     }
-
                 },
                 onError: function() {
                     me.SyncTimeQueue.state = "complete";
