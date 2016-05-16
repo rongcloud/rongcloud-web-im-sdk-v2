@@ -31,7 +31,7 @@ module RongIMLib {
         private requestFactory(url: string, method: string, multipart?: boolean) {
             var reqest = this.XmlHttpRequest();
             if (multipart) { reqest.multipart = true; }
-            reqest.timeout = 30000;
+            reqest.timeout = 60000;
             reqest.open(method || "GET", MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://" + url);
             if (method == "POST" && "setRequestHeader" in reqest) {
                 reqest.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");

@@ -365,7 +365,7 @@ module RongIMLib {
             //判断服务器给的时间是否消息本地存储的时间，小于的话不执行拉取操作，进行一下步队列操作
             if (temp.pulltime <= time) {
                 this.SyncTimeQueue.state = "complete";
-                this.invoke();
+                this.invoke(isPullMsg, chrmId);
                 return;
             }
             if (isPullMsg) {
@@ -384,26 +384,20 @@ module RongIMLib {
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
                     RongIMClient._cookieHelper.setItem(symbol, sync);
                     me.SyncTimeQueue.state = "complete";
-                    me.invoke();
+                    me.invoke(isPullMsg, chrmId);
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
-                    if (str == "chrmPull") {
-                        for (let i = 0, len = list.length; i < len; i++) {
-                            if (!(list[i].msgId in me.cacheMessageIds)) {
-                                Bridge._client.handler.onReceived(list[i]);
-                                var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
-                                if (arrLen > 20) me.cacheMessageIds.length = 20;
-                            }
-                        }
-                    } else {
-                        for (let i = 0, len = list.length; i < len; i++) {
+                    for (let i = 0, len = list.length; i < len; i++) {
+                        if (!(list[i].msgId in me.cacheMessageIds)) {
                             Bridge._client.handler.onReceived(list[i]);
+                            var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
+                            if (arrLen > 20) me.cacheMessageIds.length = 20;
                         }
                     }
                 },
                 onError: function() {
                     me.SyncTimeQueue.state = "complete";
-                    me.invoke();
+                    me.invoke(isPullMsg, chrmId);
                 }
             }, "DownStreamMessages");
         }
