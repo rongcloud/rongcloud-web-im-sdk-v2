@@ -2,7 +2,7 @@
   "name": "rongcloud-web-sdk-v2",
   "version": "2.0.0",
   "description": "RongCloud Web SDK v2.0",
-  "main": "index.js",
+  "main": "dist/RongIMLib.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

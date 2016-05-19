@@ -1,0 +1,16 @@
+{
+  "name": "rongcloud-web-sdk-v2",
+  "version": "2.0.0",
+  "dependencies": {
+    "grunt-typescript": {
+      "version": "^0.7.0",
+      "from": "grunt-typescript@^0.7.0",
+      "dependencies": {
+        "typescript": {
+          "version": "1.6.2",
+          "from": "typescript@1.6.2"
+        }
+      }
+    }
+  }
+}
