@@ -100,6 +100,9 @@ var Polling = {
             this.setTime = function (b) {
                 a.time = b;
             };
+            this.setChrmId = function(b){
+                a.chrmId = b;
+            };
             this.toArrayBuffer = function () {
                 return a;
             };

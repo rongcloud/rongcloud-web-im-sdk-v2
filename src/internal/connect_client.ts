@@ -226,7 +226,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "2.1.0";
+        sdkVer: string = "2.1.1";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
@@ -353,19 +353,19 @@ module RongIMLib {
                 target = this.userId;
             } else {
                 //聊天室消息
-                time = RongIMClient._cookieHelper.getItem(chrmId + "CST") || "0";
+                target = chrmId || me.chatroomId;
+                time = RongIMClient._cookieHelper.getItem(Bridge._client.userId + target + "CST") || "0";
                 modules = new Modules.ChrmPullMsg();
                 modules.setCount(0);
                 str = "chrmPull";
-                if (!chrmId) {
+                if (!target) {
                     throw new Error("syncTime:Received messages of chatroom but was not init");
                 }
-                target = chrmId;
             }
             //判断服务器给的时间是否消息本地存储的时间，小于的话不执行拉取操作，进行一下步队列操作
             if (temp.pulltime <= time) {
                 this.SyncTimeQueue.state = "complete";
-                this.invoke(isPullMsg, chrmId);
+                this.invoke(isPullMsg, target);
                 return;
             }
             if (isPullMsg) {
@@ -377,14 +377,14 @@ module RongIMLib {
                 onSuccess: function(collection: any) {
                     var sync = MessageUtil.int64ToTimestamp(collection.syncTime), symbol = target;
                     if (str == "chrmPull") {
-                        symbol += "CST";
+                        Bridge._client.userId += symbol += "CST";
                     }
                     //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
                     RongIMClient._memoryStore.isSyncRemoteConverList = true;
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
                     RongIMClient._cookieHelper.setItem(symbol, sync);
                     me.SyncTimeQueue.state = "complete";
-                    me.invoke(isPullMsg, chrmId);
+                    me.invoke(isPullMsg, target);
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
                     for (let i = 0, len = list.length; i < len; i++) {
@@ -397,7 +397,7 @@ module RongIMLib {
                 },
                 onError: function() {
                     me.SyncTimeQueue.state = "complete";
-                    me.invoke(isPullMsg, chrmId);
+                    me.invoke(isPullMsg, target);
                 }
             }, "DownStreamMessages");
         }
@@ -590,7 +590,7 @@ module RongIMLib {
             //         me._onReceived(message);
             // }
             if (message.messageType == "TerminateMessage") {
-                if (RongIMClient._memoryStore.custStore[message.targetId].sid != message.content.sid) {
+                if (!RongIMClient._memoryStore.custStore[message.targetId] || RongIMClient._memoryStore.custStore[message.targetId].sid != message.content.sid) {
                     return;
                 }
             }

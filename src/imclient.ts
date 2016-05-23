@@ -1429,7 +1429,7 @@ module RongIMLib {
          */
         joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback) {
             CheckParam.getInstance().check(["string", "number", "object"], "joinChatRoom");
-            if (chatroomId == ""){
+            if (chatroomId == "") {
                 setTimeout(function() {
                     callback.onError(ErrorCode.CHATROOM_ID_ISNULL);
                 });
@@ -1437,6 +1437,7 @@ module RongIMLib {
             }
             var e = new Modules.ChrmInput();
             e.setNothing(1);
+            Bridge._client.chatroomId = chatroomId;
             RongIMClient.bridge.queryMsg(19, MessageUtil.ArrayForm(e.toArrayBuffer()), chatroomId, {
                 onSuccess: function() {
                     callback.onSuccess();
@@ -1444,10 +1445,10 @@ module RongIMLib {
                     messageCount == 0 && (messageCount = -1);
                     modules.setCount(messageCount);
                     modules.setSyncTime(0);
-                    Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()),chatroomId, 1, {
+                    Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
                         onSuccess: function(collection: any) {
                             var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
-                            RongIMClient._cookieHelper.setItem(Bridge._client.userId + "CST", sync);
+                            RongIMClient._cookieHelper.setItem(Bridge._client.userId + chatroomId + "CST", sync);
                             var list = collection.list;
                             if (RongIMClient._memoryStore.filterMessages.length > 0) {
                                 for (var i = 0, mlen = list.length; i < mlen; i++) {
@@ -1480,7 +1481,7 @@ module RongIMLib {
         }
 
         getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>) {
-            CheckParam.getInstance().check(["string","number", "number", "object"], "getChatRoomInfo");
+            CheckParam.getInstance().check(["string", "number", "number", "object"], "getChatRoomInfo");
             var modules = new Modules.QueryChatroomInfoInput();
             modules.setCount(count);
             modules.setOrder(order);
@@ -1826,7 +1827,7 @@ module RongIMLib {
         } else {
             var lurl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/Long.js" : "//cdn.ronghub.com/Long.js";
             var burl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/byteBuffer.js" : "//cdn.ronghub.com/byteBuffer.js";
-            var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-min-2.8.js" : "//cdn.ronghub.com/protobuf-min-2.8.js";
+            var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-2.1.1.min.js" : "//cdn.ronghub.com/protobuf-2.1.1.min.js";
             define("RongIMLib", ['md5', lurl, burl, purl], function() {
                 return RongIMLib;
             });
