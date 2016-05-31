@@ -323,6 +323,15 @@ module RongIMLib {
             var temp = Object.prototype.toString.call(str).toLowerCase();
             return temp.slice(8, temp.length - 1);
         }
+        checkCookieDisable(): boolean {
+            document.cookie = "checkCookie=1";
+            var arr = document.cookie.match(new RegExp("(^| )checkCookie=([^;]*)(;|$)")), isDisable = false;
+            if (!arr) {
+                isDisable = true;
+            }
+            document.cookie = "checkCookie=1;expires=Thu, 01-Jan-1970 00:00:01 GMT";
+            return isDisable;
+        }
     }
     export class LimitableMap {
         map: any;

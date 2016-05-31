@@ -180,10 +180,9 @@ module RongIMLib {
         }
         private static createSpan(emojiObj: any): any {
             var span = document.createElement("span"), p = document.createElement("span");
-            p.setAttribute("style", "height: 22px; width: 22px; display: inline-block; font-size: 20px !important; text-align: center; line-height: 22px;");
+            span.setAttribute("style", "height: " + this.size + "px; width: " + this.size + "px; display: inline-block; font-size: 20px !important; text-align: center; line-height: 24px;");
             if (this.supportEmoji) {
                 span.textContent = emojiObj.tag;
-                span.setAttribute("style", "font-size:20px;");
             } else {
                 var img = this.createBTag(emojiObj.bp);
                 span.appendChild(img);

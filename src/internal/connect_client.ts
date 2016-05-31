@@ -589,8 +589,9 @@ module RongIMLib {
             //     default:
             //         me._onReceived(message);
             // }
-            if (message.messageType == "TerminateMessage") {
-                if (!RongIMClient._memoryStore.custStore[message.targetId] || RongIMClient._memoryStore.custStore[message.targetId].sid != message.content.sid) {
+            if (message.messageType == "ChangeModeResponseMessage" || message.messageType == "SuspendMessage" || message.messageType == "HandShakeResponseMessage" ||
+                message.messageType == "TerminateMessage" || message.messageType == "CustomerStatusUpdateMessage") {
+                if (!RongIMClient._memoryStore.custStore["isInit"]) {
                     return;
                 }
             }
