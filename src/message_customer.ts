@@ -101,7 +101,7 @@ module RongIMLib {
             this.pid = message.pid;
             this.source = message.source;
             this.suggest = message.suggest;
-            this.isRobotResolved = message.isRobotResolved;
+            this.isRobotResolved = message.isresolve;
             this.type = message.type
         }
         static obtain(): EvaluateMessage {

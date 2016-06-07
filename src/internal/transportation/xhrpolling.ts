@@ -77,27 +77,26 @@ module RongIMLib {
          */
         send(data: any): void {
             var me = this;
-            this.sendxhr = this.requestFactory(Navigation.Endpoint.host + "/websocket" + data.url+ "&pid=" + encodeURIComponent(me.pid), "POST");
-            if ("onload" in me.sendxhr) {
-                me.sendxhr.onload = function() {
-                    me.sendxhr.onload = me.empty;
-                    me.onData(me.sendxhr.responseText);
+            var _send = me.sendxhr = this.requestFactory(Navigation.Endpoint.host + "/websocket" + data.url+ "&pid=" + encodeURIComponent(me.pid), "POST");
+            if ("onload" in _send) {
+                _send.onload = function() {
+                    _send.onload = me.empty;
+                    me.onData(_send.responseText);
                 };
-                me.sendxhr.onerror = function() {
-                    me.sendxhr.onerror = me.empty;
+                _send.onerror = function() {
+                    _send.onerror = me.empty;
                 };
             } else {
-                me.sendxhr.onreadystatechange = function() {
-                    if (me.sendxhr.readyState == 4) {
+                _send.onreadystatechange = function() {
+                    if (_send.readyState == 4) {
                         this.onreadystatechange = this.empty;
-                        if (/^(202|200)$/.test(me.sendxhr.status)) {
-                            me.onData(me.sendxhr.responseText);
+                        if (/^(202|200)$/.test(_send.status)) {
+                            me.onData(_send.responseText);
                         }
                     }
                 };
             }
-
-            me.sendxhr.send(JSON.stringify(data.data));
+            _send.send(JSON.stringify(data.data));
         }
 
         onData(data?: any, header?: any): string {

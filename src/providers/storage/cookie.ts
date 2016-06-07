@@ -8,6 +8,9 @@ module RongIMLib {
         }
 
         getItem(composedKey: string): string {
+            if (composedKey) {
+                composedKey = composedKey.replace(/\|/, "\\|");
+            }
             var arr = document.cookie.match(new RegExp("(^| )" + composedKey + "=([^;]*)(;|$)"));
             if (arr != null) {
                 return (arr[2]);

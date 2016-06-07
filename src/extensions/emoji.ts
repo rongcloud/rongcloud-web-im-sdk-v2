@@ -232,6 +232,9 @@ module RongIMLib {
             str = str.replace(/[\uf000-\uf700]/g, function(em) {
                 return me.calculateUTF(em) || em;
             });
+            if (me.supportEmoji) {
+                return str;
+            }
             return str.replace(me.regExpTag, function(em) {
                 for (var key in me.emojiFactory) {
                     if (me.emojiFactory[key].tag == em) {
