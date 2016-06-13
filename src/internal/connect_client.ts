@@ -354,7 +354,7 @@ module RongIMLib {
             } else {
                 //聊天室消息
                 target = chrmId || me.chatroomId;
-                time = RongIMClient._cookieHelper.getItem(Bridge._client.userId + target + "CST") || "0";
+                time = RongIMClient._cookieHelper.getItem(target + Bridge._client.userId + "CST") || "0";
                 modules = new Modules.ChrmPullMsg();
                 modules.setCount(0);
                 str = "chrmPull";
@@ -377,7 +377,7 @@ module RongIMLib {
                 onSuccess: function(collection: any) {
                     var sync = MessageUtil.int64ToTimestamp(collection.syncTime), symbol = target;
                     if (str == "chrmPull") {
-                        Bridge._client.userId += symbol += "CST";
+                        symbol += Bridge._client.userId + "CST";
                     }
                     //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
                     RongIMClient._memoryStore.isSyncRemoteConverList = true;

@@ -1450,7 +1450,7 @@ module RongIMLib {
                     Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
                         onSuccess: function(collection: any) {
                             var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
-                            RongIMClient._cookieHelper.setItem(Bridge._client.userId + chatroomId + "CST", sync);
+                            RongIMClient._cookieHelper.setItem(chatroomId + Bridge._client.userId + "CST", sync);
                             var list = collection.list;
                             if (RongIMClient._memoryStore.filterMessages.length > 0) {
                                 for (var i = 0, mlen = list.length; i < mlen; i++) {
