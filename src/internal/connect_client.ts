@@ -566,6 +566,26 @@ module RongIMLib {
                 });
 
             }
+
+            if (message.conversationType == ConversationType.CUSTOMER_SERVICE && (message.messageType == "ChangeModeResponseMessage" || message.messageType == "SuspendMessage" || message.messageType == "HandShakeResponseMessage" ||
+                message.messageType == "TerminateMessage" || message.messageType == "CustomerStatusUpdateMessage" || message.messageType == "TextMessage" || message.messageType == "InformationNotificationMessage")) {
+                if (!RongIMLib.RongIMClient._memoryStore.custStore["isInit"]) {
+                    return;
+                }
+            }
+
+            if (message.conversationType == ConversationType.CUSTOMER_SERVICE && message.messageType != "HandShakeResponseMessage") {
+                if (!RongIMClient._memoryStore.custStore[message.targetId]) {
+                    return;
+                }
+
+                if (message.messageType == "TerminateMessage") {
+                    if (RongIMClient._memoryStore.custStore[message.targetId].sid != message.content.sid) {
+                        return;
+                    }
+                }
+            }
+
             if (message.messageType === RongIMClient.MessageType["HandShakeResponseMessage"]) {
                 var session = message.content.data;
                 RongIMClient._memoryStore.custStore[message.targetId] = session;
@@ -578,23 +598,7 @@ module RongIMLib {
                     }
                 }
             }
-            // var me = this;
-            // switch (message.messageType) {
-            //     case RongIMClient.MessageType["HandShakeResponseMessage"]:
-            //         break;
-            //     case RongIMClient.MessageType["HandShakeResponseMessage"]:
-            //         break;
-            //     case RongIMClient.MessageType["HandShakeResponseMessage"]:
-            //         break;
-            //     default:
-            //         me._onReceived(message);
-            // }
-            if (message.messageType == "ChangeModeResponseMessage" || message.messageType == "SuspendMessage" || message.messageType == "HandShakeResponseMessage" ||
-                message.messageType == "TerminateMessage" || message.messageType == "CustomerStatusUpdateMessage") {
-                if (!RongIMClient._memoryStore.custStore["isInit"]) {
-                    return;
-                }
-            }
+
             var that = this;
             RongIMClient._dataAccessProvider.addMessage(message.conversationType, message.targetId, message, {
                 onSuccess: function(ret: Message) {

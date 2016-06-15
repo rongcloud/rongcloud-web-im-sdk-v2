@@ -115,19 +115,60 @@ module RongIMLib {
     }
 
     export enum ErrorCode {
+
+        /**
+         * 发送频率过快
+         */
+        SEND_FREQUENCY_TOO_FAST = 20604,
+
+        RC_MSG_UNAUTHORIZED = 20406,
+        /**
+         * 群组 Id 无效
+         */
+        RC_DISCUSSION_GROUP_ID_INVALID = 20407,
+        /**
+         * 群组被禁言
+         */
+        FORBIDDEN_IN_GROUP = 22408,
+        /**
+         * 不在讨论组。
+         */
+        NOT_IN_DISCUSSION = 21406,
+        /**
+         * 不在群组。
+         */
+        NOT_IN_GROUP = 22406,
+        /**
+         * 不在聊天室。
+         */
+        NOT_IN_CHATROOM = 23406,
+        /**
+         *聊天室被禁言
+         */
+        FORBIDDEN_IN_CHATROOM = 23408,
+        /**
+         * 聊天室中成员被踢出
+         */
+        RC_CHATROOM_USER_KICKED = 23409,
+        /**
+         * 聊天室不存在
+         */
+        RC_CHATROOM_NOT_EXIST = 23410,
+        /**
+         * 聊天室成员已满
+         */
+        RC_CHATROOM_IS_FULL = 23411,
+        /**
+         * 获取聊天室信息参数无效
+         */
+        RC_CHATROOM_PATAMETER_INVALID = 23412,
+
         TIMEOUT = -1,
         /**
          * 未知原因失败。
          */
         UNKNOWN = -2,
-        /**
-         * 发送频率过快
-         */
-        SEND_FREQUENCY_TOO_FAST = 20604,
-        /**
-         * 不在讨论组。
-         */
-        NOT_IN_DISCUSSION = 21406,
+
         /**
          * 加入讨论失败
          */
@@ -140,23 +181,14 @@ module RongIMLib {
          * 设置讨论组邀请状态失败
          */
         INVITE_DICUSSION = 21409,
-        /**
-         * 不在群组。
-         */
-        NOT_IN_GROUP = 22406,
 
-        /**
-         * 不在聊天室。
-         */
-        NOT_IN_CHATROOM = 23406,
+
+
         /**
          *获取用户失败
          */
         GET_USERINFO_ERROR = 23407,
-        /**
-         *获取用户失败
-         */
-        FORBIDDEN_IN_CHATROOM = 23408,
+
         /**
          * 在黑名单中。
          */
@@ -333,10 +365,7 @@ module RongIMLib {
          * 消息漫游服务未开通
          */
         MSG_ROAMING_SERVICE_UNAVAILABLE = 33007,
-        /**
-         * 群组被禁言
-         */
-        FORBIDDEN_IN_GROUP = 22408,
+
         /**
          * 删除会话失败
          */
@@ -370,6 +399,7 @@ module RongIMLib {
          * 匹配群信息系异常
          */
         GROUP_MATCH_ERROR = 35002,
+
         //聊天室异常
         /**
          * 加入聊天室Id为空

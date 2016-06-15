@@ -254,7 +254,7 @@ module RongIMLib {
             if (!custId || !callback) return;
             var msg: MessageContent = new HandShakeMessage();
             var me = this;
-            RongIMClient._memoryStore.custStore["isInit"] = true;
+            RongIMLib.RongIMClient._memoryStore.custStore["isInit"] = true;
             RongIMClient.getInstance().sendMessage(ConversationType.CUSTOMER_SERVICE, custId, msg, {
                 onSuccess: function(data: any) {
                     if (data.isBlack) {
@@ -264,7 +264,6 @@ module RongIMLib {
                             onError: function() { }
                         });
                     } else {
-                        RongIMClient._memoryStore.custStore[custId] = data;
                         callback.onSuccess();
                     }
                 },
@@ -277,7 +276,6 @@ module RongIMLib {
         stopCustomeService(custId: string, callback: any): void {
             if (!custId || !callback) return;
             var session: any = RongIMClient._memoryStore.custStore[custId];
-            RongIMClient._memoryStore.custStore["isInit"] = false;
             if (!session) return;
             var msg = new SuspendMessage({ sid: session.sid, uid: session.uid, pid: session.pid });
             this.sendCustMessage(custId, msg, {
