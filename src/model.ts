@@ -1,9 +1,9 @@
 module RongIMLib {
     export class CustomServiceConfig {
         constructor(
-          isBlack?: boolean,
-          companyName?: string,
-          companyUrl?: string) {
+            isBlack?: boolean,
+            companyName?: string,
+            companyUrl?: string) {
         }
     }
     export class CustomServiceSession {
@@ -126,4 +126,5 @@ module RongIMLib {
             public name: string,
             public icon: string) { }
     }
+
 }

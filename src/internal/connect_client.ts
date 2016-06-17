@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
-        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl"];
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK"];
     export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
@@ -600,15 +600,18 @@ module RongIMLib {
             }
 
             var that = this;
-            RongIMClient._dataAccessProvider.addMessage(message.conversationType, message.targetId, message, {
-                onSuccess: function(ret: Message) {
-                    that._onReceived(ret);
-                },
-                onError: function(error: ErrorCode) {
-                    that._onReceived(message);
-                }
-            });
-
+            if (RongIMClient._voipProvider && ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'].indexOf(message.messageType) > -1) {
+                RongIMClient._voipProvider.onReceived(message, that._onReceived);
+            } else {
+                RongIMClient._dataAccessProvider.addMessage(message.conversationType, message.targetId, message, {
+                    onSuccess: function(ret: Message) {
+                        that._onReceived(ret);
+                    },
+                    onError: function(error: ErrorCode) {
+                        that._onReceived(message);
+                    }
+                });
+            }
         }
 
         handleMessage(msg: any): void {

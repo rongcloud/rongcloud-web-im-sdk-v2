@@ -14,6 +14,7 @@ module RongIMLib {
         static isNotPullMsg: boolean = false;
         static _cookieHelper: CookieProvider;
         static _dataAccessProvider: DataAccessProvider;
+        static _voipProvider: VoIPProvider;
         private static _instance: RongIMClient;
         private static bridge: Bridge;
         static getInstance(): RongIMClient {
@@ -75,6 +76,10 @@ module RongIMLib {
                 custStore: {},
                 converStore: {}
             };
+            if ("RongIMAgoraVoIP" in RongIMLib) {
+                eval("RongIMLib.RongIMAgoraVoIP.init(RongIMClient._instance)");
+                RongIMClient._voipProvider = eval("RongIMLib.RongIMAgoraVoIP.getInstance()");
+            }
             RongIMClient._cookieHelper = CheckParam.getInstance().checkCookieDisable() ? new MemeoryProvider() : new CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
                 RongIMClient._dataAccessProvider = dataAccessProvider;
@@ -108,6 +113,17 @@ module RongIMLib {
                 CustomerStatusUpdateMessage: { objectName: "RC:CsUpdate", msgTag: new MessageTag(false, false) },
                 ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) }
             };
+
+            if ('RongIMAgoraVoIP' in RongIMLib) {
+                RongIMClient.MessageParams["AcceptMessage"] = { objectName: "RC:VCAccept", msgTag: new RongIMLib.MessageTag(false, false) };
+                RongIMClient.MessageParams["RingingMessage"] = { objectName: "RC:VCRinging", msgTag: new RongIMLib.MessageTag(false, false) };
+                RongIMClient.MessageParams["SummaryMessage"] = { objectName: "RC:VCSummary", msgTag: new RongIMLib.MessageTag(false, false) };
+                RongIMClient.MessageParams["HungupMessage"] = { objectName: "RC:VCHangup", msgTag: new RongIMLib.MessageTag(false, false) };
+                RongIMClient.MessageParams["InviteMessage"] = { objectName: "RC:VCInvite", msgTag: new RongIMLib.MessageTag(false, false) };
+                RongIMClient.MessageParams["MediaModifyMessage"] = { objectName: "RC:VCModifyMedia", msgTag: new RongIMLib.MessageTag(false, false) };
+                RongIMClient.MessageParams["MemberModifyMessage"] = { objectName: "RC:VCModifyMem", msgTag: new RongIMLib.MessageTag(false, false) };
+            }
+
             RongIMClient.MessageType = {
                 TextMessage: "TextMessage",
                 ImageMessage: "ImageMessage",
@@ -130,7 +146,15 @@ module RongIMLib {
                 HandShakeResponseMessage: "HandShakeResponseMessage",
                 SuspendMessage: "SuspendMessage",
                 TerminateMessage: "TerminateMessage",
-                CustomerStatusUpdateMessage: "CustomerStatusUpdateMessage"
+                CustomerStatusUpdateMessage: "CustomerStatusUpdateMessage",
+
+                AcceptMessage: "AcceptMessage",
+                RingingMessage: "RingingMessage",
+                SummaryMessage: "SummaryMessage",
+                HungupMessage: "HungupMessage",
+                InviteMessage: "InviteMessage",
+                MediaModifyMessage: "MediaModifyMessage",
+                MemberModifyMessage: "MemberModifyMessage"
             };
         }
 
@@ -365,6 +389,14 @@ module RongIMLib {
             }
         }
 
+        getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>) {
+            CheckParam.getInstance().check(["number", "string", "object"], "getAgoraDynamicKey");
+            var modules = new Modules.VoipDynamicInput();
+            modules.setEngineType(engineType);
+            modules.setChannelName(channelName);
+            RongIMClient.bridge.queryMsg(32, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "VoipDynamicOutput");
+        }
+
         /**
          * 获取当前连接用户的 UserId。
          */
@@ -558,6 +590,7 @@ module RongIMLib {
                         });
                     }
                     setTimeout(function() {
+                        msg.sentTime = data.timestamp;
                         sendCallback.onSuccess(msg);
                     });
                 },
@@ -1815,6 +1848,24 @@ module RongIMLib {
         }
 
         // #endregion Real-time Location Service
+
+
+        // # startVoIP
+        startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, opt: any, callback: ResultCallback<ErrorCode>) {
+            CheckParam.getInstance().check(["number", "string", "array", "number", "string", "object", "object"], "startCall");
+            RongIMClient._voipProvider.startCall(converType, targetId, userIds, mediaType, extra, opt, callback);
+        }
+
+        joinCall(message: Message, mediaType: VoIPMediaType, opt: any, callback: ResultCallback<ErrorCode>) {
+            CheckParam.getInstance().check(['object', 'number', 'object', 'object'], "joinCall");
+            RongIMClient._voipProvider.joinCall(message, mediaType, opt, callback);
+        }
+
+        hungupCall(converType: ConversationType, targetId: string, reason: string, callback: any) {
+            CheckParam.getInstance().check(["number", "string", "string", "function"], "hangupCall");
+            RongIMClient._voipProvider.hangupCall(converType, targetId, reason, callback);
+        }
+        // # endVoIP
     }
     //兼容AMD CMD
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
@@ -1827,7 +1878,7 @@ module RongIMLib {
         } else {
             var lurl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/Long.js" : "//cdn.ronghub.com/Long.js";
             var burl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/byteBuffer.js" : "//cdn.ronghub.com/byteBuffer.js";
-            var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-2.1.1.min.js" : "//cdn.ronghub.com/protobuf-2.1.1.min.js";
+            var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-2.1.2.min.js" : "//cdn.ronghub.com/protobuf-2.1.2.min.js";
             define("RongIMLib", ['md5', lurl, burl, purl], function() {
                 return RongIMLib;
             });

@@ -18,7 +18,14 @@ var typeMapping: { [s: string]: any } = {
     "RC:CsEnd": "TerminateMessage",
     "RC:CsSp": "SuspendMessage",
     "RC:CsUpdate": "CustomerStatusUpdateMessage",
-    "RC:ReadNtf": "ReadReceiptMessage"
+    "RC:ReadNtf": "ReadReceiptMessage",
+    "RC:VCAccept": "AcceptMessage",
+    "RC:VCRinging": "RingingMessage",
+    "RC:VCSummary": "SummaryMessage",
+    "RC:VCHangup": "HungupMessage",
+    "RC:VCInvite": "InviteMessage",
+    "RC:VCModifyMedia": "MediaModifyMessage",
+    "RC:VCModifyMem": "MemberModifyMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},

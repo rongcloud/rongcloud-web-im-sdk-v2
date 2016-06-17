@@ -453,7 +453,113 @@ module RongIMLib {
         /**
          * cookie被禁用
          */
-        COOKIE_ENABLE = 51001
+        COOKIE_ENABLE = 51001,
+
+        // 没有注册DeviveId 也就是用户没有登陆
+        HAVNODEVICEID = 24001,
+
+        // 已经存在
+        DEVICEIDISHAVE = 24002,
+
+        // 成功
+        SUCCESS = 0,
+
+        // 没有对应的用户或token
+        FEILD = 24009,
+
+        // voip为空
+        VOIPISNULL = 24013,
+
+        // 不支持的Voip引擎
+        NOENGINETYPE = 24010,
+
+        // channleName 是空
+        NULLCHANNELNAME = 24011,
+
+        // 生成Voipkey失败
+        VOIPDYANMICERROR = 24012,
+
+        // 没有配置voip
+        NOVOIP = 24014,
+
+        // 服务器内部错误
+        INTERNALERRROR = 24015,
+
+        //VOIP close
+        VOIPCLOSE = 24016,
+
+        CLOSE_BEFORE_OPEN = 51001,
+
+        ALREADY_IN_USE = 51002,
+
+        INVALID_CHANNEL_NAME = 51003,
+
+        VIDEO_CONTAINER_IS_NULL = 51004,
+        /*!
+        己方取消已发出的通话请求
+        */
+        CANCEL = 1,
+        /*!
+         己方拒绝收到的通话请求
+         */
+        REJECT = 2,
+        /*!
+         己方挂断
+         */
+        HUNGUP = 3,
+        /*!
+         己方忙碌
+         */
+        BUSYLINE = 4,
+        /*!
+         己方未接听
+         */
+        NO_RESPONSE = 5,
+        /*!
+         己方不支持当前引擎
+         */
+        ENGINE_UN_SUPPORTED = 6,
+        /*!
+         己方网络出错
+         */
+        NETWORK_ERROR = 7,
+        /*!
+         对方取消已发出的通话请求
+         */
+        REMOTE_CANCEL = 11,
+
+        /*!
+         对方拒绝收到的通话请求
+         */
+        REMOTE_REJECT = 12,
+        /*!
+         通话过程对方挂断
+         */
+        REMOTE_HUNGUP = 13,
+
+        /*!
+         对方忙碌
+         */
+        REMOTE_BUSYLINE = 14,
+        /*!
+         对方未接听
+         */
+        REMOTE_NO_RESPONSE = 15,
+        /*!
+         对方网络错误
+         */
+        REMOTE_ENGINE_UN_SUPPORTED = 16,
+        /*!
+         对方网络错误
+         */
+        REMOTE_NETWORK_ERROR = 17
+
+    }
+    export enum VoIPMediaType {
+
+        MEDIA_AUDIO = 1,
+
+        MEDIA_VEDIO = 2,
     }
 
     export enum MediaType {
