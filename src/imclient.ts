@@ -76,10 +76,7 @@ module RongIMLib {
                 custStore: {},
                 converStore: {}
             };
-            if ("RongIMAgoraVoIP" in RongIMLib) {
-                eval("RongIMLib.RongIMAgoraVoIP.init(RongIMClient._instance)");
-                RongIMClient._voipProvider = eval("RongIMLib.RongIMAgoraVoIP.getInstance()");
-            }
+
             RongIMClient._cookieHelper = CheckParam.getInstance().checkCookieDisable() ? new MemeoryProvider() : new CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
                 RongIMClient._dataAccessProvider = dataAccessProvider;
@@ -1851,19 +1848,24 @@ module RongIMLib {
 
 
         // # startVoIP
-        startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, opt: any, callback: ResultCallback<ErrorCode>) {
-            CheckParam.getInstance().check(["number", "string", "array", "number", "string", "object", "object"], "startCall");
-            RongIMClient._voipProvider.startCall(converType, targetId, userIds, mediaType, extra, opt, callback);
+        startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, callback: ResultCallback<ErrorCode>) {
+            CheckParam.getInstance().check(["number", "string", "array", "number", "string", "object"], "startCall");
+            RongIMClient._voipProvider.startCall(converType, targetId, userIds, mediaType, extra,callback);
         }
 
-        joinCall(message: Message, mediaType: VoIPMediaType, opt: any, callback: ResultCallback<ErrorCode>) {
-            CheckParam.getInstance().check(['object', 'number', 'object', 'object'], "joinCall");
-            RongIMClient._voipProvider.joinCall(message, mediaType, opt, callback);
+        joinCall(message: Message, mediaType: VoIPMediaType,callback: ResultCallback<ErrorCode>) {
+            CheckParam.getInstance().check(['object', 'number','object'], "joinCall");
+            RongIMClient._voipProvider.joinCall(message, mediaType,callback);
         }
 
-        hungupCall(converType: ConversationType, targetId: string, reason: string, callback: any) {
-            CheckParam.getInstance().check(["number", "string", "string", "function"], "hangupCall");
-            RongIMClient._voipProvider.hangupCall(converType, targetId, reason, callback);
+        hungupCall(converType: ConversationType, targetId: string, reason: ErrorCode) {
+            CheckParam.getInstance().check(["number", "string", "number"], "hungupCall");
+            RongIMClient._voipProvider.hungupCall(converType, targetId, reason);
+        }
+
+        changeMediaType(converType: ConversationType, targetId: string, mediaType: VoIPMediaType, callback: OperationCallback) {
+            CheckParam.getInstance().check(["number", "string", "number", "object"], "changeMediaType");
+            RongIMClient._voipProvider.changeMediaType(converType, targetId, mediaType, callback);
         }
         // # endVoIP
     }

@@ -506,7 +506,7 @@ module RongIMLib {
         /*!
          己方挂断
          */
-        HUNGUP = 3,
+        HANGUP = 3,
         /*!
          己方忙碌
          */
@@ -535,7 +535,7 @@ module RongIMLib {
         /*!
          通话过程对方挂断
          */
-        REMOTE_HUNGUP = 13,
+        REMOTE_HANGUP = 13,
 
         /*!
          对方忙碌

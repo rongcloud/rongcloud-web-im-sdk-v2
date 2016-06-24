@@ -23,12 +23,14 @@ module RongIMLib {
          * 设置音频参数
          * @params opt {size:{height:100,width:200},container:'显示 video 容器'}
          */
-        startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, opt: any, callback: ResultCallback<ErrorCode>): void;
+        startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, callback: ResultCallback<ErrorCode>): void;
 
-        hangupCall(converType: ConversationType, targetId: string, reason: string, callback: any): void;
+        hungupCall(converType: ConversationType, targetId: string, reason: ErrorCode): void;
 
-        joinCall(message: Message, mediaType: VoIPMediaType, opt: any, callback: ResultCallback<ErrorCode>): void;
+        joinCall(message: Message, mediaType: VoIPMediaType, callback: ResultCallback<ErrorCode>): void;
 
-        onReceived(message: Message, imOnReceived: any): boolean;
+        onReceived(message: Message): boolean;
+
+        changeMediaType(converType: ConversationType, targetId: string, mediaType: VoIPMediaType, callback: OperationCallback): void;
     }
 }

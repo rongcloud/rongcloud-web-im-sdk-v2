@@ -601,7 +601,7 @@ module RongIMLib {
 
             var that = this;
             if (RongIMClient._voipProvider && ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'].indexOf(message.messageType) > -1) {
-                RongIMClient._voipProvider.onReceived(message, that._onReceived);
+                RongIMClient._voipProvider.onReceived(message);
             } else {
                 RongIMClient._dataAccessProvider.addMessage(message.conversationType, message.targetId, message, {
                     onSuccess: function(ret: Message) {
