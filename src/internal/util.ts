@@ -223,7 +223,7 @@ module RongIMLib {
             return timestamp;
         }
         //消息转换方法
-        static messageParser(entity: any, onReceived?: any): any {
+        static messageParser(entity: any, onReceived?: any, offlineMsg?: boolean): any {
             var message: Message = new Message(), content: any = entity.content, de: any, objectName: string = entity.classname, val: any, isUseDef = false;
             try {
                 if (RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
@@ -282,6 +282,7 @@ module RongIMLib {
             message.receivedTime = new Date().getTime();
             message.messageId = (message.conversationType + "_" + ~~(Math.random() * 0xffffff));
             message.objectName = objectName;
+            message.offLineMessage = offlineMsg ? true : false;
             return message;
         }
     }

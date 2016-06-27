@@ -338,7 +338,7 @@ module RongIMLib {
             this.handler.putCallback(new QueryCallback(_callback.onSuccess, _callback.onError), msg.getMessageId(), pbtype);
             this.channel.writeAndFlush(msg);
         }
-        invoke(isPullMsg?: boolean, chrmId?: string) {
+        invoke(isPullMsg?: boolean, chrmId?: string, offlineMsg?: boolean) {
             var time: string, modules: any, str: string, me = this, target: string, temp: any = this.SyncTimeQueue.shift();
             if (temp == undefined) {
                 return;
@@ -389,7 +389,7 @@ module RongIMLib {
                     var list = collection.list;
                     for (let i = 0, len = list.length; i < len; i++) {
                         if (!(list[i].msgId in me.cacheMessageIds)) {
-                            Bridge._client.handler.onReceived(list[i]);
+                            Bridge._client.handler.onReceived(list[i], undefined, offlineMsg);
                             var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
                             if (arrLen > 20) me.cacheMessageIds.length = 20;
                         }
@@ -401,11 +401,11 @@ module RongIMLib {
                 }
             }, "DownStreamMessages");
         }
-        syncTime(_type?: any, pullTime?: any, chrmId?: string) {
+        syncTime(_type?: any, pullTime?: any, chrmId?: string, offlineMsg?: boolean) {
             this.SyncTimeQueue.push({ type: _type, pulltime: pullTime });
             //如果队列中只有一个成员并且状态已经完成就执行invoke方法
             if (this.SyncTimeQueue.length == 1 && this.SyncTimeQueue.state == "complete") {
-                this.invoke(!_type, chrmId);
+                this.invoke(!_type, chrmId, offlineMsg);
             }
         }
         __init(f: any) {
@@ -486,7 +486,7 @@ module RongIMLib {
             }
         }
 
-        onReceived(msg: any, pubAckItem?: any): void {
+        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean): void {
             //实体对象
             var entity: any,
                 //解析完成的消息对象
@@ -532,7 +532,7 @@ module RongIMLib {
                 }
             }
             //解析实体对象为消息对象。
-            message = MessageUtil.messageParser(entity, this._onReceived);
+            message = MessageUtil.messageParser(entity, this._onReceived, offlineMsg);
             if (pubAckItem) {
                 message.messageUId = pubAckItem.getMessageUId();
                 message.sentTime = pubAckItem.getTimestamp();

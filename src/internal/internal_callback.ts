@@ -176,7 +176,7 @@ module RongIMLib {
                 }
                 this._client.userId = userId;
                 if (!RongIMClient.isNotPullMsg) {
-                    this._client.syncTime();
+                    this._client.syncTime(undefined, undefined, undefined, true);
                 }
                 if (this._client.reconnectObj.onSuccess) {
                     this._client.reconnectObj.onSuccess(userId);
