@@ -25,8 +25,9 @@ var typeMapping: { [s: string]: any } = {
     "RC:VCHangup": "HungupMessage",
     "RC:VCInvite": "InviteMessage",
     "RC:VCModifyMedia": "MediaModifyMessage",
-    "RC:VCModifyMem": "MemberModifyMessage"
-},
+    "RC:VCModifyMem": "MemberModifyMessage",
+    "RC:CsContact": "CustomerContact"
+}, 
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
     HistoryMsgType: { [s: number]: any } = {

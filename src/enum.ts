@@ -552,7 +552,11 @@ module RongIMLib {
         /*!
          对方网络错误
          */
-        REMOTE_NETWORK_ERROR = 17
+        REMOTE_NETWORK_ERROR = 17,
+        /*!
+         VoIP 不可用
+         */
+        VOIP_NOT_AVALIABLE = 18
 
     }
     export enum VoIPMediaType {

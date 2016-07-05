@@ -7,6 +7,11 @@ module RongIMLib {
                 RongIMClient._cookieHelper._host = Navigation.Endpoint.host = x["server"];
                 //设置当前用户 Id 只有 comet 使用。
                 Navigation.Endpoint.userId = x["userId"];
+                if (x["voipCallInfo"]) {
+                    var callInfo = JSON.parse(x["voipCallInfo"]);
+                    RongIMClient._memoryStore.voipStategy = callInfo.strategy;
+                    RongIMClient._cookieHelper.setItem("voipStrategy", callInfo.strategy);
+                }
                 //替换本地存储的导航信息
                 var temp = RongIMClient._cookieHelper.getItemKey("navi");
                 temp !== null && RongIMClient._cookieHelper.removeItem(temp);
@@ -41,6 +46,8 @@ module RongIMLib {
                     var obj = decodeURIComponent(_old).split(",");
                     setTimeout(function() {
                         RongIMClient._cookieHelper._host = Navigation.Endpoint.host = obj[0];
+                        RongIMClient._memoryStore.voipStategy = RongIMClient._cookieHelper.getItem("voipStrategy");
+
                         Navigation.Endpoint.userId = obj[1];
                         _onsuccess();
                     }, 500);
@@ -50,9 +57,9 @@ module RongIMLib {
             //导航信息，切换Url对象的key进行线上线下测试操作
             var Url: any = {
                 //测试环境
-                "navUrl-Debug": RongIMLib.MessageUtil.schemeArrs[RongIMLib.RongIMClient.schemeType][0]+"://119.254.111.49:9100/",
+                "navUrl-Debug": RongIMLib.MessageUtil.schemeArrs[RongIMLib.RongIMClient.schemeType][0] + "://119.254.111.49:9100/",
                 //线上环境
-                "navUrl-Release": RongIMLib.MessageUtil.schemeArrs[RongIMLib.RongIMClient.schemeType][0]+"://nav.cn.ronghub.com/"
+                "navUrl-Release": RongIMLib.MessageUtil.schemeArrs[RongIMLib.RongIMClient.schemeType][0] + "://nav.cn.ronghub.com/"
             }, xss = document.createElement("script");
             //进行jsonp请求
             xss.src = Url["navUrl-Release"] + (RongIMClient._memoryStore.global["WEB_XHR_POLLING"] ? "cometnavi.js" : "navi.js") + "?appId=" + _appId + "&token=" + encodeURIComponent(_token) + "&" + "callBack=getServerEndpoint&t=" + (new Date).getTime();

@@ -138,7 +138,8 @@ module RongIMLib {
             childScreenCls: "",
             remoteStreamList: {},
             startVoIPTime: 0,
-            isActiveCall: false
+            isActiveCall: false,
+            message: null
         };
         static _instance: RongIMAgoraVoIP = null;
         static _rongIMClient: RongIMClient;
@@ -149,45 +150,51 @@ module RongIMLib {
             } else {
                 throw new Error("Error:VIDEO_CONTAINER_IS_NULL.");
             }
-
+            var str: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/AgoraRtcAgentSDK-1.4.2.js" : "//cdn.ronghub.com/AgoraRtcAgentSDK-1.4.2.js";
+            var script: any = document.createElement("script");
+            var head: any = document.getElementsByTagName("head")[0];
+            script.src = str;
+            head.appendChild(script);
             if (opt && opt.childScreenCls) {
                 that._memorySessions.childScreenCls = opt.childScreenCls;
             }
-            that._memorySessions.client = AgoraRTC.createRtcClient();
-            that._memorySessions.client.on('stream-added', function(evt: any) {
-                var stream = evt.stream;
-                that._memorySessions.client.subscribe(stream, function(err: any) {
-                    console.log("Subscribe stream failed", err);
+            script.onload = function() {
+                that._memorySessions.client = AgoraRTC.createRtcClient();
+                that._memorySessions.client.on('stream-added', function(evt: any) {
+                    var stream = evt.stream;
+                    that._memorySessions.client.subscribe(stream, function(err: any) {
+                        console.log("Subscribe stream failed", err);
+                    });
                 });
-            });
 
-            that._memorySessions.client.on('peer-leave', function(evt: any) {
-                for (var key in that._memorySessions.remoteStreamList) {
-                    if (key == evt.uid) {
-                        that._memorySessions.remoteStreamList[key].stop();
-                        delete that._memorySessions.remoteStreamList[key];
-                        break;
+                that._memorySessions.client.on('peer-leave', function(evt: any) {
+                    for (var key in that._memorySessions.remoteStreamList) {
+                        if (key == evt.uid) {
+                            that._memorySessions.remoteStreamList[key].stop();
+                            delete that._memorySessions.remoteStreamList[key];
+                            break;
+                        }
                     }
-                }
-                if (that.isEmptyObject()) {
-                    that._memorySessions.localStream.stop();
-                    that._memorySessions.client.close();
-                }
-            });
+                    if (that.isEmptyObject()) {
+                        that._memorySessions.localStream.stop();
+                        that._memorySessions.client.close();
+                    }
+                });
 
-            that._memorySessions.client.on('stream-subscribed', function(evt: any) {
-                var stream = evt.stream;
-                that._memorySessions.remoteStreamList[stream.getId()] = stream;
-                that.displayStream(stream);
-            });
+                that._memorySessions.client.on('stream-subscribed', function(evt: any) {
+                    var stream = evt.stream;
+                    that._memorySessions.remoteStreamList[stream.getId()] = stream;
+                    that.displayStream(stream);
+                });
 
-            that._memorySessions.client.on("stream-removed", function(evt: any) {
-                var stream = evt.stream;
-            });
+                that._memorySessions.client.on("stream-removed", function(evt: any) {
+                    var stream = evt.stream;
+                });
+            }
         }
-        static init(rongIMClient: RongIMClient, opt: any) {
+        static init(opt: any) {
             this._instance = new RongIMAgoraVoIP(opt);
-            this._rongIMClient = rongIMClient;
+            this._rongIMClient = RongIMClient.getInstance();
             RongIMClient._voipProvider = this._instance;
         }
 
@@ -250,18 +257,18 @@ module RongIMLib {
             that.onReceived(msgContent);
         }
 
-        joinCall(message: Message, mediaType: VoIPMediaType, callback: ResultCallback<ErrorCode>) {
+        joinCall(mediaType: VoIPMediaType, callback: ResultCallback<ErrorCode>) {
             if (this._memorySessions["isActiveCall"]) {
                 callback.onError(ErrorCode.BUSYLINE);
                 return;
             }
             var that = this;
-            var inviteMsg = <InviteMessage>message.content;
+            var inviteMsg = <InviteMessage>that._memorySessions.message.content;
             RongIMAgoraVoIP._rongIMClient.getAgoraDynamicKey(1, inviteMsg.channelInfo.Id, {
                 onSuccess: function(data: any) {
                     that._memorySessions.client.init(data.dynamicKey, function(obj: any) {
                         var msg = new AcceptMessage({ callId: inviteMsg.channelInfo.Id, mediaType: mediaType });
-                        that.sendMessage(message.conversationType, message.targetId, msg, {
+                        that.sendMessage(that._memorySessions.message.conversationType, that._memorySessions.message.targetId, msg, {
                             onSuccess: function(message: any) {
                                 that._memorySessions.client.join(data.dynamicKey, inviteMsg.channelInfo.Id, message.sentTime & 0x7fffffff, function(uid: string) {
                                     that._memorySessions["startVoIPTime"] = +new Date;
@@ -455,6 +462,7 @@ module RongIMLib {
                         that.sendMessage(message.conversationType, message.targetId, rejectMsg);
                         return;
                     }
+                    that._memorySessions.message = message;
                     that._memorySessions['chnl' + RongIMLib.Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId] = ret.channelInfo;
                     var msg: RingingMessage = new RingingMessage({ callId: ret.callId });
                     that.sendMessage(message.conversationType, message.targetId, msg);

@@ -27,7 +27,7 @@ module RongIMLib {
 
         hungupCall(converType: ConversationType, targetId: string, reason: ErrorCode): void;
 
-        joinCall(message: Message, mediaType: VoIPMediaType, callback: ResultCallback<ErrorCode>): void;
+        joinCall(mediaType: VoIPMediaType, callback: ResultCallback<ErrorCode>): void;
 
         onReceived(message: Message): boolean;
 

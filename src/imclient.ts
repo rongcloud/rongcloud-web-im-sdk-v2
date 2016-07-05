@@ -74,7 +74,8 @@ module RongIMLib {
                 isUseWebSQLProvider: false,
                 otherDevice: false,
                 custStore: {},
-                converStore: {}
+                converStore: {},
+                voipStategy: 0
             };
 
             RongIMClient._cookieHelper = CheckParam.getInstance().checkCookieDisable() ? new MemeoryProvider() : new CookieProvider();
@@ -103,6 +104,7 @@ module RongIMLib {
                 ChangeModeResponseMessage: { objectName: "RC:CsChaR", msgTag: new MessageTag(false, false) },
                 ChangeModeMessage: { objectName: "RC:CSCha", msgTag: new MessageTag(false, false) },
                 EvaluateMessage: { objectName: "RC:CsEva", msgTag: new MessageTag(false, false) },
+                CustomerContact: { objectName: "RC:CsContact", msgTag: new MessageTag(false, false) },
                 HandShakeMessage: { objectName: "RC:CsHs", msgTag: new MessageTag(false, false) },
                 HandShakeResponseMessage: { objectName: "RC:CsHsR", msgTag: new MessageTag(false, false) },
                 SuspendMessage: { objectName: "RC:CsSp", msgTag: new MessageTag(false, false) },//主动发送
@@ -143,6 +145,7 @@ module RongIMLib {
                 HandShakeResponseMessage: "HandShakeResponseMessage",
                 SuspendMessage: "SuspendMessage",
                 TerminateMessage: "TerminateMessage",
+                CustomerContact: "CustomerContact",
                 CustomerStatusUpdateMessage: "CustomerStatusUpdateMessage",
 
                 AcceptMessage: "AcceptMessage",
@@ -1850,22 +1853,36 @@ module RongIMLib {
         // # startVoIP
         startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, callback: ResultCallback<ErrorCode>) {
             CheckParam.getInstance().check(["number", "string", "array", "number", "string", "object"], "startCall");
-            RongIMClient._voipProvider.startCall(converType, targetId, userIds, mediaType, extra,callback);
+            if (RongIMClient._memoryStore.voipStategy) {
+                RongIMClient._voipProvider.startCall(converType, targetId, userIds, mediaType, extra, callback);
+            } else {
+                callback.onError(ErrorCode.VOIP_NOT_AVALIABLE);
+            }
         }
 
-        joinCall(message: Message, mediaType: VoIPMediaType,callback: ResultCallback<ErrorCode>) {
-            CheckParam.getInstance().check(['object', 'number','object'], "joinCall");
-            RongIMClient._voipProvider.joinCall(message, mediaType,callback);
+        joinCall(mediaType: VoIPMediaType, callback: ResultCallback<ErrorCode>) {
+            CheckParam.getInstance().check(['number', 'object'], "joinCall");
+            if (RongIMClient._memoryStore.voipStategy) {
+                RongIMClient._voipProvider.joinCall(mediaType, callback);
+            } else {
+                callback.onError(ErrorCode.VOIP_NOT_AVALIABLE);
+            }
         }
 
         hungupCall(converType: ConversationType, targetId: string, reason: ErrorCode) {
             CheckParam.getInstance().check(["number", "string", "number"], "hungupCall");
-            RongIMClient._voipProvider.hungupCall(converType, targetId, reason);
+            if (RongIMClient._memoryStore.voipStategy) {
+              RongIMClient._voipProvider.hungupCall(converType, targetId, reason);
+            }
         }
 
         changeMediaType(converType: ConversationType, targetId: string, mediaType: VoIPMediaType, callback: OperationCallback) {
             CheckParam.getInstance().check(["number", "string", "number", "object"], "changeMediaType");
-            RongIMClient._voipProvider.changeMediaType(converType, targetId, mediaType, callback);
+            if (RongIMClient._memoryStore.voipStategy) {
+              RongIMClient._voipProvider.changeMediaType(converType, targetId, mediaType, callback);
+            } else {
+                callback.onError(ErrorCode.VOIP_NOT_AVALIABLE);
+            }
         }
         // # endVoIP
     }

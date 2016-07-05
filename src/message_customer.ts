@@ -86,6 +86,25 @@ module RongIMLib {
         }
     }
 
+    export class CustomerContact implements MessageContent {
+        messageName: string = "CustomerContact";
+        page: any;
+        nickName: string;
+        routingInfo: any;
+        info: any;
+        requestInfo: any;
+        constructor(message: any) {
+            this.page = message.page;
+            this.nickName = message.nickName;
+            this.routingInfo = message.routingInfo;
+            this.info = message.info;
+            this.requestInfo = message.requestInfo;
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
+
     export class EvaluateMessage implements MessageContent {
         messageName: string = "EvaluateMessage";
         uid: string;
@@ -93,7 +112,7 @@ module RongIMLib {
         pid: string;
         source: number; // 1--5
         suggest: string;
-        isRobotResolved: boolean;
+        isresolve: boolean;
         type: number;
         constructor(message: any) {
             this.uid = message.uid;
@@ -101,7 +120,7 @@ module RongIMLib {
             this.pid = message.pid;
             this.source = message.source;
             this.suggest = message.suggest;
-            this.isRobotResolved = message.isresolve;
+            this.isresolve = message.isresolve;
             this.type = message.type
         }
         static obtain(): EvaluateMessage {
