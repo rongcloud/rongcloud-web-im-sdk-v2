@@ -197,6 +197,17 @@ module RongIMLib {
                             LocalStorageProvider.getInstance().removeItem("cu" + Bridge._client.userId + conversationType + targetId);
                         }
                         conver.unreadMessageCount = 0;
+                        conver.mentionedMsg = null;
+                        var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId);
+                        if (mentioneds) {
+                            var info: any = JSON.parse(mentioneds);
+                            delete info[conversationType + "_" + targetId];
+                            if (!MessageUtil.isEmpty(info)) {
+                                RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId, JSON.stringify(info), true);
+                            } else {
+                                RongIMClient._cookieHelper.removeItem("mentioneds_" + Bridge._client.userId);
+                            }
+                        }
                     }
                     callback.onSuccess(true);
                 },

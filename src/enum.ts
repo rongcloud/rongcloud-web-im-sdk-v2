@@ -1,5 +1,10 @@
 module RongIMLib {
 
+    export enum MentionedType {
+       ALL =  1,
+       PART = 2
+    }
+
     export enum BlacklistStatus {
         /**
          * 在黑名单中。

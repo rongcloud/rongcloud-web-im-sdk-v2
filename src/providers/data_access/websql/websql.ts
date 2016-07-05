@@ -171,7 +171,7 @@ module RongIMLib {
                     RongIMClient.getInstance().getRemoteHistoryMessages(conversationType, targetId, timestrap, count - result.length, {
                         onSuccess: function(list: Message[], hasMsg: boolean) {
                             for (var i = 0, len = list.length; i < len; i++) {
-                                !list[i].targetId ? list[i].targetId = targetId:null;
+                                !list[i].targetId ? list[i].targetId = targetId : null;
                                 RongIMClient._dataAccessProvider.addMessage(list[i].conversationType, list[i].targetId, list[i], {
                                     onSuccess: function(message: Message) { },
                                     onError: function() { }
@@ -190,7 +190,7 @@ module RongIMLib {
                 } else {
                     //TODO 可能存在 len 和 count 相等并且服务区没有历史消息，导致多拉取一次历史消息。
                     callback.onSuccess(results, true);
-                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, result[len-1].sentTime);
+                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, result[len - 1].sentTime);
                 }
             });
         }
@@ -239,11 +239,22 @@ module RongIMLib {
             var sSql: string = "select * from t_conversation_" + this.database.userId + " t where t.conversationType = ? and t.targetId = ?";
             var uSql: string = "update t_conversation_" + this.database.userId + " set content = ? where conversationType = ? and targetId = ?", me = this;
             this.database.execSearchByParams(sSql, [conversationType, targetId], function(results: any[]) {
+                var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId);
+                if (mentioneds) {
+                    var info: any = JSON.parse(mentioneds);
+                    delete info[conversationType + "_" + targetId];
+                    if (!MessageUtil.isEmpty(info)) {
+                        RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId, JSON.stringify(info), true);
+                    } else {
+                        RongIMClient._cookieHelper.removeItem("mentioneds_" + Bridge._client.userId);
+                    }
+                }
                 if (results.length == 0) {
                     callback.onSuccess(false);
                 } else {
                     var conver: Conversation = JSON.parse(results[0].content);
                     conver.unreadMessageCount = 0;
+                    conver.mentionedMsg = null;
                     me.database.execUpdateByParams(uSql, [JSON.stringify(conver), conversationType, targetId]);
                     callback.onSuccess(true);
                 }

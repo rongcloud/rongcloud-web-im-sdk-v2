@@ -1,4 +1,13 @@
 module RongIMLib {
+
+    export class MentionedInfo {
+        constructor(
+            type?: MentionedType,
+            userList?: string[],
+            mentionedContent?: string
+        ) { }
+    }
+
     export class CustomServiceConfig {
         constructor(
             isBlack?: boolean,
@@ -6,6 +15,7 @@ module RongIMLib {
             companyUrl?: string) {
         }
     }
+
     export class CustomServiceSession {
         constructor(uid?: string,
             cid?: string,
@@ -35,7 +45,8 @@ module RongIMLib {
             public sentTime?: number,
             public targetId?: string,
             public unreadMessageCount?: number,
-            public senderPortraitUri?: string
+            public senderPortraitUri?: string,
+            public mentionedMsg?: Message
         ) { }
         setTop(): void {
             RongIMClient._dataAccessProvider.addConversation(this, <ResultCallback<boolean>>{ onSuccess: function(data) { } });

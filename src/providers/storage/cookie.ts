@@ -1,10 +1,14 @@
 module RongIMLib {
     export class CookieProvider implements StorageProvider {
         _host: string;
-        setItem(composedKey: string, object: any): void {
-            // var exp = new Date();
-            // exp.setTime(exp.getTime() + 15 * 24 * 3600 * 1000);
-            document.cookie = composedKey + "=" + decodeURIComponent(object) + ";path=/;";
+        setItem(composedKey: string, object: any, isSave?: boolean): void {
+            if (isSave) {
+                var exp = new Date();
+                exp.setTime(exp.getTime() + 1 * 24 * 3600 * 1000);
+                document.cookie = composedKey + "=" + decodeURIComponent(object) + ";path=/;expires=" + exp.toGMTString();
+            } else {
+                document.cookie = composedKey + "=" + decodeURIComponent(object) + ";path=/;";
+            }
         }
 
         getItem(composedKey: string): string {

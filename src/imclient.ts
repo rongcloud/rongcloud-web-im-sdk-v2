@@ -983,6 +983,11 @@ module RongIMLib {
                     conver.receivedTime = conver.latestMessage.receiveTime;
                     conver.sentStatus = conver.latestMessage.sentStatus;
                     conver.sentTime = conver.latestMessage.sentTime;
+                    var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId);
+                    if (mentioneds) {
+                        var info = JSON.parse(mentioneds);
+                        conver.mentionedMsg = info[tempConver.type + "_" + tempConver.userId];
+                    }
                     if (!isUseReplace) {
                         if (MessageUtil.supportLargeStorage()) {
                             var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + tempConver.type + tempConver.userId);
@@ -1872,14 +1877,14 @@ module RongIMLib {
         hungupCall(converType: ConversationType, targetId: string, reason: ErrorCode) {
             CheckParam.getInstance().check(["number", "string", "number"], "hungupCall");
             if (RongIMClient._memoryStore.voipStategy) {
-              RongIMClient._voipProvider.hungupCall(converType, targetId, reason);
+                RongIMClient._voipProvider.hungupCall(converType, targetId, reason);
             }
         }
 
         changeMediaType(converType: ConversationType, targetId: string, mediaType: VoIPMediaType, callback: OperationCallback) {
             CheckParam.getInstance().check(["number", "string", "number", "object"], "changeMediaType");
             if (RongIMClient._memoryStore.voipStategy) {
-              RongIMClient._voipProvider.changeMediaType(converType, targetId, mediaType, callback);
+                RongIMClient._voipProvider.changeMediaType(converType, targetId, mediaType, callback);
             } else {
                 callback.onError(ErrorCode.VOIP_NOT_AVALIABLE);
             }

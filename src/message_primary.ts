@@ -3,6 +3,7 @@ module RongIMLib {
         user: UserInfo;
         extra: string;
         content: string;
+        mentionedInfo: MentionedInfo;
         messageName: string = "TextMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
@@ -12,6 +13,9 @@ module RongIMLib {
             this.extra = message.extra;
             if (message.user) {
                 this.user = message.user;
+            }
+            if (message.mentionedInfo) {
+                this.mentionedInfo = message.mentionedInfo;
             }
         }
         static obtain(text: string): TextMessage {
@@ -66,6 +70,7 @@ module RongIMLib {
         content: string;
         duration: number;
         extra: string;
+        mentionedInfo: MentionedInfo;
         messageName: string = "VoiceMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
@@ -76,6 +81,9 @@ module RongIMLib {
             this.extra = message.extra;
             if (message.user) {
                 this.user = message.user;
+            }
+            if (message.mentionedInfo) {
+                this.mentionedInfo = message.mentionedInfo;
             }
         }
         static obtain(base64Content: string, duration: number): VoiceMessage {
@@ -91,6 +99,7 @@ module RongIMLib {
         content: string;
         imageUri: string;
         extra: string;
+        mentionedInfo: MentionedInfo;
         messageName: string = "ImageMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
@@ -101,6 +110,9 @@ module RongIMLib {
             this.extra = message.extra;
             if (message.user) {
                 this.user = message.user;
+            }
+            if (message.mentionedInfo) {
+                this.mentionedInfo = message.mentionedInfo;
             }
         }
         static obtain(content: string, imageUri: string): ImageMessage {
@@ -118,6 +130,7 @@ module RongIMLib {
         poi: string;
         content: string;
         extra: string;
+        mentionedInfo: MentionedInfo;
         messageName: string = "LocationMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
@@ -130,6 +143,9 @@ module RongIMLib {
             this.extra = message.extra;
             if (message.user) {
                 this.user = message.user;
+            }
+            if (message.mentionedInfo) {
+                this.mentionedInfo = message.mentionedInfo;
             }
         }
 
@@ -149,6 +165,7 @@ module RongIMLib {
         imageUri: string;
         extra: string;
         url: string;
+        mentionedInfo: MentionedInfo;
         messageName: string = "RichContentMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
@@ -192,6 +209,7 @@ module RongIMLib {
         menuItem: PublicServiceMenuItem;
         content: string;
         extra: string;
+        mentionedInfo: MentionedInfo;
         messageName: string = "PublicServiceCommandMessage";
         constructor(message: any) {
             if (arguments.length == 0) {
@@ -202,6 +220,9 @@ module RongIMLib {
             this.menuItem = message.menuItem;
             if (message.user) {
                 this.user = message.user;
+            }
+            if (message.mentionedInfo) {
+                this.mentionedInfo = message.mentionedInfo;
             }
         }
         static obtain(item: PublicServiceMenuItem): PublicServiceCommandMessage {

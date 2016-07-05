@@ -27,7 +27,7 @@ var typeMapping: { [s: string]: any } = {
     "RC:VCModifyMedia": "MediaModifyMessage",
     "RC:VCModifyMem": "MemberModifyMessage",
     "RC:CsContact": "CustomerContact"
-}, 
+},
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
     HistoryMsgType: { [s: number]: any } = {
@@ -38,7 +38,7 @@ var typeMapping: { [s: string]: any } = {
         6: "qrySMsg",
         7: "qryPMsg",
         8: "qryPMsg",
-        5: "qryPMsg"
+        5: "qryCMsg"
     }, disconnectStatus: { [s: number]: any } = { 1: 6 };
 module RongIMLib {
     /**
@@ -161,6 +161,16 @@ module RongIMLib {
         static checkStorageSize(): boolean {
             return JSON.stringify(localStorage).length < 4680000;
         }
+
+        static isEmpty(obj: any): boolean {
+            var empty: boolean = true;
+            for (var key in obj) {
+                empty = false;
+                break;
+            }
+            return empty;
+        }
+
         static ArrayForm(typearray: any): Array<any> {
             if (Object.prototype.toString.call(typearray) == "[object ArrayBuffer]") {
                 var arr = new Int8Array(typearray);
