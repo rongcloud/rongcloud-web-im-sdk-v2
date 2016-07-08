@@ -547,16 +547,18 @@ module RongIMLib {
                             con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
                         }
 
-                        var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId);
-                        var key: string = message.conversationType + '_' + message.targetId, info: any = {};
-                        if (message.content && message.content.mentionedInfo) {
-                            info[key] = { uid: message.messageUId, time: message.sentTime };
-                            RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId, JSON.stringify(info), true);
-                            mentioneds = JSON.stringify(info);
-                        }
-                        if (mentioneds) {
-                            var info: any = JSON.parse(mentioneds);
-                            con.mentionedMsg = info[key];
+                        if (message.messageDirection == MessageDirection.RECEIVE && (entity.status & 64) == 64) {
+                            var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId);
+                            var key: string = message.conversationType + '_' + message.targetId, info: any = {};
+                            if (message.content && message.content.mentionedInfo) {
+                                info[key] = { uid: message.messageUId, time: message.sentTime, mentionedInfo: message.content.mentionedInfo };
+                                RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId, JSON.stringify(info), true);
+                                mentioneds = JSON.stringify(info);
+                            }
+                            if (mentioneds) {
+                                var info: any = JSON.parse(mentioneds);
+                                con.mentionedMsg = info[key];
+                            }
                         }
 
                         if (con.conversationType != 0 && message.senderUserId != Bridge._client.userId && message.receivedStatus != ReceivedStatus.RETRIEVED) {

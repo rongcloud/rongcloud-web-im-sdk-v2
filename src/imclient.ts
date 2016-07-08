@@ -524,8 +524,8 @@ module RongIMLib {
          * @param  {string}                  pushContent      []
          * @param  {string}                  pushData         []
          */
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback) {
-            CheckParam.getInstance().check(["number", "string", "object", "object"], "sendMessage");
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean) {
+            CheckParam.getInstance().check(["number", "string", "object", "object", "undefined|object|null|global|boolean"], "sendMessage");
             if (!Bridge._client.channel) {
                 sendCallback.onError(RongIMLib.ErrorCode.RC_NET_UNAVAILABLE, null);
                 return;
@@ -536,7 +536,12 @@ module RongIMLib {
             }
 
             var modules = new Modules.UpStreamMessage();
-            modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
+            if (mentiondMsg) {
+                modules.setSessionId(7);
+            } else {
+                modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
+            }
+
             modules.setClassname(RongIMClient.MessageParams[messageContent.messageName].objectName);
             modules.setContent(messageContent.encode());
             var content: any = modules.toArrayBuffer();

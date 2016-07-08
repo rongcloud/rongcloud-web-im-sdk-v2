@@ -264,13 +264,13 @@ module RongIMLib {
             }
             var that = this;
             var inviteMsg = <InviteMessage>that._memorySessions.message.content;
-            RongIMAgoraVoIP._rongIMClient.getAgoraDynamicKey(1, inviteMsg.channelInfo.Id, {
+            RongIMAgoraVoIP._rongIMClient.getAgoraDynamicKey(1, inviteMsg.callId, {
                 onSuccess: function(data: any) {
                     that._memorySessions.client.init(data.dynamicKey, function(obj: any) {
-                        var msg = new AcceptMessage({ callId: inviteMsg.channelInfo.Id, mediaType: mediaType });
+                        var msg = new AcceptMessage({ callId: inviteMsg.callId, mediaType: mediaType });
                         that.sendMessage(that._memorySessions.message.conversationType, that._memorySessions.message.targetId, msg, {
                             onSuccess: function(message: any) {
-                                that._memorySessions.client.join(data.dynamicKey, inviteMsg.channelInfo.Id, message.sentTime & 0x7fffffff, function(uid: string) {
+                                that._memorySessions.client.join(data.dynamicKey, inviteMsg.callId, message.sentTime & 0x7fffffff, function(uid: string) {
                                     that._memorySessions["startVoIPTime"] = +new Date;
                                     that._memorySessions["isActiveCall"] = true;
                                     that._memorySessions["mediaType"] = inviteMsg.mediaType;
@@ -463,7 +463,7 @@ module RongIMLib {
                         return;
                     }
                     that._memorySessions.message = message;
-                    that._memorySessions['chnl' + RongIMLib.Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId] = ret.channelInfo;
+                    that._memorySessions['chnl' + RongIMLib.Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId] = { Id: ret.callId, Key: "" };
                     var msg: RingingMessage = new RingingMessage({ callId: ret.callId });
                     that.sendMessage(message.conversationType, message.targetId, msg);
                     var content = <InviteMessage>message.content;

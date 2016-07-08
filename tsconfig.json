@@ -48,7 +48,6 @@
         "./src/message_misc.ts",
         "./src/message_notification.ts",
         "./src/message_primary.ts",
-        "./src/message_voip.ts",
         "./src/model.ts",
         "./src/providers/data_access_provider.ts",
         "./src/providers/data_access/server.ts",
