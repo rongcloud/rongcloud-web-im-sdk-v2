@@ -74,7 +74,7 @@ module RongIMLib {
                 isUseWebSQLProvider: false,
                 otherDevice: false,
                 custStore: {},
-                converStore: {},
+                converStore: {latestMessage:{}},
                 voipStategy: 0
             };
 

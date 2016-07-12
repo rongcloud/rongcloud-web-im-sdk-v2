@@ -136,7 +136,7 @@ module RongIMLib {
         constructor(
             public userId: string,
             public name: string,
-            public icon: string) { }
+            public portraitUri: string) { }
     }
 
 }

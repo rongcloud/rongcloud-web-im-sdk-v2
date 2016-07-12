@@ -125,7 +125,7 @@ module RongIMLib {
 
     export class LocationMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
         user: UserInfo;
-        latiude: number;
+        latitude: number;
         longitude: number;
         poi: string;
         content: string;
@@ -136,7 +136,7 @@ module RongIMLib {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> LocationMessage.");
             }
-            this.latiude = message.latitude;
+            this.latitude = message.latitude;
             this.longitude = message.longitude;
             this.poi = message.poi;
             this.content = message.content;
@@ -150,7 +150,7 @@ module RongIMLib {
         }
 
         static obtain(latitude: number, longitude: number, poi: string, content: string): LocationMessage {
-            return new LocationMessage({ latitude: longitude, longitude: longitude, poi: poi, content: content, extra: "" });
+            return new LocationMessage({ latitude: latitude, longitude: longitude, poi: poi, content: content, extra: "" });
         }
 
         encode(): string {
@@ -184,7 +184,7 @@ module RongIMLib {
             return new RichContentMessage({ title: title, content: content, imageUri: imageUri, url: url, extra: "" });
         }
 
-        encode() {
+        encode():string {
             return JSON.stringify(ModelUtil.modelClone(this));
         }
     }

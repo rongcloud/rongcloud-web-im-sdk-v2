@@ -267,7 +267,7 @@ module RongIMLib {
             RongIMAgoraVoIP._rongIMClient.getAgoraDynamicKey(1, inviteMsg.callId, {
                 onSuccess: function(data: any) {
                     that._memorySessions.client.init(data.dynamicKey, function(obj: any) {
-                        var msg = new AcceptMessage({ callId: inviteMsg.callId, mediaType: mediaType });
+                        var msg = new AcceptMessage({ callId: inviteMsg.callId, mediaType: inviteMsg.mediaType });
                         that.sendMessage(that._memorySessions.message.conversationType, that._memorySessions.message.targetId, msg, {
                             onSuccess: function(message: any) {
                                 that._memorySessions.client.join(data.dynamicKey, inviteMsg.callId, message.sentTime & 0x7fffffff, function(uid: string) {
@@ -382,6 +382,7 @@ module RongIMLib {
             });
             if (mediaType == RongIMLib.VoIPMediaType.MEDIA_AUDIO) {
                 that._memorySessions.client.disableVideo(that._memorySessions.localStream);
+                that._memorySessions.client.enableAudio(that._memorySessions.localStream);
                 that._memorySessions.localStream.audioEnabled = false;
                 that._memorySessions.localStream.videoEnabled = true;
             } else {
