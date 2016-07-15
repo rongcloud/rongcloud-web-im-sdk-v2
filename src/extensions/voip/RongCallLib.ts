@@ -128,7 +128,7 @@ module RongIMLib {
         }
     }
 
-    export class RongIMAgoraVoIP implements VoIPProvider {
+    export class RongCallLib implements VoIPProvider {
         _memorySessions: any = {
             timeoutMillis: 30000,
             resolution: "480p",
@@ -141,7 +141,7 @@ module RongIMLib {
             isActiveCall: false,
             message: null
         };
-        static _instance: RongIMAgoraVoIP = null;
+        static _instance: RongCallLib = null;
         static _rongIMClient: RongIMClient;
         constructor(opt: any) {
             var that = this;
@@ -193,14 +193,14 @@ module RongIMLib {
             }
         }
         static init(opt: any) {
-            this._instance = new RongIMAgoraVoIP(opt);
+            this._instance = new RongCallLib(opt);
             this._rongIMClient = RongIMClient.getInstance();
             RongIMClient._voipProvider = this._instance;
         }
 
-        static getInstance(): RongIMAgoraVoIP {
+        static getInstance(): RongCallLib {
             if (!this._instance) {
-                throw new Error("RongIMAgoraVoIP is not init!");
+                throw new Error("RongCallLib is not init!");
             }
             return this._instance;
         }
@@ -213,7 +213,7 @@ module RongIMLib {
             var cookieKey = 'chnl' + Bridge._client.userId + '_' + converType + '_' + targetId, channelId = cookieKey + '_' + (+new Date), that = this;
             that._memorySessions.startCallback = callback;
             that._memorySessions["mediaType"] = mediaType;
-            RongIMAgoraVoIP._rongIMClient.getAgoraDynamicKey(1, channelId, {
+            RongCallLib._rongIMClient.getAgoraDynamicKey(1, channelId, {
                 onSuccess: function(data: any) {
                     that._memorySessions[cookieKey] = new ChannelInfo(channelId, data.dynamicKey);
                     var msg = new InviteMessage({ callId: channelId, engineType: 1, channelInfo: that._memorySessions[cookieKey], mediaType: mediaType, inviteUserIds: userIds, extra: extra });
@@ -264,7 +264,7 @@ module RongIMLib {
             }
             var that = this;
             var inviteMsg = <InviteMessage>that._memorySessions.message.content;
-            RongIMAgoraVoIP._rongIMClient.getAgoraDynamicKey(1, inviteMsg.callId, {
+            RongCallLib._rongIMClient.getAgoraDynamicKey(1, inviteMsg.callId, {
                 onSuccess: function(data: any) {
                     that._memorySessions.client.init(data.dynamicKey, function(obj: any) {
                         var msg = new AcceptMessage({ callId: inviteMsg.callId, mediaType: inviteMsg.mediaType });
@@ -530,7 +530,7 @@ module RongIMLib {
         }
 
         private sendMessage(converType: ConversationType, targetId: string, msg: MessageContent, callback?: ResultCallback<ErrorCode>) {
-            RongIMAgoraVoIP._rongIMClient.sendMessage(converType, targetId, msg, {
+            RongCallLib._rongIMClient.sendMessage(converType, targetId, msg, {
                 onSuccess: function(message: any) {
                     if (callback) {
                         callback.onSuccess(message);

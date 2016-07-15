@@ -85,7 +85,6 @@ module RongIMLib {
          * @param {any} error [抛出异常]
          */
         onError(error: any): void {
-            console.log(error);
             throw new Error(error);
         }
         /**

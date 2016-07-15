@@ -31,7 +31,7 @@
         "./src/extensions/image_uploader.ts",
         "./src/extensions/voices/voice.ts",
         "./src/extensions/voices/VoiceRecorder.ts",
-        "./src/extensions/voip/RongIMAgoraVoIP.ts",
+        "./src/extensions/voip/RongCallLib.ts",
         "./src/imclient.ts",
         "./src/internal/connect_client.ts",
         "./src/internal/internal_callback.ts",
