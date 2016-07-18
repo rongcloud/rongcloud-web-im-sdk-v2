@@ -234,6 +234,7 @@ module RongIMLib {
         reconnectObj: any = {};
         heartbeat: any = 0;
         chatroomId: string = "";
+        isFirstPingMsg: boolean = true;
         static userInfoMapping: any = {};
         SyncTimeQueue: any = [];
         cacheMessageIds: any = [];
@@ -289,6 +290,19 @@ module RongIMLib {
                 //没有返回地址就手动抛出错误
                 _callback.onError(ConnectionState.NOT_AUTHORIZED);
             }
+        }
+        checkSocket(callback: any) {
+            var me = this;
+            me.channel.writeAndFlush(new PingReqMessage());
+            var checkTimeout: number = setInterval(function() {
+                if (!me.isFirstPingMsg && count < 16) {
+                    callback.onSuccess();
+                    clearInterval(checkTimeout);
+                } else {
+                    callback.onError();
+                }
+                count++;
+            }, 200), count: number = 0;
         }
         keepLive() {
             if (this.heartbeat > 0) {
@@ -396,22 +410,8 @@ module RongIMLib {
                     }
                 },
                 onError: function(error: ErrorCode) {
-                    if (error == ErrorCode.TIMEOUT && !RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
-                        var temp: string = RongIMClient._cookieHelper.getItemKey("navi");
-                        var server: string = RongIMClient._cookieHelper.getItem("RongBackupServer");
-                        var arrs: string[] = server.split(",");
-                        if (arrs.length < 2) {
-                            throw new Error("navi server is empty");
-                        }
-                        RongIMClient._cookieHelper.setItem(temp, RongIMClient._cookieHelper.getItem("RongBackupServer"));
-                        var url: string = RongIMLib.Bridge._client.channel.socket.currentURL;
-                        RongIMLib.Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
-                        RongIMClient.getInstance().disconnect();
-                        RongIMClient.reconnect(<ConnectCallback>{ onSuccess: function() { }, onError: function() { }, onTokenIncorrect: function() { } });
-                    } else {
-                        me.SyncTimeQueue.state = "complete";
-                        me.invoke(isPullMsg, target);
-                    }
+                    me.SyncTimeQueue.state = "complete";
+                    me.invoke(isPullMsg, target);
                 }
             }, "DownStreamMessages");
         }
@@ -685,7 +685,11 @@ module RongIMLib {
                     }
                     break;
                 case "PingRespMessage":
-                    Bridge._client.pauseTimer();
+                    if (Bridge._client.isFirstPingMsg) {
+                        Bridge._client.isFirstPingMsg = false;
+                    } else {
+                        Bridge._client.pauseTimer();
+                    }
                     break;
                 case "DisconnectMessage":
                     Bridge._client.channel.disconnect(msg.getStatus());

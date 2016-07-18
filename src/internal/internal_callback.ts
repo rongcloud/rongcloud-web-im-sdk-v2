@@ -175,9 +175,35 @@ module RongIMLib {
                     RongIMClient._dataAccessProvider.database.init(userId);
                 }
                 this._client.userId = userId;
-                if (!RongIMClient.isNotPullMsg) {
-                    this._client.syncTime(undefined, undefined, undefined, true);
+                var self = this;
+                if (!RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
+                    Bridge._client.checkSocket({
+                        onSuccess: function() {
+                            if (!RongIMClient.isNotPullMsg) {
+                                self._client.syncTime(undefined, undefined, undefined, true);
+                            }
+                        },
+                        onError: function() {
+                            RongIMClient.getInstance().disconnect();
+                            var temp: string = RongIMClient._cookieHelper.getItemKey("navi");
+                            var server: string = RongIMClient._cookieHelper.getItem("RongBackupServer");
+                            var arrs: string[] = server.split(",");
+                            if (arrs.length < 2) {
+                                throw new Error("navi server is empty");
+                            }
+                            // 8100-8151 端口不通，则不进行重连操作。
+                            if (server == RongIMClient._cookieHelper.getItem(temp)) {
+                                Bridge._client.channel.socket.fire("StatusChanged", ConnectionStatus.NETWORK_UNAVAILABLE);
+                                return;
+                            }
+                            RongIMClient._cookieHelper.setItem(temp, RongIMClient._cookieHelper.getItem("RongBackupServer"));
+                            var url: string = RongIMLib.Bridge._client.channel.socket.currentURL;
+                            RongIMLib.Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
+                            RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, { onSuccess: function() { }, onError: function() { }, onTokenIncorrect: function() { } });
+                        }
+                    });
                 }
+
                 if (this._client.reconnectObj.onSuccess) {
                     this._client.reconnectObj.onSuccess(userId);
                     delete this._client.reconnectObj.onSuccess;
