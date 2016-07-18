@@ -395,9 +395,23 @@ module RongIMLib {
                         }
                     }
                 },
-                onError: function() {
-                    me.SyncTimeQueue.state = "complete";
-                    me.invoke(isPullMsg, target);
+                onError: function(error: ErrorCode) {
+                    if (error == ErrorCode.TIMEOUT && !RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
+                        var temp: string = RongIMClient._cookieHelper.getItemKey("navi");
+                        var server: string = RongIMClient._cookieHelper.getItem("RongBackupServer");
+                        var arrs: string[] = server.split(",");
+                        if (arrs.length < 2) {
+                            throw new Error("navi server is empty");
+                        }
+                        RongIMClient._cookieHelper.setItem(temp, RongIMClient._cookieHelper.getItem("RongBackupServer"));
+                        var url: string = RongIMLib.Bridge._client.channel.socket.currentURL;
+                        RongIMLib.Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
+                        RongIMClient.getInstance().disconnect();
+                        RongIMClient.reconnect(<ConnectCallback>{ onSuccess: function() { }, onError: function() { }, onTokenIncorrect: function() { } });
+                    } else {
+                        me.SyncTimeQueue.state = "complete";
+                        me.invoke(isPullMsg, target);
+                    }
                 }
             }, "DownStreamMessages");
         }

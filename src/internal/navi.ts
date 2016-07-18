@@ -5,6 +5,7 @@ module RongIMLib {
             window.getServerEndpoint = function(x: any) {
                 //把导航返回的server字段赋值给CookieHelper._host，因为flash widget需要使用 decodeURIComponent
                 RongIMClient._cookieHelper._host = Navigation.Endpoint.host = x["server"];
+                RongIMClient._cookieHelper.setItem("RongBackupServer", x["backupServer"] + "," + (x.userId || ""));
                 //设置当前用户 Id 只有 comet 使用。
                 Navigation.Endpoint.userId = x["userId"];
                 if (x["voipCallInfo"]) {
