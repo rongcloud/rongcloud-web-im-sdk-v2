@@ -16,6 +16,7 @@ npm install -g typescript@1.6.0beta tsd typedoc coffee-script grunt-cli karma-cl
 
 ```
 npm install
+npm install npm-shrinkwrap
 bower install
 tsd install
 ```
