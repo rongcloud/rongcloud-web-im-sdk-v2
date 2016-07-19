@@ -29,6 +29,7 @@
         "./src/enum.ts",
         "./src/extensions/emoji.ts",
         "./src/extensions/image_uploader.ts",
+        "./src/extensions/upload/RongUploadLib.ts",
         "./src/extensions/voices/voice.ts",
         "./src/extensions/voices/VoiceRecorder.ts",
         "./src/extensions/voip/RongCallLib.ts",
@@ -56,6 +57,7 @@
         "./src/providers/storage_provider.ts",
         "./src/providers/storage/cookie.ts",
         "./src/providers/storage/localstorage.ts",
+        "./src/providers/upload_provider.ts",
         "./src/util/feature_detector.ts",
         "./src/util/feature_patcher.ts",
         "./src/util/script_loader.ts"
