@@ -294,6 +294,11 @@ module RongIMLib {
             message.messageId = (message.conversationType + "_" + ~~(Math.random() * 0xffffff));
             message.objectName = objectName;
             message.offLineMessage = offlineMsg ? true : false;
+            if (!offlineMsg) {
+                if (RongIMLib.RongIMClient._memoryStore.connectAckTime > message.sentTime) {
+                    message.offLineMessage = true;
+                }
+            }
             return message;
         }
     }

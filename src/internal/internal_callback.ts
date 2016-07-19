@@ -212,6 +212,7 @@ module RongIMLib {
                     setTimeout(function() { me._cb(userId); }, 500);
                 }
                 Bridge._client.channel.socket.fire("StatusChanged", 0);
+                RongIMLib.RongIMClient._memoryStore.connectAckTime = timestamp;
                 if (!(new Date().getTime() - timestamp)) {
                     RongIMClient._memoryStore.deltaTime = 0;
                 } else {

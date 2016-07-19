@@ -41,7 +41,7 @@ module RongIMLib {
             });
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]) {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number) {
             if (RongIMClient._memoryStore.isSyncRemoteConverList) {
                 RongIMClient.getInstance().getRemoteConversationList({
                     onSuccess: function(list) {
@@ -57,7 +57,7 @@ module RongIMLib {
                     onError: function(errorCode: ErrorCode) {
                         callback.onError(errorCode);
                     }
-                }, null);
+                }, conversationTypes, count);
             }
             //查询置顶会话。
             var tSql: string = "select * from t_conversation_" + this.database.userId + " t where t.isTop = 1 ";

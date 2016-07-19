@@ -25,7 +25,7 @@ module RongIMLib {
 
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void;
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void;
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[],count?:number): void;
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void;
 

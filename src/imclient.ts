@@ -74,7 +74,8 @@ module RongIMLib {
                 isUseWebSQLProvider: false,
                 otherDevice: false,
                 custStore: {},
-                converStore: {latestMessage:{}},
+                converStore: { latestMessage: {} },
+                connectAckTime:0,
                 voipStategy: 0
             };
 
@@ -114,13 +115,13 @@ module RongIMLib {
             };
 
             // if ('RongCallLib' in RongIMLib) {
-                RongIMClient.MessageParams["AcceptMessage"] = { objectName: "RC:VCAccept", msgTag: new RongIMLib.MessageTag(false, false) };
-                RongIMClient.MessageParams["RingingMessage"] = { objectName: "RC:VCRinging", msgTag: new RongIMLib.MessageTag(false, false) };
-                RongIMClient.MessageParams["SummaryMessage"] = { objectName: "RC:VCSummary", msgTag: new RongIMLib.MessageTag(false, false) };
-                RongIMClient.MessageParams["HungupMessage"] = { objectName: "RC:VCHangup", msgTag: new RongIMLib.MessageTag(false, false) };
-                RongIMClient.MessageParams["InviteMessage"] = { objectName: "RC:VCInvite", msgTag: new RongIMLib.MessageTag(false, false) };
-                RongIMClient.MessageParams["MediaModifyMessage"] = { objectName: "RC:VCModifyMedia", msgTag: new RongIMLib.MessageTag(false, false) };
-                RongIMClient.MessageParams["MemberModifyMessage"] = { objectName: "RC:VCModifyMem", msgTag: new RongIMLib.MessageTag(false, false) };
+            RongIMClient.MessageParams["AcceptMessage"] = { objectName: "RC:VCAccept", msgTag: new RongIMLib.MessageTag(false, false) };
+            RongIMClient.MessageParams["RingingMessage"] = { objectName: "RC:VCRinging", msgTag: new RongIMLib.MessageTag(false, false) };
+            RongIMClient.MessageParams["SummaryMessage"] = { objectName: "RC:VCSummary", msgTag: new RongIMLib.MessageTag(false, false) };
+            RongIMClient.MessageParams["HungupMessage"] = { objectName: "RC:VCHangup", msgTag: new RongIMLib.MessageTag(false, false) };
+            RongIMClient.MessageParams["InviteMessage"] = { objectName: "RC:VCInvite", msgTag: new RongIMLib.MessageTag(false, false) };
+            RongIMClient.MessageParams["MediaModifyMessage"] = { objectName: "RC:VCModifyMedia", msgTag: new RongIMLib.MessageTag(false, false) };
+            RongIMClient.MessageParams["MemberModifyMessage"] = { objectName: "RC:VCModifyMem", msgTag: new RongIMLib.MessageTag(false, false) };
             // }
 
             RongIMClient.MessageType = {
@@ -1045,8 +1046,8 @@ module RongIMLib {
             }
             RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
         }
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[]) {
-            CheckParam.getInstance().check(["object", "null|array|object|global"], "getConversationList");
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number) {
+            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined"], "getConversationList");
             var me = this;
             RongIMClient._dataAccessProvider.getConversationList(<ResultCallback<Conversation[]>>{
                 onSuccess: function(data: Conversation[]) {
@@ -1070,12 +1071,17 @@ module RongIMLib {
                         callback.onSuccess([]);
                     }
                 }
-            }, conversationTypes);
+            }, conversationTypes, count);
         }
-        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[]) {
-            CheckParam.getInstance().check(["object", "null|array|object|global"], "getRemoteConversationList");
+        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number) {
+            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined"], "getRemoteConversationList");
             var modules = new Modules.RelationsInput(), self = this;
             modules.setType(1);
+            if (typeof count == 'undefined') {
+                modules.setCount(0);
+            } else {
+                modules.setCount(count);
+            }
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(list: any) {
                     if (list.info) {

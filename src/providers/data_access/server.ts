@@ -107,7 +107,7 @@ module RongIMLib {
             callback.onSuccess(conver);
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]) {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[],count?:number) {
             if (RongIMClient._memoryStore.conversationList.length == 0 || RongIMClient._memoryStore.isSyncRemoteConverList) {
                 RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
@@ -125,7 +125,7 @@ module RongIMLib {
                     onError: function(errorcode: ErrorCode) {
                         callback.onSuccess([]);
                     }
-                }, conversationTypes);
+                }, conversationTypes,count);
             } else {
                 if (conversationTypes) {
                     var convers: Conversation[] = [];
