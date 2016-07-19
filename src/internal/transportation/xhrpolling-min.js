@@ -605,6 +605,9 @@ var Polling = {
             this.setMsg = function(b){
                 a.msg = b;
             };
+            this.setCount = function(b){
+              a.count = b;
+            };
             this.toArrayBuffer = function () {
                 return a
             };

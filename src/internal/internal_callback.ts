@@ -175,8 +175,11 @@ module RongIMLib {
                     RongIMClient._dataAccessProvider.database.init(userId);
                 }
                 this._client.userId = userId;
-                var self = this;
-                if (!RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
+                var self = this, temp = RongIMLib.RongIMClient._cookieHelper.getItemKey("navi");
+                var naviServer = RongIMLib.RongIMClient._cookieHelper.getItem(temp);
+                // TODO  判断拆分 naviServer 后的数组长度。
+                var naviPort = naviServer.split(",")[0].split(":")[1];
+                if (!RongIMClient._memoryStore.global["WEB_XHR_POLLING"] && RongIMClient._memoryStore.isFirstPingMsg && naviPort.length < 4) {
                     Bridge._client.checkSocket({
                         onSuccess: function() {
                             if (!RongIMClient.isNotPullMsg) {
@@ -184,6 +187,7 @@ module RongIMLib {
                             }
                         },
                         onError: function() {
+                            RongIMClient._memoryStore.isFirstPingMsg = false;
                             RongIMClient.getInstance().disconnect();
                             var temp: string = RongIMClient._cookieHelper.getItemKey("navi");
                             var server: string = RongIMClient._cookieHelper.getItem("RongBackupServer");
@@ -191,17 +195,16 @@ module RongIMLib {
                             if (arrs.length < 2) {
                                 throw new Error("navi server is empty");
                             }
-                            // 8100-8151 端口不通，则不进行重连操作。
-                            if (server == RongIMClient._cookieHelper.getItem(temp)) {
-                                Bridge._client.channel.socket.fire("StatusChanged", ConnectionStatus.NETWORK_UNAVAILABLE);
-                                return;
-                            }
                             RongIMClient._cookieHelper.setItem(temp, RongIMClient._cookieHelper.getItem("RongBackupServer"));
                             var url: string = RongIMLib.Bridge._client.channel.socket.currentURL;
                             RongIMLib.Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
                             RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, { onSuccess: function() { }, onError: function() { }, onTokenIncorrect: function() { } });
                         }
                     });
+                } else {
+                    if (!RongIMLib.RongIMClient.isNotPullMsg) {
+                        self._client.syncTime(undefined, undefined, undefined, true);
+                    }
                 }
 
                 if (this._client.reconnectObj.onSuccess) {

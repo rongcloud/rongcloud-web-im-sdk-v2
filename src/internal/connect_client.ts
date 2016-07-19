@@ -234,7 +234,6 @@ module RongIMLib {
         reconnectObj: any = {};
         heartbeat: any = 0;
         chatroomId: string = "";
-        isFirstPingMsg: boolean = true;
         static userInfoMapping: any = {};
         SyncTimeQueue: any = [];
         cacheMessageIds: any = [];
@@ -295,7 +294,7 @@ module RongIMLib {
             var me = this;
             me.channel.writeAndFlush(new PingReqMessage());
             var checkTimeout: number = setInterval(function() {
-                if (!me.isFirstPingMsg && count < 16) {
+                if (!RongIMClient._memoryStore.isFirstPingMsg && count < 16) {
                     callback.onSuccess();
                     clearInterval(checkTimeout);
                 } else {
@@ -685,8 +684,8 @@ module RongIMLib {
                     }
                     break;
                 case "PingRespMessage":
-                    if (Bridge._client.isFirstPingMsg) {
-                        Bridge._client.isFirstPingMsg = false;
+                    if (RongIMClient._memoryStore.isFirstPingMsg) {
+                        RongIMClient._memoryStore.isFirstPingMsg = false;
                     } else {
                         Bridge._client.pauseTimer();
                     }

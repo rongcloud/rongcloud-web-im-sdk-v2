@@ -43,7 +43,8 @@ module RongIMLib {
                 return;
             }
             if (this.isClose) {
-                throw new Error("The Connection is closed,Please open the Connection!!!");
+                this._socket.fire("StatusChanged", RongIMLib.ConnectionStatus.DISCONNECTED);
+                return;
             }
             var stream: RongIMStream = new RongIMStream([]), msg: MessageOutputStream = new MessageOutputStream(stream);
             msg.writeMessage(data);
