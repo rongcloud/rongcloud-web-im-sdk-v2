@@ -11,14 +11,16 @@ declare var AMR: any;
 declare var swfobject: any;
 declare var openDatabase: any;
 declare var AgoraRTC: any;
+declare var Qiniu: any;
+declare var plupload: any;
 declare interface AgoraRTC {
     init: any;
     join: any;
     unpublish: any;
     publish: any;
     on: any;
-    subscribe:any;
-    leave:any;
+    subscribe: any;
+    leave: any;
 }
 declare class XDomainRequest { }
 declare interface Navigator {

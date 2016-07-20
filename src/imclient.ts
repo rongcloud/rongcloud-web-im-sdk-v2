@@ -75,9 +75,9 @@ module RongIMLib {
                 otherDevice: false,
                 custStore: {},
                 converStore: { latestMessage: {} },
-                connectAckTime:0,
+                connectAckTime: 0,
                 voipStategy: 0,
-                isFirstPingMsg:true
+                isFirstPingMsg: true
             };
 
             RongIMClient._cookieHelper = CheckParam.getInstance().checkCookieDisable() ? new MemeoryProvider() : new CookieProvider();
@@ -93,6 +93,7 @@ module RongIMLib {
                 DiscussionNotificationMessage: { objectName: "RC:DizNtf", msgTag: new MessageTag(true, true) },
                 VoiceMessage: { objectName: "RC:VcMsg", msgTag: new MessageTag(true, true) },
                 RichContentMessage: { objectName: "RC:ImgTextMsg", msgTag: new MessageTag(true, true) },
+                FileMessage: { objectName: "RC:FileMsg", msgTag: new MessageTag(true, true) },
                 HandshakeMessage: { objectName: "", msgTag: new MessageTag(true, true) },
                 UnknownMessage: { objectName: "", msgTag: new MessageTag(true, true) },
                 LocationMessage: { objectName: "RC:LBSMsg", msgTag: new MessageTag(true, true) },

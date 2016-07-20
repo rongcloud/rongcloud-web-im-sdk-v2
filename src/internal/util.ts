@@ -5,6 +5,7 @@ var typeMapping: { [s: string]: any } = {
     "RC:ImgMsg": "ImageMessage",
     "RC:VcMsg": "VoiceMessage",
     "RC:ImgTextMsg": "RichContentMessage",
+    "RC:FileMsg": "FileMessage",
     "RC:LBSMsg": "LocationMessage",
     "RC:InfoNtf": "InformationNotificationMessage",
     "RC:ContactNtf": "ContactNotificationMessage",

@@ -184,7 +184,7 @@ module RongIMLib {
             return new RichContentMessage({ title: title, content: content, imageUri: imageUri, url: url, extra: "" });
         }
 
-        encode():string {
+        encode(): string {
             return JSON.stringify(ModelUtil.modelClone(this));
         }
     }
@@ -254,6 +254,27 @@ module RongIMLib {
         }
         encode(): any {
             return null;
+        }
+    }
+
+    export class FileMessage implements MessageContent {
+        user: UserInfo;
+        messageName: string = "FileMessage";
+        name: string;
+        size: number;
+        type: string;
+        uri: string;
+        extra: string;
+        constructor(message: any) {
+            message.name && (this.name = message.name);
+            message.size && (this.size = message.size);
+            message.type && (this.type = message.type);
+            message.uri && (this.uri = message.uri);
+            message.extra && (this.extra = message.extra);
+            message.user && (this.user = message.user);
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
         }
     }
 }
