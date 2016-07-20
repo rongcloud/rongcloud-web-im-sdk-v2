@@ -75,9 +75,9 @@ module RongIMLib {
                 otherDevice: false,
                 custStore: {},
                 converStore: { latestMessage: {} },
-                connectAckTime:0,
+                connectAckTime: 0,
                 voipStategy: 0,
-                isFirstPingMsg:true
+                isFirstPingMsg: true
             };
 
             RongIMClient._cookieHelper = CheckParam.getInstance().checkCookieDisable() ? new MemeoryProvider() : new CookieProvider();
@@ -1085,6 +1085,7 @@ module RongIMLib {
             }
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(list: any) {
+                    RongIMClient._memoryStore.conversationList.length = 0;
                     if (list.info) {
                         for (var i = 0, len = list.info.length; i < len; i++) {
                             self.pottingConversation(list.info[i]);
