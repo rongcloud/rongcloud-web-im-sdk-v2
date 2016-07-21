@@ -226,7 +226,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "2.2.0";
+        sdkVer: string = "2.2.1";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;

@@ -107,8 +107,8 @@ module RongIMLib {
             callback.onSuccess(conver);
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[],count?:number) {
-            if (RongIMClient._memoryStore.conversationList.length == 0 || RongIMClient._memoryStore.isSyncRemoteConverList) {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number) {
+            if (RongIMClient._memoryStore.conversationList.length == 0 || RongIMClient._memoryStore.isSyncRemoteConverList || (typeof count != undefined && RongIMClient._memoryStore.conversationList.length < count)) {
                 RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
                         if (MessageUtil.supportLargeStorage()) {
@@ -125,7 +125,7 @@ module RongIMLib {
                     onError: function(errorcode: ErrorCode) {
                         callback.onSuccess([]);
                     }
-                }, conversationTypes,count);
+                }, conversationTypes, count);
             } else {
                 if (conversationTypes) {
                     var convers: Conversation[] = [];
@@ -138,6 +138,9 @@ module RongIMLib {
                     });
                     callback.onSuccess(convers);
                 } else {
+                    if (count) {
+                        RongIMClient._memoryStore.conversationList.length = count;
+                    }
                     callback.onSuccess(RongIMClient._memoryStore.conversationList);
                 }
             }
