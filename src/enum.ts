@@ -1,8 +1,8 @@
 module RongIMLib {
 
     export enum MentionedType {
-       ALL =  1,
-       PART = 2
+        ALL = 1,
+        PART = 2
     }
 
     export enum BlacklistStatus {
@@ -608,7 +608,8 @@ module RongIMLib {
     export enum FileType {
         IMAGE = 1,
         AUDIO = 2,
-        VIDEO = 3
+        VIDEO = 3,
+        FILE = 4
     }
 
     export enum RealTimeLocationErrorCode {

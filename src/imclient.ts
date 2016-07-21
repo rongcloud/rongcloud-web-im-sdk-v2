@@ -93,6 +93,7 @@ module RongIMLib {
                 DiscussionNotificationMessage: { objectName: "RC:DizNtf", msgTag: new MessageTag(true, true) },
                 VoiceMessage: { objectName: "RC:VcMsg", msgTag: new MessageTag(true, true) },
                 RichContentMessage: { objectName: "RC:ImgTextMsg", msgTag: new MessageTag(true, true) },
+                FileMessage: { objectName: "RC:FileMsg", msgTag: new MessageTag(true, true) },
                 HandshakeMessage: { objectName: "", msgTag: new MessageTag(true, true) },
                 UnknownMessage: { objectName: "", msgTag: new MessageTag(true, true) },
                 LocationMessage: { objectName: "RC:LBSMsg", msgTag: new MessageTag(true, true) },
@@ -1807,7 +1808,7 @@ module RongIMLib {
             }, "GetQNupTokenOutput");
         }
 
-        getFileUrl(fileType: FileType, fileName: String, callback: ResultCallback<string>) {
+        getFileUrl(fileType: FileType, fileName: string, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["number", "string", "object"], "getQnTkn");
             if (!(/(1|2|3)/.test(fileType.toString()))) {
                 setTimeout(function() {
