@@ -3,7 +3,7 @@ module RongIMLib {
 
         setListeners(listeners: any): void;
 
-        startUpload(): void;
+        startUpload(conversationType: ConversationType, targetId: string): void;
 
         stopUpload(): void;
     }

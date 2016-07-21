@@ -13,6 +13,7 @@ declare var openDatabase: any;
 declare var AgoraRTC: any;
 declare var Qiniu: any;
 declare var plupload: any;
+declare var QiniuJsSDK:any;
 declare interface AgoraRTC {
     init: any;
     join: any;

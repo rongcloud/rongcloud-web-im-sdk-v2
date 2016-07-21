@@ -6,7 +6,15 @@ module RongIMLib {
 
         private listener: any;
 
-        private uploader: any;
+        private uploadType: string;
+
+        private store: any;
+
+        private usingKey: any = '';
+
+        private conversationType: number;
+
+        private targetId: string;
 
         private options: any = {
             uptoken: '',
@@ -24,21 +32,12 @@ module RongIMLib {
             targetId: ""
         };
 
-        static init(options: any): void {
-            if (!options.browse_button || !options.container || options.conversationType || !options.targetId) {
-                throw new Error("browse_button or conversationType or targetId or container is empty!");
-            }
-            RongUploadLib._instance = new RongUploadLib(options);
+        static init(imgOpts: any, fileOpts: any): void {
+            RongUploadLib._instance = new RongUploadLib(imgOpts, fileOpts);
         }
 
-        constructor(options: any) {
+        constructor(imgOpts: any, fileOpts: any) {
             var me = this;
-            for (let key in options) {
-                me.options[key] = options[key];
-            }
-            if (!me.options.drop_element) {
-                me.options.drop_element = options.container;
-            }
             var head: any = document.getElementsByTagName('head')[0];
             var plScript: any = document.createElement('script');
             plScript.src = 'xx.js';
@@ -48,7 +47,8 @@ module RongIMLib {
                     qiniuScript.src = "qinniu.js";
                     qiniuScript.onload = plScript.onreadystatechange = function() {
                         if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
-                            me.createUploadObject();
+                            me.createOptions(imgOpts, 'image');
+                            me.createOptions(fileOpts, 'file');
                         }
                     }
                     head.appendChild(qiniuScript);
@@ -65,31 +65,61 @@ module RongIMLib {
             this.listener = listener;
         }
 
-        startUpload(): void {
-            this.uploader.start();
+        startUpload(conversationType: ConversationType, targetId: string): void {
+            this.conversationType = conversationType;
+            this.targetId = targetId;
+            this.store[this.uploadType].start();
         }
 
         stopUpload(): void {
-            this.uploader.stop();
+            this.store[this.uploadType].stop();
         }
 
-        createUploadObject(): void {
+        createOptions(opts: any, key: string): void {
             var me = this;
-            me.uploader = Qiniu.uploader({
-                runtimes: me.options.runtimes,      // 上传模式，依次退化
-                browse_button: me.options.browse_button,         // 上传选择的点选按钮，必需
-                get_new_uptoken: me.options.get_new_uptoken,             // 设置上传文件的时候是否每次都重新获取新的uptoken
-                domain: me.options.domain,     // bucket域名，下载资源时用到，必需
-                container: me.options.container,             // 上传区域DOM ID，默认是browser_button的父元素
-                max_file_size: me.options.max_file_size,             // 最大文件体积限制
+            if (!opts) return;
+            for (let key in me.options) {
+                opts[key] || (opts[key] = me.options[key]);
+            }
+            //TODO 文件类型目前没有限制类型，若限制类型必须修改当前使用 uploader 的逻辑
+            if (key == 'image' && !opts['filters']) {
+                opts['filters'] = {
+                    mime_types: [{ title: "Image files", extensions: "jpg,gif,png" }],
+                    prevent_duplicates: false
+                };
+            } else {
+                opts['filters'] = {
+                    mime_types: [],
+                    prevent_duplicates: false
+                }
+            }
+            var uploader = me.createUploadFactory(opts);
+            me.store[key] = uploader;
+        }
+
+        createUploadFactory(opts: any): any {
+            var me = this;
+            var options: any = {
+                runtimes: opts.runtimes,      // 上传模式，依次退化
+                browse_button: opts.browse_button,         // 上传选择的点选按钮，必需
+                get_new_uptoken: opts.get_new_uptoken,             // 设置上传文件的时候是否每次都重新获取新的uptoken
+                domain: opts.domain,     // bucket域名，下载资源时用到，必需
+                container: opts.container,             // 上传区域DOM ID，默认是browser_button的父元素
+                max_file_size: opts.max_file_size,             // 最大文件体积限制
                 // flash_swf_url: 'path/of/plupload/Moxie.swf',
-                max_retries: me.options.max_retries,                     // 上传失败最大重试次数
-                dragdrop: me.options.dragdrop,                     // 开启可拖曳上传
-                drop_element: me.options.drop_element,          // 拖曳上传区域元素的ID，拖曳文件或文件夹后可触发上传
-                chunk_size: me.options.chunk_size,                  // 分块上传时，每块的体积
-                auto_start: me.options.auto_start,                   // 选择文件后自动上传，若关闭需要自己绑定事件触发上传
+                max_retries: opts.max_retries,                     // 上传失败最大重试次数
+                dragdrop: opts.dragdrop,                     // 开启可拖曳上传
+                drop_element: opts.drop_element,          // 拖曳上传区域元素的ID，拖曳文件或文件夹后可触发上传
+                chunk_size: opts.chunk_size,                  // 分块上传时，每块的体积
+                auto_start: opts.auto_start,                   // 选择文件后自动上传，若关闭需要自己绑定事件触发上传
                 init: {
                     'FilesAdded': function(up: any, files: any) {
+                        var opts: any = up.getOption();
+                        if (opts.filters.mime_types.length) {
+                            me.uploadType = 'image';
+                        } else {
+                            me.uploadType = 'file';
+                        }
                         plupload.each(files, function(file: any) {
                             me.listener.onFileAdded(file);
                         });
@@ -101,17 +131,7 @@ module RongIMLib {
                         me.listener.onUploadProgress(file);
                     },
                     'FileUploaded': function(up: any, file: any, info: any) {
-                        // 每个文件上传成功后，处理相关的事情
-                        // 其中info是文件上传成功后，服务端返回的json，形式如：
-                        // {
-                        //    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
-                        //    "key": "gogopher.jpg"
-                        //  }
-                        // 查看简单反馈
-                        // var domain = up.getOption('domain');
-                        // var res = parseJSON(info);
-                        // var sourceLink = domain + res.key; 获取上传成功后的文件的Url
-
+                        
                         // 此处发送消息并返回文件名称、类型、大小等
                         me.listener.onFileUploaded({});
                     },
@@ -124,7 +144,10 @@ module RongIMLib {
                     'Key': function(up: any, file: any) {
                     }
                 }
-            });
+            };
+            opts.filters && (options['filters'] = opts.filters);
+            var rongQiniu = new QiniuJsSDK();
+            return rongQiniu.uploader(options);
         }
 
     }
