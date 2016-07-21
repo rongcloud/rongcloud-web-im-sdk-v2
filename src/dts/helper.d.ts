@@ -50,6 +50,7 @@ declare interface Window {
     handleFileSelect: any;
     AudioContext: any;
     webkitAudioContext: any;
+    webkitURL:any;
 }
 declare interface Document {
     createStyleSheet: any;

@@ -107,10 +107,8 @@ module RongIMLib {
             }
             this.content = message.content;
             this.imageUri = message.imageUri;
-            this.extra = message.extra;
-            if (message.user) {
-                this.user = message.user;
-            }
+            message.extra && (this.extra = message.extra);
+            message.user && (this.user = message.user);
             if (message.mentionedInfo) {
                 this.mentionedInfo = message.mentionedInfo;
             }
@@ -272,6 +270,9 @@ module RongIMLib {
             message.uri && (this.uri = message.uri);
             message.extra && (this.extra = message.extra);
             message.user && (this.user = message.user);
+        }
+        static obtain(msg: any): FileMessage {
+            return new FileMessage({ name: msg.name, size: msg.size, type: msg.type, uri: msg.uri });
         }
         encode(): string {
             return JSON.stringify(ModelUtil.modelClone(this));

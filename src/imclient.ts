@@ -1807,7 +1807,7 @@ module RongIMLib {
             }, "GetQNupTokenOutput");
         }
 
-        getFileUrl(fileType: FileType, fileName: String, callback: ResultCallback<string>) {
+        getFileUrl(fileType: FileType, fileName: string, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["number", "string", "object"], "getQnTkn");
             if (!(/(1|2|3)/.test(fileType.toString()))) {
                 setTimeout(function() {
