@@ -3,7 +3,7 @@ module RongIMLib {
     export class MentionedInfo {
         constructor(
             type?: MentionedType,
-            userList?: string[],
+            userIdList?: string[],
             mentionedContent?: string
         ) { }
     }

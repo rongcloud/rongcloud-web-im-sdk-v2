@@ -19,7 +19,7 @@ module RongIMLib {
         private options: any = {
             uptoken: '',
             get_new_uptoken: false,
-            domain: 'http://oaka9tiom.bkt.clouddn.com/',
+            domain: '',
             max_file_size: '100mb',
             max_retries: 3,
             dragdrop: true,
@@ -49,21 +49,21 @@ module RongIMLib {
             var me = this;
             var head: any = document.getElementsByTagName('head')[0];
             var plScript: any = document.createElement('script');
-            plScript.src = 'xx.js';
+            plScript.src = 'upload/plupload/js/plupload.dev.js';
             plScript.onload = plScript.onreadystatechange = function() {
                 if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
                     var qiniuScript = document.createElement('script');
-                    qiniuScript.src = "qinniu.js";
+                    qiniuScript.src = "upload/qiniu.js";
                     qiniuScript.onload = plScript.onreadystatechange = function() {
                         if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
-                            RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
+                            imgOpts && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                                 onSuccess: function(data: any) {
                                     imgOpts["uptoken"] = data.token;
                                     me.createOptions(imgOpts, 'IMAGE');
                                 },
                                 onError: function(error: ErrorCode) { }
                             });
-                            RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
+                            fileOpts && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
                                 onSuccess: function(data: any) {
                                     fileOpts["uptoken"] = data.token;
                                     me.createOptions(fileOpts, 'FILE');
@@ -111,6 +111,7 @@ module RongIMLib {
                         mime_types: [{ title: "Image files", extensions: "jpg,gif,png" }],
                         prevent_duplicates: true
                     });
+                    opts.domain || (opts.domain = "http://rongcloud-image.qiniudn.com/");
                     opts.uploadType = type;
                     me.store[type] = me.createUploadFactory(opts, 1);
                     break;
@@ -119,6 +120,7 @@ module RongIMLib {
                         mime_types: [],
                         prevent_duplicates: true
                     }
+                    opts.domain || (opts.domain = "http://o83059m7d.bkt.clouddn.com/");
                     opts.uploadType = type;
                     me.store[type] = me.createUploadFactory(opts, 2);
                     break;

@@ -1789,7 +1789,7 @@ module RongIMLib {
 
         getFileToken(fileType: FileType, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["number", "object"], "getQnTkn");
-            if (!(/(1|2|3)/.test(fileType.toString()))) {
+            if (!(/(1|2|3|4)/.test(fileType.toString()))) {
                 callback.onError(ErrorCode.QNTKN_FILETYPE_ERROR);
                 return;
             }
@@ -1809,7 +1809,7 @@ module RongIMLib {
 
         getFileUrl(fileType: FileType, fileName: string, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["number", "string", "object"], "getQnTkn");
-            if (!(/(1|2|3)/.test(fileType.toString()))) {
+            if (!(/(1|2|3|4)/.test(fileType.toString()))) {
                 setTimeout(function() {
                     callback.onError(ErrorCode.QNTKN_FILETYPE_ERROR);
                 });
