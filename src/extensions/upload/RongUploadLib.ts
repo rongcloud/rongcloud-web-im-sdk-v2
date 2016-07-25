@@ -89,6 +89,7 @@ module RongIMLib {
         }
 
         startUpload(conversationType: ConversationType, targetId: string): void {
+            var me = this;
             this.conversationType = conversationType;
             this.targetId = targetId;
             this.store[this.uploadType].start();
@@ -157,27 +158,32 @@ module RongIMLib {
                 // flash_swf_url: 'path/of/plupload/Moxie.swf',
                 max_retries: opts.max_retries,                     // 上传失败最大重试次数
                 dragdrop: opts.dragdrop,                     // 开启可拖曳上传
+                unique_names: true,
                 drop_element: opts.drop_element,          // 拖曳上传区域元素的ID，拖曳文件或文件夹后可触发上传
                 chunk_size: opts.chunk_size,                  // 分块上传时，每块的体积
                 auto_start: false,                   // 选择文件后自动上传，若关闭需要自己绑定事件触发上传
                 uploadType: opts.uploadType,
                 init: {
                     'FilesAdded': function(up: any, files: any) {
-                        var opts: any = up.getOption();
+                        var opts: any = up.getOption(), name: string = "";
                         me.uploadType = opts.uploadType;
                         plupload.each(files, function(file: any) {
                             me.listener.onFileAdded(file);
                         });
                     },
                     'BeforeUpload': function(up: any, file: any) {
+                        var name = ""
+                        file.oldName = file.name;
+                        name = (+new Date) + '-' + Math.floor(Math.random() * 1000) + '.' + file.name.split(".")[1];
+                        file.name = name;
                         me.listener.onBeforeUpload(file);
                     },
                     'UploadProgress': function(up: any, file: any) {
                         me.listener.onUploadProgress(file);
                     },
                     'FileUploaded': function(up: any, file: any, info: any) {
-                        var option: any = up.getOption(), res: any = JSON.parse(info);
-                        options.fileName = res.name;
+                        var option: any = up.getOption();
+                        options.fileName = file.target_name;
                         me.createMessage(options, file, function(msg: MessageContent) {
                             RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
                                 onSuccess: function(ret: Message) {
@@ -227,7 +233,7 @@ module RongIMLib {
                     RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.FILE, option.fileName, {
                         onSuccess: function(data: any) {
                             var type: string = (option.fileName && option.fileName.split('.')[1]) || "";
-                            msg = new RongIMLib.FileMessage({ name: option.fileName, size: file.size, type: type, uri: data.downloadUrl });
+                            msg = new RongIMLib.FileMessage({ name: file.oldName, size: file.size, type: type, uri: data.downloadUrl });
                             callback(msg);
                         },
                         onError: function(error: ErrorCode) { }
