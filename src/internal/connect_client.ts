@@ -63,7 +63,24 @@ module RongIMLib {
                 me.socket.on("StatusChanged", function(code: any) {
                     me.connectionStatus = code;
                     if (code === ConnectionStatus.NETWORK_UNAVAILABLE) {
-                        RongIMClient._cookieHelper.setItem("rongSDK", "");
+                        var temp = RongIMClient._cookieHelper.getItemKey("navi");
+                        var naviServer = RongIMClient._cookieHelper.getItem(temp);
+                        var naviPort = naviServer.split(",")[0].split(":")[1];
+                        naviPort && naviPort.length < 4 || RongIMClient._cookieHelper.setItem("rongSDK", "");
+                        // TODO  判断拆分 naviServer 后的数组长度。
+                        if (!RongIMClient._memoryStore.global["WEB_XHR_POLLING"] && naviPort && naviPort.length < 4) {
+                            Bridge._client.handler.connectCallback.pauseTimer();
+                            var temp = RongIMClient._cookieHelper.getItemKey("navi");
+                            var server = RongIMClient._cookieHelper.getItem("RongBackupServer");
+                            var arrs = server.split(",");
+                            if (arrs.length < 2) {
+                                throw new Error("navi server is empty,postion:StatusChanged");
+                            }
+                            RongIMClient._cookieHelper.setItem(temp, RongIMLib.RongIMClient._cookieHelper.getItem("RongBackupServer"));
+                            var url = RongIMLib.Bridge._client.channel.socket.currentURL;
+                            Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
+                            RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMClient._memoryStore.callback);
+                        }
                     }
                     if (code === ConnectionStatus.DISCONNECTED && !RongIMClient._memoryStore.otherDevice) {
                         Channel._ConnectionStatusListener.onChanged(ConnectionStatus.DISCONNECTED);

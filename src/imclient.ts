@@ -1088,6 +1088,7 @@ module RongIMLib {
                 onSuccess: function(list: any) {
                     RongIMClient._memoryStore.conversationList.length = 0;
                     if (list.info) {
+                        list.info = list.info.reverse();
                         for (var i = 0, len = list.info.length; i < len; i++) {
                             self.pottingConversation(list.info[i]);
                         }

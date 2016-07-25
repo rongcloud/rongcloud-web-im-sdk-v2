@@ -136,6 +136,9 @@ module RongIMLib {
                             }
                         });
                     });
+                    if (count > 0) {
+                        convers.length = count;
+                    }
                     callback.onSuccess(convers);
                 } else {
                     if (count) {

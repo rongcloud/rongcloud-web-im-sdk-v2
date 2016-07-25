@@ -198,7 +198,7 @@ module RongIMLib {
                             RongIMClient._cookieHelper.setItem(temp, RongIMClient._cookieHelper.getItem("RongBackupServer"));
                             var url: string = RongIMLib.Bridge._client.channel.socket.currentURL;
                             RongIMLib.Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
-                            RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, { onSuccess: function() { }, onError: function() { }, onTokenIncorrect: function() { } });
+                            RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMClient._memoryStore.callback);
                         }
                     });
                 } else {
