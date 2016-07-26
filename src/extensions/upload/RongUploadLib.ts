@@ -19,7 +19,7 @@ module RongIMLib {
         private options: any = {
             uptoken: '',
             get_new_uptoken: false,
-            domain: 'http://oaka9tiom.bkt.clouddn.com/',
+            domain: '',
             max_file_size: '100mb',
             max_retries: 3,
             dragdrop: true,
@@ -49,23 +49,25 @@ module RongIMLib {
             var me = this;
             var head: any = document.getElementsByTagName('head')[0];
             var plScript: any = document.createElement('script');
-            plScript.src = 'xx.js';
+            plScript.src = 'upload/plupload/js/plupload.dev.js';
             plScript.onload = plScript.onreadystatechange = function() {
                 if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
                     var qiniuScript = document.createElement('script');
-                    qiniuScript.src = "qinniu.js";
+                    qiniuScript.src = "upload/qiniu.js";
                     qiniuScript.onload = plScript.onreadystatechange = function() {
                         if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
-                            RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
+                            imgOpts && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                                 onSuccess: function(data: any) {
+                                    me.store["imgOpts"] = imgOpts;
                                     imgOpts["uptoken"] = data.token;
                                     me.createOptions(imgOpts, 'IMAGE');
                                 },
                                 onError: function(error: ErrorCode) { }
                             });
-                            RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
+                            fileOpts && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
                                 onSuccess: function(data: any) {
                                     fileOpts["uptoken"] = data.token;
+                                    me.store["fileOpts"] = fileOpts;
                                     me.createOptions(fileOpts, 'FILE');
                                 },
                                 onError: function(error: ErrorCode) { }
@@ -88,14 +90,65 @@ module RongIMLib {
             this.listener = listener;
         }
 
-        startUpload(conversationType: ConversationType, targetId: string): void {
+        start(conversationType: ConversationType, targetId: string): void {
+            var me = this;
             this.conversationType = conversationType;
             this.targetId = targetId;
             this.store[this.uploadType].start();
         }
 
-        stopUpload(): void {
-            this.store[this.uploadType].stop();
+        cancel(file: any): void {
+            this.store[this.uploadType].removeFile(file);;
+        }
+
+        reload(image: string, file: string): void {
+            var me = this;
+            !me.store['IMAGE'] && me.store["imgOpts"] && image == 'IMAGE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
+                onSuccess: function(data: any) {
+                    me.store["imgOpts"]["uptoken"] = data.token;
+                    me.createOptions(me.store["imgOpts"], 'IMAGE');
+                },
+                onError: function(error: ErrorCode) { }
+            });
+
+            !me.store['FILE'] && me.store['fileOpts'] && file == 'FILE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
+                onSuccess: function(data: any) {
+                    me.store['fileOpts']["uptoken"] = data.token;
+                    me.createOptions(me.store['fileOpts'], 'FILE');
+                },
+                onError: function(error: ErrorCode) { }
+            });
+        }
+
+        destroy(): void {
+            var me = this;
+            for (var key in me.store) {
+                me.store[key].destroy();
+                delete me.store[key];
+            }
+        }
+
+        postImage(base64: string, conversationType: ConversationType, targetId: string, callback: any): void {
+            var me = this;
+            RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
+                onSuccess: function(data: any) {
+                    new RongAjax({ token: data.token, base64: base64 }).send(function(ret: any) {
+                        var opt = { uploadType: 'IMAGE', fileName: ret.hash, isBase64Data: true };
+                        me.createMessage(opt, base64, function(msg: MessageContent) {
+                            RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
+                                onSuccess: function(message: Message) {
+                                    callback(ret, message);
+                                },
+                                onError: function(error: ErrorCode, message: Message) {
+                                    callback(ret, message, error);
+                                }
+                            });
+                        });
+                    });
+                },
+                onError: function(error: ErrorCode) { }
+            });
+
         }
 
         createOptions(opts: any, type: string): void {
@@ -111,6 +164,7 @@ module RongIMLib {
                         mime_types: [{ title: "Image files", extensions: "jpg,gif,png" }],
                         prevent_duplicates: true
                     });
+                    opts.domain || (opts.domain = "http://rongcloud-image.qiniudn.com/");
                     opts.uploadType = type;
                     me.store[type] = me.createUploadFactory(opts, 1);
                     break;
@@ -119,6 +173,7 @@ module RongIMLib {
                         mime_types: [],
                         prevent_duplicates: true
                     }
+                    opts.domain || (opts.domain = "http://o83059m7d.bkt.clouddn.com/");
                     opts.uploadType = type;
                     me.store[type] = me.createUploadFactory(opts, 2);
                     break;
@@ -155,41 +210,46 @@ module RongIMLib {
                 // flash_swf_url: 'path/of/plupload/Moxie.swf',
                 max_retries: opts.max_retries,                     // 上传失败最大重试次数
                 dragdrop: opts.dragdrop,                     // 开启可拖曳上传
+                unique_names: true,
                 drop_element: opts.drop_element,          // 拖曳上传区域元素的ID，拖曳文件或文件夹后可触发上传
                 chunk_size: opts.chunk_size,                  // 分块上传时，每块的体积
                 auto_start: false,                   // 选择文件后自动上传，若关闭需要自己绑定事件触发上传
                 uploadType: opts.uploadType,
                 init: {
                     'FilesAdded': function(up: any, files: any) {
-                        var opts: any = up.getOption();
+                        var opts: any = up.getOption(), name: string = "";
                         me.uploadType = opts.uploadType;
                         plupload.each(files, function(file: any) {
                             me.listener.onFileAdded(file);
                         });
                     },
                     'BeforeUpload': function(up: any, file: any) {
+                        var name = ""
+                        file.oldName = file.name;
+                        name = (+new Date) + '-' + Math.floor(Math.random() * 1000) + '.' + file.name.split(".")[1];
+                        file.name = name;
                         me.listener.onBeforeUpload(file);
                     },
                     'UploadProgress': function(up: any, file: any) {
                         me.listener.onUploadProgress(file);
                     },
                     'FileUploaded': function(up: any, file: any, info: any) {
-                        var option: any = up.getOption(), res: any = JSON.parse(info);
-                        options.fileName = res.name;
+                        var option: any = up.getOption();
+                        options.fileName = file.target_name;
                         me.createMessage(options, file, function(msg: MessageContent) {
                             RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
                                 onSuccess: function(ret: Message) {
-                                    me.listener.onFileUploaded(ret);
+                                    me.listener.onFileUploaded(file, ret);
                                 },
                                 onError: function(error: ErrorCode, ret: Message) {
-                                    me.listener.onFileUploaded(ret);
+                                    me.listener.onFileUploaded(file, ret);
                                 }
                             });
                         });
 
                     },
                     'Error': function(up: any, err: any, errTip: any) {
-                        me.listener.onError(err, errTip);
+                        me.listener.onError(up, err, errTip);
                     },
                     'UploadComplete': function() {
                         me.listener.onUploadComplete();
@@ -213,10 +273,16 @@ module RongIMLib {
                 case 'IMAGE':
                     RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.IMAGE, option.fileName, {
                         onSuccess: function(data: any) {
-                            RongUploadLib.imageCompressToBase64(file, function(content: string) {
-                                msg = new RongIMLib.ImageMessage({ content: content, imageUri: data.downloadUrl });
+                            if (option.isBase64Data) {
+                                msg = new RongIMLib.ImageMessage({ content: file, imageUri: data.downloadUrl });
                                 callback(msg);
-                            });
+                            } else {
+                                RongUploadLib.imageCompressToBase64(file, function(content: string) {
+                                    msg = new RongIMLib.ImageMessage({ content: content, imageUri: data.downloadUrl });
+                                    callback(msg);
+                                });
+                            }
+
                         },
                         onError: function(error: ErrorCode) { }
                     });
@@ -225,7 +291,7 @@ module RongIMLib {
                     RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.FILE, option.fileName, {
                         onSuccess: function(data: any) {
                             var type: string = (option.fileName && option.fileName.split('.')[1]) || "";
-                            msg = new RongIMLib.FileMessage({ name: option.fileName, size: file.size, type: type, uri: data.downloadUrl });
+                            msg = new RongIMLib.FileMessage({ name: file.oldName, size: file.size, type: type, uri: data.downloadUrl });
                             callback(msg);
                         },
                         onError: function(error: ErrorCode) { }

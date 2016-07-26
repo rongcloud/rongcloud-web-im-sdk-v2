@@ -3,9 +3,15 @@ module RongIMLib {
 
         setListeners(listeners: any): void;
 
-        startUpload(conversationType: ConversationType, targetId: string): void;
+        start(conversationType: ConversationType, targetId: string): void;
 
-        stopUpload(): void;
+        cancel(file: any): void;
+
+        reload(image: string, file: string): void;
+
+        destroy(): void;
+
+        postImage(base64: string, conversationType: ConversationType, targetId: string, callback: any): void;
     }
 
 }
