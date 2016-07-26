@@ -58,6 +58,7 @@ module RongIMLib {
                         if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
                             imgOpts && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                                 onSuccess: function(data: any) {
+                                    me.store["imgOpts"] = imgOpts;
                                     imgOpts["uptoken"] = data.token;
                                     me.createOptions(imgOpts, 'IMAGE');
                                 },
@@ -66,6 +67,7 @@ module RongIMLib {
                             fileOpts && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
                                 onSuccess: function(data: any) {
                                     fileOpts["uptoken"] = data.token;
+                                    me.store["fileOpts"] = fileOpts;
                                     me.createOptions(fileOpts, 'FILE');
                                 },
                                 onError: function(error: ErrorCode) { }
@@ -88,15 +90,65 @@ module RongIMLib {
             this.listener = listener;
         }
 
-        startUpload(conversationType: ConversationType, targetId: string): void {
+        start(conversationType: ConversationType, targetId: string): void {
             var me = this;
             this.conversationType = conversationType;
             this.targetId = targetId;
             this.store[this.uploadType].start();
         }
 
-        stopUpload(): void {
-            this.store[this.uploadType].stop();
+        cancel(file: any): void {
+            this.store[this.uploadType].removeFile(file);;
+        }
+
+        reload(image: string, file: string): void {
+            var me = this;
+            !me.store['IMAGE'] && me.store["imgOpts"] && image == 'IMAGE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
+                onSuccess: function(data: any) {
+                    me.store["imgOpts"]["uptoken"] = data.token;
+                    me.createOptions(me.store["imgOpts"], 'IMAGE');
+                },
+                onError: function(error: ErrorCode) { }
+            });
+
+            !me.store['FILE'] && me.store['fileOpts'] && file == 'FILE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
+                onSuccess: function(data: any) {
+                    me.store['fileOpts']["uptoken"] = data.token;
+                    me.createOptions(me.store['fileOpts'], 'FILE');
+                },
+                onError: function(error: ErrorCode) { }
+            });
+        }
+
+        destroy(): void {
+            var me = this;
+            for (var key in me.store) {
+                me.store[key].destroy();
+                delete me.store[key];
+            }
+        }
+
+        postImage(base64: string, conversationType: ConversationType, targetId: string, callback: any): void {
+            var me = this;
+            RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
+                onSuccess: function(data: any) {
+                    new RongAjax({ token: data.token, base64: base64 }).send(function(ret: any) {
+                        var opt = { uploadType: 'IMAGE', fileName: ret.hash, isBase64Data: true };
+                        me.createMessage(opt, base64, function(msg: MessageContent) {
+                            RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
+                                onSuccess: function(message: Message) {
+                                    callback(ret, message);
+                                },
+                                onError: function(error: ErrorCode, message: Message) {
+                                    callback(ret, message, error);
+                                }
+                            });
+                        });
+                    });
+                },
+                onError: function(error: ErrorCode) { }
+            });
+
         }
 
         createOptions(opts: any, type: string): void {
@@ -187,17 +239,17 @@ module RongIMLib {
                         me.createMessage(options, file, function(msg: MessageContent) {
                             RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
                                 onSuccess: function(ret: Message) {
-                                    me.listener.onFileUploaded(ret);
+                                    me.listener.onFileUploaded(file, ret);
                                 },
                                 onError: function(error: ErrorCode, ret: Message) {
-                                    me.listener.onFileUploaded(ret);
+                                    me.listener.onFileUploaded(file, ret);
                                 }
                             });
                         });
 
                     },
                     'Error': function(up: any, err: any, errTip: any) {
-                        me.listener.onError(err, errTip);
+                        me.listener.onError(up, err, errTip);
                     },
                     'UploadComplete': function() {
                         me.listener.onUploadComplete();
@@ -221,10 +273,16 @@ module RongIMLib {
                 case 'IMAGE':
                     RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.IMAGE, option.fileName, {
                         onSuccess: function(data: any) {
-                            RongUploadLib.imageCompressToBase64(file, function(content: string) {
-                                msg = new RongIMLib.ImageMessage({ content: content, imageUri: data.downloadUrl });
+                            if (option.isBase64Data) {
+                                msg = new RongIMLib.ImageMessage({ content: file, imageUri: data.downloadUrl });
                                 callback(msg);
-                            });
+                            } else {
+                                RongUploadLib.imageCompressToBase64(file, function(content: string) {
+                                    msg = new RongIMLib.ImageMessage({ content: content, imageUri: data.downloadUrl });
+                                    callback(msg);
+                                });
+                            }
+
                         },
                         onError: function(error: ErrorCode) { }
                     });

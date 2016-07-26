@@ -384,4 +384,38 @@ module RongIMLib {
             delete this.map[key];
         }
     }
+
+    export class RongAjax {
+        options: any;
+        xmlhttp: any;
+        constructor(options: any) {
+            this.xmlhttp = null;
+            this.options = options;
+            var me = this;
+            var hasCORS = typeof XMLHttpRequest !== "undefined" && "withCredentials" in new XMLHttpRequest();
+            if ("undefined" != typeof XMLHttpRequest && hasCORS) {
+                me.xmlhttp = new XMLHttpRequest();
+            } else if ("undefined" != typeof XDomainRequest) {
+                me.xmlhttp = new XDomainRequest();
+            } else {
+                me.xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+        }
+        send(callback: any): void {
+            var me = this;
+            var url: string = "http://up.qiniu.com/putb64/-1";
+            me.xmlhttp.onreadystatechange = function() {
+                if (me.xmlhttp.readyState == 4) {
+                    callback(JSON.parse(me.xmlhttp.responseText.replace(/'/g, '"')));
+                }
+            };
+            me.xmlhttp.open("POST", url, true);
+            me.xmlhttp.withCredentials = false;
+            if ("setRequestHeader" in me.xmlhttp) {
+                me.xmlhttp.setRequestHeader("Content-type", "application/octet-stream");
+                me.xmlhttp.setRequestHeader('Authorization', "UpToken " + me.options.token);
+            }
+            me.xmlhttp.send("data=" + encodeURIComponent(me.options.base64));
+        }
+    }
 }
