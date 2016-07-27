@@ -101,9 +101,17 @@ module RongIMLib {
             this.store[this.uploadType].removeFile(file);;
         }
 
+        cancelAll(callback: any): void {
+            var up = this.store[this.uploadType], files = up.files;
+            for (let i = 0, len = files.length; i < len; i++) {
+                up.removeFile(files[i]);
+            }
+            callback();
+        }
+
         reload(image: string, file: string): void {
             var me = this;
-            !me.store['IMAGE'] && me.store["imgOpts"] && image == 'IMAGE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
+            me.store["imgOpts"] && image == 'IMAGE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                 onSuccess: function(data: any) {
                     me.store["imgOpts"]["uptoken"] = data.token;
                     me.createOptions(me.store["imgOpts"], 'IMAGE');
@@ -111,7 +119,7 @@ module RongIMLib {
                 onError: function(error: ErrorCode) { }
             });
 
-            !me.store['FILE'] && me.store['fileOpts'] && file == 'FILE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
+            me.store['fileOpts'] && file == 'FILE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
                 onSuccess: function(data: any) {
                     me.store['fileOpts']["uptoken"] = data.token;
                     me.createOptions(me.store['fileOpts'], 'FILE');

@@ -539,7 +539,7 @@ module RongIMLib {
             }
 
             var modules = new Modules.UpStreamMessage();
-            if (mentiondMsg) {
+            if (mentiondMsg && (conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP)) {
                 modules.setSessionId(7);
             } else {
                 modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
