@@ -97,8 +97,8 @@ module RongIMLib {
             this.store[this.uploadType].start();
         }
 
-        cancel(file: any): void {
-            this.store[this.uploadType].removeFile(file);;
+        cancel(fileId: any): void {
+            this.store[this.uploadType].removeFile(fileId);
         }
 
         cancelAll(callback: any): void {

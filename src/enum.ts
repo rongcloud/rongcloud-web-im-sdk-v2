@@ -78,7 +78,11 @@ module RongIMLib {
         /**
          * 网络不可用。
          */
-        DOMAIN_INCORRECT = 12
+        DOMAIN_INCORRECT = 12,
+        /**
+        *  连接关闭。
+        */
+        CONNECTION_CLOSED = 4
     }
 
     export enum ConversationNotificationStatus {

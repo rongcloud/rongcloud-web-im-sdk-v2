@@ -43,7 +43,7 @@ module RongIMLib {
                 return;
             }
             if (this.isClose) {
-                this._socket.fire("StatusChanged", RongIMLib.ConnectionStatus.DISCONNECTED);
+                this._socket.fire("StatusChanged", RongIMLib.ConnectionStatus.CONNECTION_CLOSED);
                 return;
             }
             var stream: RongIMStream = new RongIMStream([]), msg: MessageOutputStream = new MessageOutputStream(stream);
