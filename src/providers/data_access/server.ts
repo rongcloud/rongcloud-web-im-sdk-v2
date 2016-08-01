@@ -204,14 +204,14 @@ module RongIMLib {
                         }
                         conver.unreadMessageCount = 0;
                         conver.mentionedMsg = null;
-                        var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId);
+                        var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                         if (mentioneds) {
                             var info: any = JSON.parse(mentioneds);
                             delete info[conversationType + "_" + targetId];
                             if (!MessageUtil.isEmpty(info)) {
-                                RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId, JSON.stringify(info), true);
+                                RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info), true);
                             } else {
-                                RongIMClient._cookieHelper.removeItem("mentioneds_" + Bridge._client.userId);
+                                RongIMClient._cookieHelper.removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                             }
                         }
                     }

@@ -72,14 +72,16 @@ module RongIMLib {
                             Bridge._client.handler.connectCallback.pauseTimer();
                             var temp = RongIMClient._cookieHelper.getItemKey("navi");
                             var server = RongIMClient._cookieHelper.getItem("RongBackupServer");
-                            var arrs = server.split(",");
-                            if (arrs.length < 2) {
-                                throw new Error("navi server is empty,postion:StatusChanged");
+                            if (server) {
+                                var arrs = server.split(",");
+                                if (arrs.length < 2) {
+                                    throw new Error("navi server is empty,postion:StatusChanged");
+                                }
+                                RongIMClient._cookieHelper.setItem(temp, RongIMLib.RongIMClient._cookieHelper.getItem("RongBackupServer"));
+                                var url = RongIMLib.Bridge._client.channel.socket.currentURL;
+                                Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
+                                RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMClient._memoryStore.callback);
                             }
-                            RongIMClient._cookieHelper.setItem(temp, RongIMLib.RongIMClient._cookieHelper.getItem("RongBackupServer"));
-                            var url = RongIMLib.Bridge._client.channel.socket.currentURL;
-                            Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
-                            RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMClient._memoryStore.callback);
                         }
                     }
                     if (code === ConnectionStatus.DISCONNECTED && !RongIMClient._memoryStore.otherDevice) {
@@ -578,11 +580,11 @@ module RongIMLib {
                         }
 
                         if (message.messageDirection == MessageDirection.RECEIVE && (entity.status & 64) == 64) {
-                            var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId);
+                            var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId);
                             var key: string = message.conversationType + '_' + message.targetId, info: any = {};
                             if (message.content && message.content.mentionedInfo) {
                                 info[key] = { uid: message.messageUId, time: message.sentTime, mentionedInfo: message.content.mentionedInfo };
-                                RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId, JSON.stringify(info), true);
+                                RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId, JSON.stringify(info), true);
                                 mentioneds = JSON.stringify(info);
                             }
                             if (mentioneds) {

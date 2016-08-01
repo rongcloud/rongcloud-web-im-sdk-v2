@@ -239,14 +239,14 @@ module RongIMLib {
             var sSql: string = "select * from t_conversation_" + this.database.userId + " t where t.conversationType = ? and t.targetId = ?";
             var uSql: string = "update t_conversation_" + this.database.userId + " set content = ? where conversationType = ? and targetId = ?", me = this;
             this.database.execSearchByParams(sSql, [conversationType, targetId], function(results: any[]) {
-                var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId);
+                var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                 if (mentioneds) {
                     var info: any = JSON.parse(mentioneds);
                     delete info[conversationType + "_" + targetId];
                     if (!MessageUtil.isEmpty(info)) {
-                        RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId, JSON.stringify(info), true);
+                        RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info), true);
                     } else {
-                        RongIMClient._cookieHelper.removeItem("mentioneds_" + Bridge._client.userId);
+                        RongIMClient._cookieHelper.removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                     }
                 }
                 if (results.length == 0) {

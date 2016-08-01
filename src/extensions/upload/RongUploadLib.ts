@@ -111,6 +111,7 @@ module RongIMLib {
 
         reload(image: string, file: string): void {
             var me = this;
+            image && me.store["IMAGE"] && me.store['IMAGE'].destroy();
             me.store["imgOpts"] && image == 'IMAGE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                 onSuccess: function(data: any) {
                     me.store["imgOpts"]["uptoken"] = data.token;
@@ -119,6 +120,7 @@ module RongIMLib {
                 onError: function(error: ErrorCode) { }
             });
 
+            file && me.store['FILE'] && me.store['FILE'].destroy();
             me.store['fileOpts'] && file == 'FILE' && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
                 onSuccess: function(data: any) {
                     me.store['fileOpts']["uptoken"] = data.token;
@@ -349,6 +351,8 @@ module RongIMLib {
                         }
                         var imgData = context.getImageData(_x, _y, target_w, target_h);
                         context.createImageData(target_w, target_h);
+                        canvas.width = target_w;
+                        canvas.height = target_h;
                         context.putImageData(imgData, 0, 0);
                     }
                     var _canvas = canvas.toDataURL("image/jpeg", 0.5);
