@@ -103,6 +103,10 @@ module RongIMLib {
                 CommandNotificationMessage: { objectName: "RC:CmdNtf", msgTag: new MessageTag(true, true) },
                 CommandMessage: { objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) },
                 TypingStatusMessage: { objectName: "RC:TypSts", msgTag: new MessageTag(false, false) },
+                PublicServiceRichContentMessage: { objectName: "RC:PSImgTxtMsg", msgTag: new MessageTag(true, true) },
+                PublicServiceMultiRichContentMessage: { objectName: "RC:PSMultiImgTxtMsg", msgTag: new MessageTag(true, true) },
+                GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(false, true) },
+                PublicServiceCommandMessage: { objectName: "RC:PSCmd", msgTag: new MessageTag(false, false) },
 
                 ChangeModeResponseMessage: { objectName: "RC:CsChaR", msgTag: new MessageTag(false, false) },
                 ChangeModeMessage: { objectName: "RC:CSCha", msgTag: new MessageTag(false, false) },
@@ -760,7 +764,7 @@ module RongIMLib {
                 xss.parentNode.removeChild(xss);
             };
         }
-        getTotalUnreadCount(callback: ResultCallback<number>) {
+        getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]) {
             RongIMClient._dataAccessProvider.getTotalUnreadCount({
                 onSuccess: function(count: number) {
                     setTimeout(function() {
@@ -772,7 +776,7 @@ module RongIMLib {
                         callback.onError(errorCode);
                     });
                 }
-            });
+            }, conversationTypes);
         }
         /**
          * [getConversationUnreadCount 指定多种会话类型获取未读消息数]

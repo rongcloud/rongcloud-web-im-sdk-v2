@@ -195,13 +195,24 @@ module RongIMLib {
             });
         }
 
-        getTotalUnreadCount(callback: ResultCallback<number>) {
+        getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]) {
             var sql: string = "select t.content from t_conversation_" + this.database.userId + " t";
             this.database.execSearch(sql, function(results: any[]) {
                 var count: number = 0;
-                for (let i = 0, len = results.length; i < len; i++) {
-                    var conver: Conversation = JSON.parse(results[i].content);
-                    count += conver.unreadMessageCount;
+                if (conversationTypes) {
+                    for (let j = 0, len = conversationTypes.length; j < len; j++) {
+                        for (let i = 0, len = results.length; i < len; i++) {
+                            var conver: Conversation = JSON.parse(results[i].content);
+                            if (conver.conversationType == conversationTypes[j]) {
+                              count += conver.unreadMessageCount;
+                            }
+                        }
+                    }
+                } else {
+                    for (let i = 0, len = results.length; i < len; i++) {
+                        var conver: Conversation = JSON.parse(results[i].content);
+                        count += conver.unreadMessageCount;
+                    }
                 }
                 callback.onSuccess(count);
             });

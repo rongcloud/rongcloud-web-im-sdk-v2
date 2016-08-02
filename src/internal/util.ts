@@ -27,7 +27,11 @@ var typeMapping: { [s: string]: any } = {
     "RC:VCInvite": "InviteMessage",
     "RC:VCModifyMedia": "MediaModifyMessage",
     "RC:VCModifyMem": "MemberModifyMessage",
-    "RC:CsContact": "CustomerContact"
+    "RC:CsContact": "CustomerContact",
+    "RC:PSImgTxtMsg": "PublicServiceRichContentMessage",
+    "RC:PSMultiImgTxtMsg": "PublicServiceMultiRichContentMessage",
+    "RC:GrpNtf": "GroupNotificationMessage",
+    "RC:PSCmd": "PublicServiceCommandMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -403,7 +407,7 @@ module RongIMLib {
         }
         send(callback: any): void {
             var me = this;
-            var url: string = "http://up.qiniu.com/putb64/-1";
+            var url: string = "http://upload.qiniu.com/putb64/-1";
             me.xmlhttp.onreadystatechange = function() {
                 if (me.xmlhttp.readyState == 4) {
                     callback(JSON.parse(me.xmlhttp.responseText.replace(/'/g, '"')));
@@ -415,7 +419,7 @@ module RongIMLib {
                 me.xmlhttp.setRequestHeader("Content-type", "application/octet-stream");
                 me.xmlhttp.setRequestHeader('Authorization', "UpToken " + me.options.token);
             }
-            me.xmlhttp.send("data=" + encodeURIComponent(me.options.base64));
+            me.xmlhttp.send(me.options.base64);
         }
     }
 }

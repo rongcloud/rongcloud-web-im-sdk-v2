@@ -183,4 +183,24 @@ module RongIMLib {
         }
     }
 
+    export class GroupNotificationMessage implements MessageContent {
+        messageName: string = "GroupNotificationMessage";
+        operatorUserId: string;
+        operation: string;
+        message: string;
+        data: any;
+        constructor(msg: any) {
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> GroupNotificationMessage.");
+            }
+            msg.operatorUserId && (this.operatorUserId = msg.operatorUserId);
+            msg.operation && (this.operation = msg.operation);
+            msg.data && (this.data = msg.data);
+            msg.message && (this.data = msg.message);
+        }
+        encode() {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
+
 }

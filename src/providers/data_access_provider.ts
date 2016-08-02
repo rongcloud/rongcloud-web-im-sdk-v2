@@ -15,7 +15,7 @@ module RongIMLib {
 
         removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>): void;
 
-        getMessage(messageId:string,callback: ResultCallback<Message>): void;
+        getMessage(messageId: string, callback: ResultCallback<Message>): void;
 
         updateMessage(message: Message, callback?: ResultCallback<Message>): void;
 
@@ -25,13 +25,13 @@ module RongIMLib {
 
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void;
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[],count?:number): void;
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number): void;
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void;
 
         getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void;
 
-        getTotalUnreadCount(callback: ResultCallback<number>): void;
+        getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]): void;
 
         getConversationUnreadCount(conversationTypes: ConversationType[], callback: ResultCallback<number>): void;
 

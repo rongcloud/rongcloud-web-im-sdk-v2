@@ -164,11 +164,21 @@ module RongIMLib {
             RongIMClient.getInstance().getRemoteHistoryMessages(conversationType, targetId, timestamp, count, callback);
         }
 
-        getTotalUnreadCount(callback: ResultCallback<number>) {
+        getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]) {
             var count: number = 0;
-            Array.forEach(RongIMClient._memoryStore.conversationList, function(conver: Conversation) {
-                count += conver.unreadMessageCount;
-            });
+            if (conversationTypes) {
+                for (var i = 0, len = conversationTypes.length; i < len; i++) {
+                    Array.forEach(RongIMClient._memoryStore.conversationList, function(conver: Conversation) {
+                        if (conver.conversationType == conversationTypes[i]) {
+                            count += conver.unreadMessageCount;
+                        }
+                    });
+                }
+            } else {
+                Array.forEach(RongIMClient._memoryStore.conversationList, function(conver: Conversation) {
+                    count += conver.unreadMessageCount;
+                });
+            }
             callback.onSuccess(count);
         }
 

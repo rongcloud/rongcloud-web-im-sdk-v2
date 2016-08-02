@@ -250,8 +250,8 @@ module RongIMLib {
         static symbolToEmoji(str: string): string {
             var me = this;
             return str.replace(/\[.+?\]/g, function(s) {
-                var temp = s.slice(1, s.length - 1);
-                if (me.regExpName.test(temp)) {
+                var temp = s.slice(1, s.length - 1), tStr: any = temp;
+                if (me.regExpName.test(temp) && tStr.replace(me.regExpName) == 'undefined') {
                     return temp.replace(me.regExpName, function(zh) {
                         for (var key in me.emojiFactory) {
                             if (me.emojiFactory[key].zh == zh) {
