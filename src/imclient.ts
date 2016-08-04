@@ -608,7 +608,9 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     msg.sentStatus = SentStatus.FAILED;
-                    RongIMClient._memoryStore.converStore.latestMessage = msg;
+                    if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
+                        RongIMClient._memoryStore.converStore.latestMessage = msg;
+                    }
                     RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, {
                         onSuccess: function(ret: Message) {
                             msg.messageId = ret.messageId;
@@ -716,7 +718,7 @@ module RongIMLib {
             }
             var modules = new Modules.HistoryMessageInput(), self = this;
             modules.setTargetId(targetId);
-            if (timestamp === 0) {
+            if (timestamp === 0 || timestamp > 0) {
                 modules.setDataTime(timestamp);
             } else {
                 modules.setDataTime(RongIMClient._memoryStore.lastReadTime.get(conversationType + targetId));
