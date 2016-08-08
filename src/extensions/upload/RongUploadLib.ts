@@ -49,11 +49,11 @@ module RongIMLib {
             var me = this;
             var head: any = document.getElementsByTagName('head')[0];
             var plScript: any = document.createElement('script');
-            plScript.src = 'upload/plupload/js/plupload.dev.js';
+            plScript.src = 'http://cdn.ronghub.com/plupload.min.js';
             plScript.onload = plScript.onreadystatechange = function() {
                 if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
                     var qiniuScript = document.createElement('script');
-                    qiniuScript.src = "upload/qiniu.js";
+                    qiniuScript.src = "http://cdn.ronghub.com/qiniu.min.js";
                     qiniuScript.onload = plScript.onreadystatechange = function() {
                         if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
                             imgOpts && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
@@ -230,6 +230,7 @@ module RongIMLib {
                         var opts: any = up.getOption(), name: string = "";
                         me.uploadType = opts.uploadType;
                         plupload.each(files, function(file: any) {
+                            file.uploadType = me.uploadType;
                             me.listener.onFileAdded(file);
                         });
                     },
@@ -238,14 +239,17 @@ module RongIMLib {
                         file.oldName = file.name;
                         name = (+new Date) + '-' + Math.floor(Math.random() * 1000) + '.' + file.name.split(".")[1];
                         file.name = name;
+                        file.uploadType = me.uploadType;
                         me.listener.onBeforeUpload(file);
                     },
                     'UploadProgress': function(up: any, file: any) {
+                        file.uploadType = me.uploadType;
                         me.listener.onUploadProgress(file);
                     },
                     'FileUploaded': function(up: any, file: any, info: any) {
                         var option: any = up.getOption();
                         options.fileName = file.target_name;
+                        file.uploadType = me.uploadType;
                         me.createMessage(options, file, function(msg: MessageContent) {
                             RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
                                 onSuccess: function(ret: Message) {
@@ -281,7 +285,7 @@ module RongIMLib {
             var msg: MessageContent = null;
             switch (option.uploadType) {
                 case 'IMAGE':
-                    RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.IMAGE, option.fileName, {
+                    RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.IMAGE, option.fileName, null, {
                         onSuccess: function(data: any) {
                             if (option.isBase64Data) {
                                 msg = new RongIMLib.ImageMessage({ content: file, imageUri: data.downloadUrl });
@@ -298,7 +302,7 @@ module RongIMLib {
                     });
                     break;
                 case 'FILE':
-                    RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.FILE, option.fileName, {
+                    RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.FILE, option.fileName, file.oldName, {
                         onSuccess: function(data: any) {
                             var type: string = (option.fileName && option.fileName.split('.')[1]) || "";
                             msg = new RongIMLib.FileMessage({ name: file.oldName, size: file.size, type: type, uri: data.downloadUrl });

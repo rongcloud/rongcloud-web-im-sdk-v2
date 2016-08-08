@@ -434,6 +434,9 @@ var Polling = {
             this.setKey = function (b) {
                 a.key = b;
             };
+            this.setFileName = function(b){
+                a.fileName = b;
+            };
             this.toArrayBuffer = function () {
                 return a
             }

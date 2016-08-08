@@ -76,7 +76,7 @@ module RongIMLib {
         NETWORK_UNAVAILABLE = 3,
 
         /**
-         * 网络不可用。
+         * 域名错误
          */
         DOMAIN_INCORRECT = 12,
         /**

@@ -182,6 +182,9 @@ module RongIMLib {
                 });
                 return;
             }
+            if (Bridge._client && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTING) {
+               return;
+            }
             RongIMClient.bridge.connect(RongIMClient._memoryStore.appKey, token, {
                 onSuccess: function(data: string) {
                     setTimeout(function() {
@@ -208,7 +211,9 @@ module RongIMLib {
             return RongIMClient._instance;
         }
         static reconnect(callback: ConnectCallback) {
+          if (Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
             RongIMClient.bridge.reconnect(callback);
+          }
         }
         /**
          * 注册消息类型，用于注册用户自定义的消息。
@@ -1815,8 +1820,8 @@ module RongIMLib {
             }, "GetQNupTokenOutput");
         }
 
-        getFileUrl(fileType: FileType, fileName: string, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["number", "string", "object"], "getQnTkn");
+        getFileUrl(fileType: FileType, fileName: string, oriName:string, callback: ResultCallback<string>) {
+            CheckParam.getInstance().check(["number", "string", "string|global|object|null", "object"], "getQnTkn");
             if (!(/(1|2|3|4)/.test(fileType.toString()))) {
                 setTimeout(function() {
                     callback.onError(ErrorCode.QNTKN_FILETYPE_ERROR);
@@ -1826,6 +1831,9 @@ module RongIMLib {
             var modules = new Modules.GetQNdownloadUrlInput();
             modules.setType(fileType);
             modules.setKey(fileName);
+            if (oriName) {
+              modules.setFileName(oriName);
+            }
             RongIMClient.bridge.queryMsg(31, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(data: any) {
                     setTimeout(function() {
