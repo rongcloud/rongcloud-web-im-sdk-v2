@@ -94,6 +94,20 @@ module RongIMLib {
         }
     }
 
+    export class RecallCommandMessage implements MessageContent {
+        user: UserInfo;
+        messageUId: string;
+        messageName: string = "RecallCommandMessage";
+        constructor(message: any) {
+            message.messageUId && (this.messageUId = message.messageUId);
+            message.user && (this.user = message.user);
+        }
+
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
+
     export class ImageMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
         user: UserInfo;
         content: string;
@@ -261,18 +275,18 @@ module RongIMLib {
         name: string;
         size: number;
         type: string;
-        uri: string;
+        fileUri: string;
         extra: string;
         constructor(message: any) {
             message.name && (this.name = message.name);
             message.size && (this.size = message.size);
             message.type && (this.type = message.type);
-            message.uri && (this.uri = message.uri);
+            message.fileUri && (this.fileUri = message.fileUri);
             message.extra && (this.extra = message.extra);
             message.user && (this.user = message.user);
         }
         static obtain(msg: any): FileMessage {
-            return new FileMessage({ name: msg.name, size: msg.size, type: msg.type, uri: msg.uri });
+            return new FileMessage({ name: msg.name, size: msg.size, type: msg.type, fileUri: msg.uri });
         }
         encode(): string {
             return JSON.stringify(ModelUtil.modelClone(this));

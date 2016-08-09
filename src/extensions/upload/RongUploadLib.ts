@@ -305,7 +305,7 @@ module RongIMLib {
                     RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.FILE, option.fileName, file.oldName, {
                         onSuccess: function(data: any) {
                             var type: string = (option.fileName && option.fileName.split('.')[1]) || "";
-                            msg = new RongIMLib.FileMessage({ name: file.oldName, size: file.size, type: type, uri: data.downloadUrl });
+                            msg = new RongIMLib.FileMessage({ name: file.oldName, size: file.size, type: type, fileUri: data.downloadUrl });
                             callback(msg);
                         },
                         onError: function(error: ErrorCode) { }

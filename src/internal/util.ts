@@ -31,7 +31,8 @@ var typeMapping: { [s: string]: any } = {
     "RC:PSImgTxtMsg": "PublicServiceRichContentMessage",
     "RC:PSMultiImgTxtMsg": "PublicServiceMultiRichContentMessage",
     "RC:GrpNtf": "GroupNotificationMessage",
-    "RC:PSCmd": "PublicServiceCommandMessage"
+    "RC:PSCmd": "PublicServiceCommandMessage",
+    "RC:RcCmd": "RecallCommandMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -272,8 +273,13 @@ module RongIMLib {
                 message.content = new UnknownMessage({ content: de, objectName: objectName });
                 message.messageType = "UnknownMessage";
             }
-            //根据实体对象设置message对象
-            message.sentTime = MessageUtil.int64ToTimestamp(entity.dataTime);
+            //根据实体对象设置message对象]
+            var dateTime = MessageUtil.int64ToTimestamp(entity.dataTime);
+            if (dateTime > 0) {
+                message.sentTime = dateTime;
+            }else{
+                message.sentTime = +new Date;
+            }
             message.senderUserId = entity.fromUserId;
             message.conversationType = entity.type;
             if (entity.fromUserId == Bridge._client.userId) {

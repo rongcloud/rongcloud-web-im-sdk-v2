@@ -107,6 +107,7 @@ module RongIMLib {
                 PublicServiceMultiRichContentMessage: { objectName: "RC:PSMultiImgTxtMsg", msgTag: new MessageTag(true, true) },
                 GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(false, true) },
                 PublicServiceCommandMessage: { objectName: "RC:PSCmd", msgTag: new MessageTag(false, false) },
+                RecallCommandMessage:{objectName:"RC:RcCmd", msgTag: new MessageTag(false,false)},
 
                 ChangeModeResponseMessage: { objectName: "RC:CsChaR", msgTag: new MessageTag(false, false) },
                 ChangeModeMessage: { objectName: "RC:CSCha", msgTag: new MessageTag(false, false) },
