@@ -81,7 +81,7 @@ module RongIMLib {
                                 var url = RongIMLib.Bridge._client.channel.socket.currentURL;
                                 Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
                                 if (Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
-                                  RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMClient._memoryStore.callback);
+                                    RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMClient._memoryStore.callback);
                                 }
                             }
                         }
@@ -603,7 +603,8 @@ module RongIMLib {
                             }
                         }
                         con.receivedTime = new Date().getTime();
-                        con.receivedStatus = ReceivedStatus.READ;
+                        con.receivedStatus = ReceivedStatus.UNREAD;
+                        message.receivedStatus = ReceivedStatus.UNREAD;
                         con.senderUserId = message.sendUserId;
                         con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
                         con.latestMessageId = message.messageId;

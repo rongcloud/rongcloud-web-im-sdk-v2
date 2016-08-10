@@ -277,7 +277,7 @@ module RongIMLib {
             var dateTime = MessageUtil.int64ToTimestamp(entity.dataTime);
             if (dateTime > 0) {
                 message.sentTime = dateTime;
-            }else{
+            } else {
                 message.sentTime = +new Date;
             }
             message.senderUserId = entity.fromUserId;
@@ -304,6 +304,7 @@ module RongIMLib {
             message.receivedTime = new Date().getTime();
             message.messageId = (message.conversationType + "_" + ~~(Math.random() * 0xffffff));
             message.objectName = objectName;
+            message.receivedStatus = ReceivedStatus.READ;
             message.offLineMessage = offlineMsg ? true : false;
             if (!offlineMsg) {
                 if (RongIMLib.RongIMClient._memoryStore.connectAckTime > message.sentTime) {

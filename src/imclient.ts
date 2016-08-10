@@ -212,7 +212,7 @@ module RongIMLib {
             return RongIMClient._instance;
         }
         static reconnect(callback: ConnectCallback) {
-          if (Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
+          if (!Bridge._client || (Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING)) {
             RongIMClient.bridge.reconnect(callback);
           }
         }
@@ -1932,7 +1932,7 @@ module RongIMLib {
         } else {
             var lurl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/Long.js" : "//cdn.ronghub.com/Long.js";
             var burl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/byteBuffer.js" : "//cdn.ronghub.com/byteBuffer.js";
-            var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-2.1.3.min.js" : "//cdn.ronghub.com/protobuf-2.1.3.min.js";
+            var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-2.1.4.min.js" : "//cdn.ronghub.com/protobuf-2.1.4.min.js";
             define("RongIMLib", ['md5', lurl, burl, purl], function() {
                 return RongIMLib;
             });

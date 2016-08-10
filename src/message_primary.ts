@@ -275,18 +275,18 @@ module RongIMLib {
         name: string;
         size: number;
         type: string;
-        fileUri: string;
+        fileUrl: string;
         extra: string;
         constructor(message: any) {
             message.name && (this.name = message.name);
             message.size && (this.size = message.size);
             message.type && (this.type = message.type);
-            message.fileUri && (this.fileUri = message.fileUri);
+            message.fileUrl && (this.fileUrl = message.fileUrl);
             message.extra && (this.extra = message.extra);
             message.user && (this.user = message.user);
         }
         static obtain(msg: any): FileMessage {
-            return new FileMessage({ name: msg.name, size: msg.size, type: msg.type, fileUri: msg.uri });
+            return new FileMessage({ name: msg.name, size: msg.size, type: msg.type, fileUrl: msg.fileUrl });
         }
         encode(): string {
             return JSON.stringify(ModelUtil.modelClone(this));
