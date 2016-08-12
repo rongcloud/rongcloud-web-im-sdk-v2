@@ -71,12 +71,13 @@ module RongIMLib {
                 }
             }
         }
-        static preLoaded(base64Data: string) {
+        static preLoaded(base64Data: string, callback: any) {
             var str: string = base64Data.substr(-10), me = this;
             if (/android/i.test(navigator.userAgent) && /MicroMessenger/i.test(navigator.userAgent)) {
                 var audio = new Audio();
                 audio.src = "data:audio/amr;base64," + base64Data;
                 me.element[str] = audio;
+                callback();
             } else {
                 if (!me.isIE) {
                     if (str in me.element) return;
@@ -87,6 +88,7 @@ module RongIMLib {
                         }).decode(reader.result);
                         var audio = AMR.util.getWave(samples);
                         me.element[str] = audio;
+                        callback();
                     };
                     reader.readAsBinaryString(blob);
                 }

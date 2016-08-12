@@ -107,7 +107,7 @@ module RongIMLib {
                 PublicServiceMultiRichContentMessage: { objectName: "RC:PSMultiImgTxtMsg", msgTag: new MessageTag(true, true) },
                 GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(false, true) },
                 PublicServiceCommandMessage: { objectName: "RC:PSCmd", msgTag: new MessageTag(false, false) },
-                RecallCommandMessage:{objectName:"RC:RcCmd", msgTag: new MessageTag(false,false)},
+                RecallCommandMessage: { objectName: "RC:RcCmd", msgTag: new MessageTag(false, false) },
 
                 ChangeModeResponseMessage: { objectName: "RC:CsChaR", msgTag: new MessageTag(false, false) },
                 ChangeModeMessage: { objectName: "RC:CSCha", msgTag: new MessageTag(false, false) },
@@ -183,8 +183,8 @@ module RongIMLib {
                 });
                 return;
             }
-            if (Bridge._client && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTING) {
-               return;
+            if (Bridge._client && Bridge._client.channel && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTING) {
+                return;
             }
             RongIMClient.bridge.connect(RongIMClient._memoryStore.appKey, token, {
                 onSuccess: function(data: string) {
@@ -212,9 +212,9 @@ module RongIMLib {
             return RongIMClient._instance;
         }
         static reconnect(callback: ConnectCallback) {
-          if (!Bridge._client || (Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING)) {
-            RongIMClient.bridge.reconnect(callback);
-          }
+            if (Bridge._client && Bridge._client.channel && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
+                RongIMClient.bridge.reconnect(callback);
+            }
         }
         /**
          * 注册消息类型，用于注册用户自定义的消息。
@@ -1821,7 +1821,7 @@ module RongIMLib {
             }, "GetQNupTokenOutput");
         }
 
-        getFileUrl(fileType: FileType, fileName: string, oriName:string, callback: ResultCallback<string>) {
+        getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["number", "string", "string|global|object|null", "object"], "getQnTkn");
             if (!(/(1|2|3|4)/.test(fileType.toString()))) {
                 setTimeout(function() {
@@ -1833,7 +1833,7 @@ module RongIMLib {
             modules.setType(fileType);
             modules.setKey(fileName);
             if (oriName) {
-              modules.setFileName(oriName);
+                modules.setFileName(oriName);
             }
             RongIMClient.bridge.queryMsg(31, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(data: any) {

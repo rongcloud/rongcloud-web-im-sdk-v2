@@ -223,7 +223,7 @@ module RongIMLib {
                 }
 
             } else if (status == 6) {
-                //重定向
+                //重定向 连错 CMP
                 var x: any = {};
                 var me = this;
                 new Navigation().getServerEndpoint(this._client.token, this._client.appId, function() {

@@ -80,7 +80,7 @@ module RongIMLib {
                                 RongIMClient._cookieHelper.setItem(temp, RongIMLib.RongIMClient._cookieHelper.getItem("RongBackupServer"));
                                 var url = RongIMLib.Bridge._client.channel.socket.currentURL;
                                 Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
-                                if (Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
+                                if (Bridge._client.channel && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
                                     RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMClient._memoryStore.callback);
                                 }
                             }
