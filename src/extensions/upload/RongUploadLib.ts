@@ -38,7 +38,7 @@ module RongIMLib {
 
         //自定义压缩图片过程，方法最后一行必须调用 callback ，并把压缩好的 base64 传入 callback
         static imageCompressToBase64(file: any, callback: any) {
-            RongUploadLib.getInstance().getThumbnail(file.getNative(), 60000, function(obj: any, data: any) {
+            RongUploadLib.getInstance().getThumbnail(file, 60000, function(obj: any, data: any) {
                 var reg = new RegExp('^data:image/[^;]+;base64,');
                 var dataFinal = data.replace(reg, '');
                 callback(dataFinal);
@@ -138,13 +138,13 @@ module RongIMLib {
             }
         }
 
-        postImage(base64: string, conversationType: ConversationType, targetId: string, callback: any): void {
+        postImage(base64: string, file: any, conversationType: ConversationType, targetId: string, callback: any): void {
             var me = this;
             RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                 onSuccess: function(data: any) {
                     new RongAjax({ token: data.token, base64: base64 }).send(function(ret: any) {
                         var opt = { uploadType: 'IMAGE', fileName: ret.hash, isBase64Data: true };
-                        me.createMessage(opt, base64, function(msg: MessageContent) {
+                        me.createMessage(opt, file, function(msg: MessageContent) {
                             RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
                                 onSuccess: function(message: Message) {
                                     callback(ret, message);
@@ -256,7 +256,7 @@ module RongIMLib {
                                     me.listener.onFileUploaded(file, ret);
                                 },
                                 onError: function(error: ErrorCode, ret: Message) {
-                                    me.listener.onFileUploaded(file, ret,error);
+                                    me.listener.onFileUploaded(file, ret, error);
                                 }
                             });
                         });
@@ -288,10 +288,12 @@ module RongIMLib {
                     RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.IMAGE, option.fileName, null, {
                         onSuccess: function(data: any) {
                             if (option.isBase64Data) {
-                                msg = new RongIMLib.ImageMessage({ content: file, imageUri: data.downloadUrl });
-                                callback(msg);
+                                RongUploadLib.imageCompressToBase64(file.getNative(), function(content: string) {
+                                  msg = new RongIMLib.ImageMessage({ content: content, imageUri: data.downloadUrl });
+                                  callback(msg);
+                                });
                             } else {
-                                RongUploadLib.imageCompressToBase64(file, function(content: string) {
+                                RongUploadLib.imageCompressToBase64(file.getNative(), function(content: string) {
                                     msg = new RongIMLib.ImageMessage({ content: content, imageUri: data.downloadUrl });
                                     callback(msg);
                                 });

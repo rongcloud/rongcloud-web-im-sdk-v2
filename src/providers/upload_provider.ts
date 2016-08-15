@@ -11,7 +11,7 @@ module RongIMLib {
 
         destroy(): void;
 
-        postImage(base64: string, conversationType: ConversationType, targetId: string, callback: any): void;
+        postImage(base64: string, file: any, conversationType: ConversationType, targetId: string, callback: any): void;
     }
 
 }

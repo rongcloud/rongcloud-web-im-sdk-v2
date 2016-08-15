@@ -134,7 +134,7 @@ module RongIMLib {
 
     export class UserInfo {
         constructor(
-            public userId: string,
+            public id: string,
             public name: string,
             public portraitUri: string) { }
     }
