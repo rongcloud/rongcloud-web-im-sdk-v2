@@ -845,6 +845,11 @@ module RongIMLib {
             });
         }
 
+        clearLocalStorage(callback: any): void {
+            LocalStorageProvider.getInstance().clearItem();
+            callback();
+        }
+
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.setMessageExtra(messageId, value, {
                 onSuccess: function(bool: boolean) {
@@ -1883,7 +1888,6 @@ module RongIMLib {
         }
 
         // #endregion Real-time Location Service
-
 
         // # startVoIP
         startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, callback: ResultCallback<ErrorCode>) {

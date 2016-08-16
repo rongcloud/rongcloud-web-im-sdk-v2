@@ -1,7 +1,11 @@
 module RongIMLib {
     export class CookieProvider implements StorageProvider {
         _host: string;
+        prefix: string = 'rong_';
         setItem(composedKey: string, object: any, isSave?: boolean): void {
+            if (composedKey.indexOf(this.prefix) == -1) {
+                composedKey = this.prefix + composedKey;
+            }
             if (isSave) {
                 var exp = new Date();
                 exp.setTime(exp.getTime() + 1 * 24 * 3600 * 1000);
@@ -13,6 +17,9 @@ module RongIMLib {
 
         getItem(composedKey: string): string {
             if (composedKey) {
+                if (composedKey.indexOf(this.prefix) == -1) {
+                    composedKey = this.prefix + composedKey;
+                }
                 composedKey = composedKey.replace(/\|/, "\\|");
             }
             var arr = document.cookie.match(new RegExp("(^| )" + composedKey + "=([^;]*)(;|$)"));
@@ -23,13 +30,16 @@ module RongIMLib {
         }
 
         removeItem(composedKey: string): void {
-            if (this.getItem(composedKey)) {
+            if (composedKey.indexOf(this.prefix) == -1) {
+                composedKey = this.prefix + composedKey;
+            }
+            if (this.getItem(this.prefix + composedKey)) {
                 document.cookie = composedKey + "=;path=/;expires=Thu, 01-Jan-1970 00:00:01 GMT";
             }
         }
 
         getItemKey(regStr: string): any {
-            var arrs = document.cookie.match(new RegExp("(^| )navi\\w+?=([^;]*)(;|$)")), val: string = "";
+            var arrs = document.cookie.match(new RegExp("(^| )rong_navi\\w+?=([^;]*)(;|$)")), val: string = "";
             if (arrs) {
                 for (let i = 0, len = arrs.length; i < len; i++) {
                     if (arrs[i].indexOf(regStr) > -1) {
@@ -41,11 +51,12 @@ module RongIMLib {
             return val ? val.split("=")[0].replace(/^\s/, "") : null;
         }
         clearItem(): void {
-            var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+            var keys = document.cookie.match(/[^ =;]+(?=\=)/g), me = this;
             if (keys) {
                 for (var i = keys.length; i--;) {
-                    //TODO 条件判断，不要删除用户自己的 cookie
-                    document.cookie = keys[i] + "=0;path=/;expires=" + new Date(0).toUTCString();
+                    if (keys[i].indexOf(me.prefix) > -1) {
+                        document.cookie = keys[i] + "=0;path=/;expires=" + new Date(0).toUTCString();
+                    }
                 }
             }
         }
@@ -58,6 +69,7 @@ module RongIMLib {
     export class MemeoryProvider implements StorageProvider {
         _host: string;
         _memeoryStore: any = {};
+        prefix: string = "rong_";
         setItem(composedKey: string, object: any): void {
             this._memeoryStore[composedKey] = decodeURIComponent(object);
         }

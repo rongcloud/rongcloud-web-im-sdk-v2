@@ -238,6 +238,7 @@ module RongIMLib {
             var me = this;
             this.getConversation(conversationType, targetId, {
                 onSuccess: function(conver: Conversation) {
+                    conver.isTop = true;
                     me.addConversation(conver, callback);
                     callback.onSuccess(true);
                 },

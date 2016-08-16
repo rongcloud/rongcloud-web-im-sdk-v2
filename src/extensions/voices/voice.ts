@@ -77,7 +77,7 @@ module RongIMLib {
                 var audio = new Audio();
                 audio.src = "data:audio/amr;base64," + base64Data;
                 me.element[str] = audio;
-                callback();
+                callback && callback();
             } else {
                 if (!me.isIE) {
                     if (str in me.element) return;
@@ -88,7 +88,7 @@ module RongIMLib {
                         }).decode(reader.result);
                         var audio = AMR.util.getWave(samples);
                         me.element[str] = audio;
-                        callback();
+                        callback && callback();
                     };
                     reader.readAsBinaryString(blob);
                 }

@@ -1,24 +1,40 @@
 module RongIMLib {
     export class LocalStorageProvider implements StorageProvider {
 
+        prefix: string = 'cu';
+
+        static _instance: LocalStorageProvider = new LocalStorageProvider();
+
         static getInstance(): LocalStorageProvider {
-            return new LocalStorageProvider();
+            return LocalStorageProvider._instance;
         }
 
         setItem(composedKey: string, object: any): void {
-            localStorage.setItem(composedKey.toString(), object);
+            if (composedKey) {
+                localStorage.setItem(composedKey.toString(), object);
+            }
         }
 
         getItem(composedKey: string): string {
-            return localStorage.getItem(composedKey ? composedKey.toString() : "");
+            if (composedKey) {
+                return localStorage.getItem(composedKey ? composedKey.toString() : "");
+            }
+            return "";
         }
 
         removeItem(composedKey: string): void {
-            localStorage.removeItem(composedKey.toString());
+            if (composedKey) {
+                localStorage.removeItem(composedKey.toString());
+            }
         }
 
         clearItem(): void {
-            localStorage.clear();
+            var me = this, str: string = me.prefix + Bridge._client.userId;
+            for (var key in localStorage) {
+                if (key.indexOf(str) > -1) {
+                    me.removeItem(key);
+                }
+            }
         }
         //单位：字节
         onOutOfQuota(): number {
