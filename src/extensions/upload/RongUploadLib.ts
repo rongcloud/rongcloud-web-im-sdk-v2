@@ -237,7 +237,7 @@ module RongIMLib {
                     'BeforeUpload': function(up: any, file: any) {
                         var name = ""
                         file.oldName = file.name;
-                        name = (+new Date) + '-' + Math.floor(Math.random() * 1000) + '.' + file.name.split(".")[1];
+                        name = (+new Date) + '-' + Math.floor(Math.random() * 1000) + '.' + file.name.substr(file.name.lastIndexOf('.') + 1);
                         file.name = name;
                         file.uploadType = me.uploadType;
                         me.listener.onBeforeUpload(file);
@@ -248,7 +248,7 @@ module RongIMLib {
                     },
                     'FileUploaded': function(up: any, file: any, info: any) {
                         var option: any = up.getOption();
-                        options.fileName = file.target_name;
+                        options.fileName = file.id;
                         file.uploadType = me.uploadType;
                         me.createMessage(options, file, function(msg: MessageContent) {
                             RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
@@ -289,8 +289,8 @@ module RongIMLib {
                         onSuccess: function(data: any) {
                             if (option.isBase64Data) {
                                 RongUploadLib.imageCompressToBase64(file.getNative(), function(content: string) {
-                                  msg = new RongIMLib.ImageMessage({ content: content, imageUri: data.downloadUrl });
-                                  callback(msg);
+                                    msg = new RongIMLib.ImageMessage({ content: content, imageUri: data.downloadUrl });
+                                    callback(msg);
                                 });
                             } else {
                                 RongUploadLib.imageCompressToBase64(file.getNative(), function(content: string) {

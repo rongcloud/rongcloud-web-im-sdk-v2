@@ -73,6 +73,10 @@ module RongIMLib {
         }
         static preLoaded(base64Data: string, callback: any) {
             var str: string = base64Data.substr(-10), me = this;
+            if (me.element[str]) {
+                callback && callback();
+                return;
+            }
             if (/android/i.test(navigator.userAgent) && /MicroMessenger/i.test(navigator.userAgent)) {
                 var audio = new Audio();
                 audio.src = "data:audio/amr;base64," + base64Data;
