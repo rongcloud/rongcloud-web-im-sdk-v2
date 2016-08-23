@@ -33,7 +33,7 @@ module RongIMLib {
             if (composedKey.indexOf(this.prefix) == -1) {
                 composedKey = this.prefix + composedKey;
             }
-            if (this.getItem(this.prefix + composedKey)) {
+            if (this.getItem(composedKey)) {
                 document.cookie = composedKey + "=;path=/;expires=Thu, 01-Jan-1970 00:00:01 GMT";
             }
         }
