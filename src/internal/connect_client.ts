@@ -698,7 +698,7 @@ module RongIMLib {
                 case "PubAckMessage":
                     var item = Bridge._client.handler.map[msg.getMessageId()];
                     if (item) {
-                        item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(), msg.getTimestamp(), item.Message);
+                        item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(), msg.getTimestamp(), item.Message,msg.getMessageId());
                         delete Bridge._client.handler.map[msg.getMessageId()];
                     } else {
                         Bridge._client.handler.onReceived(Bridge._client.handler.syncMsgMap[msg.messageId], msg);

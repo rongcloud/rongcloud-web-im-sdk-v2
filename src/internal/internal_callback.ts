@@ -104,14 +104,14 @@ module RongIMLib {
             this._cb = _cb;
             this._timeout = _timeout;
         }
-        process(_status: number, messageUId: string, timestamp: number, _msg: any) {
+        process(_status: number, messageUId: string, timestamp: number, _msg: any, messageId: number) {
             this.readTimeOut();
             if (_status == 0) {
                 if (_msg) {
                     _msg.setSentStatus = _status;
                 }
                 RongIMClient._cookieHelper.setItem(Bridge._client.userId, timestamp);
-                this._cb({ messageUId: messageUId, timestamp: timestamp });
+                this._cb({ messageUId: messageUId, timestamp: timestamp, messageId: messageId });
             } else {
                 this._timeout(_status);
             }

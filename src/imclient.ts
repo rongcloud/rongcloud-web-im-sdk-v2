@@ -602,6 +602,7 @@ module RongIMLib {
                                 msg.messageUId = data.messageUId;
                                 msg.sentTime = data.timestamp;
                                 msg.sentStatus = SentStatus.SENT;
+                                msg.messageId = data.messageId;
                                 RongIMClient._dataAccessProvider.updateMessage(msg);
                             },
                             onError: function() { }
