@@ -139,6 +139,9 @@ var Polling = {
             this.setPushText = function (b) {
                 a.pushText = b
             };
+            this.setUserId = function(b){
+                a.userId = b;
+            };
             this.toArrayBuffer = function () {
                 return a
             };

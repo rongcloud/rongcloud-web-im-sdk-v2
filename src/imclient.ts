@@ -108,6 +108,9 @@ module RongIMLib {
                 GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(false, true) },
                 PublicServiceCommandMessage: { objectName: "RC:PSCmd", msgTag: new MessageTag(false, false) },
                 RecallCommandMessage: { objectName: "RC:RcCmd", msgTag: new MessageTag(false, false) },
+                SyncReadStatusMessage: { objectName: "RC:SRSMsg", msgTag: new MessageTag(false, true) },
+                ReadReceiptRequestMessage: { objectName: "RC:RRReqMsg", msgTag: new MessageTag(false, true) },
+                ReadReceiptResponseMessage: { objectName: "RC:RRRspMsg", msgTag: new MessageTag(false, true) },
 
                 ChangeModeResponseMessage: { objectName: "RC:CsChaR", msgTag: new MessageTag(false, false) },
                 ChangeModeMessage: { objectName: "RC:CSCha", msgTag: new MessageTag(false, false) },
@@ -155,6 +158,9 @@ module RongIMLib {
                 TerminateMessage: "TerminateMessage",
                 CustomerContact: "CustomerContact",
                 CustomerStatusUpdateMessage: "CustomerStatusUpdateMessage",
+                SyncReadStatusMessage: "SyncReadStatusMessage",
+                ReadReceiptRequestMessage: "ReadReceiptRequestMessage",
+                ReadReceiptResponseMessage: "ReadReceiptResponseMessage",
 
                 AcceptMessage: "AcceptMessage",
                 RingingMessage: "RingingMessage",
@@ -554,7 +560,22 @@ module RongIMLib {
             } else {
                 modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
             }
+            // SyncReadStatusMessage: "SyncReadStatusMessage",
+            // ReadReceiptRequestMessage: "ReadReceiptRequestMessage",
 
+            if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
+                var rspMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>messageContent;
+                if (rspMsg.receiptMessageDic) {
+                    var ids: string[] = [];
+                    for (var key in rspMsg.receiptMessageDic) {
+                        ids.push(key);
+                    }
+                    modules.setUserId(ids);
+                }
+            }
+            if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["SyncReadStatusMessage"]) {
+                modules.setUserId(Bridge._client.userId);
+            }
             modules.setClassname(RongIMClient.MessageParams[messageContent.messageName].objectName);
             modules.setContent(messageContent.encode());
             var content: any = modules.toArrayBuffer();
@@ -630,6 +651,27 @@ module RongIMLib {
                     });
                 }
             }, null);
+        }
+
+        sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback) {
+            var staKey: string = Bridge._client.userId + conversationType + targetId + "STA", me = this;
+            if (MessageUtil.supportLargeStorage()) {
+                var tempVal: string = LocalStorageProvider.getInstance().getItem(staKey);
+                if (tempVal) {
+                    var vals = JSON.parse(tempVal);
+                    var interval = setInterval(function() {
+                        if (vals.length == 1) {
+                            clearInterval(interval);
+                        }
+                        var obj = vals.splice(0, 1)[0];
+                        var rspMsg = new RongIMLib.ReadReceiptResponseMessage({ receiptMessageDic: obj });
+                        me.sendMessage(conversationType, targetId, rspMsg, sendCallback);
+                    }, 200);
+                }
+
+            } else {
+                sendCallback.onSuccess();
+            }
         }
 
         sendTypingStatusMessage(conversationType: ConversationType, targetId: string, messageName: string, sendCallback: SendMessageCallback) {

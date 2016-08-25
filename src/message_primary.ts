@@ -257,6 +257,39 @@ module RongIMLib {
         }
     }
 
+    export class SyncReadStatusMessage implements MessageContent {
+        messageName: string = "SyncReadStatusMessage";
+        lastMessageSendTime: number;
+        constructor(message: any) {
+            message.lastMessageSendTime && (this.lastMessageSendTime = message.lastMessageSendTime);
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
+
+    export class ReadReceiptRequestMessage implements MessageContent {
+        messageName: string = "ReadReceiptRequestMessage";
+        messageUId: string;
+        constructor(message: any) {
+            message.messageUId && (this.messageUId = message.messageUId);
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
+
+    export class ReadReceiptResponseMessage implements MessageContent {
+        messageName: string = "ReadReceiptResponseMessage";
+        receiptMessageDic: any;
+        constructor(message: any) {
+            message.receiptMessageDic && (this.receiptMessageDic = message.receiptMessageDic);
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
+
     export class PublicServiceRichContentMessage implements MessageContent, UserInfoAttachedMessage {
         user: UserInfo;
         richContentMessage: RichContentMessage;
@@ -265,7 +298,7 @@ module RongIMLib {
             this.richContentMessage = message;
         }
         encode(): any {
-            return null;
+            return JSON.stringify(ModelUtil.modelClone(this));
         }
     }
 

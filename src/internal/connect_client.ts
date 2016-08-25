@@ -649,6 +649,32 @@ module RongIMLib {
                 }
             }
 
+            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
+                var staKey: string = Bridge._client.userId + message.conversationType + message.targetId + "STA";
+                var tempVal = LocalStorageProvider.getInstance().getItem(staKey);
+                if (tempVal) {
+                    var vals: any[] = JSON.parse(tempVal), inVals: boolean = false;
+                    for (let i = 0, len = vals.length; i < len; i++) {
+                        if (message.senderUserId in vals[i]) {
+                            inVals = true;
+                            vals[i][message.senderUserId].push(message.content.messageUId);
+                        }
+                    }
+                    if (!inVals) {
+                        var obj: any = {};
+                        obj[message.senderUserId] = [message.content.messageUId];
+                        vals.push(obj);
+                    }
+                    LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(vals));
+                    //TODO 需要发送消息清理
+                } else {
+                    var obj: any = {}, arrs: any[] = [];
+                    obj[message.senderUserId] = [message.content.messageUId];
+                    arrs.push(obj);
+                    LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(arrs));
+                }
+            }
+
             var that = this;
             if (RongIMClient._voipProvider && ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'].indexOf(message.messageType) > -1) {
                 RongIMClient._voipProvider.onReceived(message);
@@ -698,7 +724,7 @@ module RongIMLib {
                 case "PubAckMessage":
                     var item = Bridge._client.handler.map[msg.getMessageId()];
                     if (item) {
-                        item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(), msg.getTimestamp(), item.Message,msg.getMessageId());
+                        item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(), msg.getTimestamp(), item.Message, msg.getMessageId());
                         delete Bridge._client.handler.map[msg.getMessageId()];
                     } else {
                         Bridge._client.handler.onReceived(Bridge._client.handler.syncMsgMap[msg.messageId], msg);

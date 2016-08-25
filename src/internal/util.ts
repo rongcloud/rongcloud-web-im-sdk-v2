@@ -32,7 +32,10 @@ var typeMapping: { [s: string]: any } = {
     "RC:PSMultiImgTxtMsg": "PublicServiceMultiRichContentMessage",
     "RC:GrpNtf": "GroupNotificationMessage",
     "RC:PSCmd": "PublicServiceCommandMessage",
-    "RC:RcCmd": "RecallCommandMessage"
+    "RC:RcCmd": "RecallCommandMessage",
+    "RC:SRSMsg" : "SyncReadStatusMessage",
+    "RC:RRReqMsg" : "ReadReceiptRequestMessage",
+    "RC:RRRspMsg" : "ReadReceiptResponseMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},

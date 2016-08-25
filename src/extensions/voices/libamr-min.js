@@ -1350,8 +1350,18 @@ x)};Y.prototype.close=function(){opencoreamr.Encoder_Interface_exit(this.state)}
 				if (me.element) {
 						me.element.pause();
 				}
+		},
+		getWave: function (floats) {
+		  	var waveData = PCMData.encode({
+				sampleRate: 8000,
+				channelCount:   1,
+				bytesPerSample: 2,
+				data: floats
+			}),base64Data = btoa(waveData),me = this,str = base64Data.substr(-10);
+			 	 me.element = new Audio();
+				 me.element.src = "data:audio/wav;base64,"+base64Data;
+				return me.element;
 		}
-
 		/**
 		  * @author LearnBoost
 		  */
