@@ -5,6 +5,27 @@ module RongIMLib {
 
         static _instance: LocalStorageProvider = new LocalStorageProvider();
 
+        constructor() {
+            var d = new Date(), date = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+            for (var key in localStorage) {
+                if (key.lastIndexOf('RSPCOUNT') > -1) {
+                    var senderData = JSON.parse(localStorage[key]);
+                    new Date(date).getTime() - senderData.time > 0 && localStorage.removeItem(key);
+                }
+                if (key.lastIndexOf('REQ') > -1) {
+                    var idStore = JSON.parse(localStorage[key]);
+                    for (var uid in idStore) {
+                        new Date(date).getTime() - idStore[uid] > 0 && (delete idStore[uid]);
+                    }
+                    if (MessageUtil.isEmpty(idStore)) {
+                        localStorage.removeItem(key);
+                    } else {
+                        localStorage.setItem(key, JSON.stringify(idStore));
+                    }
+                }
+            }
+        }
+
         static getInstance(): LocalStorageProvider {
             return LocalStorageProvider._instance;
         }

@@ -595,7 +595,7 @@ module RongIMLib {
                             }
                         }
 
-                        if (con.conversationType != 0 && message.senderUserId != Bridge._client.userId && message.receivedStatus != ReceivedStatus.RETRIEVED) {
+                        if (con.conversationType != 0 && message.senderUserId != Bridge._client.userId && message.receivedStatus != ReceivedStatus.RETRIEVED && message.messageType != RongIMClient.MessageType["ReadReceiptRequestMessage"] && message.messageType != RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
                             con.unreadMessageCount = con.unreadMessageCount + 1;
                             if (MessageUtil.supportLargeStorage()) {
                                 var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
@@ -608,7 +608,7 @@ module RongIMLib {
                         con.senderUserId = message.sendUserId;
                         con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
                         con.latestMessageId = message.messageId;
-                        con.latestMessage = message;
+                        message.messageType != RongIMClient.MessageType["ReadReceiptResponseMessage"] && message.messageType != RongIMClient.MessageType["ReadReceiptRequestMessage"] && (con.latestMessage = message);
                         con.sentTime = message.sentTime;
                         RongIMClient._dataAccessProvider.addConversation(con, { onSuccess: function(data) { }, onError: function() { } });
                     },
@@ -649,15 +649,26 @@ module RongIMLib {
                 }
             }
 
+
             if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
-                var staKey: string = Bridge._client.userId + message.conversationType + message.targetId + "STA";
+                var staKey: string = Bridge._client.userId + message.conversationType + message.targetId + "STA",
+                    reqKey: string = Bridge._client.userId + message.conversationType + message.targetId + "REQ",
+                    reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
+                if (offlineMsg) {
+                    var reqData: any = {};
+                    if (reqVal) {
+                        reqData = JSON.parse(reqVal);
+                    }
+                    message.content.messageUId in reqData ? '' : reqData[message.content.messageUId] = message.sentTime;
+                    LocalStorageProvider.getInstance().setItem(reqKey, JSON.stringify(reqData));
+                }
                 var tempVal = LocalStorageProvider.getInstance().getItem(staKey);
                 if (tempVal) {
                     var vals: any[] = JSON.parse(tempVal), inVals: boolean = false;
                     for (let i = 0, len = vals.length; i < len; i++) {
                         if (message.senderUserId in vals[i]) {
                             inVals = true;
-                            vals[i][message.senderUserId].push(message.content.messageUId);
+                            !vals[i][message.senderUserId].find(function(item: string) { item == message.content.messageUId }) && vals[i][message.senderUserId].push(message.content.messageUId);
                         }
                     }
                     if (!inVals) {
@@ -666,7 +677,6 @@ module RongIMLib {
                         vals.push(obj);
                     }
                     LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(vals));
-                    //TODO 需要发送消息清理
                 } else {
                     var obj: any = {}, arrs: any[] = [];
                     obj[message.senderUserId] = [message.content.messageUId];
@@ -674,6 +684,50 @@ module RongIMLib {
                     LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(arrs));
                 }
             }
+
+            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
+                var reqKey: string = Bridge._client.userId + message.conversationType + message.targetId + "REQ",
+                    reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
+                if (!reqVal) return;
+                var staKey: string = Bridge._client.userId + message.conversationType + message.targetId + "STA",
+                    objKey: string = MessageUtil.getFirstKey(message.content.receiptMessageDic),
+                    msgIds: any[] = message.content.receiptMessageDic[objKey] || [],
+                    rspMsgs: any[] = JSON.parse(LocalStorageProvider.getInstance().getItem(staKey)),
+                    rspCountKey: string = "RSPCOUNT";
+                message.receiptResponse || (message.receiptResponse = {});
+                for (let i = 0, len = msgIds.length; i < len; i++) {
+                    var senderData = JSON.parse(LocalStorageProvider.getInstance().getItem(msgIds[i] + rspCountKey)) || { userIds: [] };
+                    if (senderData.userIds.indexOf(message.senderUserId) < 0) {
+                        senderData.userIds.push(message.senderUserId);
+                        senderData.time || (senderData.time = message.sentTime);
+                        LocalStorageProvider.getInstance().setItem(msgIds[i] + rspCountKey, JSON.stringify(senderData));
+                    }
+                    message.receiptResponse[msgIds[i]] = senderData.userIds.length;
+                }
+                if (msgIds && rspMsgs) {
+                    for (var index in rspMsgs) {
+                        if (rspMsgs[index][objKey]) {
+                            var localIds: string[] = rspMsgs[index][objKey] || [];
+                            for (var i = 0, iLen = msgIds.length; i < iLen; i++) {
+                                for (let j = 0, jLen = localIds.length; j < jLen; j++) {
+                                    if (msgIds[i] == localIds[j]) {
+                                        localIds.splice(j, 1);
+                                    }
+                                }
+                            }
+                            if (localIds.length == 0) {
+                                rspMsgs.splice(Number(index), 1);
+                            }
+                            break;
+                        }
+                    }
+                    rspMsgs.length == 0 ? LocalStorageProvider.getInstance().removeItem(staKey) : LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(rspMsgs));
+                    if (rspMsgs.length == 0 && objKey != RongIMLib.Bridge._client.userId) {
+                        RongIMLib.LocalStorageProvider.getInstance().removeItem(reqKey)
+                    }
+                }
+            }
+
 
             var that = this;
             if (RongIMClient._voipProvider && ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'].indexOf(message.messageType) > -1) {

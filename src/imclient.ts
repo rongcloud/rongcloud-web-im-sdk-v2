@@ -107,7 +107,7 @@ module RongIMLib {
                 PublicServiceMultiRichContentMessage: { objectName: "RC:PSMultiImgTxtMsg", msgTag: new MessageTag(true, true) },
                 GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(false, true) },
                 PublicServiceCommandMessage: { objectName: "RC:PSCmd", msgTag: new MessageTag(false, false) },
-                RecallCommandMessage: { objectName: "RC:RcCmd", msgTag: new MessageTag(false, false) },
+                RecallCommandMessage: { objectName: "RC:RcCmd", msgTag: new MessageTag(false, true) },
                 SyncReadStatusMessage: { objectName: "RC:SRSMsg", msgTag: new MessageTag(false, true) },
                 ReadReceiptRequestMessage: { objectName: "RC:RRReqMsg", msgTag: new MessageTag(false, true) },
                 ReadReceiptResponseMessage: { objectName: "RC:RRRspMsg", msgTag: new MessageTag(false, true) },
@@ -560,8 +560,6 @@ module RongIMLib {
             } else {
                 modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
             }
-            // SyncReadStatusMessage: "SyncReadStatusMessage",
-            // ReadReceiptRequestMessage: "ReadReceiptRequestMessage",
 
             if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
                 var rspMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>messageContent;
@@ -615,6 +613,16 @@ module RongIMLib {
 
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
+                  if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
+                      var reqKey: string = Bridge._client.userId + conversationType + targetId + "REQ";
+                      var reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
+                      var reqMsg: ReadReceiptRequestMessage = <ReadReceiptRequestMessage>messageContent, reqData: any = {};
+                      if (reqVal) {
+                          reqData = JSON.parse(reqVal);
+                      }
+                      reqData[reqMsg.messageUId] = msg.sentTime;
+                      LocalStorageProvider.getInstance().setItem(reqKey, JSON.stringify(reqData));
+                  }
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
                         RongIMClient._memoryStore.converStore.latestMessage = msg;
                         RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, {
@@ -665,8 +673,18 @@ module RongIMLib {
                         }
                         var obj = vals.splice(0, 1)[0];
                         var rspMsg = new RongIMLib.ReadReceiptResponseMessage({ receiptMessageDic: obj });
-                        me.sendMessage(conversationType, targetId, rspMsg, sendCallback);
+                        me.sendMessage(conversationType, targetId, rspMsg, {
+                            onSuccess: function(msg) {
+                                vals.length == 0 ? LocalStorageProvider.getInstance().removeItem(staKey) : LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(vals))
+                                sendCallback.onSuccess(msg);
+                            },
+                            onError: function(error: ErrorCode, msg: Message) {
+                                sendCallback.onError(error, msg);
+                            }
+                        });
                     }, 200);
+                } else {
+                    sendCallback.onSuccess();
                 }
 
             } else {

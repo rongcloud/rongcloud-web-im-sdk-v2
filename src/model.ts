@@ -89,7 +89,8 @@ module RongIMLib {
             public messageType?: string,
             public messageUId?: string,
             public isLocalMessage?: boolean,
-            public offLineMessage?: boolean
+            public offLineMessage?: boolean,
+            public receiptResponse?: any
         ) { }
     }
     export class MessageTag {

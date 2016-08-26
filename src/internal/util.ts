@@ -33,9 +33,9 @@ var typeMapping: { [s: string]: any } = {
     "RC:GrpNtf": "GroupNotificationMessage",
     "RC:PSCmd": "PublicServiceCommandMessage",
     "RC:RcCmd": "RecallCommandMessage",
-    "RC:SRSMsg" : "SyncReadStatusMessage",
-    "RC:RRReqMsg" : "ReadReceiptRequestMessage",
-    "RC:RRRspMsg" : "ReadReceiptResponseMessage"
+    "RC:SRSMsg": "SyncReadStatusMessage",
+    "RC:RRReqMsg": "ReadReceiptRequestMessage",
+    "RC:RRRspMsg": "ReadReceiptResponseMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -169,6 +169,15 @@ module RongIMLib {
          */
         static checkStorageSize(): boolean {
             return JSON.stringify(localStorage).length < 4680000;
+        }
+
+        static getFirstKey(obj: any): string {
+            var str: string = "";
+            for (var key in obj) {
+                str = key;
+                break;
+            }
+            return str;
         }
 
         static isEmpty(obj: any): boolean {
