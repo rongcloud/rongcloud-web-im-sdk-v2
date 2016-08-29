@@ -402,7 +402,7 @@ module RongIMLib {
                 this.invoke(isPullMsg, target);
                 return;
             }
-            if (isPullMsg) {
+            if (isPullMsg && 'setIsPullSend' in modules) {
                 modules.setIsPullSend(true);
             }
             modules.setSyncTime(time);
