@@ -649,8 +649,9 @@ module RongIMLib {
                 }
             }
 
-
-            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
+            var d = new Date(), date = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+            //new Date(date).getTime() - message.sentTime < 1 逻辑判断 超过 1 天未收的 ReadReceiptRequestMessage 离线消息自动忽略。
+            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && new Date(date).getTime() - message.sentTime < 1) {
                 var staKey: string = Bridge._client.userId + message.conversationType + message.targetId + "STA",
                     reqKey: string = Bridge._client.userId + message.conversationType + message.targetId + "REQ",
                     reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
@@ -685,7 +686,7 @@ module RongIMLib {
                 }
             }
 
-            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
+            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptResponseMessage"] && new Date(date).getTime() - message.sentTime < 1) {
                 var reqKey: string = Bridge._client.userId + message.conversationType + message.targetId + "REQ",
                     reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
                 if (!reqVal) return;

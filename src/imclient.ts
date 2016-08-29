@@ -613,16 +613,16 @@ module RongIMLib {
 
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
-                  if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
-                      var reqKey: string = Bridge._client.userId + conversationType + targetId + "REQ";
-                      var reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
-                      var reqMsg: ReadReceiptRequestMessage = <ReadReceiptRequestMessage>messageContent, reqData: any = {};
-                      if (reqVal) {
-                          reqData = JSON.parse(reqVal);
-                      }
-                      reqData[reqMsg.messageUId] = msg.sentTime;
-                      LocalStorageProvider.getInstance().setItem(reqKey, JSON.stringify(reqData));
-                  }
+                    if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
+                        var reqKey: string = Bridge._client.userId + conversationType + targetId + "REQ";
+                        var reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
+                        var reqMsg: ReadReceiptRequestMessage = <ReadReceiptRequestMessage>messageContent, reqData: any = {};
+                        if (reqVal) {
+                            reqData = JSON.parse(reqVal);
+                        }
+                        reqData[reqMsg.messageUId] = msg.sentTime;
+                        LocalStorageProvider.getInstance().setItem(reqKey, JSON.stringify(reqData));
+                    }
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
                         RongIMClient._memoryStore.converStore.latestMessage = msg;
                         RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, {
@@ -794,9 +794,21 @@ module RongIMLib {
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function(data: any) {
                     RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
-                    var list = data.list.reverse();
-                    for (var i = 0, len = list.length; i < len; i++) {
-                        list[i] = MessageUtil.messageParser(list[i]);
+                    var list = data.list.reverse(), tempMsg: Message = null, tempDir: any;
+                    if (MessageUtil.supportLargeStorage()) {
+                        for (var i = 0, len = list.length; i < len; i++) {
+                            tempMsg = MessageUtil.messageParser(list[i]);
+                            tempDir = JSON.parse(LocalStorageProvider.getInstance().getItem(tempMsg.messageUId + 'RSPCOUNT'));
+                            if (tempDir) {
+                                tempMsg.receiptResponse || (tempMsg.receiptResponse = {});
+                                tempMsg.receiptResponse[tempMsg.messageUId] = (tempDir.userIds ? tempDir.userIds.length : 0);
+                            }
+                            list[i] = tempMsg;
+                        }
+                    } else {
+                        for (var i = 0, len = list.length; i < len; i++) {
+                            list[i] = MessageUtil.messageParser(list[i]);
+                        }
                     }
                     setTimeout(function() {
                         callback.onSuccess(list, !!data.hasMsg);
