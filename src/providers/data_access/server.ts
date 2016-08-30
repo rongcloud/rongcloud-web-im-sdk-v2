@@ -20,9 +20,10 @@ module RongIMLib {
             var conver: Conversation;
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (conversation.conversationType === RongIMClient._memoryStore.conversationList[i].conversationType && conversation.targetId === RongIMClient._memoryStore.conversationList[i].targetId) {
-                    RongIMClient._memoryStore.conversationList[i].conversationTitle = conversation.conversationTitle;
-                    RongIMClient._memoryStore.conversationList[i].senderUserName = conversation.senderUserName;
-                    RongIMClient._memoryStore.conversationList[i].senderPortraitUri = conversation.senderPortraitUri;
+                    conversation.conversationTitle && (RongIMClient._memoryStore.conversationList[i].conversationTitle = conversation.conversationTitle);
+                    conversation.senderUserName && (RongIMClient._memoryStore.conversationList[i].senderUserName = conversation.senderUserName);
+                    conversation.senderPortraitUri && (RongIMClient._memoryStore.conversationList[i].senderPortraitUri = conversation.senderPortraitUri);
+                    conversation.latestMessage && (RongIMClient._memoryStore.conversationList[i].latestMessage = conversation.latestMessage);
                     break;
                 }
             }

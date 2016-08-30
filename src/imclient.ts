@@ -109,8 +109,8 @@ module RongIMLib {
                 PublicServiceCommandMessage: { objectName: "RC:PSCmd", msgTag: new MessageTag(false, false) },
                 RecallCommandMessage: { objectName: "RC:RcCmd", msgTag: new MessageTag(false, true) },
                 SyncReadStatusMessage: { objectName: "RC:SRSMsg", msgTag: new MessageTag(false, true) },
-                ReadReceiptRequestMessage: { objectName: "RC:RRReqMsg", msgTag: new MessageTag(false, true) },
-                ReadReceiptResponseMessage: { objectName: "RC:RRRspMsg", msgTag: new MessageTag(false, true) },
+                ReadReceiptRequestMessage: { objectName: "RC:RRReqMsg", msgTag: new MessageTag(false, false) },
+                ReadReceiptResponseMessage: { objectName: "RC:RRRspMsg", msgTag: new MessageTag(false, false) },
 
                 ChangeModeResponseMessage: { objectName: "RC:CsChaR", msgTag: new MessageTag(false, false) },
                 ChangeModeMessage: { objectName: "RC:CSCha", msgTag: new MessageTag(false, false) },

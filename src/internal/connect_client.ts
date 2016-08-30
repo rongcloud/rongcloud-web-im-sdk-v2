@@ -315,11 +315,13 @@ module RongIMLib {
             var me = this;
             me.channel.writeAndFlush(new PingReqMessage());
             var checkTimeout: number = setInterval(function() {
-                if (!RongIMClient._memoryStore.isFirstPingMsg && count < 16) {
+                if (!RongIMClient._memoryStore.isFirstPingMsg) {
                     callback.onSuccess();
                     clearInterval(checkTimeout);
                 } else {
-                    callback.onError();
+                    if (count > 15) {
+                        callback.onError();
+                    }
                 }
                 count++;
             }, 200), count: number = 0;
@@ -649,7 +651,7 @@ module RongIMLib {
                 }
             }
 
-            var d = new Date(), date = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+            var d = new Date(),m = d.getMonth() + 1, date = d.getFullYear() + '/' + (m.toString().length == 1 ? '0'+m : m) + '/' + d.getDate();
             //new Date(date).getTime() - message.sentTime < 1 逻辑判断 超过 1 天未收的 ReadReceiptRequestMessage 离线消息自动忽略。
             if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && new Date(date).getTime() - message.sentTime < 1) {
                 var staKey: string = Bridge._client.userId + message.conversationType + message.targetId + "STA",
