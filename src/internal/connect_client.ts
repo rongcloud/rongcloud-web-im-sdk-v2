@@ -610,7 +610,7 @@ module RongIMLib {
                         con.senderUserId = message.sendUserId;
                         con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
                         con.latestMessageId = message.messageId;
-                        message.messageType != RongIMClient.MessageType["ReadReceiptResponseMessage"] && message.messageType != RongIMClient.MessageType["ReadReceiptRequestMessage"] && (con.latestMessage = message);
+                        con.latestMessage = message
                         con.sentTime = message.sentTime;
                         RongIMClient._dataAccessProvider.addConversation(con, { onSuccess: function(data) { }, onError: function() { } });
                     },
@@ -651,40 +651,18 @@ module RongIMLib {
                 }
             }
 
-            var d = new Date(),m = d.getMonth() + 1, date = d.getFullYear() + '/' + (m.toString().length == 1 ? '0'+m : m) + '/' + d.getDate();
+            var d = new Date(), m = d.getMonth() + 1, date = d.getFullYear() + '/' + (m.toString().length == 1 ? '0' + m : m) + '/' + d.getDate();
             //new Date(date).getTime() - message.sentTime < 1 逻辑判断 超过 1 天未收的 ReadReceiptRequestMessage 离线消息自动忽略。
+            // STA
+            // REQ
+            // RSPCOUNT
             if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && new Date(date).getTime() - message.sentTime < 1) {
-                var staKey: string = Bridge._client.userId + message.conversationType + message.targetId + "STA",
-                    reqKey: string = Bridge._client.userId + message.conversationType + message.targetId + "REQ",
-                    reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
-                if (offlineMsg) {
-                    var reqData: any = {};
-                    if (reqVal) {
-                        reqData = JSON.parse(reqVal);
-                    }
-                    message.content.messageUId in reqData ? '' : reqData[message.content.messageUId] = message.sentTime;
-                    LocalStorageProvider.getInstance().setItem(reqKey, JSON.stringify(reqData));
-                }
-                var tempVal = LocalStorageProvider.getInstance().getItem(staKey);
-                if (tempVal) {
-                    var vals: any[] = JSON.parse(tempVal), inVals: boolean = false;
-                    for (let i = 0, len = vals.length; i < len; i++) {
-                        if (message.senderUserId in vals[i]) {
-                            inVals = true;
-                            !vals[i][message.senderUserId].find(function(item: string) { item == message.content.messageUId }) && vals[i][message.senderUserId].push(message.content.messageUId);
-                        }
-                    }
-                    if (!inVals) {
-                        var obj: any = {};
-                        obj[message.senderUserId] = [message.content.messageUId];
-                        vals.push(obj);
-                    }
-                    LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(vals));
+                var reckey: string = Bridge._client.userId + message.messageUId + 'REC',
+                    recVal: any = JSON.parse(LocalStorageProvider.getInstance().getItem(reckey));
+                if (recVal) {
+
                 } else {
-                    var obj: any = {}, arrs: any[] = [];
-                    obj[message.senderUserId] = [message.content.messageUId];
-                    arrs.push(obj);
-                    LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(arrs));
+
                 }
             }
 
