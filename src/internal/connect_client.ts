@@ -653,9 +653,6 @@ module RongIMLib {
 
             var d = new Date(), m = d.getMonth() + 1, date = d.getFullYear() + '/' + (m.toString().length == 1 ? '0' + m : m) + '/' + d.getDate();
             //new Date(date).getTime() - message.sentTime < 1 逻辑判断 超过 1 天未收的 ReadReceiptRequestMessage 离线消息自动忽略。
-            // STA
-            // REQ
-            // RSPCOUNT
             var dealtime: boolean = new Date(date).getTime() - message.sentTime < 0;
             if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
                 var reckey: string = Bridge._client.userId + message.conversationType + message.targetId + 'RECEIVED',
@@ -693,12 +690,13 @@ module RongIMLib {
                         sentkey = Bridge._client.userId + uIds[i] + "SENT";
                         sentObj = JSON.parse(LocalStorageProvider.getInstance().getItem(sentkey));
                         if (sentObj && !(message.senderUserId in sentObj.userIds)) {
-                            if (new Date(date).getTime() - sentObj.dealtime < 0) {
+                            if (new Date(date).getTime() - sentObj.dealtime > 0) {
                                 LocalStorageProvider.getInstance().removeItem(sentkey);
                             } else {
                                 sentObj.count += 1;
                                 sentObj.userIds[message.senderUserId] = message.sentTime;
                                 message.receiptResponse[uIds[i]] = sentObj.count;
+                                LocalStorageProvider.getInstance().setItem(sentkey, JSON.stringify(sentObj));
                             }
                         }
                     }
