@@ -656,59 +656,54 @@ module RongIMLib {
             // STA
             // REQ
             // RSPCOUNT
-            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && new Date(date).getTime() - message.sentTime < 1) {
-                var reckey: string = Bridge._client.userId + message.messageUId + 'REC',
-                    recVal: any = JSON.parse(LocalStorageProvider.getInstance().getItem(reckey));
-                if (recVal) {
-
+            var dealtime: boolean = new Date(date).getTime() - message.sentTime < 0;
+            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
+                var reckey: string = Bridge._client.userId + message.conversationType + message.targetId + 'RECEIVED',
+                    recData: any = JSON.parse(LocalStorageProvider.getInstance().getItem(reckey));
+                if (recData) {
+                    if (message.senderUserId in recData) {
+                        if (recData[message.senderUserId].uIds && recData[message.senderUserId].uIds && recData[message.senderUserId].uIds.indexOf(message.content.messageUId) == -1) {
+                            // 如果是前一天的 MessaageUId 把数组清空。
+                            new Date(date).getTime() - recData[message.senderUserId].dealtime < 0 || (recData[message.senderUserId].uIds.length = 0);
+                            recData[message.senderUserId].uIds.push(message.content.messageUId);
+                            recData[message.senderUserId].dealtime = message.sentTime;
+                            recData[message.senderUserId].isResponse = false;
+                            LocalStorageProvider.getInstance().setItem(reckey, JSON.stringify(recData));
+                        } else {
+                            return;
+                        }
+                    } else {
+                        var objSon: any = { uIds: [message.content.messageUId], dealtime: message.sentTime, isResponse: false };
+                        recData[message.senderUserId] = objSon;
+                        LocalStorageProvider.getInstance().setItem(reckey, JSON.stringify(recData));
+                    }
                 } else {
-
+                    var obj: any = {};
+                    obj[message.senderUserId] = { uIds: [message.content.messageUId], dealtime: message.sentTime, isResponse: false };
+                    LocalStorageProvider.getInstance().setItem(reckey, JSON.stringify(obj));
                 }
             }
 
-            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptResponseMessage"] && new Date(date).getTime() - message.sentTime < 1) {
-                var reqKey: string = Bridge._client.userId + message.conversationType + message.targetId + "REQ",
-                    reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
-                if (!reqVal) return;
-                var staKey: string = Bridge._client.userId + message.conversationType + message.targetId + "STA",
-                    objKey: string = MessageUtil.getFirstKey(message.content.receiptMessageDic),
-                    msgIds: any[] = message.content.receiptMessageDic[objKey] || [],
-                    rspMsgs: any[] = JSON.parse(LocalStorageProvider.getInstance().getItem(staKey)),
-                    rspCountKey: string = "RSPCOUNT";
+            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptResponseMessage"] && dealtime) {
+                var receiptResponseMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>message.content,
+                    uIds: string[] = receiptResponseMsg.receiptMessageDic[Bridge._client.userId], sentkey = "", sentObj: any;
                 message.receiptResponse || (message.receiptResponse = {});
-                for (let i = 0, len = msgIds.length; i < len; i++) {
-                    var senderData = JSON.parse(LocalStorageProvider.getInstance().getItem(msgIds[i] + rspCountKey)) || { userIds: [] };
-                    if (senderData.userIds.indexOf(message.senderUserId) < 0) {
-                        senderData.userIds.push(message.senderUserId);
-                        senderData.time || (senderData.time = message.sentTime);
-                        LocalStorageProvider.getInstance().setItem(msgIds[i] + rspCountKey, JSON.stringify(senderData));
-                    }
-                    message.receiptResponse[msgIds[i]] = senderData.userIds.length;
-                }
-                if (msgIds && rspMsgs) {
-                    for (var index in rspMsgs) {
-                        if (rspMsgs[index][objKey]) {
-                            var localIds: string[] = rspMsgs[index][objKey] || [];
-                            for (var i = 0, iLen = msgIds.length; i < iLen; i++) {
-                                for (let j = 0, jLen = localIds.length; j < jLen; j++) {
-                                    if (msgIds[i] == localIds[j]) {
-                                        localIds.splice(j, 1);
-                                    }
-                                }
+                if (uIds) {
+                    for (let i = 0, len = uIds.length; i < len; i++) {
+                        sentkey = Bridge._client.userId + uIds[i] + "SENT";
+                        sentObj = JSON.parse(LocalStorageProvider.getInstance().getItem(sentkey));
+                        if (sentObj && !(message.senderUserId in sentObj.userIds)) {
+                            if (new Date(date).getTime() - sentObj.dealtime < 0) {
+                                LocalStorageProvider.getInstance().removeItem(sentkey);
+                            } else {
+                                sentObj.count += 1;
+                                sentObj.userIds[message.senderUserId] = message.sentTime;
+                                message.receiptResponse[uIds[i]] = sentObj.count;
                             }
-                            if (localIds.length == 0) {
-                                rspMsgs.splice(Number(index), 1);
-                            }
-                            break;
                         }
                     }
-                    rspMsgs.length == 0 ? LocalStorageProvider.getInstance().removeItem(staKey) : LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(rspMsgs));
-                    if (rspMsgs.length == 0 && objKey != RongIMLib.Bridge._client.userId) {
-                        RongIMLib.LocalStorageProvider.getInstance().removeItem(reqKey)
-                    }
                 }
             }
-
 
             var that = this;
             if (RongIMClient._voipProvider && ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'].indexOf(message.messageType) > -1) {

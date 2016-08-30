@@ -614,14 +614,9 @@ module RongIMLib {
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
                     if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
-                        var reqKey: string = Bridge._client.userId + conversationType + targetId + "REQ";
-                        var reqVal: string = LocalStorageProvider.getInstance().getItem(reqKey);
-                        var reqMsg: ReadReceiptRequestMessage = <ReadReceiptRequestMessage>messageContent, reqData: any = {};
-                        if (reqVal) {
-                            reqData = JSON.parse(reqVal);
-                        }
-                        reqData[reqMsg.messageUId] = msg.sentTime;
-                        LocalStorageProvider.getInstance().setItem(reqKey, JSON.stringify(reqData));
+                        var reqMsg: ReadReceiptRequestMessage = <ReadReceiptRequestMessage>msg.content;
+                        var sentkey: string = Bridge._client.userId + reqMsg.messageUId + "SENT";
+                        LocalStorageProvider.getInstance().setItem(sentkey, JSON.stringify({ count: 0, dealtime: data.timestamp, userIds: {} }));
                     }
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
                         RongIMClient._memoryStore.converStore.latestMessage = msg;
@@ -662,11 +657,20 @@ module RongIMLib {
         }
 
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback) {
-            var staKey: string = Bridge._client.userId + conversationType + targetId + "STA", me = this;
+            var rspkey: string = Bridge._client.userId + conversationType + targetId + 'RECEIVED', me = this;
             if (MessageUtil.supportLargeStorage()) {
-                var tempVal: string = LocalStorageProvider.getInstance().getItem(staKey);
-                if (tempVal) {
-                    var vals = JSON.parse(tempVal);
+                var valObj: any = JSON.parse(LocalStorageProvider.getInstance().getItem(rspkey));
+                if (valObj) {
+                    var vals: any[] = [];
+                    for (let key in valObj) {
+                        var tmp: any = {};
+                        tmp[key] = valObj[key].uIds;
+                        valObj[key].isResponse || vals.push(tmp);
+                    }
+                    if (vals.length == 0) {
+                        sendCallback.onSuccess();
+                        return;
+                    }
                     var interval = setInterval(function() {
                         if (vals.length == 1) {
                             clearInterval(interval);
@@ -675,7 +679,9 @@ module RongIMLib {
                         var rspMsg = new RongIMLib.ReadReceiptResponseMessage({ receiptMessageDic: obj });
                         me.sendMessage(conversationType, targetId, rspMsg, {
                             onSuccess: function(msg) {
-                                vals.length == 0 ? LocalStorageProvider.getInstance().removeItem(staKey) : LocalStorageProvider.getInstance().setItem(staKey, JSON.stringify(vals))
+                                var senderUserId = MessageUtil.getFirstKey(obj);
+                                valObj[senderUserId].isResponse = true;
+                                LocalStorageProvider.getInstance().setItem(rspkey, JSON.stringify(valObj));
                                 sendCallback.onSuccess(msg);
                             },
                             onError: function(error: ErrorCode, msg: Message) {
@@ -798,10 +804,10 @@ module RongIMLib {
                     if (MessageUtil.supportLargeStorage()) {
                         for (var i = 0, len = list.length; i < len; i++) {
                             tempMsg = MessageUtil.messageParser(list[i]);
-                            tempDir = JSON.parse(LocalStorageProvider.getInstance().getItem(tempMsg.messageUId + 'RSPCOUNT'));
+                            tempDir = JSON.parse(LocalStorageProvider.getInstance().getItem(Bridge._client.userId + tempMsg.messageUId + "SENT"));
                             if (tempDir) {
                                 tempMsg.receiptResponse || (tempMsg.receiptResponse = {});
-                                tempMsg.receiptResponse[tempMsg.messageUId] = (tempDir.userIds ? tempDir.userIds.length : 0);
+                                tempMsg.receiptResponse[tempMsg.messageUId] = tempDir.count;
                             }
                             list[i] = tempMsg;
                         }
