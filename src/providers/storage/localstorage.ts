@@ -6,22 +6,23 @@ module RongIMLib {
         static _instance: LocalStorageProvider = new LocalStorageProvider();
 
         constructor() {
-            var d = new Date(), date = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+            var d = new Date(), m = d.getMonth() + 1, date = d.getFullYear() + '/' + (m.toString().length == 1 ? '0' + m : m) + '/' + d.getDate(),
+                nowDate = new Date(date).getTime();
             for (var key in localStorage) {
-                if (key.lastIndexOf('RSPCOUNT') > -1) {
-                    var senderData = JSON.parse(localStorage[key]);
-                    new Date(date).getTime() - senderData.time > 0 && localStorage.removeItem(key);
-                }
-                if (key.lastIndexOf('REQ') > -1) {
-                    var idStore = JSON.parse(localStorage[key]);
-                    for (var uid in idStore) {
-                        new Date(date).getTime() - idStore[uid] > 0 && (delete idStore[uid]);
+                if (key.lastIndexOf('RECEIVED') > -1) {
+                    var recObj = JSON.parse(localStorage.getItem(key));
+                    for (let key in recObj) {
+                        nowDate - recObj[key].dealtime > 0 && (delete recObj[key]);
                     }
-                    if (MessageUtil.isEmpty(idStore)) {
+                    if (MessageUtil.isEmpty(recObj)) {
                         localStorage.removeItem(key);
                     } else {
-                        localStorage.setItem(key, JSON.stringify(idStore));
+                        localStorage.setItem(key, JSON.stringify(recObj));
                     }
+                }
+                if (key.lastIndexOf('SENT') > -1) {
+                    var sentObj = JSON.parse(localStorage.getItem(key));
+                    nowDate - sentObj.dealtime > 0 && (localStorage.removeItem(key));
                 }
             }
         }
