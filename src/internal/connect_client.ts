@@ -247,7 +247,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "2.2.1";
+        sdkVer: string = "2.2.2";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
@@ -654,7 +654,11 @@ module RongIMLib {
             var d = new Date(), m = d.getMonth() + 1, date = d.getFullYear() + '/' + (m.toString().length == 1 ? '0' + m : m) + '/' + d.getDate();
             //new Date(date).getTime() - message.sentTime < 1 逻辑判断 超过 1 天未收的 ReadReceiptRequestMessage 离线消息自动忽略。
             var dealtime: boolean = new Date(date).getTime() - message.sentTime < 0;
-            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
+
+            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime && message.messageDirection == MessageDirection.SEND) {
+                var sentkey: string = Bridge._client.userId + message.content.messageUId + "SENT";
+                LocalStorageProvider.getInstance().setItem(sentkey, JSON.stringify({ count: 0, dealtime: message.sentTime, userIds: {} }));
+            } else if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
                 var reckey: string = Bridge._client.userId + message.conversationType + message.targetId + 'RECEIVED',
                     recData: any = JSON.parse(LocalStorageProvider.getInstance().getItem(reckey));
                 if (recData) {
@@ -686,6 +690,7 @@ module RongIMLib {
                     uIds: string[] = receiptResponseMsg.receiptMessageDic[Bridge._client.userId], sentkey = "", sentObj: any;
                 message.receiptResponse || (message.receiptResponse = {});
                 if (uIds) {
+                    var cbuIds: string[] = [];
                     for (let i = 0, len = uIds.length; i < len; i++) {
                         sentkey = Bridge._client.userId + uIds[i] + "SENT";
                         sentObj = JSON.parse(LocalStorageProvider.getInstance().getItem(sentkey));
@@ -693,6 +698,7 @@ module RongIMLib {
                             if (new Date(date).getTime() - sentObj.dealtime > 0) {
                                 LocalStorageProvider.getInstance().removeItem(sentkey);
                             } else {
+                                cbuIds.push(uIds[i]);
                                 sentObj.count += 1;
                                 sentObj.userIds[message.senderUserId] = message.sentTime;
                                 message.receiptResponse[uIds[i]] = sentObj.count;
@@ -700,6 +706,8 @@ module RongIMLib {
                             }
                         }
                     }
+                    receiptResponseMsg.receiptMessageDic[Bridge._client.userId] = cbuIds;
+                    message.content = receiptResponseMsg;
                 }
             }
 
