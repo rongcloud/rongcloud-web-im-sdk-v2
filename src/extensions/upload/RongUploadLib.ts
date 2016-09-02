@@ -295,6 +295,7 @@ module RongIMLib {
             var msg: MessageContent = null;
             switch (option.uploadType) {
                 case 'IMAGE':
+                    var oriName: string = option.fileName.lastIndexOf('.') == -1 ? option.fileName + '.jpg' : encodeURIComponent(option.fileName);
                     RongIMClient.getInstance().getFileUrl(RongIMLib.FileType.IMAGE, option.fileName, null, {
                         onSuccess: function(data: any) {
                             if (option.isBase64Data) {

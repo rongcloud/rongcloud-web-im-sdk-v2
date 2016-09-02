@@ -108,7 +108,7 @@ module RongIMLib {
                 GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(false, true) },
                 PublicServiceCommandMessage: { objectName: "RC:PSCmd", msgTag: new MessageTag(false, false) },
                 RecallCommandMessage: { objectName: "RC:RcCmd", msgTag: new MessageTag(false, true) },
-                SyncReadStatusMessage: { objectName: "RC:SRSMsg", msgTag: new MessageTag(false, true) },
+                SyncReadStatusMessage: { objectName: "RC:SRSMsg", msgTag: new MessageTag(false, false) },
                 ReadReceiptRequestMessage: { objectName: "RC:RRReqMsg", msgTag: new MessageTag(false, false) },
                 ReadReceiptResponseMessage: { objectName: "RC:RRRspMsg", msgTag: new MessageTag(false, false) },
 
