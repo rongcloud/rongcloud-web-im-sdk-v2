@@ -11,8 +11,8 @@ module RongIMLib {
         addConversation(conver: Conversation, callback: ResultCallback<boolean>) {
             var me = this;
             var sSql: string = "select * from t_conversation_" + me.database.userId + " t where t.conversationType = ? and t.targetId = ?";
-            me.database.execSearchByParams(sSql, [Number(conver.conversationType), conver.targetId], function(results: any[]) {
-                if (results.length > 0) {
+            me.database.execSearchByParams(sSql, [Number(conver.conversationType), conver.targetId], function(results: any[], rowsAffected: number) {
+                if (results.length > 0 && rowsAffected) {
                     me.updateConversation(conver);
                 } else {
                     var iSql: string = "insert into t_conversation_" + me.database.userId + "(conversationType,targetId,content,sentTime,isTop) values(?,?,?,?,?)";
@@ -32,9 +32,9 @@ module RongIMLib {
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void {
             var sql: string = "select t.content from t_conversation_" + this.database.userId + " t where t.conversationType = ? and t.targetId = ?",
                 conver: Conversation = null;
-            this.database.execSearchByParams(sql, [Number(conversationType), targetId], function(results: any[]) {
+            this.database.execSearchByParams(sql, [Number(conversationType), targetId], function(results: any[], rowsAffected: number) {
                 var conver: Conversation;
-                if (results.length > 0) {
+                if (results.length > 0 && rowsAffected) {
                     conver = JSON.parse(results[0].content);
                 }
                 callback.onSuccess(conver);
@@ -94,10 +94,10 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
-        getMessage(messageId: string, callback: ResultCallback<Message>) {
-            var sql: string = "select * from t_message_" + this.database.userId + " t where t.id = ?";
-            this.database.execSearchByParams(sql, [messageId], function(results: any[]) {
-                if (results.length > 0) {
+        getMessage(messageUId: string, callback: ResultCallback<Message>) {
+            var sql: string = "select * from t_message_" + this.database.userId + " t where t.messageUId = ?";
+            this.database.execSearchByParams(sql, [messageUId], function(results: any[], rowsAffected: number) {
+                if (results.length > 0 && rowsAffected) {
                     var msg: Message = JSON.parse(results[0].content);
                     callback.onSuccess(msg);
                 } else {
@@ -113,8 +113,8 @@ module RongIMLib {
             this.database.execUpdateByParams(sql, [message.messageType, message.messageUId, message.conversationType, message.targetId, message.sentTime, JSON.stringify(message), localmsg]);
             if (callback) {
                 var searchSql: string = "select t.id from t_message_" + this.database.userId + " t where t.sentTime = ? and t.conversationType = ? and t.targetId = ?";
-                this.database.execSearchByParams(searchSql, [message.sentTime, conversationType, targetId], function(results: any[]) {
-                    message.messageId = results[0].id;
+                this.database.execSearchByParams(searchSql, [message.sentTime, conversationType, targetId], function(results: any[], rowsAffected: number) {
+                    rowsAffected && (message.messageId = results[0].id);
                     callback.onSuccess(message);
                 });
             }
@@ -163,7 +163,7 @@ module RongIMLib {
             }
             sql += "order by t.sentTime desc limit ?) order by sentTime ";
             params.push(count);
-            me.database.execSearchByParams(sql, params, function(result: any[]) {
+            me.database.execSearchByParams(sql, params, function(result: any[], rowsAffected: number) {
                 for (var i = 0, len: number = result.length; i < len; i++) {
                     results.push(JSON.parse(result[i].content));
                 }
@@ -188,7 +188,7 @@ module RongIMLib {
                         onError: function(error: ErrorCode) { }
                     });
                 } else {
-                    //TODO 可能存在 len 和 count 相等并且服务区没有历史消息，导致多拉取一次历史消息。
+                    //TODO 可能存在 len 和 count 相等并且服务器没有历史消息，导致多拉取一次历史消息。
                     callback.onSuccess(results, true);
                     RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, result[len - 1].sentTime);
                 }
@@ -204,7 +204,7 @@ module RongIMLib {
                         for (let i = 0, len = results.length; i < len; i++) {
                             var conver: Conversation = JSON.parse(results[i].content);
                             if (conver.conversationType == conversationTypes[j]) {
-                              count += conver.unreadMessageCount;
+                                count += conver.unreadMessageCount;
                             }
                         }
                     }
@@ -249,7 +249,7 @@ module RongIMLib {
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             var sSql: string = "select * from t_conversation_" + this.database.userId + " t where t.conversationType = ? and t.targetId = ?";
             var uSql: string = "update t_conversation_" + this.database.userId + " set content = ? where conversationType = ? and targetId = ?", me = this;
-            this.database.execSearchByParams(sSql, [conversationType, targetId], function(results: any[]) {
+            this.database.execSearchByParams(sSql, [conversationType, targetId], function(results: any[], rowsAffected: number) {
                 var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                 if (mentioneds) {
                     var info: any = JSON.parse(mentioneds);
@@ -260,7 +260,7 @@ module RongIMLib {
                         RongIMClient._cookieHelper.removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                     }
                 }
-                if (results.length == 0) {
+                if (results.length == 0 && !rowsAffected) {
                     callback.onSuccess(false);
                 } else {
                     var conver: Conversation = JSON.parse(results[0].content);
@@ -280,8 +280,8 @@ module RongIMLib {
         setMessageExtra(messageUId: string, value: string, callback: ResultCallback<boolean>) {
             var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
             var uSql: string = "UPADTE t_message_" + this.database.userId + " t SET t.content = ? where t.messageUId = ?";
-            this.database.execSearchByParams(sSql, [messageUId], function(results: any[]) {
-                if (results.length == 0) {
+            this.database.execSearchByParams(sSql, [messageUId], function(results: any[],rowsAffected:number) {
+                if (results.length == 0 && !rowsAffected) {
                     callback.onSuccess(false);
                 } else {
                     var msg: Message = JSON.parse(results[0].content);
@@ -294,8 +294,8 @@ module RongIMLib {
         setMessageReceivedStatus(messageUId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
             var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
             var uSql: string = "update t_message_" + this.database.userId + " set content = ? where messageUId = ?", me = this;
-            this.database.execSearchByParams(sSql, [messageUId], function(results: any[]) {
-                if (results.length == 0) {
+            this.database.execSearchByParams(sSql, [messageUId], function(results: any[],rowsAffected:number) {
+                if (results.length == 0 && !rowsAffected) {
                     callback.onSuccess(false);
                 } else {
                     var msg: Message = JSON.parse(results[0].content);
@@ -311,8 +311,8 @@ module RongIMLib {
         setMessageSentStatus(messageUId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
             var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
             var uSql: string = "update t_message_" + this.database.userId + " set content = ? where messageUId = ?";
-            this.database.execSearchByParams(sSql, [messageUId], function(results: any[]) {
-                if (results.length == 0) {
+            this.database.execSearchByParams(sSql, [messageUId], function(results: any[],rowsAffected:number) {
+                if (results.length == 0 && !rowsAffected) {
                     callback.onSuccess(false);
                 } else {
                     var msg: Message = JSON.parse(results[0].content);

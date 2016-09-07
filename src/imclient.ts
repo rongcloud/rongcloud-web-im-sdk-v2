@@ -2015,7 +2015,7 @@ module RongIMLib {
         } else {
             var lurl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/Long.js" : "//cdn.ronghub.com/Long.js";
             var burl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/byteBuffer.js" : "//cdn.ronghub.com/byteBuffer.js";
-            var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-2.1.4.min.js" : "//cdn.ronghub.com/protobuf-2.1.4.min.js";
+            var purl: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-2.1.5.min.js" : "//cdn.ronghub.com/protobuf-2.1.5.min.js";
             define("RongIMLib", ['md5', lurl, burl, purl], function() {
                 return RongIMLib;
             });

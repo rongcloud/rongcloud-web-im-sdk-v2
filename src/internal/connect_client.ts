@@ -247,13 +247,14 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "2.2.2";
+        sdkVer: string = "2.2.3";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
         userId: string = "";
         reconnectObj: any = {};
         heartbeat: any = 0;
+        pullMsgHearbeat: any = 0;
         chatroomId: string = "";
         static userInfoMapping: any = {};
         SyncTimeQueue: any = [];
@@ -331,15 +332,23 @@ module RongIMLib {
                 clearInterval(this.heartbeat);
             }
             var me = this;
-            this.heartbeat = setInterval(function() {
+            me.heartbeat = setInterval(function() {
                 me.resumeTimer();
                 me.channel.writeAndFlush(new PingReqMessage());
             }, 30000);
+            if (me.pullMsgHearbeat > 0) {
+                clearInterval(me.pullMsgHearbeat);
+            }
+            me.pullMsgHearbeat = setInterval(function() {
+                me.syncTime(undefined, undefined, undefined, false);
+            }, 180000);
         }
         clearHeartbeat() {
             clearInterval(this.heartbeat);
             this.heartbeat = 0;
             this.pauseTimer();
+            clearInterval(this.pullMsgHearbeat);
+            this.pullMsgHearbeat = 0;
         }
         publishMessage(_topic: any, _data: any, _targetId: any, _callback: any, _msg: any) {
             var msgId = MessageIdHandler.messageIdPlus(this.channel.reconnect);

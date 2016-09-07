@@ -20,7 +20,7 @@ module RongIMLib {
         execSearchByParams(sql: string, values: any[], callback: any) {
             this.db.transaction(function(tx: any) {
                 tx.executeSql(sql, values, function(tx: any, results: any) {
-                    callback(results.rows);
+                    callback(results.rows,results.rowsAffected);
                 }, function(tx: any,results:any) {
                     throw new Error("{errorCode:" + results.code + ",content:" + results.message + "}");
                 });
@@ -30,7 +30,7 @@ module RongIMLib {
         execSearch(sql: string, callback: any) {
             this.db.transaction(function(tx: any) {
                 tx.executeSql(sql, [],function(tx: any, results: any) {
-                    callback(results.rows);
+                    callback(results.rows,results.rowsAffected);
                 }, function(tx: any, result: any) {
                     throw new Error("{errorCode:" + result.code + ",content:" + result.message + "}");
                 });
