@@ -53,8 +53,8 @@ module RongIMLib {
             }
         }
 
-        removeMessage(conversationType: ConversationType, targetId: string, messageIds: string[], callback: ResultCallback<boolean>) {
-            callback.onSuccess(true);
+        removeMessage(conversationType: ConversationType, targetId: string, messageIds: DeleteMessage[], callback: ResultCallback<boolean>) {
+            RongIMClient.getInstance().deleteRemoteMessages(conversationType, targetId, messageIds, callback);
         }
 
         removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>) {

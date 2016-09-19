@@ -11,7 +11,7 @@ module RongIMLib {
 
         addMessage(conversationType: ConversationType, targetId: string, message: Message, callback?: ResultCallback<Message>): void;
 
-        removeMessage(conversationType: ConversationType, targetId: string, messageId: string[], callback: ResultCallback<boolean>): void;
+        removeMessage(conversationType: ConversationType, targetId: string, delMsgs: DeleteMessage[], callback: ResultCallback<boolean>): void;
 
         removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>): void;
 

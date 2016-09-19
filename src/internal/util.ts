@@ -426,13 +426,13 @@ module RongIMLib {
         }
         send(callback: any): void {
             var me = this;
-            var url: string = "http://upload.qiniu.com/putb64/-1";
+            me.options.url || (me.options.url = "http://upload.qiniu.com/putb64/-1");
             me.xmlhttp.onreadystatechange = function() {
                 if (me.xmlhttp.readyState == 4) {
                     callback(JSON.parse(me.xmlhttp.responseText.replace(/'/g, '"')));
                 }
             };
-            me.xmlhttp.open("POST", url, true);
+            me.xmlhttp.open("POST", me.options.url, true);
             me.xmlhttp.withCredentials = false;
             if ("setRequestHeader" in me.xmlhttp) {
                 me.xmlhttp.setRequestHeader("Content-type", "application/octet-stream");

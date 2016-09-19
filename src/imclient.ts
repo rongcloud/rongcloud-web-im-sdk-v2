@@ -161,7 +161,7 @@ module RongIMLib {
                 SyncReadStatusMessage: "SyncReadStatusMessage",
                 ReadReceiptRequestMessage: "ReadReceiptRequestMessage",
                 ReadReceiptResponseMessage: "ReadReceiptResponseMessage",
-
+                FileMessage: 'FileMessage',
                 AcceptMessage: "AcceptMessage",
                 RingingMessage: "RingingMessage",
                 SummaryMessage: "SummaryMessage",
@@ -507,6 +507,28 @@ module RongIMLib {
                 }
             });
         }
+
+        deleteRemoteMessages(conversationType: ConversationType, targetId: string, delMsgs: DeleteMessage[], callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["number", "string", "array", "object"], "deleteRemoteMessages");
+            if (delMsgs.length == 0) {
+                callback.onError(ErrorCode.DELETE_MESSAGE_ID_IS_NULL);
+                return;
+            } else if (delMsgs.length > 100) {
+                delMsgs.length = 100;
+            }
+            var modules = new Modules.DeleteMsgInput();
+            modules.setType(conversationType);
+            modules.setConversationId(targetId);
+            modules.setMsgs(delMsgs);
+            RongIMClient.bridge.queryMsg(33, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(info: any) {
+                    callback.onSuccess(true);
+                },
+                onError: function(err: any) {
+                    callback.onError(err);
+                }
+            }, "DeleteMsgOutput");
+        }
         /**
          * [deleteMessages 删除消息记录。]
          * @param  {ConversationType}        conversationType [description]
@@ -514,8 +536,8 @@ module RongIMLib {
          * @param  {number[]}                messageIds       [description]
          * @param  {ResultCallback<boolean>} callback         [description]
          */
-        deleteMessages(conversationType: ConversationType, targetId: string, messageUIds: string[], callback: ResultCallback<boolean>) {
-            RongIMClient._dataAccessProvider.removeMessage(conversationType, targetId, messageUIds, {
+        deleteMessages(conversationType: ConversationType, targetId: string, delMsgs: DeleteMessage[], callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.removeMessage(conversationType, targetId, delMsgs, {
                 onSuccess: function(bool: boolean) {
                     setTimeout(function() {
                         callback.onSuccess(bool);

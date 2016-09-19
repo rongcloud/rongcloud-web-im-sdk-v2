@@ -1,4 +1,43 @@
 var Polling = {
+        DeleteMsgInput:function(){
+         var a = {};
+         this.setType = function(b){
+           a.type = b;
+         };
+         this.setConversationId = function(b){
+           a.conversationId = b;
+         };
+         this.setMsgs = function(b){
+           a.msgs = b;
+         };
+         this.toArrayBuffer = function () {
+             return a;
+         }
+        },
+        DeleteMsg:function(){
+          var a = {};
+          this.setMsgId = function(b){
+            a.msgId = b;
+          };
+          this.setMsgDataTime = function(b){
+            a.msgDataTime = b;
+          };
+          this.setDirect = function(b){
+            a.direct = b;
+          };
+          this.toArrayBuffer = function () {
+              return a;
+          }
+        },
+        DeleteMsgOutput:function(){
+         var a = {};
+         this.setNothing = function(b){
+           a.nothing = b;
+         };
+         this.toArrayBuffer = function () {
+             return a;
+         }
+        },
         SearchMpInput:function(){
             var a = {};
             this.setType = function (b) {

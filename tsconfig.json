@@ -29,6 +29,7 @@
         "./src/enum.ts",
         "./src/extensions/emoji.ts",
         "./src/extensions/image_uploader.ts",
+        "./src/extensions/upload/RCUploadLib.ts",
         "./src/extensions/upload/RongUploadLib.ts",
         "./src/extensions/voices/voice.ts",
         "./src/extensions/voices/VoiceRecorder.ts",

@@ -504,6 +504,11 @@ module RongIMLib {
         INVALID_CHANNEL_NAME = 51003,
 
         VIDEO_CONTAINER_IS_NULL = 51004,
+
+        /**
+        * 删除消息数组长度为 0 .
+        */
+        DELETE_MESSAGE_ID_IS_NULL = 61001,
         /*!
         己方取消已发出的通话请求
         */

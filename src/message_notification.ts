@@ -196,7 +196,7 @@ module RongIMLib {
             msg.operatorUserId && (this.operatorUserId = msg.operatorUserId);
             msg.operation && (this.operation = msg.operation);
             msg.data && (this.data = msg.data);
-            msg.message && (this.data = msg.message);
+            msg.message && (this.message = msg.message);
         }
         encode() {
             return JSON.stringify(ModelUtil.modelClone(this));

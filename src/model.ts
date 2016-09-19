@@ -8,6 +8,12 @@ module RongIMLib {
         ) { }
     }
 
+    export class DeleteMessage {
+        constructor(public msgId?: string,
+            public msgDataTime?: number,
+            public direct?: number) { }
+    }
+
     export class CustomServiceConfig {
         constructor(
             isBlack?: boolean,

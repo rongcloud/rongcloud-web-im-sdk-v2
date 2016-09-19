@@ -120,12 +120,16 @@ module RongIMLib {
             }
         }
 
-        removeMessage(conversationType: ConversationType, targetId: string, messageIds: string[], callback: ResultCallback<boolean>) {
-            if (messageIds.length == 0) {
+        removeMessage(conversationType: ConversationType, targetId: string, delMsgs: DeleteMessage[], callback: ResultCallback<boolean>) {
+            if (delMsgs.length == 0) {
                 return;
             }
+            var arr: any = [];
+            for (let i = 0, len = delMsgs.length; i < len; i++) {
+                arr.push(delMsgs[i].msgId);
+            }
             var sql: string = "delete from t_message_" + this.database.userId + " where messageUId in (?)";
-            this.database.execUpdateByParams(sql, [messageIds.join(",")]);
+            this.database.execUpdateByParams(sql, arr.join(','));
         }
         removeLocalMessage(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
             if (messageIds.length == 0) {
@@ -280,7 +284,7 @@ module RongIMLib {
         setMessageExtra(messageUId: string, value: string, callback: ResultCallback<boolean>) {
             var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
             var uSql: string = "UPADTE t_message_" + this.database.userId + " t SET t.content = ? where t.messageUId = ?";
-            this.database.execSearchByParams(sSql, [messageUId], function(results: any[],rowsAffected:number) {
+            this.database.execSearchByParams(sSql, [messageUId], function(results: any[], rowsAffected: number) {
                 if (results.length == 0 && !rowsAffected) {
                     callback.onSuccess(false);
                 } else {
@@ -294,7 +298,7 @@ module RongIMLib {
         setMessageReceivedStatus(messageUId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
             var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
             var uSql: string = "update t_message_" + this.database.userId + " set content = ? where messageUId = ?", me = this;
-            this.database.execSearchByParams(sSql, [messageUId], function(results: any[],rowsAffected:number) {
+            this.database.execSearchByParams(sSql, [messageUId], function(results: any[], rowsAffected: number) {
                 if (results.length == 0 && !rowsAffected) {
                     callback.onSuccess(false);
                 } else {
@@ -311,7 +315,7 @@ module RongIMLib {
         setMessageSentStatus(messageUId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
             var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
             var uSql: string = "update t_message_" + this.database.userId + " set content = ? where messageUId = ?";
-            this.database.execSearchByParams(sSql, [messageUId], function(results: any[],rowsAffected:number) {
+            this.database.execSearchByParams(sSql, [messageUId], function(results: any[], rowsAffected: number) {
                 if (results.length == 0 && !rowsAffected) {
                     callback.onSuccess(false);
                 } else {
