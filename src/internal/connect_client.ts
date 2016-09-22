@@ -63,21 +63,21 @@ module RongIMLib {
                 me.socket.on("StatusChanged", function(code: any) {
                     me.connectionStatus = code;
                     if (code === ConnectionStatus.NETWORK_UNAVAILABLE) {
-                        var temp = RongIMClient._cookieHelper.getItemKey("navi");
-                        var naviServer = RongIMClient._cookieHelper.getItem(temp);
+                        var temp = RongIMClient._storageProvider.getItemKey("navi");
+                        var naviServer = RongIMClient._storageProvider.getItem(temp);
                         var naviPort = naviServer.split(",")[0].split(":")[1];
-                        naviPort && naviPort.length < 4 || RongIMClient._cookieHelper.setItem("rongSDK", "");
+                        naviPort && naviPort.length < 4 || RongIMClient._storageProvider.setItem("rongSDK", "");
                         // TODO  判断拆分 naviServer 后的数组长度。
-                        if (!RongIMClient._memoryStore.depend.isSpolling && naviPort && naviPort.length < 4) {
+                        if (!RongIMClient._memoryStore.depend.isPolling && naviPort && naviPort.length < 4) {
                             Bridge._client.handler.connectCallback.pauseTimer();
-                            var temp = RongIMClient._cookieHelper.getItemKey("navi");
-                            var server = RongIMClient._cookieHelper.getItem("RongBackupServer");
+                            var temp = RongIMClient._storageProvider.getItemKey("navi");
+                            var server = RongIMClient._storageProvider.getItem("RongBackupServer");
                             if (server) {
                                 var arrs = server.split(",");
                                 if (arrs.length < 2) {
                                     throw new Error("navi server is empty,postion:StatusChanged");
                                 }
-                                RongIMClient._cookieHelper.setItem(temp, RongIMLib.RongIMClient._cookieHelper.getItem("RongBackupServer"));
+                                RongIMClient._storageProvider.setItem(temp, RongIMLib.RongIMClient._storageProvider.getItem("RongBackupServer"));
                                 var url = RongIMLib.Bridge._client.channel.socket.currentURL;
                                 Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
                                 if (Bridge._client.channel && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
@@ -139,7 +139,7 @@ module RongIMLib {
         connect(url: string, cb: any): any {
             if (this.socket) {
                 if (url) {
-                    RongIMLib.RongIMClient._cookieHelper.setItem("rongSDK", this.checkTransport());
+                    RongIMLib.RongIMClient._storageProvider.setItem("rongSDK", this.checkTransport());
                     this.on("connect", cb || new Function);
                 }
                 if (url) {
@@ -230,7 +230,7 @@ module RongIMLib {
             return this;
         }
         _encode(x: any) {
-            var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId");
+            var str = "?messageid=" + x.getMessageId() + "&header=" + x.getHeaderFlag() + "&sessionid=" + RongIMClient._storageProvider.getItem("sId" + Navigation.Endpoint.userId);
             if (!/(PubAckMessage|QueryConMessage)/.test(x._name)) {
                 str += "&topic=" + x.getTopic() + "&targetid=" + (x.getTargetId() || "");
             }
@@ -390,7 +390,7 @@ module RongIMLib {
             this.SyncTimeQueue.state = "pending";
             if (temp.type != 2) {
                 //普通消息
-                time = RongIMClient._cookieHelper.getItem(this.userId) || "0";
+                time = RongIMClient._storageProvider.getItem(this.userId) || "0";
                 modules = new Modules.SyncRequestMsg();
                 modules.setIspolling(false);
                 str = "pullMsg";
@@ -398,7 +398,7 @@ module RongIMLib {
             } else {
                 //聊天室消息
                 target = chrmId || me.chatroomId;
-                time = RongIMClient._cookieHelper.getItem(target + Bridge._client.userId + "CST") || "0";
+                time = RongIMClient._storageProvider.getItem(target + Bridge._client.userId + "CST") || "0";
                 modules = new Modules.ChrmPullMsg();
                 modules.setCount(0);
                 str = "chrmPull";
@@ -426,7 +426,7 @@ module RongIMLib {
                     //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
                     RongIMClient._memoryStore.isSyncRemoteConverList = true;
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
-                    RongIMClient._cookieHelper.setItem(symbol, sync, true);
+                    RongIMClient._storageProvider.setItem(symbol, sync);
                     me.SyncTimeQueue.state = "complete";
                     me.invoke(isPullMsg, target);
                     //把拉取到的消息逐条传给消息监听器
@@ -539,7 +539,7 @@ module RongIMLib {
                 con: Conversation;
             if (msg._name != "PublishMessage") {
                 entity = msg;
-                RongIMClient._cookieHelper.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime),true);
+                RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
             } else {
                 if (msg.getTopic() == "s_ntf") {
                     entity = Modules.NotifyMsg.decode(msg.getData());
@@ -547,7 +547,7 @@ module RongIMLib {
                     return;
                 } else if (msg.getTopic() == "s_msg") {
                     entity = Modules.DownStreamMessage.decode(msg.getData());
-                    RongIMClient._cookieHelper.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime),true);
+                    RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
                 } else {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;
@@ -584,6 +584,21 @@ module RongIMLib {
             if (message === null) {
                 return;
             }
+
+            // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳
+            // key：'converST_' + 当前用户 + conversationType + targetId
+            // RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + message.conversationType + message.targetId, message.sentTime);
+            var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId,
+                stValue = RongIMClient._storageProvider.getItem(stKey);
+            if (stValue) {
+                if (message.sentTime > stValue) {
+                    RongIMClient._storageProvider.setItem(stKey, message.sentTime);
+                } else {
+                    return;
+                }
+            } else {
+                RongIMClient._storageProvider.setItem(stKey, message.sentTime);
+            }
             if (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() == 3) {
                 RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
                     onSuccess: function(con: Conversation) {
@@ -592,11 +607,11 @@ module RongIMLib {
                         }
 
                         if (message.messageDirection == MessageDirection.RECEIVE && (entity.status & 64) == 64) {
-                            var mentioneds = LocalStorageProvider.getInstance().getItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId);
+                            var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId);
                             var key: string = message.conversationType + '_' + message.targetId, info: any = {};
                             if (message.content && message.content.mentionedInfo) {
                                 info[key] = { uid: message.messageUId, time: message.sentTime, mentionedInfo: message.content.mentionedInfo };
-                                LocalStorageProvider.getInstance().setItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId, JSON.stringify(info));
+                                RongIMClient._storageProvider.setItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId, JSON.stringify(info));
                                 mentioneds = JSON.stringify(info);
                             }
                             if (mentioneds) {
@@ -608,8 +623,8 @@ module RongIMLib {
                         if (con.conversationType != 0 && message.senderUserId != Bridge._client.userId && message.receivedStatus != ReceivedStatus.RETRIEVED && message.messageType != RongIMClient.MessageType["ReadReceiptRequestMessage"] && message.messageType != RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
                             con.unreadMessageCount = con.unreadMessageCount + 1;
                             if (MessageUtil.supportLargeStorage()) {
-                                var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
-                                LocalStorageProvider.getInstance().setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
+                                var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
+                                RongIMClient._storageProvider.setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
                             }
                         }
                         con.receivedTime = new Date().getTime();
@@ -665,10 +680,10 @@ module RongIMLib {
 
             if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime && message.messageDirection == MessageDirection.SEND) {
                 var sentkey: string = Bridge._client.userId + message.content.messageUId + "SENT";
-                LocalStorageProvider.getInstance().setItem(sentkey, JSON.stringify({ count: 0, dealtime: message.sentTime, userIds: {} }));
+                RongIMClient._storageProvider.setItem(sentkey, JSON.stringify({ count: 0, dealtime: message.sentTime, userIds: {} }));
             } else if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
                 var reckey: string = Bridge._client.userId + message.conversationType + message.targetId + 'RECEIVED',
-                    recData: any = JSON.parse(LocalStorageProvider.getInstance().getItem(reckey));
+                    recData: any = JSON.parse(RongIMClient._storageProvider.getItem(reckey));
                 if (recData) {
                     if (message.senderUserId in recData) {
                         if (recData[message.senderUserId].uIds && recData[message.senderUserId].uIds && recData[message.senderUserId].uIds.indexOf(message.content.messageUId) == -1) {
@@ -677,19 +692,19 @@ module RongIMLib {
                             recData[message.senderUserId].uIds.push(message.content.messageUId);
                             recData[message.senderUserId].dealtime = message.sentTime;
                             recData[message.senderUserId].isResponse = false;
-                            LocalStorageProvider.getInstance().setItem(reckey, JSON.stringify(recData));
+                            RongIMClient._storageProvider.setItem(reckey, JSON.stringify(recData));
                         } else {
                             return;
                         }
                     } else {
                         var objSon: any = { uIds: [message.content.messageUId], dealtime: message.sentTime, isResponse: false };
                         recData[message.senderUserId] = objSon;
-                        LocalStorageProvider.getInstance().setItem(reckey, JSON.stringify(recData));
+                        RongIMClient._storageProvider.setItem(reckey, JSON.stringify(recData));
                     }
                 } else {
                     var obj: any = {};
                     obj[message.senderUserId] = { uIds: [message.content.messageUId], dealtime: message.sentTime, isResponse: false };
-                    LocalStorageProvider.getInstance().setItem(reckey, JSON.stringify(obj));
+                    RongIMClient._storageProvider.setItem(reckey, JSON.stringify(obj));
                 }
             }
 
@@ -701,16 +716,16 @@ module RongIMLib {
                     var cbuIds: string[] = [];
                     for (let i = 0, len = uIds.length; i < len; i++) {
                         sentkey = Bridge._client.userId + uIds[i] + "SENT";
-                        sentObj = JSON.parse(LocalStorageProvider.getInstance().getItem(sentkey));
+                        sentObj = JSON.parse(RongIMClient._storageProvider.getItem(sentkey));
                         if (sentObj && !(message.senderUserId in sentObj.userIds)) {
                             if (new Date(date).getTime() - sentObj.dealtime > 0) {
-                                LocalStorageProvider.getInstance().removeItem(sentkey);
+                                RongIMClient._storageProvider.removeItem(sentkey);
                             } else {
                                 cbuIds.push(uIds[i]);
                                 sentObj.count += 1;
                                 sentObj.userIds[message.senderUserId] = message.sentTime;
                                 message.receiptResponse[uIds[i]] = sentObj.count;
-                                LocalStorageProvider.getInstance().setItem(sentkey, JSON.stringify(sentObj));
+                                RongIMClient._storageProvider.setItem(sentkey, JSON.stringify(sentObj));
                             }
                         }
                     }
@@ -747,7 +762,7 @@ module RongIMLib {
                         Bridge._client.channel.writeAndFlush(new PubAckMessage(msg.getMessageId()));
                     }
                     // TODO && ->
-                    if (msg.getSyncMsg() && !RongIMClient._memoryStore.depend.isSpolling) {
+                    if (msg.getSyncMsg() && !RongIMClient._memoryStore.depend.isPolling) {
                         Bridge._client.handler.syncMsgMap[msg.getMessageId()] = msg;
                     } else {
                         //如果是PublishMessage就把该对象给onReceived方法执行处理

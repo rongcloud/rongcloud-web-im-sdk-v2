@@ -35,7 +35,7 @@ module RongIMLib {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType === conversationType && RongIMClient._memoryStore.conversationList[i].targetId === targetId) {
                     RongIMClient._memoryStore.conversationList.splice(i, 1);
                     if (MessageUtil.supportLargeStorage()) {
-                        LocalStorageProvider.getInstance().removeItem("cu" + Bridge._client.userId + conversationType + targetId);
+                        RongIMClient._storageProvider.removeItem("cu" + Bridge._client.userId + conversationType + targetId);
                     }
                     break;
                 }
@@ -98,7 +98,7 @@ module RongIMLib {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType == conversationType && RongIMClient._memoryStore.conversationList[i].targetId == targetId) {
                     conver = RongIMClient._memoryStore.conversationList[i];
                     if (MessageUtil.supportLargeStorage()) {
-                        var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + conversationType + targetId);
+                        var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + conversationType + targetId);
                         if (conver.unreadMessageCount == 0) {
                             conver.unreadMessageCount = Number(count);
                         }
@@ -114,7 +114,7 @@ module RongIMLib {
                     onSuccess: function(list: Conversation[]) {
                         if (MessageUtil.supportLargeStorage()) {
                             Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
-                                var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + item.conversationType + item.targetId);
+                                var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + item.conversationType + item.targetId);
                                 if (item.unreadMessageCount == 0) {
                                     item.unreadMessageCount = Number(count);
                                 }
@@ -203,7 +203,7 @@ module RongIMLib {
                 onError: function(error: ErrorCode) {
                     callback.onError(error);
                 }
-            }); 
+            });
         }
 
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
@@ -211,18 +211,18 @@ module RongIMLib {
                 onSuccess: function(conver: Conversation) {
                     if (conver) {
                         if (RongIMLib.MessageUtil.supportLargeStorage()) {
-                            LocalStorageProvider.getInstance().removeItem("cu" + Bridge._client.userId + conversationType + targetId);
+                            RongIMClient._storageProvider.removeItem("cu" + Bridge._client.userId + conversationType + targetId);
                         }
                         conver.unreadMessageCount = 0;
                         conver.mentionedMsg = null;
-                        var mentioneds = LocalStorageProvider.getInstance().getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
+                        var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                         if (mentioneds) {
                             var info: any = JSON.parse(mentioneds);
                             delete info[conversationType + "_" + targetId];
                             if (!MessageUtil.isEmpty(info)) {
-                                LocalStorageProvider.getInstance().setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info));
+                                RongIMClient._storageProvider.setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info));
                             } else {
-                                LocalStorageProvider.getInstance().removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
+                                RongIMClient._storageProvider.removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                             }
                         }
                     }

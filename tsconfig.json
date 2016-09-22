@@ -58,6 +58,7 @@
         "./src/providers/storage_provider.ts",
         "./src/providers/storage/cookie.ts",
         "./src/providers/storage/localstorage.ts",
+        "./src/providers/storage/userDataProvider.ts",
         "./src/providers/upload_provider.ts",
         "./src/util/feature_detector.ts",
         "./src/util/feature_patcher.ts",

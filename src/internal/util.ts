@@ -344,7 +344,7 @@ module RongIMLib {
     export class MessageIdHandler {
         static messageId: number = 0;
         static init() {
-            this.messageId = +(RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "msgId") || RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", 0) || 0);
+            this.messageId = +(RongIMClient._storageProvider.getItem(Navigation.Endpoint.userId + "msgId") || RongIMClient._storageProvider.setItem(Navigation.Endpoint.userId + "msgId", 0) || 0);
         }
         static messageIdPlus(method: any): any {
             RongIMClient._memoryStore.depend.isPolling && this.init();
@@ -353,12 +353,12 @@ module RongIMLib {
                 return false;
             }
             this.messageId++;
-            RongIMClient._memoryStore.depend.isPolling && RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
+            RongIMClient._memoryStore.depend.isPolling && RongIMClient._storageProvider.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
             return this.messageId;
         }
         static clearMessageId() {
             this.messageId = 0;
-            RongIMClient._memoryStore.depend.isPolling && RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
+            RongIMClient._memoryStore.depend.isPolling && RongIMClient._storageProvider.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
         }
         static getMessageId() {
             RongIMClient._memoryStore.depend.isPolling && this.init();

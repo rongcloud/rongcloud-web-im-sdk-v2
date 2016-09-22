@@ -12,7 +12,7 @@ module RongIMLib {
         static RegisterMessage: { [s: string]: any } = {};
         static _memoryStore: any = {};
         static isNotPullMsg: boolean = false;
-        static _cookieHelper: CookieProvider;
+        static _storageProvider: StorageProvider;
         static _dataAccessProvider: DataAccessProvider;
         static _voipProvider: VoIPProvider;
         private static _instance: RongIMClient;
@@ -45,9 +45,17 @@ module RongIMLib {
                 isPolling = false;
             if (version.length > 1) {
                 var trim_Version = parseInt(version[1].replace(/[ ]/g, "").replace(/MSIE/g, ""));
-                if (trim_Version < 10) {
+                if (trim_Version < 10 && trim_Version > 7) {
                     isPolling = true;
+
                 }
+                if (trim_Version < 8 && trim_Version > 4) {
+                    RongIMClient._storageProvider = new UserDataProvider();
+                } else {
+                    RongIMClient._storageProvider = new LocalStorageProvider();
+                }
+            } else {
+                RongIMClient._storageProvider = new LocalStorageProvider();
             }
             var opts = MessageUtil.buildOptions(options, {
                 protobuf: protocol + 'cdn.ronghub.com/protobuf-2.1.5.min.js',
@@ -62,7 +70,7 @@ module RongIMLib {
                 voiceSwfobjct: protocol + 'cdn.ronghub.com/swfobject-2.0.0.min.js',
                 voicePlaySwf: protocol + 'cdn.ronghub.com/player-2.0.2.swf',
                 callFile: protocol + 'cdn.ronghub.com/AgoraRtcAgentSDK-1.4.2.js',
-                isSpolling: isPolling,
+                isPolling: isPolling,
                 wsScheme: wsScheme,
                 cookieValidity: 1,
                 protocol: protocol,
@@ -96,7 +104,6 @@ module RongIMLib {
                 depend: opts
             };
             new FeatureDectector();
-            RongIMClient._cookieHelper = CheckParam.getInstance().checkCookieDisable() ? new MemeoryProvider() : new CookieProvider();
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
                 RongIMClient._dataAccessProvider = dataAccessProvider;
                 RongIMClient._memoryStore.isUseWebSQLProvider = true;
@@ -654,7 +661,7 @@ module RongIMLib {
                     if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
                         var reqMsg: ReadReceiptRequestMessage = <ReadReceiptRequestMessage>msg.content;
                         var sentkey: string = Bridge._client.userId + reqMsg.messageUId + "SENT";
-                        LocalStorageProvider.getInstance().setItem(sentkey, JSON.stringify({ count: 0, dealtime: data.timestamp, userIds: {} }));
+                        RongIMClient._storageProvider.setItem(sentkey, JSON.stringify({ count: 0, dealtime: data.timestamp, userIds: {} }));
                     }
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
                         RongIMClient._memoryStore.converStore.latestMessage = msg;
@@ -697,7 +704,7 @@ module RongIMLib {
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback) {
             var rspkey: string = Bridge._client.userId + conversationType + targetId + 'RECEIVED', me = this;
             if (MessageUtil.supportLargeStorage()) {
-                var valObj: any = JSON.parse(LocalStorageProvider.getInstance().getItem(rspkey));
+                var valObj: any = JSON.parse(RongIMClient._storageProvider.getItem(rspkey));
                 if (valObj) {
                     var vals: any[] = [];
                     for (let key in valObj) {
@@ -719,7 +726,7 @@ module RongIMLib {
                             onSuccess: function(msg) {
                                 var senderUserId = MessageUtil.getFirstKey(obj);
                                 valObj[senderUserId].isResponse = true;
-                                LocalStorageProvider.getInstance().setItem(rspkey, JSON.stringify(valObj));
+                                RongIMClient._storageProvider.setItem(rspkey, JSON.stringify(valObj));
                                 sendCallback.onSuccess(msg);
                             },
                             onError: function(error: ErrorCode, msg: Message) {
@@ -842,7 +849,7 @@ module RongIMLib {
                     if (MessageUtil.supportLargeStorage()) {
                         for (var i = 0, len = list.length; i < len; i++) {
                             tempMsg = MessageUtil.messageParser(list[i]);
-                            tempDir = JSON.parse(LocalStorageProvider.getInstance().getItem(Bridge._client.userId + tempMsg.messageUId + "SENT"));
+                            tempDir = JSON.parse(RongIMClient._storageProvider.getItem(Bridge._client.userId + tempMsg.messageUId + "SENT"));
                             if (tempDir) {
                                 tempMsg.receiptResponse || (tempMsg.receiptResponse = {});
                                 tempMsg.receiptResponse[tempMsg.messageUId] = tempDir.count;
@@ -963,7 +970,7 @@ module RongIMLib {
         }
 
         clearLocalStorage(callback: any): void {
-            LocalStorageProvider.getInstance().clearItem();
+            RongIMClient._storageProvider.clearItem();
             callback();
         }
 
@@ -1125,14 +1132,14 @@ module RongIMLib {
                     conver.receivedTime = conver.latestMessage.receiveTime;
                     conver.sentStatus = conver.latestMessage.sentStatus;
                     conver.sentTime = conver.latestMessage.sentTime;
-                    var mentioneds = LocalStorageProvider.getInstance().getItem("mentioneds_" + Bridge._client.userId + '_' + conver.conversationType + '_' + conver.targetId);
+                    var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + conver.conversationType + '_' + conver.targetId);
                     if (mentioneds) {
                         var info = JSON.parse(mentioneds);
                         conver.mentionedMsg = info[tempConver.type + "_" + tempConver.userId];
                     }
                     if (!isUseReplace) {
                         if (MessageUtil.supportLargeStorage()) {
-                            var count = LocalStorageProvider.getInstance().getItem("cu" + Bridge._client.userId + tempConver.type + tempConver.userId);
+                            var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + tempConver.type + tempConver.userId);
                             conver.unreadMessageCount = Number(count);
                         } else {
                             conver.unreadMessageCount = 0;
@@ -1635,7 +1642,7 @@ module RongIMLib {
                     Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
                         onSuccess: function(collection: any) {
                             var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
-                            RongIMClient._cookieHelper.setItem(chatroomId + Bridge._client.userId + "CST", sync);
+                            RongIMClient._storageProvider.setItem(chatroomId + Bridge._client.userId + "CST", sync);
                             var list = collection.list;
                             if (RongIMClient._memoryStore.filterMessages.length > 0) {
                                 for (var i = 0, mlen = list.length; i < mlen; i++) {

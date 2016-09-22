@@ -17,7 +17,7 @@ module RongIMLib {
         createTransport(url: string, method?: string): any {
             if (!url) { throw new Error("Url is empty,Please check it!"); };
             this.url = url;
-            var sid = RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId"), me = this;
+            var sid = RongIMClient._storageProvider.getItem("sId" + Navigation.Endpoint.userId), me = this;
             if (sid) {
                 setTimeout(function() {
                     me.onSuccess("{\"status\":0,\"userId\":\"" + Navigation.Endpoint.userId + "\",\"headerCode\":32,\"messageId\":0,\"sessionid\":\"" + sid + "\"}");
@@ -108,7 +108,7 @@ module RongIMLib {
                 Navigation.Endpoint.userId = val.userId;
             }
             if (header) {
-                RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "sId", header);
+                RongIMClient._storageProvider.setItem("sId" + Navigation.Endpoint.userId, header);
             }
             if (!MessageUtil.isArray(val)) {
                 val = [val];
@@ -151,8 +151,8 @@ module RongIMLib {
             }
         }
         disconnect(): void {
-            RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
-            RongIMLib.RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "msgId");
+            RongIMClient._storageProvider.removeItem("sId" + Navigation.Endpoint.userId);
+            RongIMLib.RongIMClient._storageProvider.removeItem(Navigation.Endpoint.userId + "msgId");
             this.onClose();
         }
 
@@ -165,18 +165,18 @@ module RongIMLib {
             var txt = responseText.match(/"sessionid":"\S+?(?=")/);
             this.onData(responseText, txt ? txt[0].slice(13) : 0);
             if (/"headerCode":-32,/.test(responseText)) {
-                RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
-                RongIMLib.RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "msgId");
+                RongIMClient._storageProvider.removeItem("sId" + Navigation.Endpoint.userId);
+                RongIMLib.RongIMClient._storageProvider.removeItem(Navigation.Endpoint.userId + "msgId");
                 return;
             }
-            this.getRequest(Navigation.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "sId") + "&timestrap=" + encodeURIComponent(new Date().getTime() + Math.random() + ""));
+            this.getRequest(Navigation.Endpoint.host + "/pullmsg.js?sessionid=" + RongIMClient._storageProvider.getItem("sId" + Navigation.Endpoint.userId) + "&timestrap=" + encodeURIComponent(new Date().getTime() + Math.random() + ""));
             this.connected = true;
             isconnect && this.socket.fire("connect");
         }
 
         onError(): void {
-            RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "sId");
-            RongIMLib.RongIMClient._cookieHelper.removeItem(Navigation.Endpoint.userId + "msgId");
+            RongIMClient._storageProvider.removeItem("sId" + Navigation.Endpoint.userId);
+            RongIMLib.RongIMClient._storageProvider.removeItem(Navigation.Endpoint.userId + "msgId");
             this.onClose();
             this.connected = false;
             this.socket.fire("disconnect");

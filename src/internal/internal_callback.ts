@@ -110,7 +110,7 @@ module RongIMLib {
                 if (_msg) {
                     _msg.setSentStatus = _status;
                 }
-                RongIMClient._cookieHelper.setItem(Bridge._client.userId, timestamp);
+                RongIMClient._storageProvider.setItem(Bridge._client.userId, timestamp);
                 this._cb({ messageUId: messageUId, timestamp: timestamp, messageId: messageId });
             } else {
                 this._timeout(_status);
@@ -167,9 +167,9 @@ module RongIMLib {
                     var date = new Date();
                     var qryOpt: any, dateStr: string = date.getFullYear() + "" + (date.getMonth() + 1) + "" + date.getDate();
                     if (RongIMLib.MessageUtil.supportLargeStorage()) {
-                        qryOpt = LocalStorageProvider.getInstance().getItem("RongQryOpt" + dateStr);
+                        qryOpt = RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
                     } else {
-                        qryOpt = RongIMClient._cookieHelper.getItem("RongQryOpt" + dateStr);
+                        qryOpt = RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
                     }
                     if (!qryOpt) {
                         var modules = new Modules.GetUserInfoInput();
@@ -186,15 +186,15 @@ module RongIMLib {
                                     deviceInfo: "",
                                     privateInfo: {
                                         code: encodeURIComponent(data.name),
-                                        ip: RongIMClient._cookieHelper._host,
+                                        ip: RongIMClient._storageProvider._host,
                                         customId: data.id,
                                         nip: naviArrs.length > 1 ? naviArrs[1] :""
                                     }
                                 }).send(function() {
                                     if (RongIMLib.MessageUtil.supportLargeStorage()) {
-                                        qryOpt = LocalStorageProvider.getInstance().setItem("RongQryOpt" + dateStr, dateStr);
+                                        qryOpt = RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);
                                     } else {
-                                        qryOpt = RongIMClient._cookieHelper.setItem("RongQryOpt" + dateStr, dateStr);
+                                        qryOpt = RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);
                                     }
                                 });
                             },
@@ -203,19 +203,19 @@ module RongIMLib {
                     }
                 }
 
-                var naviStr = RongIMClient._cookieHelper.getItem(RongIMClient._cookieHelper.getItemKey("navi"));
-                var naviKey = RongIMClient._cookieHelper.getItemKey("navi");
+                var naviStr = RongIMClient._storageProvider.getItem(RongIMClient._storageProvider.getItemKey("navi"));
+                var naviKey = RongIMClient._storageProvider.getItemKey("navi");
                 var arr = decodeURIComponent(naviStr).split(",");
                 if (!arr[1]) {
                     naviStr = encodeURIComponent(naviStr) + userId;
-                    RongIMClient._cookieHelper.setItem(naviKey, naviStr);
+                    RongIMClient._storageProvider.setItem(naviKey, naviStr);
                 }
                 if (RongIMClient._memoryStore.isUseWebSQLProvider) {
                     RongIMClient._dataAccessProvider.database.init(userId);
                 }
                 this._client.userId = userId;
-                var self = this, temp = RongIMLib.RongIMClient._cookieHelper.getItemKey("navi");
-                var naviServer = RongIMLib.RongIMClient._cookieHelper.getItem(temp);
+                var self = this, temp = RongIMLib.RongIMClient._storageProvider.getItemKey("navi");
+                var naviServer = RongIMLib.RongIMClient._storageProvider.getItem(temp);
                 // TODO  判断拆分 naviServer 后的数组长度。
                 var naviPort = naviServer.split(",")[0].split(":")[1];
                 if (!RongIMClient._memoryStore.depend.isPolling && RongIMClient._memoryStore.isFirstPingMsg && naviPort.length < 4) {
@@ -228,13 +228,13 @@ module RongIMLib {
                         onError: function() {
                             RongIMClient._memoryStore.isFirstPingMsg = false;
                             RongIMClient.getInstance().disconnect();
-                            var temp: string = RongIMClient._cookieHelper.getItemKey("navi");
-                            var server: string = RongIMClient._cookieHelper.getItem("RongBackupServer");
+                            var temp: string = RongIMClient._storageProvider.getItemKey("navi");
+                            var server: string = RongIMClient._storageProvider.getItem("RongBackupServer");
                             var arrs: string[] = server.split(",");
                             if (arrs.length < 2) {
                                 throw new Error("navi server is empty");
                             }
-                            RongIMClient._cookieHelper.setItem(temp, RongIMClient._cookieHelper.getItem("RongBackupServer"));
+                            RongIMClient._storageProvider.setItem(temp, RongIMClient._storageProvider.getItem("RongBackupServer"));
                             var url: string = RongIMLib.Bridge._client.channel.socket.currentURL;
                             RongIMLib.Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
                             RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMClient._memoryStore.callback);

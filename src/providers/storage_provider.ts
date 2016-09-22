@@ -1,9 +1,14 @@
 module RongIMLib {
 
     export interface StorageProvider {
+
+        _host: string;
+
         setItem(composedKey: string, object: any): void;
 
         getItem(composedKey: string): string;
+
+        getItemKey(composedStr: string): string;
 
         removeItem(composedKey: string): void;
 

@@ -1,9 +1,11 @@
 module RongIMLib {
     export class LocalStorageProvider implements StorageProvider {
 
-        prefix: string = 'cu';
+        prefix: string = 'rong_';
 
-        static _instance: LocalStorageProvider = new LocalStorageProvider();
+        _host: string = "";
+
+        // static _instance: LocalStorageProvider = new LocalStorageProvider();
 
         constructor() {
             var d = new Date(), m = d.getMonth() + 1, date = d.getFullYear() + '/' + (m.toString().length == 1 ? '0' + m : m) + '/' + d.getDate(),
@@ -27,33 +29,43 @@ module RongIMLib {
             }
         }
 
-        static getInstance(): LocalStorageProvider {
-            return LocalStorageProvider._instance;
-        }
-
         setItem(composedKey: string, object: any): void {
             if (composedKey) {
-                localStorage.setItem(composedKey.toString(), object);
+                composedKey.indexOf(this.prefix) == -1 && (composedKey = this.prefix + composedKey);
+                localStorage.setItem(composedKey, object);
             }
         }
 
         getItem(composedKey: string): string {
             if (composedKey) {
-                return localStorage.getItem(composedKey ? composedKey.toString() : "");
+                composedKey.indexOf(this.prefix) == -1 && (composedKey = this.prefix + composedKey);
+                return localStorage.getItem(composedKey ? composedKey : "");
             }
             return "";
         }
 
+        getItemKey(composedStr: string): string {
+            var item = "";
+            for (var key in localStorage) {
+                if (key.indexOf(composedStr) > -1) {
+                    item = key;
+                    break;
+                }
+            }
+            return item;
+        }
+
         removeItem(composedKey: string): void {
             if (composedKey) {
+                composedKey.indexOf(this.prefix) == -1 && (composedKey = this.prefix + composedKey);
                 localStorage.removeItem(composedKey.toString());
             }
         }
 
         clearItem(): void {
-            var me = this, str: string = me.prefix + Bridge._client.userId;
+            var me = this;
             for (var key in localStorage) {
-                if (key.indexOf(str) > -1) {
+                if (key.indexOf(me.prefix) > -1) {
                     me.removeItem(key);
                 }
             }
