@@ -16,7 +16,12 @@ module RongIMLib {
                 //替换本地存储的导航信息
                 var temp = RongIMClient._cookieHelper.getItemKey("navi");
                 temp !== null && RongIMClient._cookieHelper.removeItem(temp);
-                RongIMClient._cookieHelper.setItem("navi" + md5(RongIMLib.Bridge._client.token).slice(8, 16), x["server"] + "," + (x.userId || ""));
+                var md5Token: string = md5(RongIMLib.Bridge._client.token).slice(8, 16), openMp: number = x['openMp'] == 0 ? 0 : 1;
+                RongIMClient._cookieHelper.setItem("navi" + md5Token, x["server"] + "," + (x.userId || ""));
+                RongIMClient._cookieHelper.setItem('openMp' + md5Token, openMp);
+                if (!openMp) {
+                    RongIMClient._memoryStore.depend.openMp = false;
+                }
             };
         }
         connect(appId?: string, token?: string, callback?: any) {
@@ -48,7 +53,9 @@ module RongIMLib {
                     setTimeout(function() {
                         RongIMClient._cookieHelper._host = Navigation.Endpoint.host = obj[0];
                         RongIMClient._memoryStore.voipStategy = RongIMClient._cookieHelper.getItem("voipStrategy");
-
+                        if (!RongIMClient._cookieHelper.getItem('openMp' + naviStr)) {
+                            RongIMClient._memoryStore.depend.openMp = false;
+                        }
                         Navigation.Endpoint.userId = obj[1];
                         _onsuccess();
                     }, 500);
@@ -56,14 +63,9 @@ module RongIMLib {
                 }
             }
             //导航信息，切换Url对象的key进行线上线下测试操作
-            var Url: any = {
-                //测试环境
-                "navUrl-Debug": RongIMLib.MessageUtil.schemeArrs[RongIMLib.RongIMClient.schemeType][0] + "://119.254.111.49:9100/",
-                //线上环境
-                "navUrl-Release": RongIMLib.MessageUtil.schemeArrs[RongIMLib.RongIMClient.schemeType][0] + "://nav.cn.ronghub.com/"
-            }, xss = document.createElement("script");
+            var xss = document.createElement("script");
             //进行jsonp请求
-            xss.src = Url["navUrl-Release"] + (RongIMClient._memoryStore.global["WEB_XHR_POLLING"] ? "cometnavi.js" : "navi.js") + "?appId=" + _appId + "&token=" + encodeURIComponent(_token) + "&" + "callBack=getServerEndpoint&t=" + (new Date).getTime();
+            xss.src = RongIMClient._memoryStore.depend.navi + (RongIMClient._memoryStore.depend.isPolling ? "/cometnavi.js" : "/navi.js") + "?appId=" + _appId + "&token=" + encodeURIComponent(_token) + "&" + "callBack=getServerEndpoint&t=" + (new Date).getTime();
             document.body.appendChild(xss);
             xss.onerror = function() {
                 _onerror(ConnectionState.TOKEN_INCORRECT);

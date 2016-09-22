@@ -32,7 +32,7 @@ module RongIMLib {
             var reqest = this.XmlHttpRequest();
             if (multipart) { reqest.multipart = true; }
             reqest.timeout = 60000;
-            reqest.open(method || "GET", MessageUtil.schemeArrs[RongIMClient.schemeType][0] + "://" + url);
+            reqest.open(method || "GET", RongIMClient._memoryStore.depend.protocol + url);
             if (method == "POST" && "setRequestHeader" in reqest) {
                 reqest.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
             }
@@ -77,7 +77,7 @@ module RongIMLib {
          */
         send(data: any): void {
             var me = this;
-            var _send = me.sendxhr = this.requestFactory(Navigation.Endpoint.host + "/websocket" + data.url+ "&pid=" + encodeURIComponent(me.pid), "POST");
+            var _send = me.sendxhr = this.requestFactory(Navigation.Endpoint.host + "/websocket" + data.url + "&pid=" + encodeURIComponent(me.pid), "POST");
             if ("onload" in _send) {
                 _send.onload = function() {
                     _send.onload = me.empty;

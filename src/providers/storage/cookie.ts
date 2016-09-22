@@ -8,7 +8,7 @@ module RongIMLib {
             }
             if (isSave) {
                 var exp = new Date();
-                exp.setTime(exp.getTime() + 1 * 24 * 3600 * 1000);
+                exp.setTime(exp.getTime() + RongIMClient._memoryStore.depend.cookieValidity * 24 * 3600 * 1000);
                 document.cookie = composedKey + "=" + decodeURIComponent(object) + ";path=/;expires=" + exp.toGMTString();
             } else {
                 document.cookie = composedKey + "=" + decodeURIComponent(object) + ";path=/;";

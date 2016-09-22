@@ -92,8 +92,8 @@ module RongIMLib {
 
         start(conversationType: ConversationType, targetId: string): void {
             var me = this;
-            this.conversationType = conversationType;
-            this.targetId = targetId;
+            this.conversationType = conversationType || null;
+            this.targetId = targetId || null;
             this.store[this.uploadType].start();
         }
 
@@ -142,7 +142,8 @@ module RongIMLib {
             var me = this;
             RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                 onSuccess: function(data: any) {
-                    new RongAjax({ token: data.token, base64: base64 }).send(function(ret: any) {
+                   // type : 1 RongAjax 发送图片
+                    new RongAjax({ token: data.token, base64: base64, type: 1 }).send(function(ret: any) {
                         var opt = { uploadType: 'IMAGE', fileName: ret.hash, isBase64Data: true };
                         me.createMessage(opt, file, function(msg: MessageContent) {
                             RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
@@ -261,14 +262,24 @@ module RongIMLib {
                         }
                         file.uploadType = me.uploadType;
                         me.createMessage(options, file, function(msg: MessageContent) {
-                            RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
-                                onSuccess: function(ret: Message) {
-                                    me.listener.onFileUploaded(file, ret);
-                                },
-                                onError: function(error: ErrorCode, ret: Message) {
-                                    me.listener.onFileUploaded(file, ret, error);
-                                }
-                            });
+                            if (!me.conversationType && !me.targetId && msg.messageName == RongIMClient.MessageType['ImageMessage']) {
+                                var imageMessage: ImageMessage = <ImageMessage>msg;
+                                file.fileUrl = imageMessage.imageUri;
+                                me.listener.onFileUploaded(file);
+                            } else if (!me.conversationType && !me.targetId && msg.messageName == RongIMClient.MessageType['FileMessage']) {
+                                var fileMessage: FileMessage = <FileMessage>msg;
+                                file.fileUrl = fileMessage.fileUrl;
+                                me.listener.onFileUploaded(file);
+                            } else {
+                                RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
+                                    onSuccess: function(ret: Message) {
+                                        me.listener.onFileUploaded(file, ret);
+                                    },
+                                    onError: function(error: ErrorCode, ret: Message) {
+                                        me.listener.onFileUploaded(file, ret, error);
+                                    }
+                                });
+                            }
                         });
 
                     },

@@ -163,9 +163,48 @@ module RongIMLib {
         process(status: number, userId: string, timestamp: number) {
             this.readTimeOut();
             if (status == 0) {
+                if (RongIMClient._memoryStore.depend.isPrivate) {
+                    var date = new Date();
+                    var qryOpt: any, dateStr: string = date.getFullYear() + "" + (date.getMonth() + 1) + "" + date.getDate();
+                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                        qryOpt = LocalStorageProvider.getInstance().getItem("RongQryOpt" + dateStr);
+                    } else {
+                        qryOpt = RongIMClient._cookieHelper.getItem("RongQryOpt" + dateStr);
+                    }
+                    if (!qryOpt) {
+                        var modules = new Modules.GetUserInfoInput();
+                        modules.setNothing(0);
+                        RongIMClient.bridge.queryMsg("qryCfg", MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
+                            onSuccess: function(data: any) {
+                                if (!data) return;
+                                var naviArrs = RongIMClient._memoryStore.depend.navi.split('//');
+                                new RongAjax({
+                                    url: "https://stats.cn.ronghub.com/active.json",
+                                    appKey: RongIMClient._memoryStore.appKey,
+                                    deviceId: Math.floor(Math.random() * 10000),
+                                    timestamp: new Date().getTime(),
+                                    deviceInfo: "",
+                                    privateInfo: {
+                                        code: encodeURIComponent(data.name),
+                                        ip: RongIMClient._cookieHelper._host,
+                                        customId: data.id,
+                                        nip: naviArrs.length > 1 ? naviArrs[1] :""
+                                    }
+                                }).send(function() {
+                                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                                        qryOpt = LocalStorageProvider.getInstance().setItem("RongQryOpt" + dateStr, dateStr);
+                                    } else {
+                                        qryOpt = RongIMClient._cookieHelper.setItem("RongQryOpt" + dateStr, dateStr);
+                                    }
+                                });
+                            },
+                            onError: function() { }
+                        }, "GroupInfo");
+                    }
+                }
+
                 var naviStr = RongIMClient._cookieHelper.getItem(RongIMClient._cookieHelper.getItemKey("navi"));
                 var naviKey = RongIMClient._cookieHelper.getItemKey("navi");
-
                 var arr = decodeURIComponent(naviStr).split(",");
                 if (!arr[1]) {
                     naviStr = encodeURIComponent(naviStr) + userId;
@@ -179,7 +218,7 @@ module RongIMLib {
                 var naviServer = RongIMLib.RongIMClient._cookieHelper.getItem(temp);
                 // TODO  判断拆分 naviServer 后的数组长度。
                 var naviPort = naviServer.split(",")[0].split(":")[1];
-                if (!RongIMClient._memoryStore.global["WEB_XHR_POLLING"] && RongIMClient._memoryStore.isFirstPingMsg && naviPort.length < 4) {
+                if (!RongIMClient._memoryStore.depend.isPolling && RongIMClient._memoryStore.isFirstPingMsg && naviPort.length < 4) {
                     Bridge._client.checkSocket({
                         onSuccess: function() {
                             if (!RongIMClient.isNotPullMsg) {

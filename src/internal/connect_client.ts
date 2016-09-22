@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
-        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK","delMsg"];
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg"];
     export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
@@ -68,7 +68,7 @@ module RongIMLib {
                         var naviPort = naviServer.split(",")[0].split(":")[1];
                         naviPort && naviPort.length < 4 || RongIMClient._cookieHelper.setItem("rongSDK", "");
                         // TODO  判断拆分 naviServer 后的数组长度。
-                        if (!RongIMClient._memoryStore.global["WEB_XHR_POLLING"] && naviPort && naviPort.length < 4) {
+                        if (!RongIMClient._memoryStore.depend.isSpolling && naviPort && naviPort.length < 4) {
                             Bridge._client.handler.connectCallback.pauseTimer();
                             var temp = RongIMClient._cookieHelper.getItemKey("navi");
                             var server = RongIMClient._cookieHelper.getItem("RongBackupServer");
@@ -193,10 +193,9 @@ module RongIMLib {
         }
         /**
          * [checkTransport 返回通道类型]
-         * WEB_XHR_POLLING:是否选择comet方式进行连接
          */
         checkTransport(): string {
-            if (RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
+            if (RongIMClient._memoryStore.depend.isPolling) {
                 Transportations._TransportType = Socket.XHR_POLLING;
             }
             return Transportations._TransportType;
@@ -427,7 +426,7 @@ module RongIMLib {
                     //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
                     RongIMClient._memoryStore.isSyncRemoteConverList = true;
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
-                    RongIMClient._cookieHelper.setItem(symbol, sync);
+                    RongIMClient._cookieHelper.setItem(symbol, sync, true);
                     me.SyncTimeQueue.state = "complete";
                     me.invoke(isPullMsg, target);
                     //把拉取到的消息逐条传给消息监听器
@@ -540,7 +539,7 @@ module RongIMLib {
                 con: Conversation;
             if (msg._name != "PublishMessage") {
                 entity = msg;
-                RongIMClient._cookieHelper.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
+                RongIMClient._cookieHelper.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime),true);
             } else {
                 if (msg.getTopic() == "s_ntf") {
                     entity = Modules.NotifyMsg.decode(msg.getData());
@@ -548,7 +547,7 @@ module RongIMLib {
                     return;
                 } else if (msg.getTopic() == "s_msg") {
                     entity = Modules.DownStreamMessage.decode(msg.getData());
-                    RongIMClient._cookieHelper.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
+                    RongIMClient._cookieHelper.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime),true);
                 } else {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;
@@ -593,11 +592,11 @@ module RongIMLib {
                         }
 
                         if (message.messageDirection == MessageDirection.RECEIVE && (entity.status & 64) == 64) {
-                            var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId);
+                            var mentioneds = LocalStorageProvider.getInstance().getItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId);
                             var key: string = message.conversationType + '_' + message.targetId, info: any = {};
                             if (message.content && message.content.mentionedInfo) {
                                 info[key] = { uid: message.messageUId, time: message.sentTime, mentionedInfo: message.content.mentionedInfo };
-                                RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId, JSON.stringify(info), true);
+                                LocalStorageProvider.getInstance().setItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId, JSON.stringify(info));
                                 mentioneds = JSON.stringify(info);
                             }
                             if (mentioneds) {
@@ -748,7 +747,7 @@ module RongIMLib {
                         Bridge._client.channel.writeAndFlush(new PubAckMessage(msg.getMessageId()));
                     }
                     // TODO && ->
-                    if (msg.getSyncMsg() && !RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
+                    if (msg.getSyncMsg() && !RongIMClient._memoryStore.depend.isSpolling) {
                         Bridge._client.handler.syncMsgMap[msg.getMessageId()] = msg;
                     } else {
                         //如果是PublishMessage就把该对象给onReceived方法执行处理

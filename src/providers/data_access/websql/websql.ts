@@ -254,14 +254,14 @@ module RongIMLib {
             var sSql: string = "select * from t_conversation_" + this.database.userId + " t where t.conversationType = ? and t.targetId = ?";
             var uSql: string = "update t_conversation_" + this.database.userId + " set content = ? where conversationType = ? and targetId = ?", me = this;
             this.database.execSearchByParams(sSql, [conversationType, targetId], function(results: any[], rowsAffected: number) {
-                var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
+                var mentioneds = LocalStorageProvider.getInstance().getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                 if (mentioneds) {
                     var info: any = JSON.parse(mentioneds);
                     delete info[conversationType + "_" + targetId];
                     if (!MessageUtil.isEmpty(info)) {
-                        RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info), true);
+                        LocalStorageProvider.getInstance().setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info));
                     } else {
-                        RongIMClient._cookieHelper.removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
+                        LocalStorageProvider.getInstance().removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                     }
                 }
                 if (results.length == 0 && !rowsAffected) {

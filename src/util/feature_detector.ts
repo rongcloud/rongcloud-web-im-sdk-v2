@@ -5,8 +5,8 @@ module RongIMLib {
 
         constructor() {
             Transportations._TransportType = Socket.WEBSOCKET;
-            if ("WebSocket" in window && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !window["WEB_XHR_POLLING"]) {
-                var str: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/protobuf-2.1.5.min.js" : "//cdn.ronghub.com/protobuf-2.1.5.min.js";
+            if ("WebSocket" in window && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !RongIMClient._memoryStore.depend.isPolling) {
+                var str: string = RongIMClient._memoryStore.depend.protobuf;
                 this.script.src = str;
                 this.head.appendChild(this.script);
             } else {
@@ -16,20 +16,20 @@ module RongIMLib {
 
         }
     }
-    if (document.readyState == "interactive" || document.readyState == "loading" || document.readyState == "complete") {
-        new FeatureDectector();
-    } else if (document.addEventListener) {
-        document.addEventListener("DOMContentLoaded", function() {
-            //TODO 替换callee
-            document.removeEventListener("DOMContentLoaded", <any>arguments.callee, false);
-            new FeatureDectector();
-        }, false);
-    } else if (document.attachEvent) {
-        document.attachEvent("onreadystatechange", function() {
-            if (document.readyState == "interactive" || document.readyState == "loading" || document.readyState == "complete") {
-                document.detachEvent("onreadystatechange", arguments.callee);
-                new FeatureDectector();
-            }
-        });
-    }
+    // if (document.readyState == "interactive" || document.readyState == "loading" || document.readyState == "complete") {
+    //     new FeatureDectector();
+    // } else if (document.addEventListener) {
+    //     document.addEventListener("DOMContentLoaded", function() {
+    //         //TODO 替换callee
+    //         document.removeEventListener("DOMContentLoaded", <any>arguments.callee, false);
+    //         new FeatureDectector();
+    //     }, false);
+    // } else if (document.attachEvent) {
+    //     document.attachEvent("onreadystatechange", function() {
+    //         if (document.readyState == "interactive" || document.readyState == "loading" || document.readyState == "complete") {
+    //             document.detachEvent("onreadystatechange", arguments.callee);
+    //             new FeatureDectector();
+    //         }
+    //     });
+    // }
 }

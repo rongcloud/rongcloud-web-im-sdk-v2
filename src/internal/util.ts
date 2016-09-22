@@ -155,7 +155,7 @@ module RongIMLib {
      */
     export class MessageUtil {
         //适配SSL
-        static schemeArrs: Array<any> = [["http", "ws"], ["https", "wss"]];
+        // static schemeArrs: Array<any> = [["http", "ws"], ["https", "wss"]];
         static sign: any = { converNum: 1, msgNum: 1, isMsgStart: true, isConvStart: true };
         static supportLargeStorage(): boolean {
             if (window.localStorage) {
@@ -163,6 +163,21 @@ module RongIMLib {
             } else {
                 return false;
             }
+        }
+
+        static buildOptions(one: any, opts: any, protocol: string): any {
+            if (typeof one == 'object') {
+                for (var key in opts) {
+                    if (key == 'protobuf' || key == 'long' || key == 'byteBuffer' || key == 'navi' || key == 'api' ||
+                        key == 'emojiImage' || key == 'voiceLibamr' || key == 'voicePCMdata' || key == 'voiceSwfobjct' || key == 'voicePlaySwf' || key == 'callFile') {
+                        one[key] && (opts[key] = protocol + one[key]);
+                    } else {
+                        one[key] && (opts[key] = one[key]);
+                    }
+                }
+
+            }
+            return opts;
         }
         /**
          *4680000 为localstorage最小容量5200000字节的90%，超过90%将删除之前过早的存储
@@ -255,7 +270,7 @@ module RongIMLib {
         static messageParser(entity: any, onReceived?: any, offlineMsg?: boolean): any {
             var message: Message = new Message(), content: any = entity.content, de: any, objectName: string = entity.classname, val: any, isUseDef = false;
             try {
-                if (RongIMClient._memoryStore.global["WEB_XHR_POLLING"]) {
+                if (RongIMClient._memoryStore.depend.isPolling) {
                     val = new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content);
                     de = JSON.parse(val);
                 } else {
@@ -328,26 +343,25 @@ module RongIMLib {
     }
     export class MessageIdHandler {
         static messageId: number = 0;
-        static isXHR: boolean = window["WEB_XHR_POLLING"];
         static init() {
             this.messageId = +(RongIMClient._cookieHelper.getItem(Navigation.Endpoint.userId + "msgId") || RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", 0) || 0);
         }
         static messageIdPlus(method: any): any {
-            this.isXHR && this.init();
+            RongIMClient._memoryStore.depend.isPolling && this.init();
             if (this.messageId >= 65535) {
                 method();
                 return false;
             }
             this.messageId++;
-            this.isXHR && RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
+            RongIMClient._memoryStore.depend.isPolling && RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
             return this.messageId;
         }
         static clearMessageId() {
             this.messageId = 0;
-            this.isXHR && RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
+            RongIMClient._memoryStore.depend.isPolling && RongIMClient._cookieHelper.setItem(Navigation.Endpoint.userId + "msgId", this.messageId);
         }
         static getMessageId() {
-            this.isXHR && this.init();
+            RongIMClient._memoryStore.depend.isPolling && this.init();
             return this.messageId;
         }
     }
@@ -412,9 +426,9 @@ module RongIMLib {
         options: any;
         xmlhttp: any;
         constructor(options: any) {
-            this.xmlhttp = null;
-            this.options = options;
             var me = this;
+            me.xmlhttp = null;
+            me.options = options;
             var hasCORS = typeof XMLHttpRequest !== "undefined" && "withCredentials" in new XMLHttpRequest();
             if ("undefined" != typeof XMLHttpRequest && hasCORS) {
                 me.xmlhttp = new XMLHttpRequest();
@@ -429,16 +443,25 @@ module RongIMLib {
             me.options.url || (me.options.url = "http://upload.qiniu.com/putb64/-1");
             me.xmlhttp.onreadystatechange = function() {
                 if (me.xmlhttp.readyState == 4) {
-                    callback(JSON.parse(me.xmlhttp.responseText.replace(/'/g, '"')));
+                    if (me.options.type) {
+                        callback(JSON.parse(me.xmlhttp.responseText.replace(/'/g, '"')));
+                    } else {
+                        callback();
+                    }
                 }
             };
             me.xmlhttp.open("POST", me.options.url, true);
             me.xmlhttp.withCredentials = false;
             if ("setRequestHeader" in me.xmlhttp) {
-                me.xmlhttp.setRequestHeader("Content-type", "application/octet-stream");
-                me.xmlhttp.setRequestHeader('Authorization', "UpToken " + me.options.token);
+                if (me.options.type) {
+                    me.xmlhttp.setRequestHeader("Content-type", "application/octet-stream");
+                    me.xmlhttp.setRequestHeader('Authorization', "UpToken " + me.options.token);
+                } else {
+                    me.xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
+                }
             }
-            me.xmlhttp.send(me.options.base64);
+
+            me.xmlhttp.send(me.options.type ? me.options.base64 : "appKey=" + me.options.appKey + "&deviceId=" + me.options.deviceId + "&timestamp=" + me.options.timestamp + "&deviceInfo=" + me.options.deviceInfo + "&privateInfo=" + JSON.stringify(me.options.privateInfo));
         }
     }
 }

@@ -203,7 +203,7 @@ module RongIMLib {
                 onError: function(error: ErrorCode) {
                     callback.onError(error);
                 }
-            });
+            }); 
         }
 
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
@@ -215,14 +215,14 @@ module RongIMLib {
                         }
                         conver.unreadMessageCount = 0;
                         conver.mentionedMsg = null;
-                        var mentioneds = RongIMClient._cookieHelper.getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
+                        var mentioneds = LocalStorageProvider.getInstance().getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                         if (mentioneds) {
                             var info: any = JSON.parse(mentioneds);
                             delete info[conversationType + "_" + targetId];
                             if (!MessageUtil.isEmpty(info)) {
-                                RongIMClient._cookieHelper.setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info), true);
+                                LocalStorageProvider.getInstance().setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info));
                             } else {
-                                RongIMClient._cookieHelper.removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
+                                LocalStorageProvider.getInstance().removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
                             }
                         }
                     }

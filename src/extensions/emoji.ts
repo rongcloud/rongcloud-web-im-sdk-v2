@@ -140,7 +140,7 @@ module RongIMLib {
 
         private static size: number = 24;
 
-        private static url: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/css-sprite_bg-2.1.10.png" : "//cdn.ronghub.com/css-sprite_bg-2.1.10.png";
+        private static url: string = "";
         /**
          * 是否支持高清屏幕
          */
@@ -202,6 +202,7 @@ module RongIMLib {
         }
         static init(emoji?: any) {
             var me = this;
+            me.url = (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.emojiImage) || "//cdn.ronghub.com/css-sprite_bg-2.1.10.png";
             if (emoji) {
                 me.emojiFactory = emoji.dataSource;
                 me.url = emoji.url;

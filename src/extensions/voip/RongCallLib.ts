@@ -21,7 +21,7 @@ module RongIMLib {
             } else {
                 throw new Error("Error:VIDEO_CONTAINER_IS_NULL.");
             }
-            var str: string = window["SCHEMETYPE"] ? window["SCHEMETYPE"] + "://cdn.ronghub.com/AgoraRtcAgentSDK-1.4.2.js" : "//cdn.ronghub.com/AgoraRtcAgentSDK-1.4.2.js";
+            var str: string = (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.callFile) || "//cdn.ronghub.com/AgoraRtcAgentSDK-1.4.2.js";
             var script: any = document.createElement("script");
             var head: any = document.getElementsByTagName("head")[0];
             script.src = str;
