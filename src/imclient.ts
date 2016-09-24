@@ -75,9 +75,17 @@ module RongIMLib {
                 cookieValidity: 1,
                 protocol: protocol,
                 openMp: true,
-                isPrivate: false
+                isPrivate: false,
+                postImageUrl: protocol + 'upload.qiniu.com/putb64/-1',
+                fileServer: protocol + 'upload.qiniu.com'
             }, protocol);
-
+            if (document.location.protocol == 'https:') {
+                opts.fileServer = 'https://' + (options && options.fileServer || 'upload.qiniu.com');
+                opts.postImageUrl = 'https://' + (options && options.postImageUrl || 'upload.qiniu.com/putb64/-1');
+            } else {
+                opts.fileServer = 'http://' + (options && options.fileServer || 'upload.qiniu.com');
+                opts.postImageUrl = 'https://' + (options && options.postImageUrl || 'upload.qiniu.com/putb64/-1');
+            }
             var pather = new FeaturePatcher();
             pather.patchAll();
             RongIMClient._memoryStore = {
@@ -206,12 +214,6 @@ module RongIMLib {
             RongIMClient.bridge = Bridge.getInstance();
             RongIMClient._memoryStore.token = token;
             RongIMClient._memoryStore.callback = callback;
-            if (!navigator.cookieEnabled) {
-                setTimeout(function() {
-                    callback.onError(ErrorCode.COOKIE_ENABLE);
-                });
-                return;
-            }
             if (Bridge._client && Bridge._client.channel && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTING) {
                 return;
             }
@@ -588,8 +590,8 @@ module RongIMLib {
          * @param  {string}                  pushContent      []
          * @param  {string}                  pushData         []
          */
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean) {
-            CheckParam.getInstance().check(["number", "string", "object", "object", "undefined|object|null|global|boolean"], "sendMessage");
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string) {
+            CheckParam.getInstance().check(["number", "string", "object", "object", "undefined|object|null|global|boolean", "undefined|object|null|global|string", "undefined|object|null|global|string"], "sendMessage");
             if (!Bridge._client.channel) {
                 sendCallback.onError(RongIMLib.ErrorCode.RC_NET_UNAVAILABLE, null);
                 return;
@@ -605,6 +607,9 @@ module RongIMLib {
             } else {
                 modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
             }
+
+            pushText && modules.setPushText(pushText);
+            appData && modules.setAppData(appData);
 
             if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
                 var rspMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>messageContent;
@@ -658,6 +663,7 @@ module RongIMLib {
 
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
+                    data && data.timestamp && RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + conversationType + targetId, data.timestamp);
                     if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
                         var reqMsg: ReadReceiptRequestMessage = <ReadReceiptRequestMessage>msg.content;
                         var sentkey: string = Bridge._client.userId + reqMsg.messageUId + "SENT";
@@ -1190,7 +1196,7 @@ module RongIMLib {
             RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
         }
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number) {
-            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined"], "getConversationList");
+            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global"], "getConversationList");
             var me = this;
             RongIMClient._dataAccessProvider.getConversationList(<ResultCallback<Conversation[]>>{
                 onSuccess: function(data: Conversation[]) {
@@ -1217,7 +1223,7 @@ module RongIMLib {
             }, conversationTypes, count);
         }
         getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number) {
-            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined"], "getRemoteConversationList");
+            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global"], "getRemoteConversationList");
             var modules = new Modules.RelationsInput(), self = this;
             modules.setType(1);
             if (typeof count == 'undefined') {

@@ -181,6 +181,9 @@ var Polling = {
             this.setUserId = function(b){
                 a.userId = b;
             };
+            this.setAppData = function(b){
+                a.appData = b;
+            };
             this.toArrayBuffer = function () {
                 return a
             };

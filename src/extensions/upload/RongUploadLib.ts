@@ -45,15 +45,37 @@ module RongIMLib {
             });
         }
 
+        static getLocalImageUrl(files: any, isBase64Data: boolean, callback?: any): void {
+            if (isBase64Data) {
+              //TODO 发送截图细节
+            } else {
+                plupload.each(files, function(file: any) {
+                    RongUploadLib.calcImageUrl(file.getNative());
+                });
+            }
+        }
+
+        static calcImageUrl(file: any): void {
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                file.uploadType = RongUploadLib._instance.uploadType;
+                RongUploadLib.imageCompressToBase64(file, function(content: string) {
+                    var msg: ImageMessage = new RongIMLib.ImageMessage({ content: content, imageUri: reader.result });
+                    RongUploadLib._instance.listener.onFileAdded(file, msg);
+                });
+            }
+            reader.readAsDataURL(file);
+        }
+
         constructor(imgOpts: any, fileOpts: any) {
             var me = this;
             var head: any = document.getElementsByTagName('head')[0];
             var plScript: any = document.createElement('script');
-            plScript.src = 'http://cdn.ronghub.com/plupload.min.js';
+            plScript.src = '//cdn.ronghub.com/plupload.min.js';
             plScript.onload = plScript.onreadystatechange = function() {
                 if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
                     var qiniuScript = document.createElement('script');
-                    qiniuScript.src = "http://cdn.ronghub.com/qiniu.min.js";
+                    qiniuScript.src = "//cdn.ronghub.com/qiniu2.2.4.js";
                     qiniuScript.onload = plScript.onreadystatechange = function() {
                         if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
                             imgOpts && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
@@ -140,9 +162,10 @@ module RongIMLib {
 
         postImage(base64: string, file: any, conversationType: ConversationType, targetId: string, callback: any): void {
             var me = this;
+            // RongUploadLib.getLocalImageUrl({ base64: base64, file: file }, true, callback);
             RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                 onSuccess: function(data: any) {
-                   // type : 1 RongAjax 发送图片
+                    // type : 1 RongAjax 发送图片
                     new RongAjax({ token: data.token, base64: base64, type: 1 }).send(function(ret: any) {
                         var opt = { uploadType: 'IMAGE', fileName: ret.hash, isBase64Data: true };
                         me.createMessage(opt, file, function(msg: MessageContent) {
@@ -230,10 +253,14 @@ module RongIMLib {
                     'FilesAdded': function(up: any, files: any) {
                         var opts: any = up.getOption(), name: string = "";
                         me.uploadType = opts.uploadType;
-                        plupload.each(files, function(file: any) {
-                            file.uploadType = me.uploadType;
-                            me.listener.onFileAdded(file);
-                        });
+                        if (opts.uploadType === 'IMAGE') {
+                            RongUploadLib.getLocalImageUrl(files, false);
+                        } else {
+                            plupload.each(files, function(file: any) {
+                                file.uploadType = me.uploadType;
+                                me.listener.onFileAdded(file);
+                            });
+                        }
                     },
                     'BeforeUpload': function(up: any, file: any) {
                         var name = ""
@@ -262,24 +289,14 @@ module RongIMLib {
                         }
                         file.uploadType = me.uploadType;
                         me.createMessage(options, file, function(msg: MessageContent) {
-                            if (!me.conversationType && !me.targetId && msg.messageName == RongIMClient.MessageType['ImageMessage']) {
-                                var imageMessage: ImageMessage = <ImageMessage>msg;
-                                file.fileUrl = imageMessage.imageUri;
-                                me.listener.onFileUploaded(file);
-                            } else if (!me.conversationType && !me.targetId && msg.messageName == RongIMClient.MessageType['FileMessage']) {
-                                var fileMessage: FileMessage = <FileMessage>msg;
-                                file.fileUrl = fileMessage.fileUrl;
-                                me.listener.onFileUploaded(file);
-                            } else {
-                                RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
-                                    onSuccess: function(ret: Message) {
-                                        me.listener.onFileUploaded(file, ret);
-                                    },
-                                    onError: function(error: ErrorCode, ret: Message) {
-                                        me.listener.onFileUploaded(file, ret, error);
-                                    }
-                                });
-                            }
+                            RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
+                                onSuccess: function(ret: Message) {
+                                    me.listener.onFileUploaded(file, ret);
+                                },
+                                onError: function(error: ErrorCode, ret: Message) {
+                                    me.listener.onFileUploaded(file, ret, error);
+                                }
+                            });
                         });
 
                     },
@@ -346,13 +363,11 @@ module RongIMLib {
         }
 
         private getThumbnail(obj: any, area: number, callback: any) {
-            var canvas = document.createElement("canvas"),
-                context = canvas.getContext('2d'), me = this;
+            var canvas = document.createElement("canvas"), context = canvas.getContext('2d'), me = this;
             var img = new Image();
             img.onload = function() {
                 var target_w: number;
                 var target_h: number;
-
                 var imgarea = img.width * img.height;
                 var _y = 0, _x = 0, maxWidth = 240, maxHeight = 240;
                 if (imgarea > area) {
@@ -360,7 +375,8 @@ module RongIMLib {
                     scale = Math.ceil(scale * 100) / 100;
                     target_w = img.width / scale;
                     target_h = img.height / scale;
-                } else {
+                }
+                else {
                     target_w = img.width;
                     target_h = img.height;
                 }
@@ -385,12 +401,13 @@ module RongIMLib {
                     }
                     var _canvas = canvas.toDataURL("image/jpeg", 0.5);
                     callback(obj, _canvas);
-                } catch (e) {
+                }
+                catch (e) {
                     callback(obj, null);
                 }
-            }
-
+            };
             img.src = me.getFullPath(obj);
+
         }
 
         private getFullPath(file: File): any {
