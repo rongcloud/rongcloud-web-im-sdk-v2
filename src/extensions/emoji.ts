@@ -180,7 +180,7 @@ module RongIMLib {
         }
         private static createSpan(emojiObj: any): any {
             var span = document.createElement("span"), p = document.createElement("span");
-            span.setAttribute("style", "height: " + this.size + "px; width: " + this.size + "px; display: inline-block; font-size: 20px !important; text-align: center; line-height: 24px;");
+            span.setAttribute("style", "height: " + this.size + "px; width: " + this.size + "px; display: inline-block; font-size: 20px !important; text-align: center; vertical-align: middle;overflow: hidden; line-height: 24px;");
             if (this.supportEmoji) {
                 span.textContent = emojiObj.tag;
             } else {

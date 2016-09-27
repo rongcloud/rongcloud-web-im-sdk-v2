@@ -31,6 +31,14 @@ module RongIMLib {
             key && key.indexOf(this.prefix) == -1 && (key = this.prefix + key);
             this.oPersist.removeAttribute(key);
             this.oPersist.save(this.opersistName);
+            var keyNames: string = this.getItem(this.keyManager), keyNameArray: string[] = keyNames && keyNames.split(',') || [];
+            for (let i = 0, len = keyNameArray.length; i < len; i++) {
+                if (keyNameArray[i] == key) {
+                    keyNameArray.splice(i, 1);
+                }
+            }
+            this.oPersist.setAttribute(this.prefix + this.keyManager, keyNameArray.join(','));
+            this.oPersist.save(this.opersistName);
         }
 
         getItemKey(composedStr: string): string {

@@ -45,7 +45,7 @@ module RongIMLib {
                 isPolling = false;
             if (version.length > 1) {
                 var trim_Version = parseInt(version[1].replace(/[ ]/g, "").replace(/MSIE/g, ""));
-                if (trim_Version < 10 && trim_Version > 7) {
+                if (trim_Version < 10) {
                     isPolling = true;
 
                 }
@@ -541,18 +541,20 @@ module RongIMLib {
             } else if (delMsgs.length > 100) {
                 delMsgs.length = 100;
             }
-            var modules = new Modules.DeleteMsgInput();
-            modules.setType(conversationType);
-            modules.setConversationId(targetId);
-            modules.setMsgs(delMsgs);
-            RongIMClient.bridge.queryMsg(33, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(info: any) {
-                    callback.onSuccess(true);
-                },
-                onError: function(err: any) {
-                    callback.onError(err);
-                }
-            }, "DeleteMsgOutput");
+            // 后续增加，去掉注释即可
+            callback.onSuccess(true);
+            // var modules = new Modules.DeleteMsgInput();
+            // modules.setType(conversationType);
+            // modules.setConversationId(targetId);
+            // modules.setMsgs(delMsgs);
+            // RongIMClient.bridge.queryMsg(33, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+            //     onSuccess: function(info: any) {
+            //         callback.onSuccess(true);
+            //     },
+            //     onError: function(err: any) {
+            //         callback.onError(err);
+            //     }
+            // }, "DeleteMsgOutput");
         }
         /**
          * [deleteMessages 删除消息记录。]
