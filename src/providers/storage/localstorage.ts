@@ -16,7 +16,7 @@ module RongIMLib {
                     for (let key in recObj) {
                         nowDate - recObj[key].dealtime > 0 && (delete recObj[key]);
                     }
-                    if (MessageUtil.isEmpty(recObj)) {
+                    if (ObjectTools.isEmpty(recObj)) {
                         localStorage.removeItem(key);
                     } else {
                         localStorage.setItem(key, JSON.stringify(recObj));

@@ -53,6 +53,7 @@
         "./src/model.ts",
         "./src/providers/data_access_provider.ts",
         "./src/providers/data_access/server.ts",
+        "./src/providers/data_access/vc.ts",
         "./src/providers/data_access/websql/DBUtil.ts",
         "./src/providers/data_access/websql/websql.ts",
         "./src/providers/storage_provider.ts",
@@ -62,7 +63,8 @@
         "./src/providers/upload_provider.ts",
         "./src/util/feature_detector.ts",
         "./src/util/feature_patcher.ts",
-        "./src/util/script_loader.ts"
+        "./src/util/script_loader.ts",
+        "./src/util/util.ts"
     ],
     "compileOnSave": false,
     "buildOnSave": false,
