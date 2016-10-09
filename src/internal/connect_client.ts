@@ -320,6 +320,7 @@ module RongIMLib {
                     clearInterval(checkTimeout);
                 } else {
                     if (count > 15) {
+                        clearInterval(checkTimeout);
                         callback.onError();
                     }
                 }
