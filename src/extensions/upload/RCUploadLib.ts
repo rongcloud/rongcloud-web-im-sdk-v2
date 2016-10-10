@@ -147,6 +147,7 @@ module RongIMLib {
                         });
                     },
                     'BeforeUpload': function(up: any, file: any) {
+                        var name: string = "";
                         file.oldName = file.name;
                         if (file.name.lastIndexOf('.') > -1) {
                             name = file.id + file.name.substr(file.name.lastIndexOf('.'));

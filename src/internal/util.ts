@@ -444,9 +444,9 @@ module RongIMLib {
             me.xmlhttp.onreadystatechange = function() {
                 if (me.xmlhttp.readyState == 4) {
                     if (me.options.type) {
-                        callback(JSON.parse(me.xmlhttp.responseText.replace(/'/g, '"')));
-                    } else {
                         callback();
+                    } else {
+                        callback(JSON.parse(me.xmlhttp.responseText.replace(/'/g, '"')));
                     }
                 }
             };
@@ -454,14 +454,14 @@ module RongIMLib {
             me.xmlhttp.withCredentials = false;
             if ("setRequestHeader" in me.xmlhttp) {
                 if (me.options.type) {
+                    me.xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
+                } else {
                     me.xmlhttp.setRequestHeader("Content-type", "application/octet-stream");
                     me.xmlhttp.setRequestHeader('Authorization', "UpToken " + me.options.token);
-                } else {
-                    me.xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
                 }
             }
 
-            me.xmlhttp.send(me.options.type ? me.options.base64 : "appKey=" + me.options.appKey + "&deviceId=" + me.options.deviceId + "&timestamp=" + me.options.timestamp + "&deviceInfo=" + me.options.deviceInfo + "&privateInfo=" + JSON.stringify(me.options.privateInfo));
+            me.xmlhttp.send(me.options.type ? "appKey=" + me.options.appKey + "&deviceId=" + me.options.deviceId + "&timestamp=" + me.options.timestamp + "&deviceInfo=" + me.options.deviceInfo + "&privateInfo=" + JSON.stringify(me.options.privateInfo) : me.options.base64);
         }
     }
 }

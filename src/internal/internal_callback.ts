@@ -184,11 +184,12 @@ module RongIMLib {
                                     deviceId: Math.floor(Math.random() * 10000),
                                     timestamp: new Date().getTime(),
                                     deviceInfo: "",
+                                    type: 1,
                                     privateInfo: {
                                         code: encodeURIComponent(data.name),
                                         ip: RongIMClient._storageProvider._host,
                                         customId: data.id,
-                                        nip: naviArrs.length > 1 ? naviArrs[1] :""
+                                        nip: naviArrs.length > 1 ? naviArrs[1] : ""
                                     }
                                 }).send(function() {
                                     if (RongIMLib.MessageUtil.supportLargeStorage()) {
