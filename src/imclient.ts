@@ -798,16 +798,25 @@ module RongIMLib {
         // #endregion TextMessage Draft
 
         // #region Conversation
+
+        searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void {
+            RongIMClient._dataAccessProvider.searchConversationByContent(keyword, callback, conversationTypes);
+        }
+
+        searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
+            RongIMClient._dataAccessProvider.searchMessageByContent(conversationType, targetId, keyword, timestamp, count, total, callback);
+        }
+
         clearConversations(callback: ResultCallback<boolean>, ...conversationTypes: ConversationType[]) {
             if (conversationTypes.length == 0) {
                 conversationTypes = [RongIMLib.ConversationType.CHATROOM,
-                    RongIMLib.ConversationType.CUSTOMER_SERVICE,
-                    RongIMLib.ConversationType.DISCUSSION,
-                    RongIMLib.ConversationType.GROUP,
-                    RongIMLib.ConversationType.PRIVATE,
-                    RongIMLib.ConversationType.SYSTEM,
-                    RongIMLib.ConversationType.PUBLIC_SERVICE,
-                    RongIMLib.ConversationType.APP_PUBLIC_SERVICE];
+                RongIMLib.ConversationType.CUSTOMER_SERVICE,
+                RongIMLib.ConversationType.DISCUSSION,
+                RongIMLib.ConversationType.GROUP,
+                RongIMLib.ConversationType.PRIVATE,
+                RongIMLib.ConversationType.SYSTEM,
+                RongIMLib.ConversationType.PUBLIC_SERVICE,
+                RongIMLib.ConversationType.APP_PUBLIC_SERVICE];
             }
             RongIMClient._dataAccessProvider.clearConversations(conversationTypes, {
                 onSuccess: function(bool: boolean) {

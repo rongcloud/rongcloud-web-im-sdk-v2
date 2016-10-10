@@ -336,6 +336,78 @@ module RongIMLib {
             }
         }
 
+        getFileToken(fileType: FileType, callback: ResultCallback<string>): void {
+            this.addon.getUploadToken(fileType, function(token: string) {
+                callback.onSuccess(token);
+            },
+                function(errorCode: ErrorCode) {
+                    callback.onError(errorCode);
+                }
+            );
+        }
+
+        getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>): void {
+            this.addon.getDownloadUrl(fileType, oriName, fileName,
+                function(url: string) {
+                    callback.onSuccess(url);
+                },
+                function(errorCode: ErrorCode) {
+                    callback.onError(errorCode);
+                }
+            );
+        }
+
+        searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void {
+            var converTypes: ConversationType[] = [];
+            if (typeof conversationTypes == 'undefined') {
+                converTypes = [1, 2, 3, 4, 5, 6, 7];
+            } else {
+                converTypes = conversationTypes;
+            }
+            try {
+                var result: string = this.addon.searchConversationByContent(converTypes, keyword);
+                var list: any[] = JSON.parse(result).list, convers: Conversation[] = [], me = this;
+                list.reverse();
+                for (let i = 0, len = list.length; i < len; i++) {
+                    convers[i] = me.buildConversation(list[i].obj);
+                }
+                callback.onSuccess(convers);
+            } catch (e) {
+                callback.onError(ErrorCode.CONVER_GETLIST_ERROR);
+            }
+        }
+
+        searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
+            try {
+                this.addon.searchMessageByContent(conversationType, targetId, keyword, timestamp, count, total, function(ret: string, matched: number) {
+                    var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [], me = this;
+                    list.reverse();
+                    for (let i = 0, len = list.length; i < len; i++) {
+                        msgs[i] = me.buildMessage(list[i].obj);
+                    }
+                    callback.onSuccess(msgs, matched);
+                });
+
+            } catch (e) {
+                callback.onError(ErrorCode.TIMEOUT);
+            }
+
+        }
+
+        getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>): void {
+            this.addon.getChatroomInfo(chatRoomId, count, order, function(ret: string, count: number) {
+                var list: any[] = ret ? JSON.parse(ret).list : [], chatRoomInfo: any = { userInfos: [], userTotalNums: count };
+                if (list.length > 0) {
+                    for (let i = 0, len = list.length; i < len; i++) {
+                        chatRoomInfo.userInfos.push(JSON.parse(list[i].obj));
+                    }
+                }
+                callback.onSuccess(chatRoomInfo);
+            }, function(errcode: ErrorCode) {
+                callback.onError(errcode);
+            });
+        }
+
 
 
 
@@ -347,23 +419,11 @@ module RongIMLib {
 
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>): void { }
 
-        getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>): void { }
-
         reconnect(callback: ConnectCallback): void { }
 
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback): void { }
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>): void { }
-
-        getAllConversations(callback: ResultCallback<Conversation[]>): void { }
-
-        getConversationByContent(keywords: string, callback: ResultCallback<Conversation[]>): void { }
-
-        getMessagesFromConversation(conversationType: ConversationType, targetId: string, keywords: string, callback: ResultCallback<Message[]>): void { }
-
-        getFileToken(fileType: FileType, callback: ResultCallback<string>): void { }
-
-        getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>): void { }
 
         addMemberToDiscussion(discussionId: string, userIdList: string[], callback: OperationCallback): void { }
 
@@ -390,6 +450,7 @@ module RongIMLib {
         updateConversation(conversation: Conversation): Conversation {
             return null;
         }
+
 
         private buildMessage(result: string): Message {
             var message: Message = new Message(), ret: any = JSON.parse(result);

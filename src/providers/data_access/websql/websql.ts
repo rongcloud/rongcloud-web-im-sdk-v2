@@ -1049,15 +1049,11 @@ module RongIMLib {
                 }
             });
         }
-        getAllConversations(callback: ResultCallback<Conversation[]>): void {
+        searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void {
             callback.onSuccess([]);
         }
 
-        getConversationByContent(keywords: string, callback: ResultCallback<Conversation[]>): void {
-            callback.onSuccess([]);
-        }
-
-        getMessagesFromConversation(conversationType: ConversationType, targetId: string, keywords: string, callback: ResultCallback<Message[]>): void {
+        searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
             callback.onSuccess([]);
         }
     }

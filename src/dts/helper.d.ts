@@ -81,7 +81,7 @@ declare interface Addon {
 
     logout(): void;
 
-    disconnect(isDisconnect:boolean): void;
+    disconnect(isDisconnect: boolean): void;
 
     setConnectionStatusListener(listener: Function): void;
 
@@ -184,4 +184,14 @@ declare interface Addon {
     setMessageReceivedStatus(messageId: string, receivedStatus: RongIMLib.ReceivedStatus): void;
 
     setMessageSentStatus(messageId: string, sentStatus: RongIMLib.SentStatus): void;
+
+    getUploadToken(fileType: RongIMLib.FileType, success: Function, error: Function): string;
+
+    getDownloadUrl(fileType: RongIMLib.FileType, fileName: string, oriName: string,success: Function, error: Function): string;
+
+    getChatroomInfo(chatRoomId: string, count: number, order: RongIMLib.GetChatRoomType, success: Function, error: Function): void;
+
+    searchConversationByContent(conversationTypes: RongIMLib.ConversationType[], keyword: string): string;
+
+    searchMessageByContent(conversationType: RongIMLib.ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: Function): void
 }

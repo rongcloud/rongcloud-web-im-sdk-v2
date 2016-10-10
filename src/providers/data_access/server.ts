@@ -1009,5 +1009,13 @@ module RongIMLib {
         getMessagesFromConversation(conversationType: ConversationType, targetId: string, keywords: string, callback: ResultCallback<Message[]>): void {
             callback.onSuccess([]);
         }
+
+        searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void {
+            callback.onSuccess([]);
+        }
+
+        searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
+            callback.onSuccess([]);
+        }
     }
 }
