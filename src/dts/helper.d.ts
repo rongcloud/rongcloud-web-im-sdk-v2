@@ -75,7 +75,7 @@ declare interface Document {
 declare interface Addon {
     initWithAppkey(appKey: string): void;
 
-    connectWithToken(token: string, userId: string): void;
+    connectWithToken(token: string, userId: string): number;
 
     reconnect(callback: RongIMLib.ConnectCallback): void;
 
@@ -139,7 +139,7 @@ declare interface Addon {
 
     getFileUrl(fileType: RongIMLib.FileType, fileName: string, oriName: string, callback: RongIMLib.ResultCallback<string>): void;
 
-    sendMessage(conversationType: RongIMLib.ConversationType, targetId: string, objectname: string, messageContent: string, pushText: string, appData: string, progress: Function, success: Function, error: Function): void;
+    sendMessage(conversationType: RongIMLib.ConversationType, targetId: string, objectname: string, messageContent: string, pushText: string, appData: string, progress: Function, success: Function, error: Function, mentiondMsg?: any): string;
 
     registerMessageType(messageType: string, persistentFlag: number): void;
 
@@ -163,11 +163,13 @@ declare interface Addon {
 
     getConversation(conversationType: RongIMLib.ConversationType, targetId: string): string;
 
-    getConversationList(): string;
+    getConversationList(converTypes: number[]): string;
 
     clearConversations(conversationType?: number, targetId?: string): void;
 
     getHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number): string;
+
+    getRemoteHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number): string;
 
     getTotalUnreadCount(conversationTypes?: number[]): number;
 
@@ -175,7 +177,7 @@ declare interface Addon {
 
     getUnreadCount(conversationType: RongIMLib.ConversationType, targetId: string): number;
 
-    clearUnreadCount(conversationType: RongIMLib.ConversationType, targetId: string, callback: RongIMLib.ResultCallback<boolean>): void;
+    clearUnreadCount(conversationType: RongIMLib.ConversationType, targetId: string): void;
 
     setConversationToTop(conversationType: RongIMLib.ConversationType, targetId: string, isTop: boolean): void;
 
@@ -187,7 +189,7 @@ declare interface Addon {
 
     getUploadToken(fileType: RongIMLib.FileType, success: Function, error: Function): string;
 
-    getDownloadUrl(fileType: RongIMLib.FileType, fileName: string, oriName: string,success: Function, error: Function): string;
+    getDownloadUrl(fileType: RongIMLib.FileType, fileName: string, oriName: string, success: Function, error: Function): string;
 
     getChatroomInfo(chatRoomId: string, count: number, order: RongIMLib.GetChatRoomType, success: Function, error: Function): void;
 

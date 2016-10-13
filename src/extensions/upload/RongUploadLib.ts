@@ -166,7 +166,7 @@ module RongIMLib {
             RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                 onSuccess: function(data: any) {
                     // type : 1 RongAjax 发送图片
-                    new RongAjax({ token: data.token, base64: base64, type: 1 }).send(function(ret: any) {
+                    new RongAjax({ token: data.token, base64: base64}).send(function(ret: any) {
                         var opt = { uploadType: 'IMAGE', fileName: ret.hash, isBase64Data: true };
                         me.createMessage(opt, file, function(msg: MessageContent) {
                             RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
