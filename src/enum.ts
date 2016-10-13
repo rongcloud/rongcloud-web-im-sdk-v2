@@ -375,6 +375,10 @@ module RongIMLib {
          */
         MSG_ROAMING_SERVICE_UNAVAILABLE = 33007,
 
+        MSG_INSERT_ERROR = 33008,
+
+        MSG_DEL_ERROR = 33009,
+
         /**
          * 删除会话失败
          */
@@ -399,6 +403,11 @@ module RongIMLib {
          * 获取指定用户ID&会话类型未读消息数异常
          */
         CONVER_ID_TYPE_UNREAD_ERROR = 34006,
+
+        CONVER_CLEAR_ERROR = 34007,
+
+        CONVER_GET_ERROR = 34008,
+
         //群组异常信息
         /**
          *
@@ -463,6 +472,8 @@ module RongIMLib {
          * cookie被禁用
          */
         COOKIE_ENABLE = 51001,
+
+        GET_MESSAGE_BY_ID_ERROR = 61001,
 
         // 没有注册DeviveId 也就是用户没有登陆
         HAVNODEVICEID = 24001,

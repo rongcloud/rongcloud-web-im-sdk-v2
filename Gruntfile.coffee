@@ -94,6 +94,7 @@ module.exports = (grunt) ->
           suppressImplicitAnyIndexErrors: false
           target: 'es3'
         src: ['./src/**/*.ts','!./src/extensions/*.ts','!./src/extensions/**/*.ts','!./src/util/script_loader.ts']
+        # src: ['./src/**/*.ts','!./src/extensions/*.ts','!./src/extensions/**/*.ts','!./src/util/script_loader.ts','!./src/util/feature_detector.ts',"!./src/internal/**/*.ts","!./src/providers/data_access/websql/*.ts","!./src/providers/data_access/server.ts"]
         dest: './dist/RongIMLib.js'
 
   # These plugins provide necessary tasks.
