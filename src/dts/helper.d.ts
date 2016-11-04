@@ -8,6 +8,7 @@ declare var dcodeIO: any;
 declare var Polling: any;
 declare var escape: any;
 declare var AMR: any;
+declare var PCMData:any;
 declare var swfobject: any;
 declare var openDatabase: any;
 declare var AgoraRTC: any;
@@ -93,7 +94,7 @@ declare interface Addon {
 
     sendTextMessage(conversationType: RongIMLib.ConversationType, targetId: string, content: string, sendMessageCallback: RongIMLib.SendMessageCallback): void;
 
-    getRemoteHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number, callback: RongIMLib.GetHistoryMessagesCallback): void;
+    getRemoteHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number, success: Function, error: Function): void;
 
     hasRemoteUnreadMessages(token: string, callback: RongIMLib.ResultCallback<Boolean>): void;
 
@@ -181,6 +182,8 @@ declare interface Addon {
 
     setConversationToTop(conversationType: RongIMLib.ConversationType, targetId: string, isTop: boolean): void;
 
+    setConversationHidden(conversationType: RongIMLib.ConversationType, targetId: string,isHidden:boolean):void;
+
     setMessageExtra(messageId: string, value: string, callback: RongIMLib.ResultCallback<boolean>): void;
 
     setMessageReceivedStatus(messageId: string, receivedStatus: RongIMLib.ReceivedStatus): void;
@@ -194,6 +197,8 @@ declare interface Addon {
     getChatroomInfo(chatRoomId: string, count: number, order: RongIMLib.GetChatRoomType, success: Function, error: Function): void;
 
     searchConversationByContent(conversationTypes: RongIMLib.ConversationType[], keyword: string): string;
+
+    getDeltaTime():number;
 
     searchMessageByContent(conversationType: RongIMLib.ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: Function): void
 }

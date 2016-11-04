@@ -34,6 +34,7 @@ module RongIMLib {
 
         static init(imgOpts: any, fileOpts: any): void {
             RongUploadLib._instance = new RongUploadLib(imgOpts, fileOpts);
+            RongUploadLib._instance.startCalcToken();
         }
 
         //自定义压缩图片过程，方法最后一行必须调用 callback ，并把压缩好的 base64 传入 callback
@@ -47,21 +48,21 @@ module RongIMLib {
 
         static getLocalImageUrl(files: any, isBase64Data: boolean, callback?: any): void {
             if (isBase64Data) {
-              //TODO 发送截图细节
+                //TODO 发送截图细节
             } else {
                 plupload.each(files, function(file: any) {
-                    RongUploadLib.calcImageUrl(file.getNative());
+                    RongUploadLib.calcImageUrl(file.getNative(), RongUploadLib._instance.listener);
                 });
             }
         }
 
-        static calcImageUrl(file: any): void {
+        static calcImageUrl(file: any, listener: any): void {
             var reader = new FileReader();
             reader.onloadend = function() {
                 file.uploadType = RongUploadLib._instance.uploadType;
                 RongUploadLib.imageCompressToBase64(file, function(content: string) {
                     var msg: ImageMessage = new RongIMLib.ImageMessage({ content: content, imageUri: reader.result });
-                    RongUploadLib._instance.listener.onFileAdded(file, msg);
+                    listener.onFileAdded(file, msg);
                 });
             }
             reader.readAsDataURL(file);
@@ -80,8 +81,8 @@ module RongIMLib {
                         if (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete') {
                             imgOpts && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                                 onSuccess: function(data: any) {
-                                    me.store["imgOpts"] = imgOpts;
                                     imgOpts["uptoken"] = data.token;
+                                    me.store["imgOpts"] = imgOpts;
                                     me.createOptions(imgOpts, 'IMAGE');
                                 },
                                 onError: function(error: ErrorCode) { }
@@ -165,7 +166,6 @@ module RongIMLib {
             // RongUploadLib.getLocalImageUrl({ base64: base64, file: file }, true, callback);
             RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                 onSuccess: function(data: any) {
-                    // type : 1 RongAjax 发送图片
                     new RongAjax({ token: data.token, base64: base64 }).send(function(ret: any) {
                         var opt = { uploadType: 'IMAGE', fileName: ret.hash, isBase64Data: true };
                         me.createMessage(opt, file, function(msg: MessageContent) {
@@ -363,51 +363,82 @@ module RongIMLib {
         }
 
         private getThumbnail(obj: any, area: number, callback: any) {
-            var canvas = document.createElement("canvas"), context = canvas.getContext('2d'), me = this;
+            var canvas = document.createElement("canvas"),
+                context = canvas.getContext('2d'), me = this;
+
             var img = new Image();
+
             img.onload = function() {
-                var target_w: number;
-                var target_h: number;
-                var imgarea = img.width * img.height;
-                var _y = 0, _x = 0, maxWidth = 240, maxHeight = 240;
-                if (imgarea > area) {
-                    var scale = Math.sqrt(imgarea / area);
-                    scale = Math.ceil(scale * 100) / 100;
-                    target_w = img.width / scale;
-                    target_h = img.height / scale;
-                }
-                else {
-                    target_w = img.width;
-                    target_h = img.height;
-                }
-                canvas.width = target_w;
-                canvas.height = target_h;
-                context.drawImage(img, 0, 0, target_w, target_h);
+                var pos = me.getBackground(img.width, img.height);
+
+                canvas.width = pos.w > 240 ? 240 : pos.w;
+                canvas.height = pos.h > 240 ? 240 : pos.h;
+
+                context.drawImage(img, pos.x, pos.y, pos.w, pos.h);
+
                 try {
-                    if (canvas.width > maxWidth || canvas.height > maxHeight) {
-                        if (target_w > maxWidth) {
-                            _x = (target_w - maxWidth) / 2;
-                            target_w = maxWidth;
-                        }
-                        if (target_h > maxHeight) {
-                            _y = (target_h - maxHeight) / 2;
-                            target_h = maxHeight;
-                        }
-                        var imgData = context.getImageData(_x, _y, target_w, target_h);
-                        context.createImageData(target_w, target_h);
-                        canvas.width = target_w;
-                        canvas.height = target_h;
-                        context.putImageData(imgData, 0, 0);
-                    }
-                    var _canvas = canvas.toDataURL("image/jpeg", 0.5);
-                    callback(obj, _canvas);
-                }
-                catch (e) {
+                    var base64str = canvas.toDataURL("image/jpeg", 0.7);
+                    callback(obj, base64str);
+                } catch (e) {
                     callback(obj, null);
                 }
-            };
+
+            }
             img.src = me.getFullPath(obj);
 
+        }
+
+        private getBackground = function(width: number, height: number) {
+            var isheight = width < height;
+            var scale = isheight ? height / width : width / height;
+            var zoom: number, x = 0, y = 0, w: number, h: number;
+            if (scale > 2.4) {
+                if (isheight) {
+                    zoom = width / 100;
+                    w = 100;
+                    h = height / zoom;
+                    y = (h - 240) / 2;
+                } else {
+                    zoom = height / 100;
+                    h = 100;
+                    w = width / zoom;
+                    x = (w - 240) / 2;
+                }
+            } else {
+                if (isheight) {
+                    zoom = height / 240;
+                    h = 240;
+                    w = width / zoom;
+                } else {
+                    zoom = width / 240;
+                    w = 240;
+                    h = height / zoom;
+                }
+            }
+            return {
+                w: w,
+                h: h,
+                x: -x,
+                y: -y
+            }
+        }
+
+        private startCalcToken(): void {
+            var me = this;
+            setInterval(function() {
+                me.store['imgOpts'] && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
+                    onSuccess: function(data: any) {
+                        me.store['imgOpts']["uptoken"] = data.token;
+                    },
+                    onError: function(error: ErrorCode) { }
+                });
+                me.store['fileOpts'] && RongIMClient.getInstance().getFileToken(RongIMLib.FileType.FILE, {
+                    onSuccess: function(data: any) {
+                        me.store['fileOpts']["uptoken"] = data.token;
+                    },
+                    onError: function(error: ErrorCode) { }
+                });
+            }, 3500);
         }
 
         private getFullPath(file: File): any {

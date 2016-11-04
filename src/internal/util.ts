@@ -35,7 +35,9 @@ var typeMapping: { [s: string]: any } = {
     "RC:RcCmd": "RecallCommandMessage",
     "RC:SRSMsg": "SyncReadStatusMessage",
     "RC:RRReqMsg": "ReadReceiptRequestMessage",
-    "RC:RRRspMsg": "ReadReceiptResponseMessage"
+    "RC:RRRspMsg": "ReadReceiptResponseMessage",
+    "RCJrmf:RpMsg": "JrmfReadPacketMessage",
+    "RCJrmf:RpOpendMsg": "JrmfReadPacketOpenedMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},

@@ -28,7 +28,7 @@ module RongIMLib {
                     swfobject.embedSWF((RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.voicePlaySwf) || "//cdn.ronghub.com/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
                 }, 500);
             } else {
-                var list = [(RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.voicePCMdata) || "//cdn.ronghub.com/pcmdata-2.0.0.min.js", (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.voiceLibamr) || "//cdn.ronghub.com/libamr-2.0.12.min.js"];
+                var list = [(RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.voicePCMdata) || "//cdn.ronghub.com/pcmdata-2.0.0.min.js", (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.voiceLibamr) || "//cdn.ronghub.com/libamr-2.0.13.min.js"];
                 for (let i = 0, len = list.length; i < len; i++) {
                     var script = document.createElement("script");
                     script.src = list[i];
@@ -63,10 +63,12 @@ module RongIMLib {
                     var key: string = base64Data.substr(-10);
                     if (me.element[key]) {
                         me.element[key].pause();
+                        me.element[key].currentTime = 0;
                     }
                 } else {
                     for (let key in me.element) {
                         me.element[key].pause();
+                        me.element[key].currentTime = 0;
                     }
                 }
             }
@@ -85,16 +87,18 @@ module RongIMLib {
             } else {
                 if (!me.isIE) {
                     if (str in me.element) return;
-                    var reader = new FileReader(), blob = this.base64ToBlob(base64Data, "audio/amr");
-                    reader.onload = function() {
-                        var samples = new AMR({
-                            benchmark: true
-                        }).decode(reader.result);
-                        var audio = AMR.util.getWave(samples);
+                    var blob = me.base64ToBlob(base64Data,'audio/amr');
+                    var reader = new FileReader();
+                    reader.onload = function(e:any) {
+                        var data = new Uint8Array(e.target.result);
+                        var samples = AMR.decode(data);
+                        var pcm = PCMData.encode({sampleRate: 8000, channelCount: 1, bytesPerSample: 2, data: samples});
+                        var audio = new Audio();
+                        audio.src = "data:audio/wav;base64," + btoa(pcm);;
                         me.element[str] = audio;
                         callback && callback();
                     };
-                    reader.readAsBinaryString(blob);
+                    reader.readAsArrayBuffer(blob);
                 }
             }
         }
