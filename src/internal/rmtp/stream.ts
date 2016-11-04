@@ -23,7 +23,7 @@ module RongIMLib {
     export class MessageInputStream {
         msg: any;
         flags: any;
-        header: any;
+        header: Header;
         isPolling: boolean;
         In: any;
         _in: any;

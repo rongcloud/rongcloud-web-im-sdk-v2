@@ -712,15 +712,17 @@ module RongIMLib {
     }
 
     export enum ReceivedStatus {
-        READ = 0x1,
 
-        LISTENED = 0x2,
+        READ = 0x1, // 已读
 
-        DOWNLOADED = 0x4,
+        LISTENED = 0x2, // 已听
 
-        RETRIEVED = 0x8,
+        DOWNLOADED = 0x4, // 已下载
 
-        UNREAD = 0x9
+        RETRIEVED = 0x8, 
+
+        UNREAD = 0
+
 
     }
 

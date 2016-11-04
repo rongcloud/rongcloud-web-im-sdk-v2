@@ -764,7 +764,7 @@ module RongIMLib {
             });
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number) {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isHidden?:boolean) {
             if (RongIMClient._memoryStore.isSyncRemoteConverList) {
                 RongIMClient.getInstance().getRemoteConversationList({
                     onSuccess: function(list) {
@@ -780,7 +780,7 @@ module RongIMLib {
                     onError: function(errorCode: ErrorCode) {
                         callback.onError(errorCode);
                     }
-                }, conversationTypes, count);
+                }, conversationTypes, count,isHidden);
             }
             //查询置顶会话。
             var tSql: string = "select * from t_conversation_" + this.database.userId + " t where t.isTop = 1 ";
@@ -999,11 +999,16 @@ module RongIMLib {
             });
         }
 
-        setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            var sql: string = "update t_conversation_" + this.database.userId + " set isTop = 1 where conversationType = ? and targetId = ?";
-            this.database.execUpdateByParams(sql, [conversationType, targetId]);
+        setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>) {
+            var sql: string = "update t_conversation_" + this.database.userId + " set isTop = ? where conversationType = ? and targetId = ?";
+            this.database.execUpdateByParams(sql, [conversationType, isTop, targetId]);
             callback.onSuccess(true);
         }
+
+        setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void {
+           
+        }
+
         setMessageExtra(messageUId: string, value: string, callback: ResultCallback<boolean>) {
             var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
             var uSql: string = "UPADTE t_message_" + this.database.userId + " t SET t.content = ? where t.messageUId = ?";
@@ -1056,5 +1061,10 @@ module RongIMLib {
         searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
             callback.onSuccess([]);
         }
+
+        getDelaTime():number{
+            return 0;
+        }
+
     }
 }

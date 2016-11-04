@@ -27,7 +27,7 @@ module RongIMLib {
 
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>): void;
 
-        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number): void;
+        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void;
 
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
@@ -95,7 +95,7 @@ module RongIMLib {
 
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void;
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number): void;
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void;
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void;
 
@@ -109,7 +109,9 @@ module RongIMLib {
 
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
-        setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
+        setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>): void;
+
+        setConversationHidden(conversationType:ConversationType,targetId:string,isHidden:boolean):void;
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>): void;
 
@@ -120,5 +122,7 @@ module RongIMLib {
         searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void;
 
         searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void;
+   
+        getDelaTime():number;
     }
 }

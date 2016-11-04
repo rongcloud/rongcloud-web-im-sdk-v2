@@ -201,6 +201,28 @@ module RongIMLib {
         }
     }
 
+    export class JrmfReadPacketMessage implements MessageContent{
+        messageName : "JrmfReadPacketMessage";
+        message:JrmfReadPacketMessage;
+        constructor(message:any){
+            message && (this.message = message);
+        }
+        encode() : string {
+            return "";
+        }
+    }
+
+    export class JrmfReadPacketOpenedMessage implements MessageContent{
+        messageName : "JrmfReadPacketOpenedMessage";
+        message:JrmfReadPacketOpenedMessage;
+        constructor(message:any){
+            message && (this.message = message);
+        }
+        encode() : string {
+            return "";
+        }
+    }
+
     export class UnknownMessage implements MessageContent {
         message: UnknownMessage;
         messageName: string = "UnknownMessage";

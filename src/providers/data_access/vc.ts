@@ -22,11 +22,17 @@ module RongIMLib {
             this.addon.registerMessageType("RC:ImgTextMsg", 3);
             this.addon.registerMessageType("RC:FileMsg", 3);
             this.addon.registerMessageType("RC:LBSMsg", 3);
+            this.addon.registerMessageType("RC:PSImgTxtMsg", 3);
+            this.addon.registerMessageType("RC:PSMultiImgTxtMsg", 3);
+            this.addon.registerMessageType("RCJrmf:RpMsg", 3);
+            this.addon.registerMessageType("RCJrmf:RpOpendMsg", 1);
+            this.addon.registerMessageType("RC:GrpNtf", 1);
+            this.addon.registerMessageType("RC:DizNtf", 0);
+
             this.addon.registerMessageType("RC:InfoNtf", 0);
             this.addon.registerMessageType("RC:ContactNtf", 0);
             this.addon.registerMessageType("RC:ProfileNtf", 0);
             this.addon.registerMessageType("RC:CmdNtf", 0);
-            this.addon.registerMessageType("RC:DizNtf", 0);
             this.addon.registerMessageType("RC:CmdMsg", 0);
             this.addon.registerMessageType("RC:TypSts", 0);
             this.addon.registerMessageType("RC:CsChaR", 0);
@@ -34,6 +40,7 @@ module RongIMLib {
             this.addon.registerMessageType("RC:CsEnd", 0);
             this.addon.registerMessageType("RC:CsSp", 0);
             this.addon.registerMessageType("RC:CsUpdate", 0);
+            this.addon.registerMessageType("RC:CsContact", 0);
             this.addon.registerMessageType("RC:ReadNtf", 0);
             this.addon.registerMessageType("RC:VCAccept", 0);
             this.addon.registerMessageType("RC:VCRinging", 0);
@@ -42,10 +49,6 @@ module RongIMLib {
             this.addon.registerMessageType("RC:VCInvite", 0);
             this.addon.registerMessageType("RC:VCModifyMedia", 0);
             this.addon.registerMessageType("RC:VCModifyMem", 0);
-            this.addon.registerMessageType("RC:CsContact", 0);
-            this.addon.registerMessageType("RC:PSImgTxtMsg", 3);
-            this.addon.registerMessageType("RC:PSMultiImgTxtMsg", 3);
-            this.addon.registerMessageType("RC:GrpNtf", 0);
             this.addon.registerMessageType("RC:PSCmd", 0);
             this.addon.registerMessageType("RC:RcCmd", 0);
             this.addon.registerMessageType("RC:SRSMsg", 0);
@@ -177,13 +180,16 @@ module RongIMLib {
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void {
             try {
                 this.useConsole && console.log("getRemoteHistoryMessages");
-                var ret: string = this.addon.getRemoteHistoryMessages(conversationType, targetId, timestamp ? timestamp : -1, count);
-                var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [], me = this;
-                list.reverse();
-                for (let i = 0, len = list.length; i < len; i++) {
-                    msgs[i] = me.buildMessage(list[i].obj);
-                }
-                callback.onSuccess(msgs);
+                this.addon.getRemoteHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, function(ret: string, hasMore: number) {
+                    var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [], me = this;
+                    list.reverse();
+                    for (var i = 0, len = list.length; i < len; i++) {
+                        msgs[i] = me.buildMessage(list[i].obj);
+                    }
+                    callback.onSuccess(msgs, hasMore ? true : false);
+                }, function(errorCode: ErrorCode) {
+                    callback.onError(errorCode);
+                });
             } catch (e) {
                 callback.onError(ErrorCode.TIMEOUT);
             }
@@ -191,17 +197,23 @@ module RongIMLib {
 
 
 
-        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number): void {
+        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number,isGetHiddenConvers:boolean): void {
             try {
                 this.useConsole && console.log("getRemoteConversationList");
-                var converTypes: number[] = conversationTypes || [1, 2, 3, 4, 5, 6, 7];
+                var converTypes: number[] = conversationTypes || [1, 2, 3, 4, 5, 6, 7, 8];
                 var result: string = this.addon.getConversationList(converTypes);
-                var list: any[] = JSON.parse(result).list, convers: Conversation[] = [], me = this;
+                var list: any[] = JSON.parse(result).list, convers: Conversation[] = [], me = this,index:number = 0;
                 list.reverse();
+                isGetHiddenConvers = typeof isGetHiddenConvers === 'boolean' ? isGetHiddenConvers : false;
                 for (let i = 0, len = list.length; i < len; i++) {
-                    convers[i] = me.buildConversation(list[i].obj);
+                    var tmpObj = list[i].obj,obj:any = JSON.parse(tmpObj);
+                    if(obj.isHidden == 1 && isGetHiddenConvers) {
+                        continue;
+                    }
+                    convers[index] = me.buildConversation(tmpObj);
+                    index++;
                 }
-                convers.reverse();
+                convers.reverse(); 
                 callback.onSuccess(convers);
             } catch (e) {
                 callback.onError(ErrorCode.CONVER_GETLIST_ERROR);
@@ -365,9 +377,9 @@ module RongIMLib {
             }
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number): void {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void {
             this.useConsole && console.log("getConversationList");
-            this.getRemoteConversationList(callback, conversationTypes, count);
+            this.getRemoteConversationList(callback, conversationTypes, count,isGetHiddenConvers);
         }
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void {
@@ -382,14 +394,18 @@ module RongIMLib {
 
         getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void {
             this.useConsole && console.log("getHistoryMessages");
+            if (count <= 0) {
+                callback.onError(ErrorCode.TIMEOUT);
+                return;
+            }
             try {
-                var ret: string = this.addon.getHistoryMessages(conversationType, targetId, timestamp ? timestamp : -1, count);
+                var ret: string = this.addon.getHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count);
                 var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [], me = this;
                 list.reverse();
                 for (var i = 0, len = list.length; i < len; i++) {
                     msgs[i] = me.buildMessage(list[i].obj);
                 }
-                callback.onSuccess(msgs, len <= count);
+                callback.onSuccess(msgs, len == count);
             } catch (e) {
                 callback.onError(ErrorCode.TIMEOUT);
             }
@@ -435,14 +451,18 @@ module RongIMLib {
             }
         }
 
-        setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void {
+        setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>): void {
             try {
                 this.useConsole && console.log("setConversationToTop");
-                this.addon.setConversationToTop(conversationType, targetId, true);
+                this.addon.setConversationToTop(conversationType, targetId, isTop);
                 callback.onSuccess(true);
             } catch (e) {
                 callback.onError(ErrorCode.CONVER_SETOP_ERROR);
             }
+        }
+
+        setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void {
+            this.addon.setConversationHidden(conversationType,targetId,isHidden);
         }
 
         setMessageReceivedStatus(messageId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>): void {
@@ -543,7 +563,9 @@ module RongIMLib {
             });
         }
 
-
+        getDelaTime():number{
+            return this.addon.getDeltaTime();
+        }
 
 
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>): void {
@@ -593,7 +615,11 @@ module RongIMLib {
             message.targetId = ret.targetId;
             message.messageDirection = ret.direction;
             message.senderUserId = ret.senderUserId;
-            message.receivedStatus = ret.status;
+            if(ret.direction == MessageDirection.RECEIVE) {
+                message.receivedStatus = ret.status;
+            }else if(ret.direction == MessageDirection.SEND){
+                message.sentStatus = ret.status;
+            }
             message.sentTime = ret.sentTime;
             message.objectName = ret.objectName;
             message.content = ret.content ? JSON.parse(ret.content) : ret.content;
@@ -611,6 +637,7 @@ module RongIMLib {
             conver.conversationType = c.conversationType;
             conver.draft = c.draft;
             conver.isTop = c.isTop;
+            conver.isHidden = c.isHidden;
             lastestMsg.conversationType = c.conversationType;
             lastestMsg.targetId = c.targetId;
             conver.latestMessage = lastestMsg;
@@ -623,6 +650,9 @@ module RongIMLib {
             conver.sentStatus = lastestMsg.status;
             conver.targetId = c.targetId;
             conver.unreadMessageCount = c.unreadCount;
+            if(lastestMsg.content && lastestMsg.content.mentionedInfo) {
+                conver.mentionedMsg = {uid:lastestMsg.messageUId, time:lastestMsg.sentTime, mentionedInfo:lastestMsg.content.mentionedInfo};
+            }
             return conver;
         }
     }

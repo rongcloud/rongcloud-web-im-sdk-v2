@@ -759,21 +759,10 @@ module RongIMLib {
             mod.setType(conversationType);
             RongIMClient.bridge.queryMsg(27, MessageUtil.ArrayForm(mod.toArrayBuffer()), targetId, {
                 onSuccess: function() {
-                    RongIMClient._dataAccessProvider.removeConversation(conversationType, targetId, {
-                        onSuccess: function() {
-                            setTimeout(function() {
-                                callback.onSuccess(true);
-                            });
-                        },
-                        onError: function() {
-                            setTimeout(function() {
-                                callback.onError(ErrorCode.CONVER_REMOVE_ERROR);
-                            });
-                        }
-                    });
+                      callback.onSuccess(true);
                 }, onError: function() {
                     setTimeout(function() {
-                        callback.onError(ErrorCode.CONVER_REMOVE_ERROR);
+                      callback.onError(ErrorCode.CONVER_REMOVE_ERROR);
                     });
                 }
             });
@@ -844,7 +833,7 @@ module RongIMLib {
             callback.onSuccess(conver);
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number) {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isHidden?:boolean) {
             if (RongIMClient._memoryStore.conversationList.length == 0 || RongIMClient._memoryStore.isSyncRemoteConverList || (typeof count != undefined && RongIMClient._memoryStore.conversationList.length < count)) {
                 RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
@@ -862,7 +851,7 @@ module RongIMLib {
                     onError: function(errorcode: ErrorCode) {
                         callback.onSuccess([]);
                     }
-                }, conversationTypes, count);
+                }, conversationTypes, count,isHidden);
             } else {
                 if (conversationTypes) {
                     var convers: Conversation[] = [];
@@ -971,11 +960,11 @@ module RongIMLib {
 
 
         }
-        setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+        setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>) {
             var me = this;
             this.getConversation(conversationType, targetId, {
                 onSuccess: function(conver: Conversation) {
-                    conver.isTop = true;
+                    conver.isTop = isTop;
                     me.addConversation(conver, callback);
                     callback.onSuccess(true);
                 },
@@ -984,6 +973,10 @@ module RongIMLib {
                 }
             });
 
+        }
+
+        setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void {
+           
         }
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {
@@ -1016,6 +1009,10 @@ module RongIMLib {
 
         searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
             callback.onSuccess([]);
+        }
+
+        getDelaTime():number{
+            return RongIMClient._memoryStore.deltaTime;
         }
     }
 }

@@ -133,11 +133,15 @@ module RongIMLib {
                 ContactNotificationMessage: { objectName: "RC:ContactNtf", msgTag: new MessageTag(true, true) },
                 ProfileNotificationMessage: { objectName: "RC:ProfileNtf", msgTag: new MessageTag(true, true) },
                 CommandNotificationMessage: { objectName: "RC:CmdNtf", msgTag: new MessageTag(true, true) },
-                CommandMessage: { objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) },
-                TypingStatusMessage: { objectName: "RC:TypSts", msgTag: new MessageTag(false, false) },
                 PublicServiceRichContentMessage: { objectName: "RC:PSImgTxtMsg", msgTag: new MessageTag(true, true) },
                 PublicServiceMultiRichContentMessage: { objectName: "RC:PSMultiImgTxtMsg", msgTag: new MessageTag(true, true) },
+                JrmfReadPacketMessage : { objectName: "RCJrmf:RpMsg", msgTag: new MessageTag(true, true) },
+                JrmfReadPacketOpenedMessage : { objectName: "RCJrmf:RpOpendMsg", msgTag: new MessageTag(true, true) },
+
+
                 GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(false, true) },
+                CommandMessage: { objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) },
+                TypingStatusMessage: { objectName: "RC:TypSts", msgTag: new MessageTag(false, false) },
                 PublicServiceCommandMessage: { objectName: "RC:PSCmd", msgTag: new MessageTag(false, false) },
                 RecallCommandMessage: { objectName: "RC:RcCmd", msgTag: new MessageTag(false, true) },
                 SyncReadStatusMessage: { objectName: "RC:SRSMsg", msgTag: new MessageTag(false, false) },
@@ -424,7 +428,7 @@ module RongIMLib {
          * @param callback  获取的回调，返回差值。
          */
         getDeltaTime(): number {
-            return RongIMClient._memoryStore.deltaTime;
+            return RongIMClient._dataAccessProvider.getDelaTime();
         }
 
         // #region Message
@@ -919,6 +923,9 @@ module RongIMLib {
         private sortConversationList(conversationList: Conversation[]) {
             var convers: Conversation[] = [];
             for (var i = 0, len = conversationList.length; i < len; i++) {
+                if(!conversationList[i]) {
+                    continue;
+                }
                 if (conversationList[i].isTop) {
                     convers.push(conversationList[i]);
                     conversationList.splice(i, 1);
@@ -932,10 +939,10 @@ module RongIMLib {
                     }
                 }
             }
-            RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
+            return RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
         }
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number) {
-            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global"], "getConversationList");
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number,isGetHiddenConvers:boolean) {
+            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global","boolean|undefined|null|object|global"], "getConversationList");
             var me = this;
             RongIMClient._dataAccessProvider.getConversationList(<ResultCallback<Conversation[]>>{
                 onSuccess: function(data: Conversation[]) {
@@ -956,11 +963,11 @@ module RongIMLib {
                         callback.onSuccess([]);
                     }
                 }
-            }, conversationTypes, count);
+            }, conversationTypes, count,isGetHiddenConvers);
         }
-        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number) {
-            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global"], "getRemoteConversationList");
-            RongIMClient._dataAccessProvider.getRemoteConversationList(callback, conversationTypes, count);
+        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number,isGetHiddenConvers:boolean) {
+            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global","boolean|undefined|null|object|global"], "getRemoteConversationList");
+            RongIMClient._dataAccessProvider.getRemoteConversationList(callback, conversationTypes, count,isGetHiddenConvers);
         }
 
         updateConversation(conversation: Conversation): Conversation {
@@ -990,9 +997,14 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.removeConversation(conversationType, targetId, callback);
         }
 
-        setConversationToTop(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["number", "string", "object"], "setConversationToTop");
-            RongIMClient._dataAccessProvider.setConversationToTop(conversationType, targetId, {
+        setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void{
+            CheckParam.getInstance().check(["number", "string", "boolean"], "setConversationHidden");
+            RongIMClient._dataAccessProvider.setConversationHidden(conversationType,targetId,isHidden);
+        }
+
+        setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["number", "string", "boolean", "object"], "setConversationToTop");
+            RongIMClient._dataAccessProvider.setConversationToTop(conversationType, targetId, isTop, {
                 onSuccess: function(bool: boolean) {
                     setTimeout(function() {
                         callback.onSuccess(bool);

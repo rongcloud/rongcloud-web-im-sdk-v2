@@ -54,6 +54,7 @@ module RongIMLib {
         createOptions(opts: any, type: string): void {
             opts['max_file_size'] || (opts['max_file_size'] = '100mb');
             opts['chunk_size'] || (opts['chunk_size'] = '10mb');
+            opts['useUserDefine'] || (opts['useUserDefine'] = false);
             switch (type) {
                 case 'IMAGE':
                     opts['filters'] = {
@@ -130,6 +131,7 @@ module RongIMLib {
                 max_file_size: opts.max_file_size,
                 // flash_swf_url: 'path/of/plupload/Moxie.swf',
                 max_retries: 0,
+                runtimes: opts.runtimes,
                 dragdrop: opts.dragdrop,
                 unique_names: true,
                 filters: opts.filters,
@@ -137,6 +139,10 @@ module RongIMLib {
                 chunk_size: opts.chunk_size,
                 auto_start: false,
                 uploadType: opts.uploadType,
+                useUserDefine:opts.useUserDefine,
+                userData:opts.userData,
+                userDataKey:opts.userDataKey,
+                userDataArrs:[],
                 init: {
                     'FilesAdded': function(up: any, files: any) {
                         var opts: any = up.getOption(), name: string = "";
