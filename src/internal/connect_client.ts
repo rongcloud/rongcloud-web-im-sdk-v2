@@ -431,9 +431,9 @@ module RongIMLib {
                     me.invoke(isPullMsg, target);
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
-                    for (let i = 0, len = list.length; i < len; i++) {
+                    for (let i = 0, len = list.length, count = len; i < len; i++) {
                         if (!(list[i].msgId in me.cacheMessageIds)) {
-                            Bridge._client.handler.onReceived(list[i], undefined, offlineMsg);
+                            Bridge._client.handler.onReceived(list[i], undefined, offlineMsg,--count);
                             var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
                             if (arrLen > 20) me.cacheMessageIds.length = 20;
                         }
@@ -495,8 +495,16 @@ module RongIMLib {
             Bridge._client.queryMessage(topic, content, targetId, Qos.AT_MOST_ONCE, callback, pbname);
         }
         //发送消息 执行publishMessage 请求
-        pubMsg(topic: number, content: string, targetId: string, callback: any, msg: any): void {
-            Bridge._client.publishMessage(_topic[10][topic], content, targetId, callback, msg);
+        pubMsg(topic: number, content: string, targetId: string, callback: any, msg: any,methodType?: number): void {
+            if(typeof methodType == 'number') {
+                if(methodType == MethodType.CUSTOMER_SERVICE) {
+                    Bridge._client.publishMessage("pcuMsgP", content, targetId, callback, msg);
+                }else if(methodType == MethodType.RECALL){
+                    Bridge._client.publishMessage("recallMsg", content, targetId, callback, msg);
+                }
+            }else{
+                Bridge._client.publishMessage(_topic[10][topic], content, targetId, callback, msg);
+            }
         }
     }
     export class MessageHandler {
@@ -530,7 +538,7 @@ module RongIMLib {
             }
         }
 
-        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean): void {
+        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean, leftCount?: number): void {
             //实体对象
             var entity: any,
                 //解析完成的消息对象
@@ -738,12 +746,13 @@ module RongIMLib {
             if (RongIMClient._voipProvider && ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'].indexOf(message.messageType) > -1) {
                 RongIMClient._voipProvider.onReceived(message);
             } else {
+                var lcount = leftCount || 0;
                 RongIMClient._dataAccessProvider.addMessage(message.conversationType, message.targetId, message, {
                     onSuccess: function(ret: Message) {
-                        that._onReceived(ret);
+                        that._onReceived(ret, lcount);
                     },
                     onError: function(error: ErrorCode) {
-                        that._onReceived(message);
+                        that._onReceived(message, lcount);
                     }
                 });
             }

@@ -180,6 +180,8 @@ declare interface Addon {
 
     clearUnreadCount(conversationType: RongIMLib.ConversationType, targetId: string): void;
 
+    clearUnreadCountByTimestamp(conversationType: RongIMLib.ConversationType, targetId: string, timestamp:number) : void;
+
     setConversationToTop(conversationType: RongIMLib.ConversationType, targetId: string, isTop: boolean): void;
 
     setConversationHidden(conversationType: RongIMLib.ConversationType, targetId: string,isHidden:boolean):void;
@@ -201,4 +203,13 @@ declare interface Addon {
     getDeltaTime():number;
 
     searchMessageByContent(conversationType: RongIMLib.ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: Function): void
+
+    getUserStatus(userId:string, success:Function, error:Function) : void;
+
+    setUserStatus(userId:number, success:Function, error:Function) : void;
+    
+    subscribeUserStatus(userId:string[], success:Function, error:Function) : void;
+    
+    setOnReceiveStatusListener(listener:Function) : void;
+
 }

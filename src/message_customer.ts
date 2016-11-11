@@ -77,7 +77,10 @@ module RongIMLib {
 
     export class HandShakeMessage implements MessageContent {
         messageName: string = "HandShakeMessage";
-        constructor() { }
+        groupid : string;
+        constructor(message?:any) { 
+            message && (this.groupid = message.groupid);
+        }
         static obtain(): HandShakeMessage {
             return null;
         }

@@ -14,7 +14,7 @@ module RongIMLib {
         static buildOptions(one: any, opts: any, protocol: string): any {
             if (typeof one == 'object') {
                 for (var key in opts) {
-                    if (key == 'protobuf' || key == 'long' || key == 'byteBuffer' || key == 'navi' || key == 'api' ||
+                    if (key == 'fileUploadURL' || key == 'fileQNURL' || key == 'protobuf' || key == 'long' || key == 'byteBuffer' || key == 'navi' || key == 'api' ||
                         key == 'emojiImage' || key == 'voiceLibamr' || key == 'voicePCMdata' || key == 'voiceSwfobjct' || key == 'voicePlaySwf' || key == 'callFile') {
                         one[key] && (opts[key] = protocol + one[key]);
                     } else {

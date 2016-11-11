@@ -46,28 +46,6 @@ module RongIMLib {
             });
         }
 
-        static getLocalImageUrl(files: any, isBase64Data: boolean, callback?: any): void {
-            if (isBase64Data) {
-                //TODO 发送截图细节
-            } else {
-                plupload.each(files, function(file: any) {
-                    RongUploadLib.calcImageUrl(file.getNative(), RongUploadLib._instance.listener);
-                });
-            }
-        }
-
-        static calcImageUrl(file: any, listener: any): void {
-            var reader = new FileReader();
-            reader.onloadend = function() {
-                file.uploadType = RongUploadLib._instance.uploadType;
-                RongUploadLib.imageCompressToBase64(file, function(content: string) {
-                    var msg: ImageMessage = new RongIMLib.ImageMessage({ content: content, imageUri: reader.result });
-                    listener.onFileAdded(file, msg);
-                });
-            }
-            reader.readAsDataURL(file);
-        }
-
         constructor(imgOpts: any, fileOpts: any) {
             var me = this;
             var head: any = document.getElementsByTagName('head')[0];
@@ -163,7 +141,6 @@ module RongIMLib {
 
         postImage(base64: string, file: any, conversationType: ConversationType, targetId: string, callback: any): void {
             var me = this;
-            // RongUploadLib.getLocalImageUrl({ base64: base64, file: file }, true, callback);
             RongIMClient.getInstance().getFileToken(RongIMLib.FileType.IMAGE, {
                 onSuccess: function(data: any) {
                     new RongAjax({ token: data.token, base64: base64 }).send(function(ret: any) {
@@ -253,14 +230,10 @@ module RongIMLib {
                     'FilesAdded': function(up: any, files: any) {
                         var opts: any = up.getOption(), name: string = "";
                         me.uploadType = opts.uploadType;
-                        if (opts.uploadType === 'IMAGE') {
-                            RongUploadLib.getLocalImageUrl(files, false);
-                        } else {
-                            plupload.each(files, function(file: any) {
-                                file.uploadType = me.uploadType;
-                                me.listener.onFileAdded(file);
-                            });
-                        }
+                        plupload.each(files, function(file: any) {
+                            file.uploadType = me.uploadType;
+                            me.listener.onFileAdded(file);
+                        });
                     },
                     'BeforeUpload': function(up: any, file: any) {
                         var name = ""

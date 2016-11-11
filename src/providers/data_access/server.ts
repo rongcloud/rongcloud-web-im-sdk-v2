@@ -112,6 +112,11 @@ module RongIMLib {
             }
         }
 
+        sendRecallMessage(content:any, sendMessageCallback: SendMessageCallback): void {
+           var msg = new RecallCommandMessage({conversationType : content.conversationType, targetId : content.targetId, sentTime:content.sentTime, messageUId : content.messageUId, extra : content.extra, user : content.user});
+           this.sendMessage(content.conversationType, content.senderUserId, msg, sendMessageCallback, false, null, null, 2);
+        }
+
         sendTextMessage(conversationType: ConversationType, targetId: string, content: string, sendMessageCallback: SendMessageCallback): void {
             var msgContent = TextMessage.obtain(content);
             this.sendMessage(conversationType, targetId, msgContent, sendMessageCallback);
@@ -570,7 +575,8 @@ module RongIMLib {
             }, "GetQNdownloadUrlOutput");
         }
 
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string): void {
+        // methodType 1 : 多客服(客服后台使用);   2 : 消息撤回 
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number): void {
             if (!Bridge._client.channel) {
                 sendCallback.onError(RongIMLib.ErrorCode.RC_NET_UNAVAILABLE, null);
                 return;
@@ -683,7 +689,7 @@ module RongIMLib {
                         sendCallback.onError(errorCode, msg);
                     });
                 }
-            }, null);
+            }, null, methodType);
         }
 
         setConnectionStatusListener(listener: ConnectionStatusListener): void {
@@ -931,6 +937,10 @@ module RongIMLib {
             });
         }
 
+        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{
+            callback.onSuccess(true);   
+        }
+
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             this.getConversation(conversationType, targetId, {
                 onSuccess: function(conver: Conversation) {
@@ -1013,6 +1023,22 @@ module RongIMLib {
 
         getDelaTime():number{
             return RongIMClient._memoryStore.deltaTime;
+        }
+        
+        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
+            callback.onSuccess(new UserStatus());
+        }
+
+        setUserStatus(userId:number, callback:ResultCallback<boolean>) : void{
+            callback.onSuccess(true);
+        }
+
+        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean>) : void{
+           callback.onSuccess(true);
+        }
+
+        setOnReceiveStatusListener(callback:Function) : void{
+           callback();
         }
     }
 }

@@ -17,7 +17,12 @@ module RongIMLib {
 
         constructor(addon: any) {
             this.addon = addon;
-            // 0 不存不计数  1 只存不计数 3 存且计数
+        }
+
+        init(appKey: string): void {
+            this.useConsole && console.log("init");
+            this.addon.initWithAppkey(appKey);
+              // 0 不存不计数  1 只存不计数 3 存且计数
             this.addon.registerMessageType("RC:VcMsg", 3);
             this.addon.registerMessageType("RC:ImgTextMsg", 3);
             this.addon.registerMessageType("RC:FileMsg", 3);
@@ -54,11 +59,6 @@ module RongIMLib {
             this.addon.registerMessageType("RC:SRSMsg", 0);
             this.addon.registerMessageType("RC:RRReqMsg", 0);
             this.addon.registerMessageType("RC:RRRspMsg", 0);
-        }
-
-        init(appKey: string): void {
-            this.useConsole && console.log("init");
-            this.addon.initWithAppkey(appKey);
         }
 
         connect(token: string, callback: ConnectCallback, userId?: string): void {
@@ -142,11 +142,18 @@ module RongIMLib {
         }
 
         setOnReceiveMessageListener(listener: OnReceiveMessageListener): void {
-            var me = this;
+            var me = this,localCount = 0;
             me.messageListener = listener;
             this.useConsole && console.log("setOnReceiveMessageListener");
-            me.addon.setOnReceiveMessageListener(function(result: string): void {
-                listener.onReceived(me.buildMessage(result), 0);
+            me.addon.setOnReceiveMessageListener(function(result: string, leftCount: number): void {
+                var message:Message = me.buildMessage(result);
+                if((leftCount == 0 && localCount == 1) || leftCount > 0) {
+                    message.offLineMessage = true;
+                }else{    
+                    message.offLineMessage = false;
+                }
+                localCount = leftCount;
+                listener.onReceived(message, leftCount);
             });
         }
 
@@ -451,6 +458,16 @@ module RongIMLib {
             }
         }
 
+        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{
+            try {
+                this.useConsole && console.log("clearUnreadCountByTimestamp");
+                var result = this.addon.clearUnreadCountByTimestamp(conversationType, targetId,timestamp);
+                callback.onSuccess(true);
+            } catch (e) {
+                callback.onError(ErrorCode.CONVER_CLEAR_ERROR);
+            }
+        }
+
         setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>): void {
             try {
                 this.useConsole && console.log("setConversationToTop");
@@ -568,8 +585,45 @@ module RongIMLib {
         }
 
 
+        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
+            var me = this;
+            this.addon.getUserStatus(userId,function(status:string){
+                callback.onSuccess(me.buildUserStatus(status));
+            },function(code:ErrorCode){
+                callback.onError(code);
+            });
+        }
+
+        setUserStatus(userId:number, callback:ResultCallback<boolean>) : void{
+            this.addon.setUserStatus(userId,function(){
+                callback.onSuccess(true);
+            },function(code:ErrorCode){
+                callback.onError(code);
+            });
+        }
+
+        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void{
+            this.addon.subscribeUserStatus(userIds,function() {
+                callback.onSuccess(true);
+            }, function(code:ErrorCode) {
+                callback.onError(code);
+            });
+        }
+
+        setOnReceiveStatusListener(callback:Function) : void{
+           var me = this;
+           this.addon.setOnReceiveStatusListener(function(userId:string,status:string){
+               callback(userId,me.buildUserStatus(status));
+           });
+        }
+
+
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>): void {
             callback.onSuccess(false);
+        }
+
+        sendRecallMessage(conent:any, sendMessageCallback: SendMessageCallback): void {
+           // new RecallCommandMessage({conversationType : conent.conversationType, targetId : conent.targetId, sentTime:content.sentTime, messageUId : conent.messageUId, extra : conent.extra, user : conent.user});
         }
 
         updateMessage(message: Message, callback?: ResultCallback<Message>): void { }
@@ -608,6 +662,16 @@ module RongIMLib {
             return null;
         }
 
+        private buildUserStatus(result : string):UserStatus{
+            var userStatus:UserStatus = new UserStatus();
+            var obj = JSON.parse(result);
+            if(obj.us && obj.us[0]) {
+                userStatus.platform = obj.us[0].p; 
+                userStatus.online = !!obj.us[0].o;
+                userStatus.status = obj.us[0].s;                 
+             }
+            return userStatus;
+        }
 
         private buildMessage(result: string): Message {
             var message: Message = new Message(), ret: any = JSON.parse(result);

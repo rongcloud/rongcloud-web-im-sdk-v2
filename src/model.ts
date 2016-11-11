@@ -1,5 +1,13 @@
 module RongIMLib {
 
+    export class UserStatus{
+        constructor(
+            public platform?:string[],
+            public online?: boolean,
+            public status?: number
+        ) { }
+    }
+
     export class MentionedInfo {
         constructor(
             type?: MentionedType,

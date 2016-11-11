@@ -77,7 +77,9 @@ module RongIMLib {
                 openMp: true,
                 isPrivate: false,
                 postImageUrl: protocol + 'upload.qiniu.com/putb64/-1',
-                fileServer: protocol + 'upload.qiniu.com'
+                fileServer: protocol + 'upload.qiniu.com',
+                fileUploadURL: protocol + 'cdn.ronghub.com/plupload.min.js',
+                fileQNURL: protocol + 'cdn.ronghub.com/qiniu2.2.4.js'
             }, protocol);
             if (document.location.protocol == 'https:') {
                 opts.fileServer = 'https://' + (options && options.fileServer || 'upload.qiniu.com');
@@ -204,7 +206,9 @@ module RongIMLib {
                 HungupMessage: "HungupMessage",
                 InviteMessage: "InviteMessage",
                 MediaModifyMessage: "MediaModifyMessage",
-                MemberModifyMessage: "MemberModifyMessage"
+                MemberModifyMessage: "MemberModifyMessage",
+                JrmfReadPacketMessage: "JrmfReadPacketMessage",
+                JrmfReadPacketOpenedMessage: "JrmfReadPacketOpenedMessage"
             };
         }
 
@@ -265,9 +269,14 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.disconnect();
         }
 
-        startCustomService(custId: string, callback: any): void {
+        startCustomService(custId: string, callback: any,groupId?: string): void {
             if (!custId || !callback) return;
-            var msg: MessageContent = new HandShakeMessage();
+            var msg: MessageContent;
+            if(typeof groupId == 'undefined') {
+                msg =  new HandShakeMessage();
+            }else{
+                msg = new HandShakeMessage({ groupid:groupId});
+            }
             var me = this;
             RongIMLib.RongIMClient._memoryStore.custStore["isInit"] = true;
             RongIMClient.getInstance().sendMessage(ConversationType.CUSTOMER_SERVICE, custId, msg, {
@@ -539,9 +548,9 @@ module RongIMLib {
          * @param  {string}                  pushContent      []
          * @param  {string}                  pushData         []
          */
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string) {
-            CheckParam.getInstance().check(["number", "string", "object", "object", "undefined|object|null|global|boolean", "undefined|object|null|global|string", "undefined|object|null|global|string"], "sendMessage");
-            RongIMClient._dataAccessProvider.sendMessage(conversationType, targetId, messageContent, sendCallback, mentiondMsg, pushText, appData);
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number) {
+            CheckParam.getInstance().check(["number", "string", "object", "object", "undefined|object|null|global|boolean", "undefined|object|null|global|string", "undefined|object|null|global|string", "undefined|object|null|global|string"], "sendMessage");
+            RongIMClient._dataAccessProvider.sendMessage(conversationType, targetId, messageContent, sendCallback, mentiondMsg, pushText, appData, methodType);
         }
 
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback) {
@@ -567,6 +576,10 @@ module RongIMLib {
          */
         sendTextMessage(conversationType: ConversationType, targetId: string, content: string, sendMessageCallback: SendMessageCallback) {
             RongIMClient._dataAccessProvider.sendTextMessage(conversationType, targetId, content, sendMessageCallback);
+        }
+
+        sendRecallMessage(content:any, sendMessageCallback: SendMessageCallback): void {
+            RongIMClient._dataAccessProvider.sendRecallMessage(content, sendMessageCallback);
         }
         /**
          * [insertMessage 向本地插入一条消息，不发送到服务器。]
@@ -688,6 +701,11 @@ module RongIMLib {
                 }
             });
         }
+
+        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{
+           RongIMClient._dataAccessProvider.clearUnreadCountByTimestamp(conversationType, targetId, timestamp, callback);
+        }
+
         /**
          * 清楚会话未读消息数
          * @param  {ConversationType}        conversationType 会话类型
@@ -1223,7 +1241,7 @@ module RongIMLib {
             }
         }
         /**
-         * [getPublicServiceList ]获取已经的公共账号列表
+         * [getPublicServiceList ]获取本地的公共账号列表
          * @param  {ResultCallback<PublicServiceProfile[]>} callback [返回值，参数回调]
          */
         getPublicServiceList(callback: ResultCallback<PublicServiceProfile[]>) {
@@ -1483,6 +1501,28 @@ module RongIMLib {
             }
         }
         // # endVoIP
+
+
+
+        // UserStatus start
+
+        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
+            RongIMClient._dataAccessProvider.getUserStatus(userId,callback);
+        }
+
+        setUserStatus(status:number, callback:ResultCallback<boolean>) : void{
+            RongIMClient._dataAccessProvider.setUserStatus(status,callback);
+        }
+
+        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void{
+            RongIMClient._dataAccessProvider.subscribeUserStatus(userIds,callback);
+        }
+
+        setOnReceiveStatusListener(callback:Function) : void{
+           RongIMClient._dataAccessProvider.setOnReceiveStatusListener(callback);
+        }
+
+        // UserStaus end
     }
     //兼容AMD CMD
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
