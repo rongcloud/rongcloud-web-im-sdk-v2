@@ -1543,10 +1543,10 @@ module RongIMLib {
                 return RongIMLib;
             });
         } else {
-            var lurl: string = RongIMClient._memoryStore.depend.long;
-            var burl: string = RongIMClient._memoryStore.depend.byteBuffer;
-            var purl: string = RongIMClient._memoryStore.depend.protobuf;
-            define("RongIMLib", ['md5', lurl, burl, purl], function() {
+            // var lurl: string = RongIMClient._memoryStore.depend.long;
+            // var burl: string = RongIMClient._memoryStore.depend.byteBuffer;
+            // var purl: string = RongIMClient._memoryStore.depend.protobuf;
+            define("RongIMLib", ['md5'], function() {
                 return RongIMLib;
             });
         }
