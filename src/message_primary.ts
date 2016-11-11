@@ -95,11 +95,19 @@ module RongIMLib {
     }
 
     export class RecallCommandMessage implements MessageContent {
-        user: UserInfo;
-        messageUId: string;
         messageName: string = "RecallCommandMessage";
+        messageUId: string;
+        conversationType:ConversationType;
+        targetId:string;
+        sentTime:number;
+        extra:string;
+        user: UserInfo;
         constructor(message: any) {
-            message.messageUId && (this.messageUId = message.messageUId);
+            this.messageUId = message.messageUId;
+            this.conversationType = message.conversationType;
+            this.targetId = message.targetId;
+            this.sentTime = message.sentTime;
+            message.extra && (this.extra = message.extra);
             message.user && (this.user = message.user);
         }
 

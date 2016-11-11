@@ -23,6 +23,8 @@ module RongIMLib {
 
         sendTextMessage(conversationType: ConversationType, targetId: string, content: string, sendMessageCallback: SendMessageCallback): void;
 
+        sendRecallMessage(conent:any, sendMessageCallback: SendMessageCallback, user?:UserInfo): void;
+
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void;
 
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>): void;
@@ -69,7 +71,7 @@ module RongIMLib {
 
         getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>): void;
 
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string): void;
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number): void;
 
         registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void;
 
@@ -124,5 +126,15 @@ module RongIMLib {
         searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void;
    
         getDelaTime():number;
+
+        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void;
+
+        setUserStatus(userId:number, callback:ResultCallback<boolean>) : void;
+
+        setOnReceiveStatusListener(callback:Function) : void;
+
+        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void;
+
+        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void;
     }
 }

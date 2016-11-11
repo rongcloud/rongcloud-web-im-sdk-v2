@@ -5,6 +5,11 @@ module RongIMLib {
         PART = 2
     }
 
+    export enum MethodType {
+        CUSTOMER_SERVICE = 1, 
+        RECALL = 2
+    }
+
     export enum BlacklistStatus {
         /**
          * 在黑名单中。
