@@ -68,7 +68,9 @@ module RongIMLib {
             this.addon.connectWithToken(token, userId);
         }
 
-
+        setServerInfo(info:any):void {
+            'setServerInfo' in this.addon && this.addon.setServerInfo(info.navi);
+        }
 
         logout(): void {
             this.useConsole && console.log("logout");
@@ -78,6 +80,12 @@ module RongIMLib {
         disconnect(): void {
             this.useConsole && console.log("disconnect");
             this.addon.disconnect(true);
+        }
+
+        clearListeners(): void{
+            this.addon.setOnReceiveStatusListener();
+            this.addon.setConnectionStatusListener();
+            this.addon.setOnReceiveMessageListener();
         }
 
         setConnectionStatusListener(listener: ConnectionStatusListener): void {
@@ -306,8 +314,24 @@ module RongIMLib {
 
 
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string): void {
-            var me = this;
+            var me = this , users:string[] = [];
             me.useConsole && console.log("sendMessage");
+
+             if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
+                var rspMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>messageContent;
+                if (rspMsg.receiptMessageDic) {
+                    var ids: string[] = [];
+                    for (var key in rspMsg.receiptMessageDic) {
+                        ids.push(key);
+                    }
+                    users = ids;
+                }
+            }
+
+             if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["SyncReadStatusMessage"]) {
+                users.push(me.userId);
+            }
+
             var msg: string = me.addon.sendMessage(conversationType,
                 targetId, RongIMClient.MessageParams[messageContent.messageName].objectName, messageContent.encode(), pushText || "", appData || "", function(progress: any) {
                 },
@@ -316,7 +340,7 @@ module RongIMLib {
                 },
                 function(message: string, code: ErrorCode) {
                     sendCallback.onError(code, me.buildMessage(message));
-                }, mentiondMsg ? ["metionedMsg"] : "");
+                }, users);
             var tempMessage: any = JSON.parse(msg);
             RongIMLib.MessageIdHandler.messageId = tempMessage.messageId;
         }
@@ -618,6 +642,17 @@ module RongIMLib {
         }
 
 
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void{
+            var me = this;
+            var mentions = JSON.parse(me.addon.getUnreadMentionedMessages(conversationType, targetId)).list;
+            for(var i =0,len = mentions.length;i<len;i++){
+                var temp = JSON.parse(mentions[i].obj);
+                temp.content = JSON.parse(temp.content);
+                mentions[i] = temp;
+            }
+            callback.onSuccess(mentions);
+        }
+
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>): void {
             callback.onSuccess(false);
         }
@@ -714,6 +749,7 @@ module RongIMLib {
             conver.sentStatus = lastestMsg.status;
             conver.targetId = c.targetId;
             conver.unreadMessageCount = c.unreadCount;
+            conver.hasUnreadMention = c.m_hasUnreadMention;
             if(lastestMsg.content && lastestMsg.content.mentionedInfo) {
                 conver.mentionedMsg = {uid:lastestMsg.messageUId, time:lastestMsg.sentTime, mentionedInfo:lastestMsg.content.mentionedInfo};
             }

@@ -84,9 +84,9 @@ declare interface Addon {
 
     disconnect(isDisconnect: boolean): void;
 
-    setConnectionStatusListener(listener: Function): void;
+    setConnectionStatusListener(listener?: Function): void;
 
-    setOnReceiveMessageListener(listener: Function): void;
+    setOnReceiveMessageListener(listener?: Function): void;
 
     sendReceiptResponse(conversationType: RongIMLib.ConversationType, targetId: string, sendCallback: RongIMLib.SendMessageCallback): void;
 
@@ -210,6 +210,10 @@ declare interface Addon {
     
     subscribeUserStatus(userId:string[], success:Function, error:Function) : void;
     
-    setOnReceiveStatusListener(listener:Function) : void;
+    setOnReceiveStatusListener(listener?:Function) : void;
+
+    setServerInfo(info:any):void;
+
+    getUnreadMentionedMessages(conversationType:RongIMLib.ConversationType, targetId:string):string;
 
 }
