@@ -17,6 +17,8 @@ module RongIMLib {
 
         setOnReceiveMessageListener(listener: OnReceiveMessageListener): void;
 
+        clearListeners(): void;
+
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback): void;
 
         sendTypingStatusMessage(conversationType: ConversationType, targetId: string, messageName: string, sendCallback: SendMessageCallback): void;
@@ -127,6 +129,8 @@ module RongIMLib {
    
         getDelaTime():number;
 
+        setServerInfo(info:any):void;
+
         getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void;
 
         setUserStatus(userId:number, callback:ResultCallback<boolean>) : void;
@@ -136,5 +140,7 @@ module RongIMLib {
         subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void;
 
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void;
+
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void;
     }
 }

@@ -1051,6 +1051,11 @@ module RongIMLib {
         dropTable(sql: string): void {
             this.database.execUpdate(sql);
         }
+
+        setServerInfo(info:any):void{
+            
+        }
+
         setMessageSentStatus(messageUId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
             var sSql: string = "select t.content from t_message_" + this.database.userId + " t where t.messageUId = ?";
             var uSql: string = "update t_message_" + this.database.userId + " set content = ? where messageUId = ?";
@@ -1065,6 +1070,11 @@ module RongIMLib {
                 }
             });
         }
+
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void{
+          
+        }
+
         searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void {
             callback.onSuccess([]);
         }
@@ -1087,6 +1097,10 @@ module RongIMLib {
 
         subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean>) : void{
            callback.onSuccess(true);
+        }
+
+        clearListeners(): void{
+
         }
 
         setOnReceiveStatusListener(callback:Function) : void{

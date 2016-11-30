@@ -985,6 +985,18 @@ module RongIMLib {
 
         }
 
+        clearListeners(): void{
+
+        }
+        
+        setServerInfo(info:any):void{
+            
+        }
+
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void{
+            callback.onSuccess({});          
+        }
+
         setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void {
            
         }

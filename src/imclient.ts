@@ -114,6 +114,7 @@ module RongIMLib {
                 depend: opts
             };
 
+
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
                 // RongIMClient._memoryStore.isUseWebSQLProvider = true;  处理不同存储方案
                 RongIMClient._dataAccessProvider = dataAccessProvider;
@@ -121,6 +122,7 @@ module RongIMLib {
                 RongIMClient._dataAccessProvider = new ServerDataProvider();
             }
             RongIMClient._dataAccessProvider.init(appKey);
+            RongIMClient._dataAccessProvider.setServerInfo({navi: location.protocol + opts.navi +'/navi.xml' });
             RongIMClient.MessageParams = {
                 TextMessage: { objectName: "RC:TxtMsg", msgTag: new MessageTag(true, true) },
                 ImageMessage: { objectName: "RC:ImgMsg", msgTag: new MessageTag(true, true) },
@@ -1502,7 +1504,13 @@ module RongIMLib {
         }
         // # endVoIP
 
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void{
+            RongIMClient._dataAccessProvider.getUnreadMentionedMessages(conversationType, targetId, callback);    
+        }
 
+        clearListeners():void{
+            RongIMClient._dataAccessProvider.clearListeners();
+        }
 
         // UserStatus start
 
@@ -1519,10 +1527,11 @@ module RongIMLib {
         }
 
         setOnReceiveStatusListener(callback:Function) : void{
-           RongIMClient._dataAccessProvider.setOnReceiveStatusListener(callback);
+            RongIMClient._dataAccessProvider.setOnReceiveStatusListener(callback);
         }
 
         // UserStaus end
+
     }
     //兼容AMD CMD
     if ("function" === typeof require && "object" === typeof module && module && module.id && "object" === typeof exports && exports) {
