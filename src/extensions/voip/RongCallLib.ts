@@ -81,7 +81,11 @@ module RongIMLib {
                 callback.onError(ErrorCode.BUSYLINE);
                 return;
             }
-            var cookieKey = 'chnl' + Bridge._client.userId + '_' + converType + '_' + targetId, channelId = cookieKey + '_' + (+new Date), that = this;
+            var cookieKey = 'c' + converType + '_' + targetId, that = this;
+            var channelId = cookieKey + '_' + (+new Date);
+            if(channelId.length > 63) {
+                channelId = channelId.substr(0, 63);
+            }
             that._memorySessions.startCallback = callback;
             that._memorySessions["mediaType"] = mediaType;
             RongCallLib._rongIMClient.getAgoraDynamicKey(1, channelId, {

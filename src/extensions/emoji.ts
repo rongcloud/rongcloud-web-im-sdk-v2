@@ -202,7 +202,7 @@ module RongIMLib {
         }
         static init(emoji?: any) {
             var me = this;
-            me.url = (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.emojiImage) || "//cdn.ronghub.com/css-sprite_bg-2.1.10.png";
+            me.url = (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend && RongIMClient._memoryStore.depend.emojiImage) || "//cdn.ronghub.com/css-sprite_bg-2.1.10.png";
             if (emoji) {
                 me.emojiFactory = emoji.dataSource;
                 me.url = emoji.url;

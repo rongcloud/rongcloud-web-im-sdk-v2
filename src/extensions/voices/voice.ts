@@ -9,7 +9,7 @@ module RongIMLib {
                 div.setAttribute("id", "flashContent");
                 document.body.appendChild(div);
                 var script = document.createElement("script");
-                script.src = (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.voiceSwfobjct) || "//cdn.ronghub.com/swfobject-2.0.0.min.js";
+                script.src = (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend && RongIMClient._memoryStore.depend.voiceSwfobjct) || "//cdn.ronghub.com/swfobject-2.0.0.min.js";
                 var header = document.getElementsByTagName("head")[0];
                 header.appendChild(script);
                 setTimeout(function() {
@@ -25,10 +25,10 @@ module RongIMLib {
                     attributes.id = "player";
                     attributes.name = "player";
                     attributes.align = "middle";
-                    swfobject.embedSWF((RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.voicePlaySwf) || "//cdn.ronghub.com/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
+                    swfobject.embedSWF((RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend && RongIMClient._memoryStore.depend.voicePlaySwf) || "//cdn.ronghub.com/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
                 }, 500);
             } else {
-                var list = [(RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.voicePCMdata) || "//cdn.ronghub.com/pcmdata-2.0.0.min.js", (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.voiceLibamr) || "//cdn.ronghub.com/libamr-2.0.13.min.js"];
+                var list = [(RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend && RongIMClient._memoryStore.depend.voicePCMdata) || "//cdn.ronghub.com/pcmdata-2.0.0.min.js", (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend && RongIMClient._memoryStore.depend.voiceLibamr) || "//cdn.ronghub.com/libamr-2.0.13.min.js"];
                 for (let i = 0, len = list.length; i < len; i++) {
                     var script = document.createElement("script");
                     script.src = list[i];

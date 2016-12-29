@@ -36,27 +36,27 @@ module RongIMLib {
             var protocol: string = "//", wsScheme = 'ws://';
             if (document.location.protocol == "file:") {
                 protocol = 'http://';
-            } else if (document.location.protocol == 'https:') {
-                wsScheme = 'wss://'
+            } 
+            if (document.location.protocol == 'https:') {
+                wsScheme = 'wss://';
             }
-            var browser = navigator.appName,
-                b_version = navigator.appVersion,
-                version = b_version.split(";"),
-                isPolling = false;
+            
+            var isPolling = false;
+            if(typeof WebSocket != 'function') {
+                isPolling = true;
+            }
+            var version = navigator.appVersion.split(";"), trim_version = 0;
             if (version.length > 1) {
-                var trim_Version = parseInt(version[1].replace(/[ ]/g, "").replace(/MSIE/g, ""));
-                if (trim_Version < 10) {
-                    isPolling = true;
-
-                }
-                if (trim_Version < 8 && trim_Version > 4) {
-                    RongIMClient._storageProvider = new UserDataProvider();
-                } else {
-                    RongIMClient._storageProvider = new LocalStorageProvider();
-                }
-            } else {
-                RongIMClient._storageProvider = new LocalStorageProvider();
+                trim_version = parseInt(version[1].replace(/[ ]/g, "").replace(/MSIE/g, ""));
             }
+            if(typeof localStorage == 'object') {
+                RongIMClient._storageProvider = new LocalStorageProvider();
+            }else if(trim_version > 4 && trim_version < 8){
+                RongIMClient._storageProvider = new UserDataProvider();
+            }else{
+                RongIMClient._storageProvider = new MemeoryProvider();
+            }
+
             var opts = ObjectTools.buildOptions(options, {
                 protobuf: protocol + 'cdn.ronghub.com/protobuf-2.1.5.min.js',
                 long: protocol + 'cdn.ronghub.com/Long.js',
@@ -551,7 +551,7 @@ module RongIMLib {
          * @param  {string}                  pushData         []
          */
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number) {
-            CheckParam.getInstance().check(["number", "string", "object", "object", "undefined|object|null|global|boolean", "undefined|object|null|global|string", "undefined|object|null|global|string", "undefined|object|null|global|string"], "sendMessage");
+            CheckParam.getInstance().check(["number", "string", "object", "object", "undefined|object|null|global|boolean", "undefined|object|null|global|string", "undefined|object|null|global|string", "undefined|object|null|global|number"], "sendMessage");
             RongIMClient._dataAccessProvider.sendMessage(conversationType, targetId, messageContent, sendCallback, mentiondMsg, pushText, appData, methodType);
         }
 
@@ -1504,8 +1504,8 @@ module RongIMLib {
         }
         // # endVoIP
 
-        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void{
-            RongIMClient._dataAccessProvider.getUnreadMentionedMessages(conversationType, targetId, callback);    
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any{
+            return RongIMClient._dataAccessProvider.getUnreadMentionedMessages(conversationType, targetId);    
         }
 
         clearListeners():void{
