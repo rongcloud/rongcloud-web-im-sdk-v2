@@ -141,6 +141,6 @@ module RongIMLib {
 
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void;
 
-        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void;
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any;
     }
 }

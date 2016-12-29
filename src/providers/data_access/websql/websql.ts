@@ -1071,8 +1071,8 @@ module RongIMLib {
             });
         }
 
-        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void{
-          
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any{
+            return null;
         }
 
         searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void {

@@ -610,7 +610,7 @@ module RongIMLib {
                 modules.setUserId(Bridge._client.userId);
             }
             modules.setClassname(RongIMClient.MessageParams[messageContent.messageName].objectName);
-            modules.setContent(messageContent.encode());
+             modules.setContent(messageContent.encode());
             var content: any = modules.toArrayBuffer();
             if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
                 content = [].slice.call(new Int8Array(content));
@@ -690,6 +690,7 @@ module RongIMLib {
                     });
                 }
             }, null, methodType);
+            msg.messageId = RongIMLib.MessageIdHandler.messageId + "";
         }
 
         setConnectionStatusListener(listener: ConnectionStatusListener): void {
@@ -993,8 +994,8 @@ module RongIMLib {
             
         }
 
-        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void{
-            callback.onSuccess({});          
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any{
+            return null;       
         }
 
         setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void {

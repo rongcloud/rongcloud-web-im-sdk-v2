@@ -642,7 +642,7 @@ module RongIMLib {
         }
 
 
-        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string, callback:ResultCallback<any>):void{
+        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any{
             var me = this;
             var mentions = JSON.parse(me.addon.getUnreadMentionedMessages(conversationType, targetId)).list;
             for(var i =0,len = mentions.length;i<len;i++){
@@ -650,7 +650,7 @@ module RongIMLib {
                 temp.content = JSON.parse(temp.content);
                 mentions[i] = temp;
             }
-            callback.onSuccess(mentions);
+            return mentions;
         }
 
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>): void {
