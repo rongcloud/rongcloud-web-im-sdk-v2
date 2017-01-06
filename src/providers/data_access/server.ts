@@ -13,6 +13,11 @@ module RongIMLib {
             if (Bridge._client && Bridge._client.channel && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTING) {
                 return;
             }
+            //循环设置监听事件，追加之后清空存放事件数据
+            for (let i = 0, len = RongIMClient._memoryStore.listenerList.length; i < len; i++) {
+                RongIMClient.bridge["setListener"](RongIMClient._memoryStore.listenerList[i]);
+            }
+            RongIMClient._memoryStore.listenerList.length = 0;
             RongIMClient.bridge.connect(RongIMClient._memoryStore.appKey, token, {
                 onSuccess: function(data: string) {
                     setTimeout(function() {
@@ -31,11 +36,6 @@ module RongIMLib {
                     }
                 }
             });
-            //循环设置监听事件，追加之后清空存放事件数据
-            for (let i = 0, len = RongIMClient._memoryStore.listenerList.length; i < len; i++) {
-                RongIMClient.bridge["setListener"](RongIMClient._memoryStore.listenerList[i]);
-            }
-            RongIMClient._memoryStore.listenerList.length = 0;
         }
 
         reconnect(callback: ConnectCallback): void {
@@ -123,7 +123,9 @@ module RongIMLib {
         }
 
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void {
-
+            if(count <= 1) {
+                throw new Error("the count must be greater than 1.");
+            }
             var modules = new Modules.HistoryMessageInput(), self = this;
             modules.setTargetId(targetId);
             if (timestamp === 0 || timestamp > 0) {
@@ -192,7 +194,6 @@ module RongIMLib {
             }
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(list: any) {
-                    RongIMClient._memoryStore.conversationList.length = 0;
                     if (list.info) {
                         list.info = list.info.reverse();
                         for (var i = 0, len = list.info.length; i < len; i++) {
@@ -420,7 +421,7 @@ module RongIMLib {
                     Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
                         onSuccess: function(collection: any) {
                             var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
-                            RongIMClient._storageProvider.setItem(chatroomId + Bridge._client.userId + "CST", sync);
+                            RongIMClient._memoryStore.lastReadTime.set(chatroomId + Bridge._client.userId + "CST", sync);
                             var list = collection.list;
                             if (RongIMClient._memoryStore.filterMessages.length > 0) {
                                 for (var i = 0, mlen = list.length; i < mlen; i++) {
@@ -481,6 +482,40 @@ module RongIMLib {
                     callback.onError(errcode);
                 }
             }, "ChrmOutput");
+        }
+
+        setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void{
+            RongIMClient._memoryStore.lastReadTime.set('chrhis_' + chatRoomId, timestamp);
+        }
+
+        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void{
+            var modules = new Modules.HistoryMsgInput();
+            modules.setTargetId(chatRoomId);
+            var timestamp = RongIMClient._memoryStore.lastReadTime.get('chrhis_' + chatRoomId) || 0;
+            modules.setTime(timestamp);
+            modules.setCount(count);
+            modules.setOrder(order);
+            RongIMClient.bridge.queryMsg(34, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(data: any) {
+                    RongIMClient._memoryStore.lastReadTime.set('chrhis_' + chatRoomId, MessageUtil.int64ToTimestamp(data.syncTime))
+                    var list = data.list.reverse();
+                    for (var i = 0, len = list.length; i < len; i++) {
+                        list[i] = MessageUtil.messageParser(list[i]);
+                    }
+                    setTimeout(function() {
+                        callback.onSuccess(list, !!data.hasMsg);
+                    });
+                },
+                onError: function(error: ErrorCode) {
+                    setTimeout(function() {
+                        if (error === ErrorCode.TIMEOUT) {
+                            callback.onError(error);
+                        } else {
+                            callback.onSuccess([], false);
+                        }
+                    });
+                }
+            }, "HistoryMsgOuput");
         }
 
         addToBlacklist(userId: string, callback: OperationCallback): void {
@@ -648,7 +683,7 @@ module RongIMLib {
 
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
-                    data && data.timestamp && RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + conversationType + targetId, data.timestamp);
+                    data && data.timestamp && RongIMClient._memoryStore.lastReadTime.set('converST_' + Bridge._client.userId + conversationType + targetId, data.timestamp);
                     if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
                         var reqMsg: ReadReceiptRequestMessage = <ReadReceiptRequestMessage>msg.content;
                         var sentkey: string = Bridge._client.userId + reqMsg.messageUId + "SENT";
@@ -841,7 +876,7 @@ module RongIMLib {
         }
 
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isHidden?:boolean) {
-            if (RongIMClient._memoryStore.conversationList.length == 0 || RongIMClient._memoryStore.isSyncRemoteConverList || (typeof count != undefined && RongIMClient._memoryStore.conversationList.length < count)) {
+            if (RongIMClient._memoryStore.conversationList.length == 0 || (RongIMClient._memoryStore.isSyncRemoteConverList && typeof count != undefined && RongIMClient._memoryStore.conversationList.length < count)) {
                 RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
                         if (MessageUtil.supportLargeStorage()) {

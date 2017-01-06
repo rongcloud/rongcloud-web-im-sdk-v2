@@ -713,6 +713,39 @@ var Polling = {
             this.toArrayBuffer = function () {
                 return a
             }
+        },
+        HistoryMsgInput: function(){
+            var a = {};
+            this.setTargetId = function(b){
+                a.targetId = b;
+            };
+            this.setTime = function(b){
+                a.time = b;
+            };
+            this.setCount = function(b){
+                a.count = b;
+            };
+            this.setOrder = function(b){
+                a.order = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
+        HistoryMsgOuput: function(){
+            var a = {};
+            this.setList = function(b){
+                a.list = b;
+            };
+            this.setSyncTime = function(b){
+                a.syncTime = b;
+            };
+            this.setHasMsg = function(b){
+                a.hasMsg = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
         }
     };
     for (var f in Polling) {

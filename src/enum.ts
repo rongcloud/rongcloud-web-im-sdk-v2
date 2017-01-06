@@ -176,6 +176,14 @@ module RongIMLib {
          * 获取聊天室信息参数无效
          */
         RC_CHATROOM_PATAMETER_INVALID = 23412,
+        /**
+         * 聊天室异常
+         */
+        CHATROOM_GET_HISTORYMSG_ERROR = 23413,
+        /**
+         * 没有打开聊天室
+         */
+        CHATROOM_NOT_OPEN_HISTORYMSG_STORE  = 23414,
 
         TIMEOUT = -1,
         /**

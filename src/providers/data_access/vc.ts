@@ -604,6 +604,14 @@ module RongIMLib {
             });
         }
 
+        setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void{
+
+        }
+        
+        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void{
+            
+        }
+
         getDelaTime():number{
             return this.addon.getDeltaTime();
         }

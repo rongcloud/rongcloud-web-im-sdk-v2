@@ -10,7 +10,7 @@ module RongIMLib {
         static MessageType: { [s: string]: any } = {};
         static MessageParams: { [s: string]: any };
         static RegisterMessage: { [s: string]: any } = {};
-        static _memoryStore: any = {};
+        static _memoryStore: any = { listenerList: [] };
         static isNotPullMsg: boolean = false;
         static _storageProvider: StorageProvider;
         static _dataAccessProvider: DataAccessProvider;
@@ -90,7 +90,7 @@ module RongIMLib {
             }
             var pather = new FeaturePatcher();
             pather.patchAll();
-            RongIMClient._memoryStore = {
+            var tempStore:any = {
                 token: "",
                 callback: null,
                 hasModules: true,
@@ -99,7 +99,6 @@ module RongIMLib {
                 conversationList: [],
                 appKey: appKey,
                 publicServiceMap: new PublicServiceMap(),
-                listenerList: [],
                 providerType: 1,
                 deltaTime: 0,
                 filterMessages: [],
@@ -111,10 +110,12 @@ module RongIMLib {
                 connectAckTime: 0,
                 voipStategy: 0,
                 isFirstPingMsg: true,
-                depend: opts
+                depend: opts,
+                listenerList: RongIMClient._memoryStore.listenerList
             };
 
-
+            RongIMClient._memoryStore = tempStore;
+            
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
                 // RongIMClient._memoryStore.isUseWebSQLProvider = true;  处理不同存储方案
                 RongIMClient._dataAccessProvider = dataAccessProvider;
@@ -224,6 +225,27 @@ module RongIMLib {
             CheckParam.getInstance().check(["string", "object", "string|null|object|global|undefined"], "connect", true);
             RongIMClient._dataAccessProvider.connect(token, callback, userId);
         }
+        /**
+            var config = {
+                appkey: appkey,
+                token: token,
+                dataAccessProvider:dataAccessProvider,
+                opts: opts
+            };
+            callback(_instance, userId);
+         */
+        static initApp(config:any, callback:Function):void{
+            RongIMClient.init(config.appkey, config.dataAccessProvider, config.opts);
+            RongIMClient.connect(config.token, {
+                onSuccess: function(userId) {
+                  callback(RongIMClient._instance, userId);
+                },
+                onTokenIncorrect: function() {
+                  throw new Error('token expired');
+                },
+                onError:function(errorCode){ }
+              });
+        }
 
         static reconnect(callback: ConnectCallback) {
             RongIMClient._dataAccessProvider.reconnect(callback);
@@ -241,13 +263,17 @@ module RongIMLib {
             RongIMClient.MessageParams[messageType] = { objectName: objectName, msgTag: messageTag };
         }
 
-        /**
+        /** 
          * 设置连接状态变化的监听器。
          *
          * @param listener  连接状态变化的监听器。
          */
         static setConnectionStatusListener(listener: ConnectionStatusListener): void {
-            RongIMClient._dataAccessProvider.setConnectionStatusListener(listener);
+            if(RongIMClient._dataAccessProvider) {
+                RongIMClient._dataAccessProvider.setConnectionStatusListener(listener);
+            }else{
+                RongIMClient._memoryStore.listenerList.push(listener);
+            }
         }
 
         /**
@@ -256,7 +282,11 @@ module RongIMLib {
          * @param listener  接收消息的监听器。
          */
         static setOnReceiveMessageListener(listener: OnReceiveMessageListener): void {
-            RongIMClient._dataAccessProvider.setOnReceiveMessageListener(listener);
+            if(RongIMClient._dataAccessProvider) {
+                RongIMClient._dataAccessProvider.setOnReceiveMessageListener(listener);
+            }else{
+                RongIMClient._memoryStore.listenerList.push(listener);
+            }
         }
         /**
          * 清理所有连接相关的变量
@@ -1203,6 +1233,15 @@ module RongIMLib {
                 return;
             }
             RongIMClient._dataAccessProvider.joinChatRoom(chatroomId, messageCount, callback);
+        }
+
+        setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void{
+            CheckParam.getInstance().check(["string", "number"], "setChatroomHisMessageTimestamp");
+            RongIMClient._dataAccessProvider.setChatroomHisMessageTimestamp(chatRoomId, timestamp);
+        }
+        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void{
+            CheckParam.getInstance().check(["string", "number", "number", "object"], "getChatRoomHistoryMessages");
+            RongIMClient._dataAccessProvider.getChatRoomHistoryMessages(chatRoomId, count, order, callback);
         }
 
         getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>) {

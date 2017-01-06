@@ -1,10 +1,10 @@
 module RongIMLib {
     export class RongIMVoice {
-        private static isIE: boolean = /Trident/.test(navigator.userAgent);
+        private static notSupportH5: boolean = typeof FileReader == 'undefined';
         private static element: any = {};
         private static isInit: boolean = false;
         static init() {
-            if (this.isIE) {
+            if (this.notSupportH5) {
                 var div = document.createElement("div");
                 div.setAttribute("id", "flashContent");
                 document.body.appendChild(div);
@@ -12,7 +12,7 @@ module RongIMLib {
                 script.src = (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend && RongIMClient._memoryStore.depend.voiceSwfobjct) || "//cdn.ronghub.com/swfobject-2.0.0.min.js";
                 var header = document.getElementsByTagName("head")[0];
                 header.appendChild(script);
-                setTimeout(function() {
+                script.onload = script.onreadystatechange = function() {
                     var swfVersionStr = "11.4.0";
                     var flashvars = {};
                     var params: any = {};
@@ -26,22 +26,15 @@ module RongIMLib {
                     attributes.name = "player";
                     attributes.align = "middle";
                     swfobject.embedSWF((RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend && RongIMClient._memoryStore.depend.voicePlaySwf) || "//cdn.ronghub.com/player-2.0.2.swf", "flashContent", "1", "1", swfVersionStr, null, flashvars, params, attributes);
-                }, 500);
-            } else {
-                var list = [(RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend && RongIMClient._memoryStore.depend.voicePCMdata) || "//cdn.ronghub.com/pcmdata-2.0.0.min.js", (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend && RongIMClient._memoryStore.depend.voiceLibamr) || "//cdn.ronghub.com/libamr-2.0.13.min.js"];
-                for (let i = 0, len = list.length; i < len; i++) {
-                    var script = document.createElement("script");
-                    script.src = list[i];
-                    document.head.appendChild(script);
-                }
-            }
+                };
+            } 
             this.isInit = true;
         }
 
         static play(data: string, duration: number) {
             this.checkInit("play");
             var me = this;
-            if (me.isIE) {
+            if (me.notSupportH5) {
                 me.thisMovie().doAction("init", data);
             }
             else {
@@ -56,7 +49,7 @@ module RongIMLib {
         static stop(base64Data: string) {
             this.checkInit("stop");
             var me = this;
-            if (me.isIE) {
+            if (me.notSupportH5) {
                 me.thisMovie().doAction("stop");
             } else {
                 if (base64Data) {
@@ -85,7 +78,7 @@ module RongIMLib {
                 me.element[str] = audio;
                 callback && callback();
             } else {
-                if (!me.isIE) {
+                if (!me.notSupportH5) {
                     if (str in me.element) return;
                     var blob = me.base64ToBlob(base64Data,'audio/amr');
                     var reader = new FileReader();
@@ -125,7 +118,7 @@ module RongIMLib {
                     clearInterval(timer);
                 }
             }, 1000);
-            if (me.isIE) {
+            if (me.notSupportH5) {
                 me.thisMovie().doAction("play");
             }
         }

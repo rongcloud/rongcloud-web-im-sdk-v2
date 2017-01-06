@@ -59,6 +59,10 @@ module RongIMLib {
 
         getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>): void;
 
+        setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void;
+        
+        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void;
+
         quitChatRoom(chatroomId: string, callback: OperationCallback): void;
 
         addToBlacklist(userId: string, callback: OperationCallback): void;

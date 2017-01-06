@@ -13,9 +13,10 @@ module RongIMLib {
                     RongIMClient._memoryStore.voipStategy = callInfo.strategy;
                     RongIMClient._storageProvider.setItem("voipStrategy", callInfo.strategy);
                 }
-                //替换本地存储的导航信息
-                var temp = RongIMClient._storageProvider.getItemKey("navi");
-                temp !== null && RongIMClient._storageProvider.removeItem(temp);
+                //替换本地存储的导航信息 
+                // var temp = RongIMClient._storageProvider.getItemKey("navi");
+                // temp !== null && RongIMClient._storageProvider.removeItem(temp);
+                // 注：以上两行代码废弃，试用后删除。
                 var md5Token: string = md5(RongIMLib.Bridge._client.token).slice(8, 16), openMp: number = x['openMp'] == 0 ? 0 : 1;
                 RongIMClient._storageProvider.setItem("navi" + md5Token, x["server"] + "," + (x.userId || ""));
                 RongIMClient._storageProvider.setItem('openMp' + md5Token, openMp);

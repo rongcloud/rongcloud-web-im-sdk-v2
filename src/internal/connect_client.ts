@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
-        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg"];
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg", "qryCHMsg"];
     export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
@@ -391,7 +391,7 @@ module RongIMLib {
             this.SyncTimeQueue.state = "pending";
             if (temp.type != 2) {
                 //普通消息
-                time = RongIMClient._storageProvider.getItem(this.userId) || "0";
+                time = offlineMsg ? RongIMClient._storageProvider.getItem(this.userId) || 0 : RongIMClient._memoryStore.lastReadTime.get(this.userId) || 0;
                 modules = new Modules.SyncRequestMsg();
                 modules.setIspolling(false);
                 str = "pullMsg";
@@ -399,7 +399,7 @@ module RongIMLib {
             } else {
                 //聊天室消息
                 target = chrmId || me.chatroomId;
-                time = RongIMClient._storageProvider.getItem(target + Bridge._client.userId + "CST") || "0";
+                time = RongIMClient._memoryStore.lastReadTime.get(target + Bridge._client.userId + "CST") || 0;
                 modules = new Modules.ChrmPullMsg();
                 modules.setCount(0);
                 str = "chrmPull";
@@ -421,13 +421,18 @@ module RongIMLib {
             this.queryMessage(str, MessageUtil.ArrayForm(modules.toArrayBuffer()), target, Qos.AT_LEAST_ONCE, {
                 onSuccess: function(collection: any) {
                     var sync = MessageUtil.int64ToTimestamp(collection.syncTime), symbol = target;
+                    //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
                     if (str == "chrmPull") {
                         symbol += Bridge._client.userId + "CST";
                     }
-                    //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
-                    RongIMClient._memoryStore.isSyncRemoteConverList = true;
-                    //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
-                    RongIMClient._storageProvider.setItem(symbol, sync);
+
+                    if(offlineMsg) {
+                        RongIMClient._storageProvider.setItem(symbol, sync);
+                        //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
+                        RongIMClient._memoryStore.isSyncRemoteConverList = true;
+                    }else{
+                        RongIMClient._memoryStore.lastReadTime.set(symbol, sync);
+                    }
                     me.SyncTimeQueue.state = "complete";
                     me.invoke(isPullMsg, target);
                     //把拉取到的消息逐条传给消息监听器
@@ -556,7 +561,9 @@ module RongIMLib {
                     return;
                 } else if (msg.getTopic() == "s_msg") {
                     entity = Modules.DownStreamMessage.decode(msg.getData());
-                    RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
+                    var timestamp = MessageUtil.int64ToTimestamp(entity.dataTime);
+                    RongIMClient._storageProvider.setItem(this._client.userId, timestamp);
+                    RongIMClient._memoryStore.lastReadTime.get(this._client.userId, timestamp);
                 } else {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;
@@ -597,17 +604,17 @@ module RongIMLib {
             // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳
             // key：'converST_' + 当前用户 + conversationType + targetId
             // RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + message.conversationType + message.targetId, message.sentTime);
-            var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId,
-                stValue = RongIMClient._storageProvider.getItem(stKey);
+            var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId;
+            var stValue = RongIMClient._memoryStore.lastReadTime.get(stKey);
             if (stValue) {
                 if (message.sentTime > stValue) {
-                    RongIMClient._storageProvider.setItem(stKey, message.sentTime);
+                    RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
                 } else {
                     return;
                 }
             } else {
-                RongIMClient._storageProvider.setItem(stKey, message.sentTime);
-            }
+                RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
+            } 
             if (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() == 3) {
                 RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
                     onSuccess: function(con: Conversation) {

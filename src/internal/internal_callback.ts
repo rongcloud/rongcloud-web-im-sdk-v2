@@ -111,6 +111,7 @@ module RongIMLib {
                     _msg.setSentStatus = _status;
                 }
                 RongIMClient._storageProvider.setItem(Bridge._client.userId, timestamp);
+                RongIMClient._memoryStore.lastReadTime.get(Bridge._client.userId, timestamp);
                 this._cb({ messageUId: messageUId, timestamp: timestamp, messageId: messageId });
             } else {
                 this._timeout(_status);

@@ -484,6 +484,40 @@ module RongIMLib {
             }, "ChrmOutput");
         }
 
+        setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void{
+             RongIMClient._memoryStore.lastReadTime.set('chrhis_' + chatRoomId, timestamp);
+        }
+        
+        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void{
+            var modules = new Modules.HistoryMsgInput();
+            modules.setTargetId(chatRoomId);
+            var timestamp = RongIMClient._memoryStore.lastReadTime.get('chrhis_' + chatRoomId) || 0;
+            modules.setTime(timestamp);
+            modules.setCount(count);
+            modules.setOrder(order);
+            RongIMClient.bridge.queryMsg(34, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(data: any) {
+                    RongIMClient._memoryStore.lastReadTime.set('chrhis_' + chatRoomId, MessageUtil.int64ToTimestamp(data.syncTime))
+                    var list = data.list.reverse();
+                    for (var i = 0, len = list.length; i < len; i++) {
+                        list[i] = MessageUtil.messageParser(list[i]);
+                    }
+                    setTimeout(function() {
+                        callback.onSuccess(list, !!data.hasMsg);
+                    });
+                },
+                onError: function(error: ErrorCode) {
+                    setTimeout(function() {
+                        if (error === ErrorCode.TIMEOUT) {
+                            callback.onError(error);
+                        } else {
+                            callback.onSuccess([], false);
+                        }
+                    });
+                }
+            }, "HistoryMsgOuput");
+        }
+
         addToBlacklist(userId: string, callback: OperationCallback): void {
             var modules = new Modules.Add2BlackListInput();
             modules.setUserId(userId);

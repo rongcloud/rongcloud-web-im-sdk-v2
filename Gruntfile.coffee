@@ -30,8 +30,8 @@ module.exports = (grunt) ->
 
     # concat:
     #   dist:
-    #     src: ['./src/**/*.ts']
-    #     dest: './dist/RongIMLib.ts'
+    #     src: ['./src/extensions/voices/pcmdata.min.js', './src/extensions/voices/libamr-min-new.js', './build/extensions/voices/voice.js']
+    #     dest: './dist/voice-release.js'
 
     connect:
       server:
