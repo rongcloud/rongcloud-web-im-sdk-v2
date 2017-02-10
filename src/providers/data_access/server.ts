@@ -683,7 +683,9 @@ module RongIMLib {
 
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
                 onSuccess: function(data: any) {
-                    data && data.timestamp && RongIMClient._memoryStore.lastReadTime.set('converST_' + Bridge._client.userId + conversationType + targetId, data.timestamp);
+                    if(data && data.timestamp) {
+                        RongIMClient._memoryStore.lastReadTime.set('converST_' + Bridge._client.userId + conversationType + targetId, data.timestamp);
+                    }
                     if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
                         var reqMsg: ReadReceiptRequestMessage = <ReadReceiptRequestMessage>msg.content;
                         var sentkey: string = Bridge._client.userId + reqMsg.messageUId + "SENT";

@@ -185,7 +185,7 @@ module RongIMLib {
             return this;
         }
         reconnect(): any {
-            if (this.currentURL) {
+            if (this.currentURL && RongIMClient._storageProvider.getItem("rongSDK")) {
                 return this.connect(this.currentURL, null);
             } else {
                 throw new Error("reconnect:no have URL");
@@ -340,7 +340,7 @@ module RongIMLib {
                 clearInterval(me.pullMsgHearbeat);
             }
             me.pullMsgHearbeat = setInterval(function() {
-                me.syncTime(undefined, undefined, undefined, false);
+                me.syncTime(true, undefined, undefined, false);
             }, 180000);
         }
         clearHeartbeat() {
@@ -391,7 +391,7 @@ module RongIMLib {
             this.SyncTimeQueue.state = "pending";
             if (temp.type != 2) {
                 //普通消息
-                time = offlineMsg ? RongIMClient._storageProvider.getItem(this.userId) || 0 : RongIMClient._memoryStore.lastReadTime.get(this.userId) || 0;
+                time = RongIMClient._storageProvider.getItem(this.userId) || '0';
                 modules = new Modules.SyncRequestMsg();
                 modules.setIspolling(false);
                 str = "pullMsg";
@@ -424,15 +424,17 @@ module RongIMLib {
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
                     if (str == "chrmPull") {
                         symbol += Bridge._client.userId + "CST";
+                        RongIMClient._memoryStore.lastReadTime.set(symbol, sync);
+                    }else{
+                        var storage = RongIMClient._storageProvider;
+                        if(sync > storage.getItem(symbol)) {
+                            storage.setItem(symbol, sync);
+                        }
                     }
 
-                    if(offlineMsg) {
-                        RongIMClient._storageProvider.setItem(symbol, sync);
-                        //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
-                        RongIMClient._memoryStore.isSyncRemoteConverList = true;
-                    }else{
-                        RongIMClient._memoryStore.lastReadTime.set(symbol, sync);
-                    }
+                    //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
+                    offlineMsg && (RongIMClient._memoryStore.isSyncRemoteConverList = true);
+                    
                     me.SyncTimeQueue.state = "complete";
                     me.invoke(isPullMsg, target);
                     //把拉取到的消息逐条传给消息监听器

@@ -181,7 +181,7 @@ module RongIMLib {
          */
         CHATROOM_GET_HISTORYMSG_ERROR = 23413,
         /**
-         * 没有打开聊天室
+         * 没有打开聊天室消息存储
          */
         CHATROOM_NOT_OPEN_HISTORYMSG_STORE  = 23414,
 
