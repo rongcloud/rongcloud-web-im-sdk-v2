@@ -107,7 +107,7 @@ module RongIMLib {
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void;
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void;
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string): void;
 
         getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]): void;
 

@@ -168,7 +168,7 @@ declare interface Addon {
 
     clearConversations(conversationType?: number, targetId?: string): void;
 
-    getHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number): string;
+    getHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number, objectname:string): string;
 
     getRemoteHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number): string;
 

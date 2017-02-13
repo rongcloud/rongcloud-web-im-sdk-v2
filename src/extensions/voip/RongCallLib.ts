@@ -82,7 +82,7 @@ module RongIMLib {
                 return;
             }
             var cookieKey = 'c' + converType + '_' + targetId, that = this;
-            var channelId = cookieKey + '_' + (+new Date);
+            var channelId =  'chnl_' + targetId + (+new Date);
             if(channelId.length > 63) {
                 channelId = channelId.substr(0, 63);
             }

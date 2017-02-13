@@ -423,14 +423,15 @@ module RongIMLib {
             }
         }
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void {
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string): void {
             this.useConsole && console.log("getHistoryMessages");
             if (count <= 0) {
                 callback.onError(ErrorCode.TIMEOUT);
                 return;
             }
+            objectname = objectname || '';
             try {
-                var ret: string = this.addon.getHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count);
+                var ret: string = this.addon.getHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, objectname);
                 var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [], me = this;
                 list.reverse();
                 for (var i = 0, len = list.length; i < len; i++) {
