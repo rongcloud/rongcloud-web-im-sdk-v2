@@ -356,12 +356,6 @@ module RongIMLib {
         }
     }
 
-    export class ChannelInfo {
-        constructor(
-            public Id: string,
-            public Key: string) { }
-    }
-
     export class AcceptMessage implements MessageContent {
         messageName: string = "AcceptMessage";
         callId: string;

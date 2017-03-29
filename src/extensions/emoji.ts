@@ -21,7 +21,7 @@ module RongIMLib {
             "u1F616": { "en": "confounded", "zh": "\u56F0\u60D1\u7684", "tag": "\uD83D\uDE16", "bp": "-350px 0px" },
             "u1F618": { "en": "kissing_heart", "zh": "\u4EB2\u4E00\u4E2A", "tag": "\uD83D\uDE18", "bp": "-375px 0px" },
             "u1F621": { "en": "rage", "zh": "\u6124\u6012", "tag": "\uD83D\uDE21", "bp": "-400px 0px" },
-            "u1F62D": { "en": "sob", "zh": "\u54ED\u6CE3", "tag": "\uD83D\uDE2D", "bp": "-425px 0px" },
+            "u1F622": { "en": "cry", "zh": "\u54ED", "tag": "\uD83D\uDE22", "bp": "-2075px 0px" },
             "u1F623": { "en": "persevere", "zh": "\u4F7F\u52B2", "tag": "\uD83D\uDE23", "bp": "-450px 0px" },
             "u1F624": { "en": "triumph", "zh": "\u751F\u6C14", "tag": "\uD83D\uDE24", "bp": "-475px 0px" },
             "u1F628": { "en": "fearful", "zh": "\u53EF\u6015", "tag": "\uD83D\uDE28", "bp": "-500px 0px" },
@@ -65,8 +65,8 @@ module RongIMLib {
             "u1F44F": { "en": "clap", "zh": "\u62CD", "tag": "\uD83D\uDC4F", "bp": "-1450px 0px" },
             "u1F46A": { "en": "family", "zh": "\u5BB6\u5EAD", "tag": "\uD83D\uDC6A", "bp": "-1475px 0px" },
             "u1F46B": { "en": "couple", "zh": "\u60C5\u4FA3", "tag": "\uD83D\uDC6B", "bp": "-1500px 0px" },
-            "u1F62C": { "en": "grimacing", "zh": "\u9B3C\u8138", "tag": "\uD83D\uDE2C", "bp": "-1525px 0px" },
             "u1F47B": { "en": "ghost", "zh": "\u9B3C", "tag": "\uD83D\uDC7B", "bp": "-2050px 0px" },
+            "u1F62C": { "en": "grimacing", "zh": "\u9B3C\u8138", "tag": "\uD83D\uDE2C", "bp": "-1525px 0px" },
             "u1F47C": { "en": "angel", "zh": "\u5929\u4F7F", "tag": "\uD83D\uDC7C", "bp": "-1550px 0px" },
             "u1F47D": { "en": "alien", "zh": "\u5916\u661F\u4EBA", "tag": "\uD83D\uDC7D", "bp": "-1575px 0px" },
             "u1F47F": { "en": "imp", "zh": "\u6076\u9B54", "tag": "\uD83D\uDC7F", "bp": "-1600px 0px" },
@@ -87,7 +87,7 @@ module RongIMLib {
             "u1F61F": { "en": "anguished", "zh": "\u82E6\u6DA9", "tag": "\uD83D\uDE1F", "bp": "-1975px 0px" },
             "u1F62A": { "en": "sleepy", "zh": "\u56F0", "tag": "\uD83D\uDE2A", "bp": "-2000px 0px" },
             "u1F62B": { "en": "tired_face", "zh": "\u6293\u72C2", "tag": "\uD83D\uDE2B", "bp": "-2025px 0px" },
-            "u1F622": { "en": "cry", "zh": "\u54ED", "tag": "\uD83D\uDE22", "bp": "-2075px 0px" },
+            "u1F62D": { "en": "sob", "zh": "\u54ED\u6CE3", "tag": "\uD83D\uDE2D", "bp": "-425px 0px" },
             "u1F62F": { "en": "hushed", "zh": "\u5BC2\u9759", "tag": "\uD83D\uDE2F", "bp": "-2100px 0px" },
             "u1F64A": { "en": "speak_no_evil", "zh": "\u4E0D\u8BF4\u8BDD", "tag": "\uD83D\uDE4A", "bp": "-2125px 0px" },
             "u1F64F": { "en": "pray", "zh": "\u7948\u7977", "tag": "\uD83D\uDE4F", "bp": "-2150px 0px" },
@@ -211,9 +211,9 @@ module RongIMLib {
             //     me.size = 48;
             //     //TODO 这是高清URL
             // }
-            if (!emoji && navigator.userAgent.match(/Mac\s+OS/i)) {
-                me.supportEmoji = true;
-            }
+            // if (!emoji && navigator.userAgent.match(/Mac\s+OS/i)) {
+            //     me.supportEmoji = true;
+            // }
             me.initCSS();
             var regExp = new RegExp("%", "g"), tagStr = "", nameStr = "";
             for (var key in me.emojiFactory) {

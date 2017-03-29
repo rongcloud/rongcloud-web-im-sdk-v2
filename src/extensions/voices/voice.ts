@@ -1,6 +1,6 @@
 module RongIMLib {
     export class RongIMVoice {
-        private static notSupportH5: boolean = typeof FileReader == 'undefined';
+        private static notSupportH5: boolean = /Trident/.test(navigator.userAgent);
         private static element: any = {};
         private static isInit: boolean = false;
         static init() {

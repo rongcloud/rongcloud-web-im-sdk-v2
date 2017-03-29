@@ -239,6 +239,14 @@ module RongIMLib {
             try {
                 this.useConsole && console.log("removeConversation");
                 this.addon.removeConversation(conversationType, targetId);
+                var conversations = RongIMClient._memoryStore.conversationList
+                var len = conversations.length;
+                for(var i=0; i<len; i++){
+                    if(conversations[i].conversationType == conversationType && targetId == conversations[i].targetId) {
+                        conversations.splice(i,1);
+                        break;
+                    }
+                }
                 callback.onSuccess(true);
             } catch (e) {
                 callback.onError(ErrorCode.CONVER_REMOVE_ERROR);
