@@ -1,6 +1,5 @@
 module RongIMLib {
     export class ServerDataProvider implements DataAccessProvider {
-        database: DBUtil = new DBUtil();
 
         init(appKey: string): void {
             new FeatureDectector();
@@ -73,7 +72,7 @@ module RongIMLib {
                         }
                         var obj = vals.splice(0, 1)[0];
                         var rspMsg = new RongIMLib.ReadReceiptResponseMessage({ receiptMessageDic: obj });
-                        me.sendMessage(conversationType, targetId, rspMsg, {
+                        me.sendMessage(conversationType, targetId, rspMsg, <SendMessageCallback>{
                             onSuccess: function(msg) {
                                 var senderUserId = MessageUtil.getFirstKey(obj);
                                 valObj[senderUserId].isResponse = true;
@@ -97,7 +96,7 @@ module RongIMLib {
         sendTypingStatusMessage(conversationType: ConversationType, targetId: string, messageName: string, sendCallback: SendMessageCallback): void {
             var me = this;
             if (messageName in RongIMClient.MessageParams) {
-                me.sendMessage(conversationType, targetId, TypingStatusMessage.obtain(RongIMClient.MessageParams[messageName].objectName, ""), {
+                me.sendMessage(conversationType, targetId, TypingStatusMessage.obtain(RongIMClient.MessageParams[messageName].objectName, ""), <SendMessageCallback>{
                     onSuccess: function() {
                         setTimeout(function() {
                             sendCallback.onSuccess();
@@ -107,7 +106,8 @@ module RongIMLib {
                         setTimeout(function() {
                             sendCallback.onError(errorCode, null);
                         });
-                    }
+                    },
+                    onBefore: function(){}
                 });
             }
         }
@@ -138,6 +138,7 @@ module RongIMLib {
                 onSuccess: function(data: any) {
                     RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
                     var list = data.list.reverse(), tempMsg: Message = null, tempDir: any;
+                    var read = RongIMLib.SentStatus.READ;
                     if (MessageUtil.supportLargeStorage()) {
                         for (var i = 0, len = list.length; i < len; i++) {
                             tempMsg = MessageUtil.messageParser(list[i]);
@@ -146,11 +147,14 @@ module RongIMLib {
                                 tempMsg.receiptResponse || (tempMsg.receiptResponse = {});
                                 tempMsg.receiptResponse[tempMsg.messageUId] = tempDir.count;
                             }
+                            tempMsg.sentStatus = read
                             list[i] = tempMsg;
                         }
                     } else {
                         for (var i = 0, len = list.length; i < len; i++) {
-                            list[i] = MessageUtil.messageParser(list[i]);
+                            var tempMsg:Message = MessageUtil.messageParser(list[i]);
+                            tempMsg.sentStatus = read;
+                            list[i] = tempMsg;
                         }
                     }
                     setTimeout(function() {
@@ -518,6 +522,10 @@ module RongIMLib {
             }, "HistoryMsgOuput");
         }
 
+        setMessageStatus(conversationType: ConversationType, targetId: string, timestamp:number, status: string, callback:ResultCallback<Boolean>):void{
+            callback.onSuccess(true);
+        }
+
         addToBlacklist(userId: string, callback: OperationCallback): void {
             var modules = new Modules.Add2BlackListInput();
             modules.setUserId(userId);
@@ -610,8 +618,11 @@ module RongIMLib {
             }, "GetQNdownloadUrlOutput");
         }
 
-        // methodType 1 : 多客服(客服后台使用);   2 : 消息撤回 
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number): void {
+        /*
+            methodType 1 : 多客服(客服后台使用);   2 : 消息撤回 
+            params.userIds : 定向消息接收者
+        */
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any): void {
             if (!Bridge._client.channel) {
                 sendCallback.onError(RongIMLib.ErrorCode.RC_NET_UNAVAILABLE, null);
                 return;
@@ -621,8 +632,10 @@ module RongIMLib {
                 throw new Error("connect is timeout! postion:sendMessage");
             }
 
+            var isGroup = (conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP);
+
             var modules = new Modules.UpStreamMessage();
-            if (mentiondMsg && (conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP)) {
+            if (mentiondMsg && isGroup) {
                 modules.setSessionId(7);
             } else {
                 modules.setSessionId(RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag());
@@ -631,7 +644,7 @@ module RongIMLib {
             pushText && modules.setPushText(pushText);
             appData && modules.setAppData(appData);
 
-            if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
+            if (isGroup && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
                 var rspMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>messageContent;
                 if (rspMsg.receiptMessageDic) {
                     var ids: string[] = [];
@@ -641,11 +654,18 @@ module RongIMLib {
                     modules.setUserId(ids);
                 }
             }
-            if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["SyncReadStatusMessage"]) {
+            if (isGroup && messageContent.messageName == RongIMClient.MessageType["SyncReadStatusMessage"]) {
                 modules.setUserId(Bridge._client.userId);
             }
+
+            params = params || {};
+            var userIds = params.userIds;
+            if (isGroup && userIds) {
+                modules.setUserId(userIds);
+            }
+
             modules.setClassname(RongIMClient.MessageParams[messageContent.messageName].objectName);
-             modules.setContent(messageContent.encode());
+            modules.setContent(messageContent.encode());
             var content: any = modules.toArrayBuffer();
             if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
                 content = [].slice.call(new Int8Array(content));
@@ -691,8 +711,11 @@ module RongIMLib {
                         var sentkey: string = Bridge._client.userId + reqMsg.messageUId + "SENT";
                         RongIMClient._storageProvider.setItem(sentkey, JSON.stringify({ count: 0, dealtime: data.timestamp, userIds: {} }));
                     }
+                    var cacheConversation = RongIMClient._memoryStore.converStore;
+                    cacheConversation.sentStatus = msg.sentStatus;
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
-                        RongIMClient._memoryStore.converStore.latestMessage = msg;
+                        cacheConversation.latestMessage = msg;
+                        me.updateConversation(cacheConversation);
                         RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, {
                             onSuccess: function(ret: Message) {
                                 msg = ret;
@@ -706,6 +729,7 @@ module RongIMLib {
                         });
                     }
                     setTimeout(function() {
+                        me.updateConversation(cacheConversation);
                         msg.sentTime = data.timestamp;
                         sendCallback.onSuccess(msg);
                     });
@@ -727,6 +751,7 @@ module RongIMLib {
                     });
                 }
             }, null, methodType);
+            sendCallback.onBefore && sendCallback.onBefore(RongIMLib.MessageIdHandler.messageId);
             msg.messageId = RongIMLib.MessageIdHandler.messageId + "";
         }
 
@@ -787,11 +812,13 @@ module RongIMLib {
         updateConversation(conversation: Conversation): Conversation {
             var conver: Conversation;
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
-                if (conversation.conversationType === RongIMClient._memoryStore.conversationList[i].conversationType && conversation.targetId === RongIMClient._memoryStore.conversationList[i].targetId) {
-                    conversation.conversationTitle && (RongIMClient._memoryStore.conversationList[i].conversationTitle = conversation.conversationTitle);
-                    conversation.senderUserName && (RongIMClient._memoryStore.conversationList[i].senderUserName = conversation.senderUserName);
-                    conversation.senderPortraitUri && (RongIMClient._memoryStore.conversationList[i].senderPortraitUri = conversation.senderPortraitUri);
-                    conversation.latestMessage && (RongIMClient._memoryStore.conversationList[i].latestMessage = conversation.latestMessage);
+                var item = RongIMClient._memoryStore.conversationList[i];
+                if (conversation.conversationType === item.conversationType && conversation.targetId === item.targetId) {
+                    conversation.conversationTitle && (item.conversationTitle = conversation.conversationTitle);
+                    conversation.senderUserName && (item.senderUserName = conversation.senderUserName);
+                    conversation.senderPortraitUri && (item.senderPortraitUri = conversation.senderPortraitUri);
+                    conversation.latestMessage && (item.latestMessage = conversation.latestMessage);
+                    conversation.sentStatus && (item.sentStatus = conversation.sentStatus);
                     break;
                 }
             }
@@ -916,6 +943,10 @@ module RongIMLib {
             callback.onSuccess(true);
         }
 
+        setMessageContent(messageId: number, content:any, objectname:string):void{
+            
+        };
+
         getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
             RongIMClient.getInstance().getRemoteHistoryMessages(conversationType, targetId, timestamp, count, callback);
         }
@@ -1007,6 +1038,99 @@ module RongIMLib {
                 }
             });
 
+        }
+
+        getConversationNotificationStatus(params:any, callback: any):void{
+            var targetId = params.targetId;
+            var conversationType = params.conversationType;
+            var notification = RongIMClient._memoryStore.notification;
+            var getKey = function(){
+                return conversationType + '_' + targetId;
+            };
+            
+            var key = getKey();
+
+            var status = notification[key];
+
+            if (typeof status == 'number') {
+                callback.onSuccess(status);
+                return;
+            }
+
+            var topics: any = {
+                1: 'qryPPush',
+                3: 'qryDPush'
+            };
+
+            var topic = topics[conversationType];
+
+            if (!topic) {
+                var error = 8001;
+                callback.onError(error);
+                return;
+            }
+            var modules = new Modules.BlockPushInput();
+            modules.setBlockeeId(targetId);
+            
+            var userId = RongIMLib.Bridge._client.userId;
+
+            var success = function(status: any){
+                notification[key] = status;
+                callback.onSuccess(status);
+            };
+            RongIMLib.RongIMClient.bridge.queryMsg(topic, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
+                onSuccess: function (status: any) {
+                   success(status);
+                }, onError: function (e: any) {
+                    if (e == 1) {
+                        success(e);
+                    }else{
+                        callback.onError(e);
+                    }
+                }
+            });
+        }
+
+        setConversationNotificationStatus(params:any, callback: any):void{
+            var conversationType = params.conversationType;
+            var targetId = params.targetId;
+            var status = params.status;
+
+            var getKey = function(){
+                return conversationType + '_' + status;
+            };
+
+            var topics:any = {
+                '1_1': 'blkPPush',
+                '3_1': 'blkDPush',
+                '1_0': 'unblkPPush',
+                '3_0': 'unblkDPush'
+            };
+
+            var key = getKey();
+
+            var notification = RongIMClient._memoryStore.notification;
+            notification[key] = status;
+
+            var topic = topics[key];
+            if (!topic) {
+                var error = 8001;
+                callback.onError(error);
+                return;
+            }
+
+            var modules = new Modules.BlockPushInput();
+            modules.setBlockeeId(targetId);
+            
+            var userId = RongIMLib.Bridge._client.userId;
+
+            RongIMLib.RongIMClient.bridge.queryMsg(topic, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
+                onSuccess: function (status:any) {
+                    callback.onSuccess(status);
+                }, onError: function (e:any) {
+                    callback.onError(e);
+                }
+            });
         }
 
         clearListeners(): void{

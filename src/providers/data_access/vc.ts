@@ -1,8 +1,6 @@
 module RongIMLib {
     export class VCDataProvider implements DataAccessProvider {
 
-        database: any;
-
         addon: Addon;
 
         messageListener: OnReceiveMessageListener;
@@ -181,9 +179,15 @@ module RongIMLib {
                         setTimeout(function() {
                             sendCallback.onError(errorCode, null);
                         });
-                    }
+                    },
+                    onBefore: function(){}
                 });
             }
+        }
+
+        setMessageStatus(conversationType: ConversationType, targetId: string, timestamp:number, status: string, callback:ResultCallback<Boolean>):void{
+            this.addon.updateMessageReceiptStatus(conversationType, targetId, timestamp);
+            callback.onSuccess(true);
         }
 
         sendTextMessage(conversationType: ConversationType, targetId: string, content: string, sendMessageCallback: SendMessageCallback): void {
@@ -194,12 +198,15 @@ module RongIMLib {
 
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void {
             try {
-                this.useConsole && console.log("getRemoteHistoryMessages");
-                this.addon.getRemoteHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, function(ret: string, hasMore: number) {
-                    var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [], me = this;
+                var me = this;
+                me.useConsole && console.log("getRemoteHistoryMessages");
+                me.addon.getRemoteHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, function(ret: string, hasMore: number) {
+                    var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [];
                     list.reverse();
                     for (var i = 0, len = list.length; i < len; i++) {
-                        msgs[i] = me.buildMessage(list[i].obj);
+                        var message = me.buildMessage(list[i].obj);
+                        message.sentStatus = RongIMLib.SentStatus.READ;
+                        msgs[i] = message;
                     }
                     callback.onSuccess(msgs, hasMore ? true : false);
                 }, function(errorCode: ErrorCode) {
@@ -209,8 +216,6 @@ module RongIMLib {
                 callback.onError(ErrorCode.TIMEOUT);
             }
         }
-
-
 
         getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number,isGetHiddenConvers:boolean): void {
             try {
@@ -308,7 +313,7 @@ module RongIMLib {
                     callback.onError(error);
                 });
         }
-
+ 
         removeFromBlacklist(userId: string, callback: OperationCallback): void {
             this.useConsole && console.log("removeFromBlacklist");
             this.addon.removeFromBlacklist(userId,
@@ -321,11 +326,16 @@ module RongIMLib {
         }
 
 
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string): void {
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any): void {
             var me = this , users:string[] = [];
             me.useConsole && console.log("sendMessage");
 
-             if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
+            params = params || {};
+
+            var isGroup = (conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP);
+
+             if ( isGroup && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
+                users = [];
                 var rspMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>messageContent;
                 if (rspMsg.receiptMessageDic) {
                     var ids: string[] = [];
@@ -336,10 +346,15 @@ module RongIMLib {
                 }
             }
 
-             if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["SyncReadStatusMessage"]) {
+             if (isGroup && messageContent.messageName == RongIMClient.MessageType["SyncReadStatusMessage"]) {
+                users = [];
                 users.push(me.userId);
             }
 
+            var userIds = params.userIds;
+            if (isGroup && userIds) {
+                users = userIds;    
+            }
             var msg: string = me.addon.sendMessage(conversationType,
                 targetId, RongIMClient.MessageParams[messageContent.messageName].objectName, messageContent.encode(), pushText || "", appData || "", function(progress: any) {
                 },
@@ -350,25 +365,34 @@ module RongIMLib {
                     sendCallback.onError(code, me.buildMessage(message));
                 }, users);
             var tempMessage: any = JSON.parse(msg);
+            sendCallback.onBefore && sendCallback.onBefore(tempMessage.messageId);
             RongIMLib.MessageIdHandler.messageId = tempMessage.messageId;
         }
 
         registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void {
             this.useConsole && console.log("registerMessageType");
             this.addon.registerMessageType(objectName, messageTag.getMessageTag());
+            var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent, messageType);
+            RongIMLib.RongIMClient.RegisterMessage[messageType] = regMsg;
+            RongIMClient.RegisterMessage[messageType].messageName = messageType;
+            registerMessageTypeMapping[objectName] = messageType;
+            RongIMClient.MessageType[messageType] = messageType;
+            RongIMClient.MessageParams[messageType] = { objectName: objectName, msgTag: messageTag };
+            typeMapping[objectName] = messageType;
         }
 
 
 
-        addMessage(conversationType: ConversationType, targetId: string, message: Message, callback?: ResultCallback<Message>): void {
+        addMessage(conversationType: ConversationType, targetId: string, message: any, callback?: ResultCallback<Message>): void {
             this.useConsole && console.log("addMessage");
-            var msg: string = this.addon.insertMessage(conversationType, targetId, message.senderUserId, message.objectName, message.content.encode(),
+            var direction = message.direction;
+            var msg: string = this.addon.insertMessage(conversationType, targetId, message.senderUserId, message.objectName, JSON.stringify(message.content),
                 function() {
                     callback.onSuccess(me.buildMessage(msg));
                 },
                 function() {
                     callback.onError(ErrorCode.MSG_INSERT_ERROR);
-                }), me = this;
+                }, direction), me = this;
         }
 
         removeMessage(conversationType: ConversationType, targetId: string, delMsgs: DeleteMessage[], callback: ResultCallback<boolean>): void {
@@ -388,7 +412,7 @@ module RongIMLib {
         getMessage(messageId: string, callback: ResultCallback<Message>): void {
             try {
                 this.useConsole && console.log("getMessage");
-                var msg: Message = this.addon.getMessage(messageId);
+                var msg: Message = this.buildMessage(<string>this.addon.getMessage(messageId));
                 callback.onSuccess(msg);
             } catch (e) {
                 callback.onError(ErrorCode.GET_MESSAGE_BY_ID_ERROR);
@@ -431,7 +455,11 @@ module RongIMLib {
             }
         }
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string): void {
+        setMessageContent(messageId:number, content:any, objectName:string):void{
+            this.addon.setMessageContent(messageId, content, objectName);
+        }
+
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, direction?: boolean): void {
             this.useConsole && console.log("getHistoryMessages");
             if (count <= 0) {
                 callback.onError(ErrorCode.TIMEOUT);
@@ -439,11 +467,13 @@ module RongIMLib {
             }
             objectname = objectname || '';
             try {
-                var ret: string = this.addon.getHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, objectname);
+                var ret: string = this.addon.getHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, objectname, direction);
                 var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [], me = this;
                 list.reverse();
                 for (var i = 0, len = list.length; i < len; i++) {
-                    msgs[i] = me.buildMessage(list[i].obj);
+                    var message = me.buildMessage(list[i].obj);
+                    message.sentStatus = RongIMLib.SentStatus.READ;
+                    msgs[i] = message;
                 }
                 callback.onSuccess(msgs, len == count);
             } catch (e) {
@@ -714,6 +744,48 @@ module RongIMLib {
             return null;
         }
 
+        getConversationNotificationStatus(params:any, callback: any):void{
+            var conversationType = params.conversationType;
+            var targetId = params.targetId;
+
+            var notification = RongIMClient._memoryStore.notification;
+            var key = conversationType + '_' + targetId;
+
+            var status = notification[key];
+            if (typeof status == 'number') {
+                callback.onSuccess(status);
+                return;
+            }
+            
+            this.addon.getConversationNotificationStatus(conversationType, targetId, function(status:any) {
+                notification[key] = status;
+                callback.onSuccess(status);
+            },
+            function(error:any) {
+                callback.onError(error);
+            });
+        }
+
+        setConversationNotificationStatus(params:any, callback: any):void{
+            var conversationType = params.conversationType;
+            var targetId = params.targetId;
+            var status = params.status;
+
+            var notification = RongIMClient._memoryStore.notification;
+            var key = conversationType + '_' + targetId;
+
+            notification[key] = status;
+
+            var notify:boolean = !!status;
+
+            this.addon.setConversationNotificationStatus(conversationType, targetId, notify, function() {
+                callback.onSuccess(status);
+            },
+            function(error:any) {
+                callback.onError(error);
+            });
+        }
+
         private buildUserStatus(result : string):UserStatus{
             var userStatus:UserStatus = new UserStatus();
             var obj = JSON.parse(result);
@@ -738,10 +810,15 @@ module RongIMLib {
             }
             message.sentTime = ret.sentTime;
             message.objectName = ret.objectName;
-            message.content = ret.content ? JSON.parse(ret.content) : ret.content;
+            var content = ret.content ? JSON.parse(ret.content) : ret.content;
+            var messageType = typeMapping[ret.objectName] || registerMessageTypeMapping[ret.objectName];
+            if(content){
+                content.messageName = messageType;
+            }
+            message.content = content;
             message.messageId = ret.messageId;
             message.messageUId = ret.messageUid;
-            message.messageType = typeMapping[ret.objectName];
+            message.messageType = messageType;
             return message;
         }
 
@@ -758,7 +835,7 @@ module RongIMLib {
             lastestMsg.targetId = c.targetId;
             conver.latestMessage = lastestMsg;
             conver.latestMessageId = lastestMsg.messageId;
-            conver.latestMessage.messageType = typeMapping[lastestMsg.objectName];
+            conver.latestMessage.messageType = typeMapping[lastestMsg.objectName] || registerMessageTypeMapping[lastestMsg.objectName];
             conver.objectName = lastestMsg.objectName;
             conver.receivedStatus = ReceivedStatus.READ;
             conver.sentTime = lastestMsg.sentTime;
@@ -767,8 +844,11 @@ module RongIMLib {
             conver.targetId = c.targetId;
             conver.unreadMessageCount = c.unreadCount;
             conver.hasUnreadMention = c.m_hasUnreadMention;
-            if(lastestMsg.content && lastestMsg.content.mentionedInfo) {
-                conver.mentionedMsg = {uid:lastestMsg.messageUId, time:lastestMsg.sentTime, mentionedInfo:lastestMsg.content.mentionedInfo};
+            var mentions = this.getUnreadMentionedMessages(c.conversationType, c.targetId);
+            if (mentions.length > 0) {
+                // 取最后一条 @ 消息,原因：和 web 互相兼容
+                var mention = mentions.pop();
+                conver.mentionedMsg = { uid: mention.messageUid, time: mention.sentTime, mentionedInfo: mention.content.mentionedInfo, sendUserId: mention.senderUserId };
             }
             return conver;
         }

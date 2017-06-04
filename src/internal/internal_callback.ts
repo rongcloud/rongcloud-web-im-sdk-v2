@@ -212,9 +212,7 @@ module RongIMLib {
                     naviStr = encodeURIComponent(naviStr) + userId;
                     RongIMClient._storageProvider.setItem(naviKey, naviStr);
                 }
-                if (RongIMClient._memoryStore.isUseWebSQLProvider) {
-                    RongIMClient._dataAccessProvider.database.init(userId);
-                }
+            
                 this._client.userId = userId;
                 var self = this, temp = RongIMLib.RongIMClient._storageProvider.getItemKey("navi");
                 var naviServer = RongIMLib.RongIMClient._storageProvider.getItem(temp);

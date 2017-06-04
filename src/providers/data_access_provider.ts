@@ -1,8 +1,6 @@
 module RongIMLib {
     export interface DataAccessProvider {
 
-        database: any;
-
         init(appKey: string): void;
 
         connect(token: string, callback: ConnectCallback, userId?: string): void;
@@ -77,7 +75,7 @@ module RongIMLib {
 
         getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>): void;
 
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number): void;
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any): void;
 
         registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void;
 
@@ -107,7 +105,7 @@ module RongIMLib {
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void;
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string): void;
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, directrion?:boolean): void;
 
         getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]): void;
 
@@ -146,5 +144,13 @@ module RongIMLib {
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void;
 
         getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any;
+
+        setMessageStatus(conersationType:ConversationType, targetId: string, timestamp:number, status: string, callback: ResultCallback<boolean>): void;
+
+        setMessageContent(messageId: number, content: any, objectName: string):void;
+
+        getConversationNotificationStatus(params:any, callback:any):void;
+
+        setConversationNotificationStatus(params:any, callback:any):void;
     }
 }

@@ -110,7 +110,7 @@ module RongIMLib {
             RCUploadLib.uploadAjax(base64, function(ret: any) {
                 var opt = { uploadType: 'IMAGE', info: ret, isBase64Data: true };
                 me.createMessage(opt, file, function(msg: MessageContent) {
-                    RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
+                    RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, <SendMessageCallback>{
                         onSuccess: function(message: Message) {
                             callback(ret, message);
                         },
@@ -180,7 +180,7 @@ module RongIMLib {
                         file.uploadType = me.uploadType;
                         opts['info'] = info;
                         me.createMessage(opts, file, function(msg: MessageContent) {
-                            RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, {
+                            RongIMClient.getInstance().sendMessage(me.conversationType, me.targetId, msg, <SendMessageCallback>{
                                 onSuccess: function(ret: Message) {
                                     me.listener.onFileUploaded(file, ret);
                                 },

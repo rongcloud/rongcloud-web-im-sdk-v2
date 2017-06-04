@@ -5,12 +5,20 @@ module RongIMLib {
             resolution: "480p",
             maxFrameRate: 15,
             videoSize: { height: 300, width: 400 },
-            container: "",
-            childScreenCls: "",
+            container: {
+                local: null,
+                remote: null
+            },
             remoteStreamList: {},
             startVoIPTime: 0,
             isActiveCall: false,
-            message: null
+            message: null,
+            getChildNode: function(localId: string, remoteStreamId: string){
+                var remoteWindow = document.createElement("div");
+                    remoteWindow.id = localId + '_' + remoteStreamId;
+                    remoteWindow.className = 'rong-calllib-remote';
+                return remoteWindow;
+            }
         };
         static _instance: RongCallLib = null;
         static _rongIMClient: RongIMClient;
@@ -25,9 +33,6 @@ module RongIMLib {
             var head: any = document.getElementsByTagName("head")[0];
             script.src = "//cdn.ronghub.com/AgoraRtcAgentSDK-1.4.2.js";
             head.appendChild(script);
-            if (opt && opt.childScreenCls) {
-                that._memorySessions.childScreenCls = opt.childScreenCls;
-            }
             script.onload = function() {
                 that._memorySessions.client = AgoraRTC.createRtcClient();
                 that._memorySessions.client.on('stream-added', function(evt: any) {
@@ -287,15 +292,17 @@ module RongIMLib {
         }
 
         closeRemoteStream(stream?: any) {
-            var that = this, div = document.getElementById(that._memorySessions.container);
+            var that = this;
+            var localWindow = that._memorySessions.container.local;
+            var remoteWindow = that._memorySessions.container.remote;
             if (stream) {
                 stream.close();
-                div.removeChild(document.getElementById(that._memorySessions.container + '_' + stream.getId()));
+                localWindow.removeChild(localWindow);
             } else {
-                var that = this;
-                for (var key in that._memorySessions.remoteStreamList) {
-                    that._memorySessions.remoteStreamList[key].close();
-                    div.removeChild(document.getElementById(that._memorySessions.container + '_' + that._memorySessions.remoteStreamList[key].getId()));
+                var remoteList = that._memorySessions.remoteStreamList;
+                for (var key in remoteList) {
+                    remoteList[key].close();
+                    localWindow.removeChild(remoteWindow);
                     delete that._memorySessions.remoteStreamList[key];
                 }
             }
@@ -345,14 +352,19 @@ module RongIMLib {
 
         displayStream(stream?: any) {
             var that = this;
+            var session = that._memorySessions;
+            var local = session.container.local
             if (!stream) {
-                that._memorySessions.localStream.play(that._memorySessions.container);
+                session.localStream.play(local.id);
             } else {
-                var div = document.createElement("div");
-                div.id = that._memorySessions.container + '_' + stream.getId();
-                div.setAttribute("class", that._memorySessions.childScreenCls);
-                document.getElementById(that._memorySessions.container).appendChild(div);
-                stream.play(div.id);
+                var remoteWindow = session.getChildNode(local.id, stream.getId());
+                session.container.remote = remoteWindow;
+                console.log(stream.getId());
+                local.appendChild(remoteWindow);
+
+                stream.play(remoteWindow.id, function(err: any){
+                    throw new Error(err);
+                });
             }
         }
 
@@ -472,7 +484,7 @@ module RongIMLib {
         }
 
         private sendMessage(converType: ConversationType, targetId: string, msg: MessageContent, callback?: ResultCallback<ErrorCode>) {
-            RongCallLib._rongIMClient.sendMessage(converType, targetId, msg, {
+            RongCallLib._rongIMClient.sendMessage(converType, targetId, msg, <SendMessageCallback>{
                 onSuccess: function(message: any) {
                     if (callback) {
                         callback.onSuccess(message);
@@ -482,7 +494,8 @@ module RongIMLib {
                     if (callback) {
                         callback.onError(error);
                     }
-                }
+                },
+                onBefore: function(){}
             });
         }
     }

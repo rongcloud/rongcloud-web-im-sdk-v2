@@ -37,7 +37,8 @@ var typeMapping: { [s: string]: any } = {
     "RC:RRReqMsg": "ReadReceiptRequestMessage",
     "RC:RRRspMsg": "ReadReceiptResponseMessage",
     "RCJrmf:RpMsg": "JrmfReadPacketMessage",
-    "RCJrmf:RpOpendMsg": "JrmfReadPacketOpenedMessage"
+    "RCJrmf:RpOpendMsg": "JrmfReadPacketOpenedMessage",
+    "RCE:UpdateStatus": "RCEUpdateStatusMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -217,14 +218,14 @@ module RongIMLib {
                     message.messageDirection = MessageDirection.RECEIVE;
                 }
             }
-            if ((entity.status & 2) == 2) {
-                message.receivedStatus = ReceivedStatus.RETRIEVED;
-            }
             message.messageUId = entity.msgId;
             message.receivedTime = new Date().getTime();
             message.messageId = (message.conversationType + "_" + ~~(Math.random() * 0xffffff));
             message.objectName = objectName;
             message.receivedStatus = ReceivedStatus.READ;
+            if ((entity.status & 2) == 2) {
+                message.receivedStatus = ReceivedStatus.RETRIEVED;
+            }
             message.offLineMessage = offlineMsg ? true : false;
             if (!offlineMsg) {
                 if (RongIMLib.RongIMClient._memoryStore.connectAckTime > message.sentTime) {

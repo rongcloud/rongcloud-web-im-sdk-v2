@@ -646,8 +646,7 @@ module RongIMLib {
                             }
                         }
                         con.receivedTime = new Date().getTime();
-                        con.receivedStatus = ReceivedStatus.UNREAD;
-                        message.receivedStatus = ReceivedStatus.UNREAD;
+                        con.receivedStatus = message.receivedStatus;
                         con.senderUserId = message.sendUserId;
                         con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
                         con.latestMessageId = message.messageId;
