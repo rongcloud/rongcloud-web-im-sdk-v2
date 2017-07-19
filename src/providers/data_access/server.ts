@@ -492,7 +492,7 @@ module RongIMLib {
             RongIMClient._memoryStore.lastReadTime.set('chrhis_' + chatRoomId, timestamp);
         }
 
-        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void{
+        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:any):void{
             var modules = new Modules.HistoryMsgInput();
             modules.setTargetId(chatRoomId);
             var timestamp = RongIMClient._memoryStore.lastReadTime.get('chrhis_' + chatRoomId) || 0;
@@ -913,6 +913,13 @@ module RongIMLib {
         }
 
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isHidden?:boolean) {
+            var isSync = RongIMClient._memoryStore.isSyncRemoteConverList;
+            var list = RongIMClient._memoryStore.conversationList;
+            if (!isSync) {
+                callback.onSuccess(list);
+                return;
+            }
+
             RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
                         if (MessageUtil.supportLargeStorage()) {
@@ -1199,6 +1206,10 @@ module RongIMLib {
 
         setOnReceiveStatusListener(callback:Function) : void{
            callback();
+        }
+        
+        getCurrentConnectionStatus(): number{
+            return Bridge._client.channel.connectionStatus;
         }
     }
 }

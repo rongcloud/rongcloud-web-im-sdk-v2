@@ -152,5 +152,7 @@ module RongIMLib {
         getConversationNotificationStatus(params:any, callback:any):void;
 
         setConversationNotificationStatus(params:any, callback:any):void;
+
+        getCurrentConnectionStatus():number;
     }
 }

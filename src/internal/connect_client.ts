@@ -433,7 +433,7 @@ module RongIMLib {
                     }
 
                     //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
-                    offlineMsg && (RongIMClient._memoryStore.isSyncRemoteConverList = true);
+                    //offlineMsg && (RongIMClient._memoryStore.isSyncRemoteConverList = true);
                     
                     me.SyncTimeQueue.state = "complete";
                     me.invoke(isPullMsg, target);
@@ -617,7 +617,7 @@ module RongIMLib {
             } else {
                 RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
             } 
-            if (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() == 3) {
+            if (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0) {
                 RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
                     onSuccess: function(con: Conversation) {
                         if (!con) {

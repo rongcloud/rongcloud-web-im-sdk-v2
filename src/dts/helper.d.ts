@@ -154,7 +154,7 @@ declare interface Addon {
 
     deleteMessages(delMsgs: number[]): void;
 
-    getMessage(messageId: string): RongIMLib.Message;
+    getMessage(messageId: string): string;
 
     updateMessage(message: RongIMLib.Message, callback?: RongIMLib.ResultCallback<RongIMLib.Message>): void;
 
@@ -224,4 +224,5 @@ declare interface Addon {
 
     setConversationNotificationStatus(conversationType:number, targetId:string, status: boolean, success:Function, error:Function):void;
 
+    getConnectionStatus(): number;
 }

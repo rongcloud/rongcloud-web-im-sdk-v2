@@ -43,9 +43,11 @@ module RongIMLib {
 
         getItemKey(composedStr: string): string {
             var item: any = null, keyNames: string = this.getItem(this.keyManager), keyNameArray: string[] = keyNames && keyNames.split(',') || [], me = this;
+
+            var _key = this.prefix + composedStr;
             if (keyNameArray.length) {
                 for (let i = 0, len = keyNameArray.length; i < len; i++) {
-                    if (keyNameArray[i] && keyNameArray[i].indexOf(composedStr) > -1) {
+                    if (keyNameArray[i] && keyNameArray[i].indexOf(_key) == 0) {
                         item = keyNameArray[i];
                         break;
                     }

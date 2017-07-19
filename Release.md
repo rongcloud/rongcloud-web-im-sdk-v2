@@ -32,4 +32,12 @@
 
 ### 记录
 
-1、为中国联通修复 MessageType bug ，上线 2.2.6 文档未更新
+中国联通
+
+    1、修复 MessageType bug ，上线 2.2.6 文档未更新
+
+    2、删除会话本地和服务端同时删除
+
+领创 (1.3.1)
+
+    1、c++ getHistoryMessages 增加 objectname、direction

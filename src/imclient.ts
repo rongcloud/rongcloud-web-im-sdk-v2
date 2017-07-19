@@ -121,7 +121,7 @@ module RongIMLib {
                 providerType: 1,
                 deltaTime: 0,
                 filterMessages: [],
-                isSyncRemoteConverList: false,
+                isSyncRemoteConverList: true,
                 isUseWebSQLProvider: false,
                 otherDevice: false,
                 custStore: {},
@@ -410,7 +410,7 @@ module RongIMLib {
          * 获取当前连接的状态。
          */
         getCurrentConnectionStatus(): ConnectionStatus {
-            return Bridge._client.channel.connectionStatus;
+            return RongIMClient._dataAccessProvider.getCurrentConnectionStatus();
         }
 
         /**

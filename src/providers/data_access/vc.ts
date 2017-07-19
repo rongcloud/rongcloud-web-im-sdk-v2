@@ -786,6 +786,10 @@ module RongIMLib {
             });
         }
 
+        getCurrentConnectionStatus(): number{
+            return this.addon.getConnectionStatus();
+        }
+
         private buildUserStatus(result : string):UserStatus{
             var userStatus:UserStatus = new UserStatus();
             var obj = JSON.parse(result);
