@@ -210,7 +210,7 @@ module RongIMLib {
     }
 
     export class JrmfReadPacketMessage implements MessageContent{
-        messageName : "JrmfReadPacketMessage";
+        messageName : string = 'JrmfReadPacketMessage';
         message:JrmfReadPacketMessage;
         constructor(message:any){
             message && (this.message = message);
@@ -221,7 +221,7 @@ module RongIMLib {
     }
 
     export class JrmfReadPacketOpenedMessage implements MessageContent{
-        messageName : "JrmfReadPacketOpenedMessage";
+        messageName : string = 'JrmfReadPacketOpenedMessage';
         message:JrmfReadPacketOpenedMessage;
         constructor(message:any){
             message && (this.message = message);
@@ -354,12 +354,6 @@ module RongIMLib {
         encode(): string {
             return JSON.stringify(ModelUtil.modelClone(this));
         }
-    }
-
-    export class ChannelInfo {
-        constructor(
-            public Id: string,
-            public Key: string) { }
     }
 
     export class AcceptMessage implements MessageContent {

@@ -185,7 +185,8 @@ module RongIMLib {
                 var one = _arr[i].toString(2), v = one.match(/^1+?(?=0)/);
                 if (v && one.length == 8) {
                     var bytesLength = v[0].length,
-                        store = _arr[i].toString(2).slice(7 - bytesLength);
+                        // store = _arr[i].toString(2).slice(7 - bytesLength);
+                        store = '';
                     for (var st = 0; st < bytesLength; st++) {
                         store += _arr[st + i].toString(2).slice(2);
                     }

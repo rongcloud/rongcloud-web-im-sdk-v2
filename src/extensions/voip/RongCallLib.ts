@@ -21,10 +21,9 @@ module RongIMLib {
             } else {
                 throw new Error("Error:VIDEO_CONTAINER_IS_NULL.");
             }
-            var str: string = (RongIMClient && RongIMClient._memoryStore && RongIMClient._memoryStore.depend.callFile) || "//cdn.ronghub.com/AgoraRtcAgentSDK-1.4.2.js";
             var script: any = document.createElement("script");
             var head: any = document.getElementsByTagName("head")[0];
-            script.src = str;
+            script.src = "//cdn.ronghub.com/AgoraRtcAgentSDK-1.4.2.js";
             head.appendChild(script);
             if (opt && opt.childScreenCls) {
                 that._memorySessions.childScreenCls = opt.childScreenCls;
@@ -76,13 +75,13 @@ module RongIMLib {
             return this._instance;
         }
 
-        startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, callback: ResultCallback<ErrorCode>) {
+        startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, callback: any) {
             if (this._memorySessions["isActiveCall"]) {
                 callback.onError(ErrorCode.BUSYLINE);
                 return;
             }
-            var cookieKey = 'c' + converType + '_' + targetId, that = this;
-            var channelId = cookieKey + '_' + (+new Date);
+            var that = this;
+            var channelId =  'chnl_' + targetId;
             if(channelId.length > 63) {
                 channelId = channelId.substr(0, 63);
             }
@@ -90,16 +89,17 @@ module RongIMLib {
             that._memorySessions["mediaType"] = mediaType;
             RongCallLib._rongIMClient.getAgoraDynamicKey(1, channelId, {
                 onSuccess: function(data: any) {
-                    that._memorySessions[cookieKey] = new ChannelInfo(channelId, data.dynamicKey);
-                    var msg = new InviteMessage({ callId: channelId, engineType: 1, channelInfo: that._memorySessions[cookieKey], mediaType: mediaType, inviteUserIds: userIds, extra: extra });
+                    that._memorySessions[channelId] = new ChannelInfo(channelId, data.dynamicKey);
+                    var msg = new InviteMessage({ callId: channelId, engineType: 1, channelInfo: that._memorySessions[channelId], mediaType: mediaType, inviteUserIds: userIds, extra: extra });
                     that.sendMessage(converType, targetId, msg, {
                         onSuccess: function(data: any) {
+                            callback.onSuccess();
                             that._memorySessions["sentTime"] = data.sentTime;
                             that._memorySessions["timer"] = setTimeout(function() {
                                 that.hungupCall(converType, targetId, ErrorCode.REMOTE_BUSYLINE);
                             }, that._memorySessions.timeoutMillis);
                         },
-                        onError: function() { }
+                        onError: callback.onError
                     });
                 },
                 onError: function(error: ErrorCode) {
@@ -117,7 +117,7 @@ module RongIMLib {
                 that._memorySessions.client.close();
             }
             that._memorySessions["isActiveCall"] = false;
-            var channelInfo: ChannelInfo = that._memorySessions['chnl' + Bridge._client.userId + '_' + converType + '_' + targetId];
+            var channelInfo: ChannelInfo = that._memorySessions['chnl_'+ targetId];
             if (channelInfo) {
                 var msg = new HungupMessage({ callId: channelInfo.Id, reason: ErrorCode.REMOTE_HANGUP });
                 that.sendMessage(converType, targetId, msg);
@@ -132,7 +132,7 @@ module RongIMLib {
             that.onReceived(msgContent);
         }
 
-        joinCall(mediaType: VoIPMediaType, callback: ResultCallback<ErrorCode>) {
+        joinCall(mediaType: VoIPMediaType, callback: any) {
             if (this._memorySessions["isActiveCall"]) {
                 callback.onError(ErrorCode.BUSYLINE);
                 return;
@@ -150,10 +150,10 @@ module RongIMLib {
                                     that._memorySessions["isActiveCall"] = true;
                                     that._memorySessions["mediaType"] = inviteMsg.mediaType;
                                     that.initLocalStream(uid, inviteMsg.mediaType);
+                                    callback.onSuccess();
                                 });
                             },
-                            onError: function() {
-                            }
+                            onError: callback.onError
                         });
 
                     }, function(err: any) {
@@ -179,7 +179,10 @@ module RongIMLib {
         }
 
         changeMediaType(converType: ConversationType, targetId: string, mediaType: VoIPMediaType, callback: OperationCallback) {
-            var that = this, channelInfo = that._memorySessions['chnl' + RongIMLib.Bridge._client.userId + '_' + converType + '_' + targetId], msg = new MediaModifyMessage({ callId: channelInfo.Id, mediaType: VoIPMediaType.MEDIA_AUDIO });
+            var that = this, 
+            channelInfo = that._memorySessions['chnl_' + targetId], 
+            msg = new MediaModifyMessage({ callId: channelInfo.Id, mediaType: VoIPMediaType.MEDIA_AUDIO });
+
             if (mediaType == RongIMLib.VoIPMediaType.MEDIA_VEDIO) {
                 that.sendMessage(converType, targetId, msg);
                 if (!that._memorySessions.localStream.videoEnabled) {
@@ -203,6 +206,70 @@ module RongIMLib {
                     });
                 }
             }
+        }
+
+        mute(callback: Function):void{
+            var memory = this._memorySessions,
+                stream = memory.localStream;
+
+            stream.audioEnabled = false;
+            memory.client.disableAudio(stream, function() {
+                callback();
+            });
+        }
+
+        unmute(callback: Function):void{
+            var memory = this._memorySessions, 
+                stream = memory.localStream;
+
+            stream.audioEnabled = true;
+            memory.client.enableAudio(stream, function() {
+                callback();
+            });
+        }
+
+        audioToVideo(conversationType: ConversationType, targetId: string, callback:any):void{
+            var info = {
+                conversationType: conversationType,
+                targetId: targetId,
+                type: VoIPMediaType.MEDIA_VEDIO,
+                disable: false,
+                method: 'enableVideo',
+                callback: callback
+            };
+            this.switchMedia(info);
+        }
+
+        videoToAudio(conversationType: ConversationType, targetId: string, callback: any):void{
+            var info = {
+                conversationType: conversationType,
+                targetId: targetId,
+                type: VoIPMediaType.MEDIA_AUDIO,
+                disable: true,
+                method: 'disableViode',
+                callback: callback
+            };
+            this.switchMedia(info);
+        }
+
+        private switchMedia(info: any):void{
+            var channelInfo = this._memorySessions['chnl_' + info.targetId], 
+                msg = new RongIMLib.MediaModifyMessage({ callId: channelInfo.Id, mediaType: info.type });
+            var me = this;
+            me.sendMessage(info.conversationType, info.targetId, msg);
+            var client = me._memorySessions.client,
+                stream = me._memorySessions.localStream;
+            var item:any = {
+                disableVideo: function(){
+                    stream.videoEnabled = true;
+                    stream.close();
+                    me.closeRemoteStream();
+                },
+                enableVideo: function(){
+                    me.initLocalStream(me._memorySessions.uid, info.type);
+                }
+            };
+            item[info.method]();  
         }
 
         getSummaryMessage(message: Message): SummaryMessage {
@@ -329,7 +396,7 @@ module RongIMLib {
         }
 
         onReceived(message: Message): boolean {
-            var that = this, channelInfo = that._memorySessions['chnl' + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId];
+            var that = this, channelInfo = that._memorySessions['chnl_' + message.targetId];
             switch (message.messageType) {
                 case RongIMClient.MessageType["InviteMessage"]:
                     var ret = <InviteMessage>message.content;
@@ -339,7 +406,7 @@ module RongIMLib {
                         return;
                     }
                     that._memorySessions.message = message;
-                    that._memorySessions['chnl' + RongIMLib.Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId] = { Id: ret.callId, Key: "" };
+                    that._memorySessions['chnl_' + message.targetId] = { Id: ret.callId, Key: "" };
                     var msg: RingingMessage = new RingingMessage({ callId: ret.callId });
                     that.sendMessage(message.conversationType, message.targetId, msg);
                     var content = <InviteMessage>message.content;

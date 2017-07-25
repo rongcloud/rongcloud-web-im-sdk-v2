@@ -1,5 +1,11 @@
 module RongIMLib {
 
+    export class ChannelInfo {
+        constructor(
+            public Id: string,
+            public Key: string) { }
+    }
+    
     export class UserStatus{
         constructor(
             public platform?:string[],
