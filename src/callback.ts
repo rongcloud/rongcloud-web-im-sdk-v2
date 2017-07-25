@@ -41,6 +41,7 @@ module RongIMLib {
     export interface SendMessageCallback {
         onError(error: ErrorCode, result: Message): void;
         onSuccess(result?: Message): void;
+        onBefore(messageId: any): void;
     }
     export interface GetHistoryMessagesCallback {
         onError(error: ErrorCode): void;

@@ -129,13 +129,11 @@ module RongIMLib {
             }
             return CheckParam._instance;
         }
-        check(f: any, position: string, d?: any) {
-            var c = arguments.callee.caller;
-            //"_client" in Bridge ||
+        check(f: any, position: string, d?: any, c?:any) {
             if (RongIMClient._dataAccessProvider || d) {
-                for (var g = 0, e = c.arguments.length; g < e; g++) {
-                    if (!new RegExp(this.getType(c.arguments[g])).test(f[g])) {
-                        throw new Error("The index of " + g + " parameter was wrong type " + this.getType(c.arguments[g]) + " [" + f[g] + "] -> position:" + position);
+                for (var g = 0, e = c.length; g < e; g++) {
+                    if (!new RegExp(this.getType(c[g])).test(f[g])) {
+                        throw new Error("The index of " + g + " parameter was wrong type " + this.getType(c[g]) + " [" + f[g] + "] -> position:" + position);
                     }
                 }
             } else {

@@ -46,8 +46,9 @@ module RongIMLib {
 
         getItemKey(composedStr: string): string {
             var item = "";
+            var _key: string = this.prefix + composedStr;
             for (var key in localStorage) {
-                if (key.indexOf(composedStr) > -1) {
+                if (key.indexOf(_key) == 0) {
                     item = key;
                     break;
                 }

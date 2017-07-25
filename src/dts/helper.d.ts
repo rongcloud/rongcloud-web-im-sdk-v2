@@ -150,11 +150,11 @@ declare interface Addon {
 
     removeConversation(conversationType: RongIMLib.ConversationType, targetId: string): RongIMLib.Conversation;
 
-    insertMessage(conversationType: number, targetId: string, senderUserId: string, objectName: string, content: string, success: Function, error: Function): string;
+    insertMessage(conversationType: number, targetId: string, senderUserId: string, objectName: string, content: string, success: Function, error: Function, diection?:number): string;
 
     deleteMessages(delMsgs: number[]): void;
 
-    getMessage(messageId: string): RongIMLib.Message;
+    getMessage(messageId: string): string;
 
     updateMessage(message: RongIMLib.Message, callback?: RongIMLib.ResultCallback<RongIMLib.Message>): void;
 
@@ -168,7 +168,7 @@ declare interface Addon {
 
     clearConversations(conversationType?: number, targetId?: string): void;
 
-    getHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number, objectname:string): string;
+    getHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number, objectname:string, direction: boolean): string;
 
     getRemoteHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number): string;
 
@@ -216,4 +216,13 @@ declare interface Addon {
 
     getUnreadMentionedMessages(conversationType:RongIMLib.ConversationType, targetId:string):string;
 
+    updateMessageReceiptStatus(conversationType: RongIMLib.ConversationType, targetId: string, timesamp: number):void;
+
+    setMessageContent(messageId: number, content: any, objectName: string):void;
+
+    getConversationNotificationStatus(conversationType:number, targetId:string, success:Function, error:Function):void;
+
+    setConversationNotificationStatus(conversationType:number, targetId:string, status: boolean, success:Function, error:Function):void;
+
+    getConnectionStatus(): number;
 }

@@ -31,7 +31,7 @@ module RongIMLib {
             this.isInit = true;
         }
 
-        static play(data: string, duration: number) {
+        static play(data: string, duration: number, callback?:any) {
             this.checkInit("play");
             var me = this;
             if (me.notSupportH5) {
@@ -40,6 +40,7 @@ module RongIMLib {
             else {
                 var key: string = data.substr(-10);
                 if (this.element[key]) {
+                    callback && (this.element[key].onended = callback);
                     this.element[key].play();
                 }
                 me.onCompleted(duration);

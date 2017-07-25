@@ -45,16 +45,35 @@ module RongIMLib {
             if(typeof WebSocket != 'function') {
                 isPolling = true;
             }
-            var version = navigator.appVersion.split(";"), trim_version = 0;
-            if (version.length > 1) {
-                trim_version = parseInt(version[1].replace(/[ ]/g, "").replace(/MSIE/g, ""));
+
+            var supportLocalStorage = function(){
+                var support = false;
+                if(typeof localStorage == 'object'){
+                    try {
+                        var key = 'RC_TMP_KEY', value = 'RC_TMP_VAL';
+                        localStorage.setItem(key, value);
+                        var localVal = localStorage.getItem(key);
+                        if(localVal == value){
+                            support = true;
+                        }
+                    } catch (err) {
+                        console.log('localStorage is disabled.');
+                    }
+                    
+                }
+                return support;
+            };
+            var supportUserData = function(){
+                // return document.documentElement.addBehavior;
+            };
+            if (supportLocalStorage()) {
+                RongIMClient._storageProvider = new RongIMLib.LocalStorageProvider();
             }
-            if(typeof localStorage == 'object') {
-                RongIMClient._storageProvider = new LocalStorageProvider();
-            }else if(trim_version > 4 && trim_version < 8){
-                RongIMClient._storageProvider = new UserDataProvider();
-            }else{
-                RongIMClient._storageProvider = new MemeoryProvider();
+            else if (supportUserData()) {
+                RongIMClient._storageProvider = new RongIMLib.UserDataProvider();
+            }
+            else {
+                RongIMClient._storageProvider = new RongIMLib.MemeoryProvider();
             }
 
             var opts = ObjectTools.buildOptions(options, {
@@ -102,7 +121,7 @@ module RongIMLib {
                 providerType: 1,
                 deltaTime: 0,
                 filterMessages: [],
-                isSyncRemoteConverList: false,
+                isSyncRemoteConverList: true,
                 isUseWebSQLProvider: false,
                 otherDevice: false,
                 custStore: {},
@@ -111,7 +130,8 @@ module RongIMLib {
                 voipStategy: 0,
                 isFirstPingMsg: true,
                 depend: opts,
-                listenerList: RongIMClient._memoryStore.listenerList
+                listenerList: RongIMClient._memoryStore.listenerList,
+                notification: {}
             };
 
             RongIMClient._memoryStore = tempStore;
@@ -161,7 +181,8 @@ module RongIMLib {
                 SuspendMessage: { objectName: "RC:CsSp", msgTag: new MessageTag(false, false) },//主动发送
                 TerminateMessage: { objectName: "RC:CsEnd", msgTag: new MessageTag(false, false) },
                 CustomerStatusUpdateMessage: { objectName: "RC:CsUpdate", msgTag: new MessageTag(false, false) },
-                ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) }
+                ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) },
+                RCEUpdateStatusMessage: { objectName: "RCE:UpdateStatus", msgTag: new RongIMLib.MessageTag(false, false) }
             };
 
             // if ('RongCallLib' in RongIMLib) {
@@ -210,7 +231,8 @@ module RongIMLib {
                 MediaModifyMessage: "MediaModifyMessage",
                 MemberModifyMessage: "MemberModifyMessage",
                 JrmfReadPacketMessage: "JrmfReadPacketMessage",
-                JrmfReadPacketOpenedMessage: "JrmfReadPacketOpenedMessage"
+                JrmfReadPacketOpenedMessage: "JrmfReadPacketOpenedMessage",
+                RCEUpdateStatusMessage: "RCEUpdateStatusMessage"
             };
         }
 
@@ -221,7 +243,7 @@ module RongIMLib {
          * @param callback  连接回调，返回连接的成功或者失败状态。
          */
         static connect(token: string, callback: ConnectCallback, userId?: string): void {
-            CheckParam.getInstance().check(["string", "object", "string|null|object|global|undefined"], "connect", true);
+            CheckParam.getInstance().check(["string", "object", "string|null|object|global|undefined"], "connect", true, arguments);
             RongIMClient._dataAccessProvider.connect(token, callback, userId);
         }
         /**
@@ -310,7 +332,7 @@ module RongIMLib {
             }
             var me = this;
             RongIMLib.RongIMClient._memoryStore.custStore["isInit"] = true;
-            RongIMClient.getInstance().sendMessage(ConversationType.CUSTOMER_SERVICE, custId, msg, {
+            RongIMClient.getInstance().sendMessage(ConversationType.CUSTOMER_SERVICE, custId, msg, <SendMessageCallback>{
                 onSuccess: function(data: any) {
                     if (data.isBlack) {
                         callback.onError();
@@ -324,7 +346,8 @@ module RongIMLib {
                 },
                 onError: function() {
                     callback.onError();
-                }
+                },
+                onBefore: function(){}
             });
         }
 
@@ -379,14 +402,15 @@ module RongIMLib {
                 },
                 onError: function() {
                     callback.onError();
-                }
+                },
+                onBefore: function(){}
             });
         }
         /**
          * 获取当前连接的状态。
          */
         getCurrentConnectionStatus(): ConnectionStatus {
-            return Bridge._client.channel.connectionStatus;
+            return RongIMClient._dataAccessProvider.getCurrentConnectionStatus();
         }
 
         /**
@@ -421,7 +445,7 @@ module RongIMLib {
         }
 
         getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["number", "string", "object"], "getAgoraDynamicKey");
+            CheckParam.getInstance().check(["number", "string", "object"], "getAgoraDynamicKey", false, arguments);
             var modules = new Modules.VoipDynamicInput();
             modules.setEngineType(engineType);
             modules.setChannelName(channelName);
@@ -521,7 +545,7 @@ module RongIMLib {
         }
 
         deleteRemoteMessages(conversationType: ConversationType, targetId: string, delMsgs: DeleteMessage[], callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["number", "string", "array", "object"], "deleteRemoteMessages");
+            CheckParam.getInstance().check(["number", "string", "array", "object"], "deleteRemoteMessages", false, arguments);
             if (delMsgs.length == 0) {
                 callback.onError(ErrorCode.DELETE_MESSAGE_ID_IS_NULL);
                 return;
@@ -565,7 +589,7 @@ module RongIMLib {
             });
         }
         sendLocalMessage(message: Message, callback: SendMessageCallback) {
-            CheckParam.getInstance().check(["object", "object"], "sendLocalMessage");
+            CheckParam.getInstance().check(["object", "object"], "sendLocalMessage", false, arguments);
             RongIMClient._dataAccessProvider.updateMessage(message);
             this.sendMessage(message.conversationType, message.targetId, message.content, callback);
         }
@@ -579,9 +603,9 @@ module RongIMLib {
          * @param  {string}                  pushContent      []
          * @param  {string}                  pushData         []
          */
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number) {
-            CheckParam.getInstance().check(["number", "string", "object", "object", "undefined|object|null|global|boolean", "undefined|object|null|global|string", "undefined|object|null|global|string", "undefined|object|null|global|number"], "sendMessage");
-            RongIMClient._dataAccessProvider.sendMessage(conversationType, targetId, messageContent, sendCallback, mentiondMsg, pushText, appData, methodType);
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any) {
+            CheckParam.getInstance().check(["number", "string", "object", "object", "undefined|object|null|global|boolean", "undefined|object|null|global|string", "undefined|object|null|global|string", "undefined|object|null|global|number", "undefined|object|null|global"], "sendMessage", false, arguments);
+            RongIMClient._dataAccessProvider.sendMessage(conversationType, targetId, messageContent, sendCallback, mentiondMsg, pushText, appData, methodType, params);
         }
 
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback) {
@@ -620,16 +644,8 @@ module RongIMLib {
          * @param  {MessageContent}          content          [description]
          * @param  {ResultCallback<Message>} callback         [description]
          */
-        insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: MessageContent, callback: ResultCallback<Message>) {
-            var msg = new Message();
-            msg.conversationType = conversationType;
-            msg.targetId = targetId;
-            msg.senderUserId = senderUserId;
-            msg.content = content;
-            msg.sentTime = +new Date;
-            msg.messageType = content.messageName;
-            msg.objectName = RongIMClient.MessageParams[content.messageName].objectName;
-            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, callback);
+        insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: Message, callback: ResultCallback<Message>) {
+            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, content, callback);
         }
         /**
          * [getHistoryMessages 拉取历史消息记录。]
@@ -640,16 +656,20 @@ module RongIMLib {
          * @param  {ResultCallback<Message[]>} callback         [回调函数]
          * @param  {string}                    objectName       [objectName]
          */
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string) {
-            CheckParam.getInstance().check(["number", "string", "number|null|global|object", "number", "object", "undefined|object|null|global|string"], "getHistoryMessages");
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, direction?: boolean) {
+            CheckParam.getInstance().check(["number", "string", "number|null|global|object", "number", "object", "undefined|object|null|global|string", "boolean|null|global|object"], "getHistoryMessages", false, arguments);
             if (count > 20) {
                 throw new Error("HistroyMessage count must be less than or equal to 20!");
             }
             if (conversationType.valueOf() < 0) {
                 throw new Error("ConversationType must be greater than -1");
             }
-            RongIMClient._dataAccessProvider.getHistoryMessages(conversationType, targetId, timestamp, count, callback, objectname);
+            RongIMClient._dataAccessProvider.getHistoryMessages(conversationType, targetId, timestamp, count, callback, objectname, direction);
         }
+
+        setMessageContent(messageId:number, content:any, objectName: string):void{
+             RongIMClient._dataAccessProvider.setMessageContent(messageId, content, objectName);   
+        };
 
         /**
          * [getRemoteHistoryMessages 拉取某个时间戳之前的消息]
@@ -660,7 +680,7 @@ module RongIMLib {
          * @param  {ResultCallback<Message[]>} callback         [description]
          */
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
-            CheckParam.getInstance().check(["number", "string", "number|null|global|object", "number", "object"], "getRemoteHistoryMessages");
+            CheckParam.getInstance().check(["number", "string", "number|null|global|object", "number", "object"], "getRemoteHistoryMessages", false, arguments);
             if (count > 20) {
                 callback.onError(ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
                 return;
@@ -793,6 +813,10 @@ module RongIMLib {
             });
         }
 
+        setMessageStatus(conersationType:ConversationType, targetId: string, timestamp:number, status: string, callback: ResultCallback<boolean>){
+            RongIMClient._dataAccessProvider.setMessageStatus(conersationType, targetId, timestamp, status, callback);
+        }
+
         setMessageSentStatus(messageId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.setMessageSentStatus(messageId, sentStatus, {
                 onSuccess: function(bool: boolean) {
@@ -817,7 +841,7 @@ module RongIMLib {
          * @param  {string}                  targetId         目标Id
          */
         clearTextMessageDraft(conversationType: ConversationType, targetId: string): boolean {
-            CheckParam.getInstance().check(["number", "string", "object"], "clearTextMessageDraft");
+            CheckParam.getInstance().check(["number", "string", "object"], "clearTextMessageDraft", false, arguments);
             var key: string = "darf_" + conversationType + "_" + targetId;
             delete RongIMClient._memoryStore[key];
             return true;
@@ -828,7 +852,7 @@ module RongIMLib {
          * @param  {string}                 targetId         [目标Id]
          */
         getTextMessageDraft(conversationType: ConversationType, targetId: string): string {
-            CheckParam.getInstance().check(["number", "string", "object"], "getTextMessageDraft");
+            CheckParam.getInstance().check(["number", "string", "object"], "getTextMessageDraft", false, arguments);
             if (targetId == "" || conversationType < 0) {
                 throw new Error("params error : " + ErrorCode.DRAF_GET_ERROR);
             }
@@ -842,7 +866,7 @@ module RongIMLib {
          * @param  {string}                  value            [草稿值]
          */
         saveTextMessageDraft(conversationType: ConversationType, targetId: string, value: string): boolean {
-            CheckParam.getInstance().check(["number", "string", "string", "object"], "saveTextMessageDraft");
+            CheckParam.getInstance().check(["number", "string", "string", "object"], "saveTextMessageDraft", false, arguments);
             var key: string = "darf_" + conversationType + "_" + targetId;
             RongIMClient._memoryStore[key] = value;
             return true;
@@ -891,7 +915,7 @@ module RongIMLib {
          * @param  {ResultCallback<Conversation>} callback         [返回值，函数回调]
          */
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>) {
-            CheckParam.getInstance().check(["number", "string", "object"], "getConversation");
+            CheckParam.getInstance().check(["number", "string", "object"], "getConversation", false, arguments);
             RongIMClient._dataAccessProvider.getConversation(conversationType, targetId, {
                 onSuccess: function(conver: Conversation) {
                     setTimeout(function() {
@@ -991,7 +1015,7 @@ module RongIMLib {
             return RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
         }
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number,isGetHiddenConvers:boolean) {
-            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global","boolean|undefined|null|object|global"], "getConversationList");
+            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global","boolean|undefined|null|object|global"], "getConversationList", false, arguments);
             var me = this;
             RongIMClient._dataAccessProvider.getConversationList(<ResultCallback<Conversation[]>>{
                 onSuccess: function(data: Conversation[]) {
@@ -1015,7 +1039,7 @@ module RongIMLib {
             }, conversationTypes, count,isGetHiddenConvers);
         }
         getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number,isGetHiddenConvers:boolean) {
-            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global","boolean|undefined|null|object|global"], "getRemoteConversationList");
+            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global","boolean|undefined|null|object|global"], "getRemoteConversationList", false, arguments);
             RongIMClient._dataAccessProvider.getRemoteConversationList(callback, conversationTypes, count,isGetHiddenConvers);
         }
 
@@ -1031,7 +1055,7 @@ module RongIMLib {
          * @param  {boolean} islocal          [是否同步到服务器，ture：同步，false:不同步]
          */
         createConversation(conversationType: number, targetId: string, converTitle: string): Conversation {
-            CheckParam.getInstance().check(["number", "string", "string"], "createConversation");
+            CheckParam.getInstance().check(["number", "string", "string"], "createConversation", false, arguments);
             var conver = new Conversation();
             conver.targetId = targetId;
             conver.conversationType = conversationType;
@@ -1042,17 +1066,17 @@ module RongIMLib {
         }
         //TODO 删除本地和服务器、删除本地和服务器分开
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["number", "string", "object"], "removeConversation");
+            CheckParam.getInstance().check(["number", "string", "object"], "removeConversation", false, arguments);
             RongIMClient._dataAccessProvider.removeConversation(conversationType, targetId, callback);
         }
 
         setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void{
-            CheckParam.getInstance().check(["number", "string", "boolean"], "setConversationHidden");
+            CheckParam.getInstance().check(["number", "string", "boolean"], "setConversationHidden", false, arguments);
             RongIMClient._dataAccessProvider.setConversationHidden(conversationType,targetId,isHidden);
         }
 
         setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["number", "string", "boolean", "object"], "setConversationToTop");
+            CheckParam.getInstance().check(["number", "string", "boolean", "object"], "setConversationToTop", false, arguments);
             RongIMClient._dataAccessProvider.setConversationToTop(conversationType, targetId, isTop, {
                 onSuccess: function(bool: boolean) {
                     setTimeout(function() {
@@ -1077,7 +1101,11 @@ module RongIMLib {
          * @param  {ResultCallback<ConversationNotificationStatus>} callback         [返回值，函数回调]
          */
         getConversationNotificationStatus(conversationType: ConversationType, targetId: string, callback: ResultCallback<ConversationNotificationStatus>) {
-            throw new Error("Not implemented yet");
+            var params = {
+                conversationType: conversationType,
+                targetId: targetId
+            };
+            RongIMClient._dataAccessProvider.getConversationNotificationStatus(params, callback);
         }
         /**
          * [setConversationNotificationStatus 设置指定用户和会话类型免提醒。]
@@ -1086,7 +1114,12 @@ module RongIMLib {
          * @param  {ResultCallback<ConversationNotificationStatus>} callback         [返回值，函数回调]
          */
         setConversationNotificationStatus(conversationType: ConversationType, targetId: string, notificationStatus: ConversationNotificationStatus, callback: ResultCallback<ConversationNotificationStatus>) {
-            throw new Error("Not implemented yet");
+            var params = {
+                conversationType: conversationType,
+                targetId: targetId,
+                status: status
+            };
+            RongIMClient._dataAccessProvider.setConversationNotificationStatus(params, callback);
         }
         /**
          * [getNotificationQuietHours 获取免提醒消息时间。]
@@ -1120,7 +1153,7 @@ module RongIMLib {
          * @param  {OperationCallback} callback     [返回值，函数回调]
          */
         addMemberToDiscussion(discussionId: string, userIdList: string[], callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "array", "object"], "addMemberToDiscussion");
+            CheckParam.getInstance().check(["string", "array", "object"], "addMemberToDiscussion", false, arguments);
             RongIMClient._dataAccessProvider.addMemberToDiscussion(discussionId, userIdList, callback);
         }
         /**
@@ -1130,7 +1163,7 @@ module RongIMLib {
          * @param  {CreateDiscussionCallback} callback   [返回值，函数回调]
          */
         createDiscussion(name: string, userIdList: string[], callback: CreateDiscussionCallback) {
-            CheckParam.getInstance().check(["string", "array", "object"], "createDiscussion");
+            CheckParam.getInstance().check(["string", "array", "object"], "createDiscussion", false, arguments);
             RongIMClient._dataAccessProvider.createDiscussion(name, userIdList, callback);
         }
         /**
@@ -1139,7 +1172,7 @@ module RongIMLib {
          * @param  {ResultCallback<Discussion>} callback     [返回值，函数回调]
          */
         getDiscussion(discussionId: string, callback: ResultCallback<Discussion>) {
-            CheckParam.getInstance().check(["string", "object"], "getDiscussion");
+            CheckParam.getInstance().check(["string", "object"], "getDiscussion", false, arguments);
             RongIMClient._dataAccessProvider.getDiscussion(discussionId, callback);
         }
         /**
@@ -1148,7 +1181,7 @@ module RongIMLib {
          * @param  {OperationCallback} callback     [返回值，函数回调]
          */
         quitDiscussion(discussionId: string, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "object"], "quitDiscussion");
+            CheckParam.getInstance().check(["string", "object"], "quitDiscussion", false, arguments);
             RongIMClient._dataAccessProvider.quitDiscussion(discussionId, callback);
         }
         /**
@@ -1158,7 +1191,7 @@ module RongIMLib {
          * @param  {OperationCallback} callback     [返回值，参数回调]
          */
         removeMemberFromDiscussion(discussionId: string, userId: string, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "string", "object"], "removeMemberFromDiscussion");
+            CheckParam.getInstance().check(["string", "string", "object"], "removeMemberFromDiscussion", false, arguments);
             RongIMClient._dataAccessProvider.removeMemberFromDiscussion(discussionId, userId, callback);
         }
         /**
@@ -1168,7 +1201,7 @@ module RongIMLib {
          * @param  {OperationCallback}      callback     [返回值，函数回调]
          */
         setDiscussionInviteStatus(discussionId: string, status: DiscussionInviteStatus, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "number", "object"], "setDiscussionInviteStatus");
+            CheckParam.getInstance().check(["string", "number", "object"], "setDiscussionInviteStatus", false, arguments);
             RongIMClient._dataAccessProvider.setDiscussionInviteStatus(discussionId, status, callback);
         }
         /**
@@ -1178,7 +1211,7 @@ module RongIMLib {
          * @param  {OperationCallback} callback     [返回值，函数回调]
          */
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "string", "object"], "setDiscussionName");
+            CheckParam.getInstance().check(["string", "string", "object"], "setDiscussionName", false, arguments);
             RongIMClient._dataAccessProvider.setDiscussionName(discussionId, name, callback);
         }
 
@@ -1192,7 +1225,7 @@ module RongIMLib {
          * @param  {OperationCallback} callback  [返回值，函数回调]
          */
         joinGroup(groupId: string, groupName: string, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "string", "object"], "joinGroup");
+            CheckParam.getInstance().check(["string", "string", "object"], "joinGroup", false, arguments);
             RongIMClient._dataAccessProvider.joinGroup(groupId, groupName, callback);
         }
         /**
@@ -1201,7 +1234,7 @@ module RongIMLib {
          * @param  {OperationCallback} callback [返回值，函数回调]
          */
         quitGroup(groupId: string, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "object"], "quitGroup");
+            CheckParam.getInstance().check(["string", "object"], "quitGroup", false, arguments);
             RongIMClient._dataAccessProvider.quitGroup(groupId, callback);
         }
         /**
@@ -1210,7 +1243,7 @@ module RongIMLib {
          * @param  {OperationCallback} callback [返回值，函数回调]
          */
         syncGroup(groups: Array<Group>, callback: OperationCallback) {
-            CheckParam.getInstance().check(["array", "object"], "syncGroup");
+            CheckParam.getInstance().check(["array", "object"], "syncGroup", false, arguments);
             RongIMClient._dataAccessProvider.syncGroup(groups, callback);
         }
 
@@ -1224,7 +1257,7 @@ module RongIMLib {
          * @param  {OperationCallback} callback     [返回值，函数回调]
          */
         joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "number", "object"], "joinChatRoom");
+            CheckParam.getInstance().check(["string", "number", "object"], "joinChatRoom", false, arguments);
             if (chatroomId == "") {
                 setTimeout(function() {
                     callback.onError(ErrorCode.CHATROOM_ID_ISNULL);
@@ -1235,16 +1268,16 @@ module RongIMLib {
         }
 
         setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void{
-            CheckParam.getInstance().check(["string", "number"], "setChatroomHisMessageTimestamp");
+            CheckParam.getInstance().check(["string", "number"], "setChatroomHisMessageTimestamp", false, arguments);
             RongIMClient._dataAccessProvider.setChatroomHisMessageTimestamp(chatRoomId, timestamp);
         }
         getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void{
-            CheckParam.getInstance().check(["string", "number", "number", "object"], "getChatRoomHistoryMessages");
+            CheckParam.getInstance().check(["string", "number", "number", "object"], "getChatRoomHistoryMessages", false, arguments);
             RongIMClient._dataAccessProvider.getChatRoomHistoryMessages(chatRoomId, count, order, callback);
         }
 
         getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>) {
-            CheckParam.getInstance().check(["string", "number", "number", "object"], "getChatRoomInfo");
+            CheckParam.getInstance().check(["string", "number", "number", "object"], "getChatRoomInfo", false, arguments);
             RongIMClient._dataAccessProvider.getChatRoomInfo(chatRoomId, count, order, callback);
         }
         /**
@@ -1253,20 +1286,20 @@ module RongIMLib {
          * @param  {OperationCallback} callback   [返回值，函数回调]
          */
         quitChatRoom(chatroomId: string, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "object"], "quitChatRoom");
+            CheckParam.getInstance().check(["string", "object"], "quitChatRoom", false, arguments);
             RongIMClient._dataAccessProvider.quitChatRoom(chatroomId, callback);
         }
 
         // #endregion ChatRoom
 
         // #region Public Service
-        getRemotePublicServiceList(mpId?: string, conversationType?: number, pullMessageTime?: any, callback?: ResultCallback<PublicServiceProfile[]>) {
+        getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any) {
             if (RongIMClient._memoryStore.depend.openMp) {
                 var modules = new Modules.PullMpInput(), self = this;
                 if (!pullMessageTime) {
                     modules.setTime(0);
                 } else {
-                    modules.setTime(RongIMClient._memoryStore.lastReadTime.get(conversationType + Bridge._client.userId));
+                    modules.setTime(pullMessageTime);
                 }
                 modules.setMpid("");
                 RongIMClient.bridge.queryMsg(28, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
@@ -1275,6 +1308,7 @@ module RongIMLib {
                         // self.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
                         RongIMClient._memoryStore.publicServiceMap.publicServiceList.length = 0;
                         RongIMClient._memoryStore.publicServiceMap.publicServiceList = data;
+                        callback.onSuccess(data);
                     },
                     onError: function() { }
                 }, "PullMpOutput");
@@ -1286,8 +1320,8 @@ module RongIMLib {
          */
         getPublicServiceList(callback: ResultCallback<PublicServiceProfile[]>) {
             if (RongIMClient._memoryStore.depend.openMp) {
-                CheckParam.getInstance().check(["object"], "getPublicServiceList");
-                callback.onSuccess(RongIMClient._memoryStore.publicServiceMap.publicServiceList);
+                CheckParam.getInstance().check(["object"], "getPublicServiceList", false, arguments);
+                this.getRemotePublicServiceList(callback);
             }
         }
         /**
@@ -1298,7 +1332,7 @@ module RongIMLib {
          */
         getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
             if (RongIMClient._memoryStore.depend.openMp) {
-                CheckParam.getInstance().check(["number", "string", "object"], "getPublicServiceProfile");
+                CheckParam.getInstance().check(["number", "string", "object"], "getPublicServiceProfile", false, arguments);
                 var profile: PublicServiceProfile = RongIMClient._memoryStore.publicServiceMap.get(publicServiceType, publicServiceId);
                 callback.onSuccess(profile);
             }
@@ -1347,7 +1381,7 @@ module RongIMLib {
          */
         searchPublicService(searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
             if (RongIMClient._memoryStore.depend.openMp) {
-                CheckParam.getInstance().check(["number", "string", "object"], "searchPublicService");
+                CheckParam.getInstance().check(["number", "string", "object"], "searchPublicService", false, arguments);
                 var modules = new Modules.SearchMpInput();
                 modules.setType(this.pottingPublicSearchType(0, searchType));
                 modules.setId(keywords);
@@ -1363,7 +1397,7 @@ module RongIMLib {
          */
         searchPublicServiceByType(publicServiceType: ConversationType, searchType: SearchType, keywords: string, callback: ResultCallback<PublicServiceProfile[]>) {
             if (RongIMClient._memoryStore.depend.openMp) {
-                CheckParam.getInstance().check(["number", "number", "string", "object"], "searchPublicServiceByType");
+                CheckParam.getInstance().check(["number", "number", "string", "object"], "searchPublicServiceByType", false, arguments);
                 var type: number = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? 2 : 1;
                 var modules: any = new Modules.SearchMpInput();
                 modules.setType(this.pottingPublicSearchType(type, searchType));
@@ -1379,19 +1413,19 @@ module RongIMLib {
          */
         subscribePublicService(publicServiceType: ConversationType, publicServiceId: string, callback: OperationCallback) {
             if (RongIMClient._memoryStore.depend.openMp) {
-                CheckParam.getInstance().check(["number", "string", "object"], "subscribePublicService");
+                CheckParam.getInstance().check(["number", "string", "object"], "subscribePublicService", false, arguments);
                 var modules = new Modules.MPFollowInput(), me = this, follow = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? "mcFollow" : "mpFollow";
                 modules.setId(publicServiceId);
                 RongIMClient.bridge.queryMsg(follow, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                     onSuccess: function() {
-                        me.getRemotePublicServiceList(null, null, null, <ResultCallback<PublicServiceProfile[]>>{
+                        me.getRemotePublicServiceList(<ResultCallback<PublicServiceProfile[]>>{
                             onSuccess: function() { },
                             onError: function() { }
                         });
                         callback.onSuccess();
                     },
-                    onError: function() {
-                        callback.onError(ErrorCode.SUBSCRIBE_ERROR);
+                    onError: function(code: ErrorCode) {
+                        callback.onError(code);
                     }
                 }, "MPFollowOutput");
             }
@@ -1404,7 +1438,7 @@ module RongIMLib {
          */
         unsubscribePublicService(publicServiceType: ConversationType, publicServiceId: string, callback: OperationCallback) {
             if (RongIMClient._memoryStore.depend.openMp) {
-                CheckParam.getInstance().check(["number", "string", "object"], "unsubscribePublicService");
+                CheckParam.getInstance().check(["number", "string", "object"], "unsubscribePublicService", false, arguments);
                 var modules = new Modules.MPFollowInput(), me = this, follow = publicServiceType == ConversationType.APP_PUBLIC_SERVICE ? "mcUnFollow" : "mpUnFollow";
                 modules.setId(publicServiceId);
                 RongIMClient.bridge.queryMsg(follow, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
@@ -1412,8 +1446,8 @@ module RongIMLib {
                         RongIMClient._memoryStore.publicServiceMap.remove(publicServiceType, publicServiceId);
                         callback.onSuccess();
                     },
-                    onError: function() {
-                        callback.onError(ErrorCode.SUBSCRIBE_ERROR);
+                    onError: function(code: ErrorCode) {
+                        callback.onError(code);
                     }
                 }, "MPFollowOutput");
             }
@@ -1428,7 +1462,7 @@ module RongIMLib {
          * @param  {OperationCallback} callback [返回值，函数回调]
          */
         addToBlacklist(userId: string, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "object"], "addToBlacklist");
+            CheckParam.getInstance().check(["string", "object"], "addToBlacklist", false, arguments);
             RongIMClient._dataAccessProvider.addToBlacklist(userId, callback);
         }
         /**
@@ -1436,7 +1470,7 @@ module RongIMLib {
          * @param  {GetBlacklistCallback} callback [返回值，函数回调]
          */
         getBlacklist(callback: GetBlacklistCallback) {
-            CheckParam.getInstance().check(["object"], "getBlacklist");
+            CheckParam.getInstance().check(["object"], "getBlacklist", false, arguments);
             RongIMClient._dataAccessProvider.getBlacklist(callback);
         }
         /**
@@ -1446,7 +1480,7 @@ module RongIMLib {
          */
         //TODO 如果人员不在黑名单中，获取状态会出现异常
         getBlacklistStatus(userId: string, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["string", "object"], "getBlacklistStatus");
+            CheckParam.getInstance().check(["string", "object"], "getBlacklistStatus", false, arguments);
             RongIMClient._dataAccessProvider.getBlacklistStatus(userId, callback);
         }
         /**
@@ -1455,17 +1489,17 @@ module RongIMLib {
          * @param  {OperationCallback} callback [返回值，函数回调]
          */
         removeFromBlacklist(userId: string, callback: OperationCallback) {
-            CheckParam.getInstance().check(["string", "object"], "removeFromBlacklist");
+            CheckParam.getInstance().check(["string", "object"], "removeFromBlacklist", false, arguments);
             RongIMClient._dataAccessProvider.removeFromBlacklist(userId, callback);
         }
 
         getFileToken(fileType: FileType, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["number", "object"], "getQnTkn");
+            CheckParam.getInstance().check(["number", "object"], "getQnTkn", false, arguments);
             RongIMClient._dataAccessProvider.getFileToken(fileType, callback);
         }
 
         getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["number", "string", "string|global|object|null", "object"], "getQnTkn");
+            CheckParam.getInstance().check(["number", "string", "string|global|object|null", "object"], "getQnTkn", false, arguments);
             RongIMClient._dataAccessProvider.getFileUrl(fileType, fileName, oriName, callback);
         };
         // #endregion Blacklist
@@ -1508,7 +1542,7 @@ module RongIMLib {
 
         // # startVoIP
         startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, callback: ResultCallback<ErrorCode>) {
-            CheckParam.getInstance().check(["number", "string", "array", "number", "string", "object"], "startCall");
+            CheckParam.getInstance().check(["number", "string", "array", "number", "string", "object"], "startCall", false, arguments);
             if (RongIMClient._memoryStore.voipStategy) {
                 RongIMClient._voipProvider.startCall(converType, targetId, userIds, mediaType, extra, callback);
             } else {
@@ -1517,7 +1551,7 @@ module RongIMLib {
         }
 
         joinCall(mediaType: VoIPMediaType, callback: ResultCallback<ErrorCode>) {
-            CheckParam.getInstance().check(['number', 'object'], "joinCall");
+            CheckParam.getInstance().check(['number', 'object'], "joinCall", false, arguments);
             if (RongIMClient._memoryStore.voipStategy) {
                 RongIMClient._voipProvider.joinCall(mediaType, callback);
             } else {
@@ -1526,14 +1560,14 @@ module RongIMLib {
         }
 
         hungupCall(converType: ConversationType, targetId: string, reason: ErrorCode) {
-            CheckParam.getInstance().check(["number", "string", "number"], "hungupCall");
+            CheckParam.getInstance().check(["number", "string", "number"], "hungupCall", false, arguments);
             if (RongIMClient._memoryStore.voipStategy) {
                 RongIMClient._voipProvider.hungupCall(converType, targetId, reason);
             }
         }
 
         changeMediaType(converType: ConversationType, targetId: string, mediaType: VoIPMediaType, callback: OperationCallback) {
-            CheckParam.getInstance().check(["number", "string", "number", "object"], "changeMediaType");
+            CheckParam.getInstance().check(["number", "string", "number", "object"], "changeMediaType", false, arguments);
             if (RongIMClient._memoryStore.voipStategy) {
                 RongIMClient._voipProvider.changeMediaType(converType, targetId, mediaType, callback);
             } else {

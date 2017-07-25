@@ -123,9 +123,9 @@ module RongIMLib {
         getMessageTag(): number {
             if (this.isCounted && this.isPersited) {
                 return 3;
-            } else if (this.isCounted || !this.isPersited) {
+            } else if (this.isCounted) {
                 return 2;
-            } else if (!this.isCounted || this.isPersited) {
+            } else if (this.isPersited) {
                 return 1;
             } else if (!this.isCounted && !this.isPersited) {
                 return 0;
