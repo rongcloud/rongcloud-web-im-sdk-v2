@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Emoji</title>
+</head>
+<body>
+<a href="https://github.com/rongcloud/websdk-demo/blob/master/emoji.html" class="get-source">获取源码</a>
+
+<style>
+body{
+    font-family:arial;
+}
+.get-source {
+    text-decoration:none;
+    background:#000;
+    color:#fff;
+    padding:10px 30px;
+    border-radius:5px;
+    position:fixed;
+    right:5px;
+    top:5px;
+}
+pre.code{
+    padding:5px;
+    border:1px solid #ccc;
+    background:#f5f5f5;
+    border-radius:3px;
+    font-family:arial;
+    line-height:2;
+}
+p {
+    margin: 5px;
+    margin-left: 0;
+}
+ol li {
+    margin-bottom: 10px;
+}
+.support-list{
+    background:#f5f5f5;
+    line-height: 2;
+    font-size: 12px;
+}   
+.doc-content {
+    font-size: 13px;
+    background:#f5f5f5;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+</style>
+    
+<script src="RongEmoji-test.js"></script> 
+
+<h1>Emoji</h1>
+
+<h2>融云消息 message 里的 emoji 说明</h2>
+<ol>
+    <li>
+        <p>发消息时，必须直接发送emoji原生字符。如：😀 。转换方法：symbolToEmoji(symbolStr)。</p>
+    </li>
+    <li>
+        <p>Web SDK接收消息时接收到的是unicode编码格式，如：”ef600”。需要使用messageDecode方法转化成原生emoji。</p>
+    </li>
+    <li>
+        <p>emoji的渲染：</p>
+        <ul class="doc-content">
+            <li>并不是所有的操作系统都能够显示emoji字符，并且在不同的操作系统上，emoji字符的显示也可能不相同。</li>
+            <li>具体查看：<a href="https://leonax.net/p/7456/how-to-type-emoji-in-various-systems/">https://leonax.net/p/7456/how-to-type-emoji-in-various-systems/</a></li>
+            <li>emoji SDK提供了判断是否支持emoji渲染的方法。并提供了将原生emoji转化成html的方法，用户可直接使用包含emoji背景的html来显示emoji。</li>
+        </ul>
+    </li>
+    <li>
+        <p>SDK使用方法(最下方含示例)：</p>
+        <ul class="doc-content">
+            <li>isSupportEmoji：判断是否支持emoji的渲染(示例0)</li>
+            <li>emojis：获取全部表情的html标签</li>
+            <li>names：获取全部表情的对应文字说明</li>
+            <li>
+                <p>emojiToSymbol(emojiStr, reg) ：</p>
+                <ul>
+                <strong>
+                    <li>将原生emoji转化为对应名称。返回的语言为RongIMEmoji.init时设置的语言，如果不设置，默认为中文(示例3)</li>
+                    <li><em>应用场景</em>：在不支持原生emoji渲染时，可以显示对应名称。适用于消息输入，会话列表的emoji显示。</li>
+                </strong>
+                </ul>
+            </li>
+            <li>
+                <p>symbolToEmoji(symbolStr) ：</p>
+                <ul>
+                <strong>
+                    <li>将emoji的对应名称转化为原生emoji字符。(示例1, 示例2)</li>
+                    <li><em>应用场景</em>：发送消息时，消息体里必须使用原生emoji字符，需要使用该方法进行转换。</li>
+                </strong>
+                </ul>
+            </li>
+            <li>
+                <p>emojiToHTML(emojiStr, reg) ：</p>
+                <ul>
+                <strong>
+                    <li>将原生emoji转化为HTML标签，使用背景图片来显示emoji字符，可选是否重新设置标签大小，默认为24px (示例4)</li>
+                    <li><em>应用场景</em>：需要在某些不支持emoji字符渲染的操作系统中展示emoji时，或者需要在所有操作系统中展示相同的emoji字符时，可以使用该方法展示emoji。</li>
+                </strong>
+                </ul>
+            </li>
+            <li>
+                <p>symbolToHTML(symbolStr) ：</p>
+                <ul>
+                    <li><strong>将emoji对应名称转化为HTML标签。(示例5)</strong></li>
+                </ul>
+            </li>
+            <li>
+                <p>messageDecode(emojiStr, reg) ：</p>
+                <ul>
+                <strong>
+                    <li>将emoji的unicode码转化为对应的原生emoji字符。(示例6)</li>
+                    <li><em>应用场景</em>：Web SDK 接收消息后，消息体内的原生 Emoji 字符会被解码为对应的 unicode 码，如：\uf600。需使用该方法转化才能正确显示。</li>
+                </strong>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <p>emoji SDK 内置了128个emoji表情的图片，也可自行扩展配置。初始化示例如下：</p>
+        <ul>
+            <strong>
+            <li>第一个参数中，dataSource定义扩展的emoji表情，key为标识表情的unicode码。</li>
+            <li>第二个参数为config，config中的属性设置RongIMEmoji的全局。如，设置config{ regExp: /[\uf000-\uf701]/g } 之后，RongIMEmoji所有方法中的unicode匹配范围都将是/[\uf000-\uf701]/g </li>
+            </strong>
+        </ul>
+        <pre class="doc-content">
+    //直接初始化
+    RongIMLib.RongIMEmoji.init();
+
+    //通过配置扩展表情初始化
+    //表情信息可参考 <a href="http://unicode.org/emoji/charts/full-emoji-list.html">http://unicode.org/emoji/charts/full-emoji-list.html</a>
+    var emoji = {
+        dataSource: {
+            "表情unicode码":{
+                "en":"英文名称",
+                "zh":"中文名称",
+                "tag":"原生表情字符",
+                "position":"多背景图时表情对应的坐标"
+            },
+        },
+        url: "背景图片地址"
+    };
+    var config = {
+        size: '大小',
+        url: '背景图',
+        lang: '选择的语言',
+        regExp: '匹配unicode的正则表达式'
+    };
+    RongIMLib.RongIMEmoji.init(emoji, config);
+        </pre>
+    </li>
+    <li>支持多语言的显示(目前支持中文和英文)。</li>
+    <li>特殊说明：emoji图片提供的是一个质量很差的版本，因为版权问题，如果要商用，请自行解决版权问题。</li>
+    <li>
+        <p>支持的128个emoji字符，<b>RongIMEmoji.emojis</b> ：</p>
+        <p id="supportListEmoji"></p>
+    </li>
+    <li>
+        <p>支持的128个emoji对应英文，<b>RongIMEmoji.names</b> ：</p>
+        <p class="support-list" id="supportListEN"></p>
+    </li>
+    <li>
+        <p>支持的128个emoji对应中文，<b>RongIMEmoji.names</b> ：</p>
+        <p class="support-list" id="supportListZH"></p>
+    </li>
+    <li>
+        <p>SDK使用示例：</p>
+        <pre class="code" id="show"></pre>
+    </li>
+</ol>
+
+
+
+
+
+
+
+
+<script>
+//初始化
+/*
+http://www.fileformat.info/info/unicode/char/1f60e/index.htm
+*/ 
+
+// 通过自定义扩展，解决对“狞笑”的支持 
+var emojiNew = {
+    dataSource: {
+        "u1F60E":{
+            "en":"smiling face with sunglasses",
+            "zh":"狞笑",
+            "tag":"😎",
+            "position":"0px 0px"
+        },
+        /* 新增怪物表情, u1F701超出了默认的regExp，需要在config中设置全局regExp，或者转化时传入第二个匹配参数 */
+        "u1F701": {
+            "en": "ogre",
+            "zh": "怪物",
+            "tag": "👹",
+            "position": "0px 0px"
+        }
+    },
+    url: "http://emoji.fileformat.info/gemoji/sunglasses.png"
+};
+
+// 中文配置
+var config = {
+    size : 24,
+    lang: 'zh',
+    url : "//cdn.ronghub.com/css-sprite_bg-2.1.10.png"
+};
+
+var enConfig = {
+    size: 27,
+    lang: 'en'
+};
+
+test(RongIMLib.RongIMEmoji);
+
+function test(RongIMEmoji){
+
+
+    /* 支持中文的初始化 */
+    RongIMEmoji.init(emojiNew, config);
+    var list = document.querySelector('#supportListZH');
+    list.innerHTML = RongIMEmoji.names.join(", ");
+
+    /* 支持英文的初始化 */
+    RongIMEmoji.init(emojiNew, enConfig);
+    list = document.querySelector('#supportListEN');
+    list.innerHTML = RongIMEmoji.names.join(", ");
+
+    var emojis = RongIMEmoji.emojis;
+    emojis.forEach(function(emoji) {
+        var objE = document.createElement("span");
+        objE.innerHTML = emoji;
+        document.querySelector("#supportListEmoji").appendChild(objE);
+    });
+
+
+    var t = document.querySelector('#show');
+    var str;
+
+
+    //isSupportEmoji
+    t.innerHTML += "(0)isSupportEmoji，是否支持emoji渲染？ \n";
+    str = RongIMEmoji.isSupportEmoji;
+    t.innerHTML += "返回值：\n";
+    t.innerHTML += "\t" + str + "\n\n";
+
+
+    str = "[innocent] [expressionless]  测试Emoji";
+
+    //symbolToEmoji
+    t.innerHTML += "(1)symbolToEmoji，英文参数： \n";
+    t.innerHTML += "前置需求：\n";
+    t.innerHTML += "\t需要在RongIMEmoji.init时传入config参数，并且config设置lang: en\n";
+    t.innerHTML += "参数：\n";
+    t.innerHTML += "\t" + str + "\n";
+    str = RongIMEmoji.symbolToEmoji(str);
+    t.innerHTML += "返回值：\n";
+    t.innerHTML += "\t" + str + "\n\n\n";
+
+
+    //symbolToEmoji english
+    RongIMEmoji.init(emojiNew, config);
+    str = "[狞笑] [露齿而笑]  测试Emoji";
+    t.innerHTML += "(2)symbolToEmoji，中文参数： \n";
+    t.innerHTML += "参数：\n";
+    t.innerHTML += "\t" + str + "\n";
+    str = RongIMEmoji.symbolToEmoji(str);
+    t.innerHTML += "返回值：\n";
+    t.innerHTML += "\t" + str + "\n\n\n"; 
+
+
+    //emojiToSymbol
+    t.innerHTML += "(3)emojiToSymbol \n";
+    t.innerHTML += "参数：\n";
+    t.innerHTML += "\t" + str + "\n";
+    str = RongIMEmoji.emojiToSymbol(str);
+    t.innerHTML += "返回值：\n";
+    t.innerHTML += "\t" + str + "\n\n\n";  
+
+
+
+    //emojiToHTML 
+    var str = "我收到了一个表情 😀 😁 很酷";
+    t.innerHTML += "(4)emojiToHTML \n";
+    t.innerHTML += "参数：\n";
+    t.innerHTML +=  "\t1，" + str + "。\n";
+    t.innerHTML +=  "\t2，35\n";
+    str = RongIMEmoji.emojiToHTML(str, 35);
+    t.innerHTML += "返回值：\n";
+    t.innerHTML += "\t" + str + "\n\n\n";  
+
+
+
+    // //symbolToHTML
+    t.innerHTML += "(5)symbolToHTML \n";
+    var str = "[狞笑] [露齿而笑]  测试Emoji";
+    t.innerHTML += "参数：\n";
+    t.innerHTML += "\t" + str + "\n";
+    str = RongIMEmoji.symbolToHTML(str);
+    t.innerHTML += "返回值：\n";
+    t.innerHTML +=  "\t" + str + "\n\n\n";
+
+
+    // messageDecode
+    t.innerHTML += "(6)messageDecode \n";
+    var str = "我收到了两个unicode码形式的表情，分别是：\uf600 \uf601(\\uf600 \\uf601)。";
+    t.innerHTML += "参数：\n";
+    t.innerHTML += "\t" + str + "\n";
+    str = RongIMEmoji.messageDecode(str);
+    t.innerHTML += "返回值：\n";
+    t.innerHTML +=  "\t" + str + "\n\n\n";
+
+
+    // 自定义的扩展
+    str = "测试扩展的自定义表情, unicode码：\uf701 (\\uf701)";
+    t.innerHTML += "(7)messageDecode 获取自定义的扩展表情 \n";
+    t.innerHTML += "参数：\n";
+    t.innerHTML +=  "\t1，" + str + "。\n";
+    t.innerHTML +=  "\t2，" + /[\uf000-\uf701]/g + "\n";
+    str = RongIMEmoji.messageDecode(str, /[\uf000-\uf701]/g);
+    t.innerHTML += "返回值：\n";
+    t.innerHTML += "\t" + str + "\n\n\n";
+
+}   
+</script>
+
+<!-- require load -->
+<!-- <script src="lib/require.js"></script>
+<script>
+require.config({
+    paths: {
+        RongIMEmoji: './lib/RongEmoji-dev'
+    }
+});
+
+require(['RongIMEmoji'], function(RongIMEmoji) {
+    test(RongIMEmoji);
+}); 
+</script> -->
+</body>
+</html>
