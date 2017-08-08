@@ -150,7 +150,7 @@
 
     // config
     var configs = {
-        url: "./emojis.png",
+        url: "//cdn.ronghub.com/css-sprite_bg-2.1.10.png",
         size: 24,
         lang: "zh",
         reg: /[\uf000-\uf700]/g
@@ -247,7 +247,7 @@
         var lang = configs.lang;
         var span = createSpan(emoji);
         emojiSymbols.push(emoji[lang]);
-        emojiHtmls.push(span);
+        emojiHtmls.push(getDom(span));
         emojiDetails.push({
             name: "[" + emoji[lang] + "]",
             tag: emoji.tag,
@@ -255,6 +255,12 @@
             en: emoji.en,
             html: span
         });
+    }
+
+    function getDom(html) {
+        var div = document.createElement('div');
+        div.innerHTML = html;
+        return div.childNodes[0];
     }
 
     var computeBgPosition = function(position, sizePx) {
@@ -269,7 +275,7 @@
 
     var getEmojiHtml = function(object) {
         var style = "width: {{size}}px; height: {{size}}px; line-height: {{size}}px; background-image: url({{background}}); background-position: {{position}}; background-size: auto {{size}}px;";
-        var spanTpl = "<span class='rong-emoji-content' name='{{name}}' style='" + style + "''></span>"
+        var spanTpl = "<span class='rong-emoji-content' name='[{{name}}]' style='" + style + "''></span>"
         var ret = spanTpl.replace(/\\?\{\{([^}]+)\}\}/g, function(match, name) {
             return object[name];
         })

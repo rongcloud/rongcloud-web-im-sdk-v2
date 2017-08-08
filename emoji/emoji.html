@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <meta charset="UTF-8">
 <title>Emoji</title>
 </head>
@@ -36,6 +37,9 @@ p {
 ol li {
     margin-bottom: 10px;
 }
+ol ol, ol ul, ul ol, ul ul {
+    padding-left: 17px;
+}
 .support-list{
     background:#f5f5f5;
     line-height: 2;
@@ -48,92 +52,50 @@ ol li {
     padding-top: 10px;
 }
 
+a {
+    cursor: pointer;
+}
+
+#chatbox-send {
+    margin-left: 1%;
+}
+
+.chatbox-emoji-btn {
+    margin-left: 1%;
+}
+
+.chatbox-emoji-panel {
+    margin-left: 1%;
+    width: 50%;
+}
+
+.chatbox-message {
+    margin-left: 1%;
+    width: 50%;
+    height: 150px;
+}
+
 </style>
     
-<script src="RongEmoji-test.js"></script> 
+<script src="emoji.js"></script> 
 
 <h1>Emoji</h1>
-
-<h2>融云消息 message 里的 emoji 说明</h2>
+<h2>基础API方法</h2>
 <ol>
     <li>
-        <p>发消息时，必须直接发送emoji原生字符。如：😀 。转换方法：symbolToEmoji(symbolStr)。</p>
+        <p>emoji SDK 内置了128个emoji表情的图片，也可自行扩展配置。</p>
     </li>
     <li>
-        <p>Web SDK接收消息时接收到的是unicode编码格式，如：”ef600”。需要使用messageDecode方法转化成原生emoji。</p>
-    </li>
-    <li>
-        <p>emoji的渲染：</p>
-        <ul class="doc-content">
-            <li>并不是所有的操作系统都能够显示emoji字符，并且在不同的操作系统上，emoji字符的显示也可能不相同。</li>
-            <li>具体查看：<a href="https://leonax.net/p/7456/how-to-type-emoji-in-various-systems/">https://leonax.net/p/7456/how-to-type-emoji-in-various-systems/</a></li>
-            <li>emoji SDK提供了判断是否支持emoji渲染的方法。并提供了将原生emoji转化成html的方法，用户可直接使用包含emoji背景的html来显示emoji。</li>
-        </ul>
-    </li>
-    <li>
-        <p>SDK使用方法(最下方含示例)：</p>
-        <ul class="doc-content">
-            <li>isSupportEmoji：判断是否支持emoji的渲染(示例0)</li>
-            <li>emojis：获取全部表情的html标签</li>
-            <li>names：获取全部表情的对应文字说明</li>
-            <li>
-                <p>emojiToSymbol(emojiStr, reg) ：</p>
-                <ul>
-                <strong>
-                    <li>将原生emoji转化为对应名称。返回的语言为RongIMEmoji.init时设置的语言，如果不设置，默认为中文(示例3)</li>
-                    <li><em>应用场景</em>：在不支持原生emoji渲染时，可以显示对应名称。适用于消息输入，会话列表的emoji显示。</li>
-                </strong>
-                </ul>
-            </li>
-            <li>
-                <p>symbolToEmoji(symbolStr) ：</p>
-                <ul>
-                <strong>
-                    <li>将emoji的对应名称转化为原生emoji字符。(示例1, 示例2)</li>
-                    <li><em>应用场景</em>：发送消息时，消息体里必须使用原生emoji字符，需要使用该方法进行转换。</li>
-                </strong>
-                </ul>
-            </li>
-            <li>
-                <p>emojiToHTML(emojiStr, reg) ：</p>
-                <ul>
-                <strong>
-                    <li>将原生emoji转化为HTML标签，使用背景图片来显示emoji字符，可选是否重新设置标签大小，默认为24px (示例4)</li>
-                    <li><em>应用场景</em>：需要在某些不支持emoji字符渲染的操作系统中展示emoji时，或者需要在所有操作系统中展示相同的emoji字符时，可以使用该方法展示emoji。</li>
-                </strong>
-                </ul>
-            </li>
-            <li>
-                <p>symbolToHTML(symbolStr) ：</p>
-                <ul>
-                    <li><strong>将emoji对应名称转化为HTML标签。(示例5)</strong></li>
-                </ul>
-            </li>
-            <li>
-                <p>messageDecode(emojiStr, reg) ：</p>
-                <ul>
-                <strong>
-                    <li>将emoji的unicode码转化为对应的原生emoji字符。(示例6)</li>
-                    <li><em>应用场景</em>：Web SDK 接收消息后，消息体内的原生 Emoji 字符会被解码为对应的 unicode 码，如：\uf600。需使用该方法转化才能正确显示。</li>
-                </strong>
-                </ul>
-            </li>
-        </ul>
-    </li>
-    <li>
-        <p>emoji SDK 内置了128个emoji表情的图片，也可自行扩展配置。初始化示例如下：</p>
-        <ul>
-            <strong>
-            <li>第一个参数中，dataSource定义扩展的emoji表情，key为标识表情的unicode码。</li>
-            <li>第二个参数为config，config中的属性设置RongIMEmoji的全局。如，设置config{ regExp: /[\uf000-\uf701]/g } 之后，RongIMEmoji所有方法中的unicode匹配范围都将是/[\uf000-\uf701]/g </li>
-            </strong>
-        </ul>
-        <pre class="doc-content">
-    //直接初始化
+        <p><a onclick="setupExpand('initCode')">emoji SDK 初始化</a></p>
+        <pre id="initCode" style="display: none">
+    <strong>/* 1，使用默认配置, 直接初始化 */</strong>
     RongIMLib.RongIMEmoji.init();
 
-    //通过配置扩展表情初始化
-    //表情信息可参考 <a href="http://unicode.org/emoji/charts/full-emoji-list.html">http://unicode.org/emoji/charts/full-emoji-list.html</a>
+    <strong>/* 2，不使用默认配置，自定义初始化 */</strong>
+   
+    // 表情信息可参考 <a href="http://unicode.org/emoji/charts/full-emoji-list.html">http://unicode.org/emoji/charts/full-emoji-list.html</a>
+    
+    // <strong>扩展表情，设置扩展表情的信息</strong>
     var emoji = {
         dataSource: {
             "表情unicode码":{
@@ -145,35 +107,201 @@ ol li {
         },
         url: "背景图片地址"
     };
+    // <strong>自定义设置</strong>
     var config = {
         size: '大小',
         url: '背景图',
         lang: '选择的语言',
-        regExp: '匹配unicode的正则表达式'
+        reg: '匹配unicode的正则表达式'
     };
+    // <strong>初始化</strong>
     RongIMLib.RongIMEmoji.init(emoji, config);
         </pre>
     </li>
-    <li>支持多语言的显示(目前支持中文和英文)。</li>
-    <li>特殊说明：emoji图片提供的是一个质量很差的版本，因为版权问题，如果要商用，请自行解决版权问题。</li>
     <li>
-        <p>支持的128个emoji字符，<b>RongIMEmoji.emojis</b> ：</p>
-        <p id="supportListEmoji"></p>
+        <p><a onclick="setupExpand('sdkFuc')">SDK基本使用方法</a></p>
+        <table id="sdkFuc" class="table table-bordered" style="display: none; width: 97%">
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>参数说明</th>
+                    <th>方法说明</th>
+                    <th>使用示例</th>
+                    <th>应用场景</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>isSupportEmoji</td>
+                    <td>无</td>
+                    <td>无</td>
+                    <td>无</td>
+                    <td>判断是否支持emoji的渲染</td>
+                    <td>var isSupportEmoji = RongIMLib.RongIMEmoji.isSupportEmoji;</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>emojis</td>
+                    <td>无</td>
+                    <td>无</td>
+                    <td>无</td>
+                    <td>获取全部表情的html标签</td>
+                    <td>var emojis = RongIMLib.RongIMEmoji.emojis;</td>
+                    <td></td>
+                </tr>
+                 <tr>
+                    <td>names</td>
+                    <td>无</td>
+                    <td>无</td>
+                    <td>无</td>
+                    <td>获取全部表情的对应文字说明, 名字的语言为config中设置的语言，默认中文</td>
+                    <td>var names = RongIMLib.RongIMEmoji.names;</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>emojiToSymbol(emoji, reg)</td>
+                    <td>
+                        <ol>
+                            <li>emoji</li>
+                            <li>reg</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>String</li>
+                            <li>regExp</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>必填，包含原生emoji的字符串。</li>
+                            <li>可选，设置匹配unicode的正则表达式，默认值为/[\uf000-\uf700]/g。</li>
+                        </ol>
+                    </td>
+                    <td>获取全部表情的对应文字说明, 名字的语言为config中设置的语言，默认中文</td>
+                    <td>var symbol = emojiToSymbol('我是一个表情😁。'); <br> 返回值：我是一个表情[露齿而笑]</td>
+                    <td>在不支持原生emoji渲染时，可以显示对应名称。适用于消息输入，会话列表的emoji显示。</td>
+                </tr>
+                <tr>
+                    <td>symbolToEmoji(symbol)</td>
+                    <td>
+                        <ol>
+                            <li>symbol</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>String</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>必填，包含emoji对应名称的字符串，如：我是一个表情[露齿而笑]。</li>
+                        </ol>
+                    </td>
+                    <td>将emoji的对应名称转化为原生emoji字符。</td>
+                    <td>var emoji = symbolToEmoji('我是一个表情[露齿而笑]。');<br> 我是一个表情😁。</td>
+                    <td>发送消息时，消息体里必须使用原生emoji字符，需要使用该方法进行转换。</td>
+                </tr>
+                <tr>
+                    <td>emojiToHTML(emoji, size, reg)</td>
+                    <td>
+                        <ol>
+                            <li>emoji</li>
+                            <li>size</li>
+                            <li>reg</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>String</li>
+                            <li>Number</li>
+                            <li>reg</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>必填，包含原生emoji的字符串。</li>
+                            <li>可选，设置返回标签的大小</li>
+                            <li>可选，包含原生emoji的字符串。</li>
+                        </ol>
+                    </td>
+                    <td>将原生emoji转化为HTML标签，使用背景图片来显示emoji字符，可选是否重新设置标签大小，默认为24px</td>
+                    <td>var html = emojiToHTML('我是一个表情😁。');</td>
+                    <td>需要在某些不支持emoji字符渲染的操作系统中展示emoji时，或者需要在所有操作系统中展示相同的emoji字符时，可以使用该方法展示emoji。</td>
+                </tr>
+                <tr>
+                    <td>symbolToHTML(symbol, size, reg)</td>
+                    <td>
+                        <ol>
+                            <li>symbol</li>
+                            <li>size</li>
+                            <li>reg</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>String</li>
+                            <li>Number</li>
+                            <li>reg</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>必填，包含 emoji对应名称 的字符串</li>
+                            <li>可选，设置返回标签的大小</li>
+                            <li>可选，包含原生emoji的字符串。</li>
+                        </ol>
+                    </td>
+                    <td>将原生emoji转化为HTML标签，使用背景图片来显示emoji字符，可选是否重新设置标签大小，默认为24px</td>
+                    <td>var html = symbolToHTML('我是一个表情[露齿而笑]。')</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>messageDecode(emoji, reg)</td>
+                    <td>
+                        <ol>
+                            <li>emoji</li>
+                            <li>reg</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>String</li>
+                            <li>reg</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <li>必填，包含 emoji的unicode码 的字符串</li>
+                            <li>可选，设置匹配unicode的正则表达式</li>
+                        </ol>
+                    </td>
+                    <td>将emoji的unicode码转化为对应的原生emoji字符。</td>
+                    <td>var message = messageDecode('收到一条消息 \uf601'); <br>返回值： 收到一条消息 😁</td>
+                    <td>Web SDK 接收消息后，消息体内的原生 Emoji 字符会被解码为对应的 unicode 码，如：\uf600。需使用该方法转化才能正确显示。</td>
+                </tr>
+            </tbody>
+        </table>
     </li>
     <li>
-        <p>支持的128个emoji对应英文，<b>RongIMEmoji.names</b> ：</p>
-        <p class="support-list" id="supportListEN"></p>
-    </li>
-    <li>
-        <p>支持的128个emoji对应中文，<b>RongIMEmoji.names</b> ：</p>
-        <p class="support-list" id="supportListZH"></p>
-    </li>
-    <li>
-        <p>SDK使用示例：</p>
-        <pre class="code" id="show"></pre>
+        <p><a onclick="setupExpand('show')">SDK使用示例</a></p>
+        <pre class="code" id="show" style="display: none"></pre>
     </li>
 </ol>
 
+
+<h2>融云消息 message 里的 emoji 说明</h2>
+<ol>
+    <li>
+        <p>发消息时，必须直接发送emoji原生字符。如：😀 。转换方法：symbolToEmoji(symbolStr)。</p>
+    </li>
+    <li>
+        <p>Web SDK接收消息时接收到的是unicode编码格式，如：”ef600”。需要使用messageDecode方法转化成原生emoji。</p>
+    </li>
+</ol>
 
 
 
@@ -211,7 +339,7 @@ var emojiNew = {
 var config = {
     size : 24,
     lang: 'zh',
-    url : "//cdn.ronghub.com/css-sprite_bg-2.1.10.png"
+    url : "./emojis.png"
 };
 
 var enConfig = {
@@ -224,23 +352,7 @@ test(RongIMLib.RongIMEmoji);
 function test(RongIMEmoji){
 
 
-    /* 支持中文的初始化 */
-    RongIMEmoji.init(emojiNew, config);
-    var list = document.querySelector('#supportListZH');
-    list.innerHTML = RongIMEmoji.names.join(", ");
-
-    /* 支持英文的初始化 */
     RongIMEmoji.init(emojiNew, enConfig);
-    list = document.querySelector('#supportListEN');
-    list.innerHTML = RongIMEmoji.names.join(", ");
-
-    var emojis = RongIMEmoji.emojis;
-    emojis.forEach(function(emoji) {
-        var objE = document.createElement("span");
-        objE.innerHTML = emoji;
-        document.querySelector("#supportListEmoji").appendChild(objE);
-    });
-
 
     var t = document.querySelector('#show');
     var str;
@@ -328,22 +440,65 @@ function test(RongIMEmoji){
     str = RongIMEmoji.messageDecode(str, /[\uf000-\uf701]/g);
     t.innerHTML += "返回值：\n";
     t.innerHTML += "\t" + str + "\n\n\n";
-
 }   
+
+
+function setupExpand(expandId) {
+    var expandDom = document.getElementById(expandId);
+    var display = expandDom.style.display;
+    display = display == "none" ? null : "none";
+    expandDom.style.display = display;
+}
+
 </script>
 
-<!-- require load -->
-<!-- <script src="lib/require.js"></script>
-<script>
-require.config({
-    paths: {
-        RongIMEmoji: './lib/RongEmoji-dev'
-    }
-});
 
-require(['RongIMEmoji'], function(RongIMEmoji) {
-    test(RongIMEmoji);
-}); 
-</script> -->
+
+
+
+
+
+<div class="chatbox">
+    <h2>发送表情极简demo</h3>
+    <div class="chatbox-tools">
+        <div class="chatbox-tools-emoji">
+            <a href="#emoji" class="chatbox-emoji-btn" id="chatbox-emoji-btn">表情</a>
+            <div class="chatbox-emoji-panel" id="chatbox-emoji-panel"></div>
+        </div>
+    </div>
+    <textarea class="chatbox-message" id="chatbox-message">今天心情很不错[大笑]</textarea>
+    <p> <a href="#" id="chatbox-send">发送</a></p>
+</div>
+<script>
+(function(){
+    var RongIMEmoji = RongIMLib.RongIMEmoji;
+    RongIMEmoji.init();
+    var chatbox = document.getElementById("chatbox-message");
+    var btn = document.getElementById("chatbox-emoji-btn");
+    var panel = document.getElementById("chatbox-emoji-panel");
+    btn.onclick = function(){
+        panel.style.display = "block";
+        var emojis = RongIMEmoji.emojis;
+        for(var i=0;i<emojis.length;i++){
+            panel.appendChild(emojis[i]);
+        }
+        return false;
+    }
+    panel.onclick = function(event){
+        var e = event || window.event;
+        var target = e.target || e.srcElement;
+        console.log(target);
+        chatbox.value = chatbox.value + target.getAttribute("name");
+    }
+    var send = document.getElementById("chatbox-send");
+    send.onclick = function(){
+        var message = chatbox.value;
+        message = RongIMEmoji.symbolToEmoji(message);
+        console.log(message);
+        alert("调用发送消息方法发送message即可");
+        return false;
+    }
+})();   
+</script>
 </body>
 </html>
