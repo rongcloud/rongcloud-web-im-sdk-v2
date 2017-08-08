@@ -1,7 +1,7 @@
 "use strict";
 /*
 使用流程：
-    1、引入外部依赖 amr.js 、swfobject-2.0.0.min.js
+    1、引入外部依赖 amr.js 、swfobject-2.0.0.min.js 、weixin-voice.js
     2、引入 voice.js
 开发流程：
     1、定义暴露 API

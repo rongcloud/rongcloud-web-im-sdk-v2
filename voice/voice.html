@@ -3,34 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <title>voice</title>
+<style>
+    button{
+        margin-top: 200px;
+        margin-left: 50px;
+        height: 100px;
+        width: 150px;
+    }
+</style>
 </head>
 <body>
-<link rel="stylesheet" href="./res/rongcloud.css">
-<a href="https://github.com/rongcloud/websdk-demo/blob/master/voice.html" class="get-source">获取源码</a>
 
+<script src="http://cdn.ronghub.com/swfobject-2.0.0.min.js"></script> 
+<script src="lib/libamr-2.2.6.min.js"></script>	
+<script src="./voice-2.2.6.js"></script>
 
-<h1>声音库</h1>
-<h2><a href="http://www.rongcloud.cn/docs/web.html#声音库">http://www.rongcloud.cn/docs/web.html#声音库</a></h2>
+<!-- 测试音频 -->
+<script src="./voice-amr-base64.json"></script>
 
-<script src="//cdn.ronghub.com/Libamr-2.2.5.min.js"></script>
-<script src="//cdn.ronghub.com/RongIMVoice-2.2.5.min.js"></script>
+<div>
+    <ul>
+        <li>
+            <button onclick="play()" class="play">播放</button> 
+            <button onclick="pause()" class="pause">停止</button>
+        </li>
+    </ul>
+</div>
 
-<!-- 引入base64编码的arm音频数据 -->
-<script src="./res/voice-amr-base64.json"></script>
+<script type="text/javascript">
+    RongIMVoice.init();
 
-<script>
-var RongIMVoice = RongIMLib.RongIMVoice;
-	RongIMVoice.init();
+    function play(){
+        RongIMVoice.Player.play(voice, {
+            onbeforeplay: function(){ 
+                console.log('onbeforeplay');
+            },
+            onplayed: function(){    
+                console.log('onplayed');  
+            },
+            onended: function(){ 
+                console.log('onended');
+             }
+         });    
+     };
 
-function play(){
-	// 音频持续大概时间(秒)
-	var duration = voice.length/1024;
-    RongIMVoice.preLoaded(voice);
-    RongIMVoice.play(voice,duration);
-}
+    function pause(){
+        RongIMVoice.Player.pause();
+    }
+    
+    // 在 iOS 的浏览器中第一次需要点击两次才能播放
+    // 参考：https://segmentfault.com/a/1190000007864808 
+
+    function touchPlay(){
+        window.removeEventListener('touchstart', touchPlay, false);
+        play();
+    }
+    
+    var isiOS = (/i(Phone|P(o|a)d)/.test(navigator.userAgent));
+    if(isiOS){
+        window.addEventListener('touchstart', touchPlay, false);
+    }
+
 </script>
 
-
-<button onclick="play()">播放base64</button>
 </body>
 </html>
