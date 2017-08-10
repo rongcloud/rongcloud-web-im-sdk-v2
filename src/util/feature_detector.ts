@@ -3,33 +3,36 @@ module RongIMLib {
         script: any = document.createElement("script");
         head: any = document.getElementsByTagName("head")[0];
 
-        constructor() {
-            Transportations._TransportType = Socket.WEBSOCKET;
+        constructor(callback?: any) {
             if ("WebSocket" in window && "ArrayBuffer" in window && WebSocket.prototype.CLOSED === 3 && !RongIMClient._memoryStore.depend.isPolling) {
-                var str: string = RongIMClient._memoryStore.depend.protobuf;
-                this.script.src = str;
-                this.head.appendChild(this.script);
+                Transportations._TransportType = Socket.WEBSOCKET;
+                var needConnect = false;
+                if (!RongIMClient.Protobuf) {
+                    needConnect = true;
+                }
+                var url: string = RongIMClient._memoryStore.depend.protobuf;
+                var script = this.script;
+                script.src = url;
+                this.head.appendChild(script);
+                script.onload = script.onreadystatechange = function(){
+                    var isLoaded = (!this.readState || this.readyState == 'loaded' || this.readyState == 'complete');
+                    if (isLoaded) {
+                        // 防止 IE6、7 下偶发触发两次 loaded
+                        script.onload = script.onreadystatechange = null;
+                        if (callback) {
+                            callback();
+                        }
+                        if (needConnect && !callback) {
+                            var token = RongIMClient._memoryStore.token;
+                            var connectCallback = RongIMClient._memoryStore.callback;
+                            RongIMClient.connect(token, connectCallback)
+                        }
+                    }
+                };
             } else {
                 Transportations._TransportType = "xhr-polling";
-                window["Modules"] = Polling;
+                RongIMClient.Protobuf = Polling;
             }
-
         }
     }
-    // if (document.readyState == "interactive" || document.readyState == "loading" || document.readyState == "complete") {
-    //     new FeatureDectector();
-    // } else if (document.addEventListener) {
-    //     document.addEventListener("DOMContentLoaded", function() {
-    //         //TODO 替换callee
-    //         document.removeEventListener("DOMContentLoaded", <any>arguments.callee, false);
-    //         new FeatureDectector();
-    //     }, false);
-    // } else if (document.attachEvent) {
-    //     document.attachEvent("onreadystatechange", function() {
-    //         if (document.readyState == "interactive" || document.readyState == "loading" || document.readyState == "complete") {
-    //             document.detachEvent("onreadystatechange", arguments.callee);
-    //             new FeatureDectector();
-    //         }
-    //     });
-    // }
 }

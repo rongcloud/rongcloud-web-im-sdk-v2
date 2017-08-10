@@ -133,7 +133,7 @@ module RongIMLib {
             this.readTimeOut();
             if (pbtype && data && status == 0) {
                 try {
-                    data = CallbackMapping.getInstance().mapping(Modules[pbtype].decode(data), pbtype);
+                    data = CallbackMapping.getInstance().mapping(RongIMClient.Protobuf[pbtype].decode(data), pbtype);
                 } catch (e) {
                     this._timeout(ErrorCode.UNKNOWN);
                     return;
@@ -173,7 +173,7 @@ module RongIMLib {
                         qryOpt = RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
                     }
                     if (!qryOpt) {
-                        var modules = new Modules.GetUserInfoInput();
+                        var modules = new RongIMClient.Protobuf.GetUserInfoInput();
                         modules.setNothing(0);
                         RongIMClient.bridge.queryMsg("qryCfg", MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                             onSuccess: function(data: any) {

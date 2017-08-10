@@ -392,7 +392,7 @@ module RongIMLib {
             if (temp.type != 2) {
                 //普通消息
                 time = RongIMClient._storageProvider.getItem(this.userId) || '0';
-                modules = new Modules.SyncRequestMsg();
+                modules = new RongIMClient.Protobuf.SyncRequestMsg();
                 modules.setIspolling(false);
                 str = "pullMsg";
                 target = this.userId;
@@ -400,7 +400,7 @@ module RongIMLib {
                 //聊天室消息
                 target = chrmId || me.chatroomId;
                 time = RongIMClient._memoryStore.lastReadTime.get(target + Bridge._client.userId + "CST") || 0;
-                modules = new Modules.ChrmPullMsg();
+                modules = new RongIMClient.Protobuf.ChrmPullMsg();
                 modules.setCount(0);
                 str = "chrmPull";
                 if (!target) {
@@ -472,8 +472,7 @@ module RongIMLib {
         }
         //连接服务器
         connect(appKey: string, token: string, callback: any): Client {
-            if (!window["Modules"]) {
-                RongIMClient._memoryStore.hasModules = false;
+            if (!RongIMClient.Protobuf) {
                 return;
             }
             Bridge._client = new Navigation().connect(appKey, token, callback);
@@ -558,11 +557,11 @@ module RongIMLib {
                 RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
             } else {
                 if (msg.getTopic() == "s_ntf") {
-                    entity = Modules.NotifyMsg.decode(msg.getData());
+                    entity = RongIMClient.Protobuf.NotifyMsg.decode(msg.getData());
                     this._client.syncTime(entity.type, MessageUtil.int64ToTimestamp(entity.time), entity.chrmId);
                     return;
                 } else if (msg.getTopic() == "s_msg") {
-                    entity = Modules.DownStreamMessage.decode(msg.getData());
+                    entity = RongIMClient.Protobuf.DownStreamMessage.decode(msg.getData());
                     var timestamp = MessageUtil.int64ToTimestamp(entity.dataTime);
                     RongIMClient._storageProvider.setItem(this._client.userId, timestamp);
                     RongIMClient._memoryStore.lastReadTime.get(this._client.userId, timestamp);
@@ -570,7 +569,7 @@ module RongIMLib {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;
                     }
-                    entity = Modules.UpStreamMessage.decode(msg.getData());
+                    entity = RongIMClient.Protobuf.UpStreamMessage.decode(msg.getData());
                     var tmpTopic = msg.getTopic();
                     var tmpType = tmpTopic.substr(0, 2);
                     if (tmpType == "pp") {

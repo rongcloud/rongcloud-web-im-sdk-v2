@@ -1,31 +1,6 @@
 
 module RongIMLib {
 
-    export class ObjectTools {
-        static isEmpty(obj: any): boolean {
-            var empty: boolean = true;
-            for (var key in obj) {
-                empty = false;
-                break;
-            }
-            return empty;
-        }
-
-        static buildOptions(one: any, opts: any, protocol: string): any {
-            if (typeof one == 'object') {
-                for (var key in opts) {
-                    if (key == 'fileUploadURL' || key == 'fileQNURL' || key == 'protobuf' || key == 'long' || key == 'byteBuffer' || key == 'navi' || key == 'api' ||
-                        key == 'emojiImage' || key == 'voiceLibamr' || key == 'voicePCMdata' || key == 'voiceSwfobjct' || key == 'voicePlaySwf' || key == 'callFile') {
-                        one[key] && (opts[key] = protocol + one[key]);
-                    } else {
-                        one[key] && (opts[key] = one[key]);
-                    }
-                }
-            }
-            return opts;
-        }
-    }
-
     export class PublicServiceMap {
         publicServiceList: Array<any>;
         constructor() {
@@ -221,6 +196,65 @@ module RongIMLib {
             }
 
             me.xmlhttp.send(me.options.type ? "appKey=" + me.options.appKey + "&deviceId=" + me.options.deviceId + "&timestamp=" + me.options.timestamp + "&deviceInfo=" + me.options.deviceInfo + "&privateInfo=" + JSON.stringify(me.options.privateInfo) : me.options.base64);
+        }
+    }
+
+    export class RongUtil {
+        static noop(){}
+        static isEmpty(obj: any): boolean {
+            var empty: boolean = true;
+            for (var key in obj) {
+                empty = false;
+                break;
+            }
+            return empty;
+        }
+        static isObject(obj: any){
+            return Object.prototype.toString.call(obj) == '[object Object]';
+        }
+        static isArray(array: any){
+            return Object.prototype.toString.call(array) == '[object Array]';
+        }
+        static isFunction(fun: any){
+            return Object.prototype.toString.call(fun) == '[object Function]';
+        };
+        static stringFormat(tmpl:string, vals:any){
+            for (var i = 0, len = vals.length; i < len; i++) {
+                var val = vals[i], reg = new RegExp("\\{" + (i) + "\\}", "g");
+                tmpl = tmpl.replace(reg, val);
+            }
+            return tmpl;
+        }
+        static forEach(obj:any, callback:Function){
+            callback = callback || RongUtil.noop;
+            var loopObj = function(){
+                for(var key in obj){
+                    callback(obj[key], key);
+                }
+            };
+            var loopArr = function(){
+                for(var i = 0, len = obj.length; i < len; i++){
+                    callback(obj[i], i);
+                }
+            };
+            if (RongUtil.isObject(obj)) {
+                loopObj();
+            }
+            if (RongUtil.isArray(obj)) {
+                loopArr();
+            }
+        }
+        static extends(source:any, target:any, callback?:any, force?: boolean){
+            RongUtil.forEach(source, function(val:any, key:string){
+                var hasProto = (key in target);
+                if (force && hasProto) {
+                    target[key] = val;
+                }
+                if (!hasProto) {
+                   target[key] = val;
+                }
+            });
+            return target;
         }
     }
 }

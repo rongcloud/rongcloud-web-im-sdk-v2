@@ -1,8 +1,8 @@
 module RongIMLib {
     export class ServerDataProvider implements DataAccessProvider {
 
-        init(appKey: string): void {
-            new FeatureDectector();
+        init(appKey: string, callback?: Function): void {
+            new FeatureDectector(callback);
         }
 
         connect(token: string, callback: ConnectCallback) {
@@ -126,7 +126,7 @@ module RongIMLib {
             if(count <= 1) {
                 throw new Error("the count must be greater than 1.");
             }
-            var modules = new Modules.HistoryMessageInput(), self = this;
+            var modules = new RongIMClient.Protobuf.HistoryMessageInput(), self = this;
             modules.setTargetId(targetId);
             if (timestamp === 0 || timestamp > 0) {
                 modules.setDataTime(timestamp);
@@ -189,7 +189,7 @@ module RongIMLib {
         }
 
         getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number): void {
-            var modules = new Modules.RelationsInput(), self = this;
+            var modules = new RongIMClient.Protobuf.RelationsInput(), self = this;
             modules.setType(1);
             if (typeof count == 'undefined') {
                 modules.setCount(0);
@@ -229,7 +229,7 @@ module RongIMLib {
         }
 
         addMemberToDiscussion(discussionId: string, userIdList: string[], callback: OperationCallback): void {
-            var modules = new Modules.ChannelInvitationInput();
+            var modules = new RongIMClient.Protobuf.ChannelInvitationInput();
             modules.setUsers(userIdList);
             RongIMClient.bridge.queryMsg(0, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
                 onSuccess: function() {
@@ -246,7 +246,7 @@ module RongIMLib {
         }
 
         createDiscussion(name: string, userIdList: string[], callback: CreateDiscussionCallback): void {
-            var modules = new Modules.CreateDiscussionInput(), self = this;
+            var modules = new RongIMClient.Protobuf.CreateDiscussionInput(), self = this;
             modules.setName(name);
             RongIMClient.bridge.queryMsg(1, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(discussId: string) {
@@ -273,7 +273,7 @@ module RongIMLib {
         }
 
         getDiscussion(discussionId: string, callback: ResultCallback<Discussion>): void {
-            var modules = new Modules.ChannelInfoInput();
+            var modules = new RongIMClient.Protobuf.ChannelInfoInput();
             modules.setNothing(1);
             RongIMClient.bridge.queryMsg(4, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
                 onSuccess: function(data: any) {
@@ -290,19 +290,19 @@ module RongIMLib {
         }
 
         quitDiscussion(discussionId: string, callback: OperationCallback): void {
-            var modules = new Modules.LeaveChannelInput();
+            var modules = new RongIMClient.Protobuf.LeaveChannelInput();
             modules.setNothing(1);
             RongIMClient.bridge.queryMsg(7, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, callback);
         }
 
         removeMemberFromDiscussion(discussionId: string, userId: string, callback: OperationCallback): void {
-            var modules = new Modules.ChannelEvictionInput();
+            var modules = new RongIMClient.Protobuf.ChannelEvictionInput();
             modules.setUser(userId);
             RongIMClient.bridge.queryMsg(9, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, callback);
         }
 
         setDiscussionInviteStatus(discussionId: string, status: DiscussionInviteStatus, callback: OperationCallback): void {
-            var modules = new Modules.ModifyPermissionInput();
+            var modules = new RongIMClient.Protobuf.ModifyPermissionInput();
             modules.setOpenStatus(status.valueOf());
             RongIMClient.bridge.queryMsg(11, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
                 onSuccess: function(x: any) {
@@ -318,7 +318,7 @@ module RongIMLib {
         }
 
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback): void {
-            var modules = new Modules.RenameChannelInput();
+            var modules = new RongIMClient.Protobuf.RenameChannelInput();
             modules.setName(name);
             RongIMClient.bridge.queryMsg(12, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
                 onSuccess: function() {
@@ -333,10 +333,10 @@ module RongIMLib {
         }
 
         joinGroup(groupId: string, groupName: string, callback: OperationCallback): void {
-            var modules = new Modules.GroupInfo();
+            var modules = new RongIMClient.Protobuf.GroupInfo();
             modules.setId(groupId);
             modules.setName(groupName);
-            var _mod = new Modules.GroupInput();
+            var _mod = new RongIMClient.Protobuf.GroupInput();
             _mod.setGroupInfo([modules]);
             RongIMClient.bridge.queryMsg(6, MessageUtil.ArrayForm(_mod.toArrayBuffer()), groupId, {
                 onSuccess: function() {
@@ -351,7 +351,7 @@ module RongIMLib {
         }
 
         quitGroup(groupId: string, callback: OperationCallback): void {
-            var modules = new Modules.LeaveChannelInput();
+            var modules = new RongIMClient.Protobuf.LeaveChannelInput();
             modules.setNothing(1);
             RongIMClient.bridge.queryMsg(8, MessageUtil.ArrayForm(modules.toArrayBuffer()), groupId, {
                 onSuccess: function() {
@@ -370,20 +370,20 @@ module RongIMLib {
             for (var i: number = 0, part: Array<string> = [], info: Array<any> = [], len: number = groups.length; i < len; i++) {
                 if (part.length === 0 || !(groups[i].id in part)) {
                     part.push(groups[i].id);
-                    var groupinfo = new Modules.GroupInfo();
+                    var groupinfo = new RongIMClient.Protobuf.GroupInfo();
                     groupinfo.setId(groups[i].id);
                     groupinfo.setName(groups[i].name);
                     info.push(groupinfo);
                 }
             }
-            var modules = new Modules.GroupHashInput();
+            var modules = new RongIMClient.Protobuf.GroupHashInput();
             modules.setUserId(Bridge._client.userId);
             modules.setGroupHashCode(md5(part.sort().join("")));
             RongIMClient.bridge.queryMsg(13, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(result: number) {
                     //1为群信息不匹配需要发送给服务器进行同步，0不需要同步
                     if (result === 1) {
-                        var val = new Modules.GroupInput();
+                        var val = new RongIMClient.Protobuf.GroupInput();
                         val.setGroupInfo(info);
                         RongIMClient.bridge.queryMsg(20, MessageUtil.ArrayForm(val.toArrayBuffer()), Bridge._client.userId, {
                             onSuccess: function() {
@@ -412,13 +412,13 @@ module RongIMLib {
         }
 
         joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback): void {
-            var e = new Modules.ChrmInput();
+            var e = new RongIMClient.Protobuf.ChrmInput();
             e.setNothing(1);
             Bridge._client.chatroomId = chatroomId;
             RongIMClient.bridge.queryMsg(19, MessageUtil.ArrayForm(e.toArrayBuffer()), chatroomId, {
                 onSuccess: function() {
                     callback.onSuccess();
-                    var modules = new Modules.ChrmPullMsg();
+                    var modules = new RongIMClient.Protobuf.ChrmPullMsg();
                     messageCount == 0 && (messageCount = -1);
                     modules.setCount(messageCount);
                     modules.setSyncTime(0);
@@ -458,7 +458,7 @@ module RongIMLib {
         }
 
         getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>): void {
-            var modules = new Modules.QueryChatroomInfoInput();
+            var modules = new RongIMClient.Protobuf.QueryChatroomInfoInput();
             modules.setCount(count);
             modules.setOrder(order);
             RongIMClient.bridge.queryMsg("queryChrmI", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatRoomId, {
@@ -474,7 +474,7 @@ module RongIMLib {
         }
 
         quitChatRoom(chatroomId: string, callback: OperationCallback): void {
-            var e = new Modules.ChrmInput();
+            var e = new RongIMClient.Protobuf.ChrmInput();
             e.setNothing(1);
             RongIMClient.bridge.queryMsg(17, MessageUtil.ArrayForm(e.toArrayBuffer()), chatroomId, {
                 onSuccess: function() {
@@ -493,7 +493,7 @@ module RongIMLib {
         }
 
         getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:any):void{
-            var modules = new Modules.HistoryMsgInput();
+            var modules = new RongIMClient.Protobuf.HistoryMsgInput();
             modules.setTargetId(chatRoomId);
             var timestamp = RongIMClient._memoryStore.lastReadTime.get('chrhis_' + chatRoomId) || 0;
             modules.setTime(timestamp);
@@ -527,7 +527,7 @@ module RongIMLib {
         }
 
         addToBlacklist(userId: string, callback: OperationCallback): void {
-            var modules = new Modules.Add2BlackListInput();
+            var modules = new RongIMClient.Protobuf.Add2BlackListInput();
             modules.setUserId(userId);
             RongIMClient.bridge.queryMsg(21, MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                 onSuccess: function() {
@@ -540,13 +540,13 @@ module RongIMLib {
         }
 
         getBlacklist(callback: GetBlacklistCallback): void {
-            var modules = new Modules.QueryBlackListInput();
+            var modules = new RongIMClient.Protobuf.QueryBlackListInput();
             modules.setNothing(1);
             RongIMClient.bridge.queryMsg(23, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "QueryBlackListOutput");
         }
 
         getBlacklistStatus(userId: string, callback: ResultCallback<string>): void {
-            var modules = new Modules.BlackListStatusInput();
+            var modules = new RongIMClient.Protobuf.BlackListStatusInput();
             modules.setUserId(userId);
             RongIMClient.bridge.queryMsg(24, MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                 onSuccess: function(status: number) {
@@ -562,7 +562,7 @@ module RongIMLib {
         }
 
         removeFromBlacklist(userId: string, callback: OperationCallback): void {
-            var modules = new Modules.RemoveFromBlackListInput();
+            var modules = new RongIMClient.Protobuf.RemoveFromBlackListInput();
             modules.setUserId(userId);
             RongIMClient.bridge.queryMsg(22, MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                 onSuccess: function() {
@@ -579,7 +579,7 @@ module RongIMLib {
                 callback.onError(ErrorCode.QNTKN_FILETYPE_ERROR);
                 return;
             }
-            var modules = new Modules.GetQNupTokenInput();
+            var modules = new RongIMClient.Protobuf.GetQNupTokenInput();
             modules.setType(fileType);
             RongIMClient.bridge.queryMsg(30, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
                 onSuccess: function(data: any) {
@@ -600,7 +600,7 @@ module RongIMLib {
                 });
                 return;
             }
-            var modules = new Modules.GetQNdownloadUrlInput();
+            var modules = new RongIMClient.Protobuf.GetQNdownloadUrlInput();
             modules.setType(fileType);
             modules.setKey(fileName);
             if (oriName) {
@@ -634,7 +634,7 @@ module RongIMLib {
 
             var isGroup = (conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP);
 
-            var modules = new Modules.UpStreamMessage();
+            var modules = new RongIMClient.Protobuf.UpStreamMessage();
             if (mentiondMsg && isGroup) {
                 modules.setSessionId(7);
             } else {
@@ -826,7 +826,7 @@ module RongIMLib {
         }
 
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            var mod = new Modules.RelationsInput();
+            var mod = new RongIMClient.Protobuf.RelationsInput();
             mod.setType(conversationType);
             RongIMClient.bridge.queryMsg(27, MessageUtil.ArrayForm(mod.toArrayBuffer()), targetId, {
                 onSuccess: function() {
@@ -1076,7 +1076,7 @@ module RongIMLib {
                 callback.onError(error);
                 return;
             }
-            var modules = new Modules.BlockPushInput();
+            var modules = new RongIMClient.Protobuf.BlockPushInput();
             modules.setBlockeeId(targetId);
             
             var userId = RongIMLib.Bridge._client.userId;
@@ -1126,7 +1126,7 @@ module RongIMLib {
                 return;
             }
 
-            var modules = new Modules.BlockPushInput();
+            var modules = new RongIMClient.Protobuf.BlockPushInput();
             modules.setBlockeeId(targetId);
             
             var userId = RongIMLib.Bridge._client.userId;
