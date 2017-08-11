@@ -60,7 +60,8 @@ module RongIMLib {
                 return support;
             };
             var supportUserData = function(){
-                // return document.documentElement.addBehavior;
+                var element:any = document.documentElement;
+                return element.addBehavior;
             };
             if (supportLocalStorage()) {
                 RongIMClient._storageProvider = new RongIMLib.LocalStorageProvider();
