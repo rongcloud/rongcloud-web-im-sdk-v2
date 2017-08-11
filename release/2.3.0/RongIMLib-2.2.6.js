@@ -1,12 +1,21 @@
 (function(global, factory) {
-  if (typeof exports === 'object' && typeof module !== 'undefined') {
-    module.exports = factory();
-  } else if (typeof define === 'function' && define.amd) {
-    define(factory);
-  } else {
-    global.RongIMLib = factory();
-    global.RongIMClient = RongIMLib.RongIMClient;
-  }
+    if (typeof exports === 'object' && typeof module !== 'undefined') {
+        module.exports = factory();
+    } else if (typeof define === 'function' && define.amd) {
+        define(factory);
+    } else {
+        var tempIMLib = factory();
+        var tempClient = tempIMLib.RongIMClient;
+        var isExists = (!!global.RongIMLib);
+        if (isExists) {
+            var currentClient = RongIMLib.RongIMClient || {};
+            for(var key in currentClient){
+                tempClient[key] = currentClient[key];
+            }
+        }
+        global.RongIMLib = tempIMLib;
+        global.RongIMClient = tempClient;
+    }
 }(this, function() {
   var Polling = {
         DeleteMsgInput:function(){

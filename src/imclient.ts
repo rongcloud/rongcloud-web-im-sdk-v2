@@ -98,11 +98,11 @@ module RongIMLib {
                 if (hasPath) {
                     path = path.substr(0, index);
                 }
-                return path;
+                return RongUtil.stringFormat(pathTmpl, [protocol, path]);
             };
             RongUtil.forEach(_serverPath, function(path: any, key: string){
                 var hasProto = (key in options);
-                path = hasProto ? formatProtoclPath(path) : path;
+                path = hasProto ? formatProtoclPath(options[key]) : path;
                 options[key] = path;
             });
             
