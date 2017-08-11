@@ -162,13 +162,7 @@ module RongIMLib {
                     });
                 },
                 onError: function(error: ErrorCode) {
-                    setTimeout(function() {
-                        if (error === ErrorCode.TIMEOUT) {
-                            callback.onError(error);
-                        } else {
-                            callback.onSuccess([], false);
-                        }
-                    });
+                    callback.onError(error);
                 }
             }, "HistoryMessagesOuput");
         }
@@ -219,11 +213,7 @@ module RongIMLib {
                     }
                 },
                 onError: function(error: ErrorCode) {
-                    if (error === ErrorCode.TIMEOUT) {
-                        callback.onError(error);
-                    } else {
-                        callback.onSuccess([]);
-                    }
+                    callback.onError(error);
                 }
             }, "RelationsOutput");
         }
@@ -237,10 +227,8 @@ module RongIMLib {
                         callback.onSuccess();
                     });
                 },
-                onError: function() {
-                    setTimeout(function() {
-                        callback.onError(ErrorCode.JOIN_IN_DISCUSSION);
-                    });
+                onError: function(error: ErrorCode) {
+                    callback.onError(error);
                 }
             });
         }
@@ -264,9 +252,9 @@ module RongIMLib {
                         callback.onSuccess(discussId);
                     });
                 },
-                onError: function() {
+                onError: function(error: ErrorCode) {
                     setTimeout(function() {
-                        callback.onError(ErrorCode.CREATE_DISCUSSION);
+                        callback.onError(error);
                     });
                 }
             }, "CreateDiscussionOutput");
@@ -309,9 +297,9 @@ module RongIMLib {
                     setTimeout(function() {
                         callback.onSuccess();
                     });
-                }, onError: function() {
+                }, onError: function(error: ErrorCode) {
                     setTimeout(function() {
-                        callback.onError(ErrorCode.INVITE_DICUSSION);
+                        callback.onError(error);
                     });
                 }
             });
@@ -330,85 +318,6 @@ module RongIMLib {
                     callback.onError(errcode);
                 }
             });
-        }
-
-        joinGroup(groupId: string, groupName: string, callback: OperationCallback): void {
-            var modules = new RongIMClient.Protobuf.GroupInfo();
-            modules.setId(groupId);
-            modules.setName(groupName);
-            var _mod = new RongIMClient.Protobuf.GroupInput();
-            _mod.setGroupInfo([modules]);
-            RongIMClient.bridge.queryMsg(6, MessageUtil.ArrayForm(_mod.toArrayBuffer()), groupId, {
-                onSuccess: function() {
-                    setTimeout(function() {
-                        callback.onSuccess();
-                    });
-                },
-                onError: function(errcode: ErrorCode) {
-                    callback.onError(errcode);
-                }
-            }, "GroupOutput");
-        }
-
-        quitGroup(groupId: string, callback: OperationCallback): void {
-            var modules = new RongIMClient.Protobuf.LeaveChannelInput();
-            modules.setNothing(1);
-            RongIMClient.bridge.queryMsg(8, MessageUtil.ArrayForm(modules.toArrayBuffer()), groupId, {
-                onSuccess: function() {
-                    setTimeout(function() {
-                        callback.onSuccess();
-                    });
-                },
-                onError: function(errcode: ErrorCode) {
-                    callback.onError(errcode);
-                }
-            });
-        }
-
-        syncGroup(groups: Array<Group>, callback: OperationCallback): void {
-            //去重操作
-            for (var i: number = 0, part: Array<string> = [], info: Array<any> = [], len: number = groups.length; i < len; i++) {
-                if (part.length === 0 || !(groups[i].id in part)) {
-                    part.push(groups[i].id);
-                    var groupinfo = new RongIMClient.Protobuf.GroupInfo();
-                    groupinfo.setId(groups[i].id);
-                    groupinfo.setName(groups[i].name);
-                    info.push(groupinfo);
-                }
-            }
-            var modules = new RongIMClient.Protobuf.GroupHashInput();
-            modules.setUserId(Bridge._client.userId);
-            modules.setGroupHashCode(md5(part.sort().join("")));
-            RongIMClient.bridge.queryMsg(13, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(result: number) {
-                    //1为群信息不匹配需要发送给服务器进行同步，0不需要同步
-                    if (result === 1) {
-                        var val = new RongIMClient.Protobuf.GroupInput();
-                        val.setGroupInfo(info);
-                        RongIMClient.bridge.queryMsg(20, MessageUtil.ArrayForm(val.toArrayBuffer()), Bridge._client.userId, {
-                            onSuccess: function() {
-                                setTimeout(function() {
-                                    callback.onSuccess();
-                                });
-                            },
-                            onError: function() {
-                                setTimeout(function() {
-                                    callback.onError(ErrorCode.GROUP_MATCH_ERROR);
-                                });
-                            }
-                        }, "GroupOutput");
-                    } else {
-                        setTimeout(function() {
-                            callback.onSuccess();
-                        });
-                    }
-                },
-                onError: function() {
-                    setTimeout(function() {
-                        callback.onError(ErrorCode.GROUP_SYNC_ERROR);
-                    });
-                }
-            }, "GroupHashOutput");
         }
 
         joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback): void {
@@ -449,9 +358,9 @@ module RongIMLib {
                         }
                     }, "DownStreamMessages");
                 },
-                onError: function() {
+                onError: function(error: ErrorCode) {
                     setTimeout(function() {
-                        callback.onError(ErrorCode.CHARTOOM_JOIN_ERROR);
+                        callback.onError(error);
                     });
                 }
             }, "ChrmOutput");
@@ -512,11 +421,7 @@ module RongIMLib {
                 },
                 onError: function(error: ErrorCode) {
                     setTimeout(function() {
-                        if (error === ErrorCode.TIMEOUT) {
-                            callback.onError(error);
-                        } else {
-                            callback.onSuccess([], false);
-                        }
+                        callback.onError(error);
                     });
                 }
             }, "HistoryMsgOuput");
@@ -533,8 +438,8 @@ module RongIMLib {
                 onSuccess: function() {
                     callback.onSuccess();
                 },
-                onError: function() {
-                    callback.onError(ErrorCode.BLACK_ADD_ERROR);
+                onError: function(error: ErrorCode) {
+                    callback.onError(error);
                 }
             });
         }
@@ -553,9 +458,9 @@ module RongIMLib {
                     setTimeout(function() {
                         callback.onSuccess(BlacklistStatus[status]);
                     });
-                }, onError: function() {
+                }, onError: function(error: ErrorCode) {
                     setTimeout(function() {
-                        callback.onError(ErrorCode.BLACK_GETSTATUS_ERROR);
+                        callback.onError(error);
                     });
                 }
             });
@@ -568,8 +473,8 @@ module RongIMLib {
                 onSuccess: function() {
                     callback.onSuccess();
                 },
-                onError: function() {
-                    callback.onError(ErrorCode.BLACK_REMOVE_ERROR);
+                onError: function(error: ErrorCode) {
+                    callback.onError(error);
                 }
             });
         }
@@ -711,9 +616,10 @@ module RongIMLib {
                         var sentkey: string = Bridge._client.userId + reqMsg.messageUId + "SENT";
                         RongIMClient._storageProvider.setItem(sentkey, JSON.stringify({ count: 0, dealtime: data.timestamp, userIds: {} }));
                     }
-                    var cacheConversation = RongIMClient._memoryStore.converStore;
-                    cacheConversation.sentStatus = msg.sentStatus;
+                   
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
+                        var cacheConversation = RongIMClient._memoryStore.converStore;
+                        cacheConversation.sentStatus = msg.sentStatus;
                         cacheConversation.latestMessage = msg;
                         me.updateConversation(cacheConversation);
                         RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, {
@@ -727,9 +633,9 @@ module RongIMLib {
                             },
                             onError: function() { }
                         });
+                        me.updateConversation(cacheConversation);
                     }
                     setTimeout(function() {
-                        me.updateConversation(cacheConversation);
                         msg.sentTime = data.timestamp;
                         sendCallback.onSuccess(msg);
                     });
@@ -839,9 +745,9 @@ module RongIMLib {
                         }
                     }
                     callback.onSuccess(true);
-                }, onError: function() {
+                }, onError: function(error: ErrorCode) {
                     setTimeout(function() {
-                      callback.onError(ErrorCode.CONVER_REMOVE_ERROR);
+                      callback.onError(error);
                     });
                 }
             });
@@ -934,7 +840,7 @@ module RongIMLib {
                         callback.onSuccess(list);
                     },
                     onError: function(errorcode: ErrorCode) {
-                        callback.onSuccess([]);
+                        callback.onError(errorcode);
                     }
                 }, conversationTypes, count,isHidden);
         }

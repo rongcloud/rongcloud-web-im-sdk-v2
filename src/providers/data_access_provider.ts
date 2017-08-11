@@ -47,12 +47,6 @@ module RongIMLib {
 
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback): void;
 
-        joinGroup(groupId: string, groupName: string, callback: OperationCallback): void;
-
-        quitGroup(groupId: string, callback: OperationCallback): void;
-
-        syncGroup(groups: Array<Group>, callback: OperationCallback): void;
-
         joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback): void;
 
         getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>): void;
