@@ -119,6 +119,7 @@ module RongIMLib {
             var _defaultOpts:{[key:string]:any} = {
                 isPolling: isPolling,
                 wsScheme: wsScheme,
+                protocol: protocol,
                 openMp: true
             };
             
@@ -133,7 +134,6 @@ module RongIMLib {
             var tempStore:any = {
                 token: "",
                 callback: null,
-                global: window,
                 lastReadTime: new LimitableMap(),
                 conversationList: [],
                 appKey: appKey,
@@ -142,7 +142,6 @@ module RongIMLib {
                 deltaTime: 0,
                 filterMessages: [],
                 isSyncRemoteConverList: true,
-                isUseWebSQLProvider: false,
                 otherDevice: false,
                 custStore: {},
                 converStore: { latestMessage: {} },
@@ -157,7 +156,6 @@ module RongIMLib {
             RongIMClient._memoryStore = tempStore;
             
             if (dataAccessProvider && Object.prototype.toString.call(dataAccessProvider) == "[object Object]") {
-                // RongIMClient._memoryStore.isUseWebSQLProvider = true;  处理不同存储方案
                 RongIMClient._dataAccessProvider = dataAccessProvider;
             } else {
                 RongIMClient._dataAccessProvider = new ServerDataProvider();

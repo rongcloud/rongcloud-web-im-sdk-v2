@@ -25,13 +25,8 @@ module.exports = (grunt) ->
 
     concat:
       dist:
-        src: ['./src/internal/transportation/xhrpolling-min.js','./src/3rd/md5.min.js','./dist/RongIMLib.js']
+        src: ['./src/exports/header.js','./src/internal/transportation/xhrpolling-min.js','./src/3rd/md5.min.js','./dist/RongIMLib.js','./src/exports/footer.js']
         dest: './dist/RongIMLib.js'
-
-    # concat:
-    #   dist:
-    #     src: ['./src/extensions/voices/pcmdata.min.js', './src/extensions/voices/libamr-min-new.js', './build/extensions/voices/voice.js']
-    #     dest: './dist/voice-release.js'
 
     connect:
       server:
@@ -43,7 +38,7 @@ module.exports = (grunt) ->
     uglify:
       release:
         options:
-          sourceMap: true
+          sourceMap: false
         src: './dist/RongIMLib.js'
         dest: './dist/RongIMLib.min.js'
 
@@ -90,11 +85,10 @@ module.exports = (grunt) ->
           module: 'amd'
           noImplicitAny: true
           removeComments: false
-          sourceMap: true
+          sourceMap: false
           suppressImplicitAnyIndexErrors: false
           target: 'es3'
         src: ['./src/**/*.ts','!./src/extensions/*.ts','!./src/extensions/**/*.ts','!./src/util/script_loader.ts']
-        # src: ['./src/**/*.ts','!./src/extensions/*.ts','!./src/extensions/**/*.ts','!./src/util/script_loader.ts','!./src/util/feature_detector.ts',"!./src/internal/**/*.ts","!./src/providers/data_access/websql/*.ts","!./src/providers/data_access/server.ts"]
         dest: './dist/RongIMLib.js'
 
   # These plugins provide necessary tasks.

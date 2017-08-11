@@ -633,9 +633,9 @@ module RongIMLib {
                             },
                             onError: function() { }
                         });
-                        me.updateConversation(cacheConversation);
                     }
                     setTimeout(function() {
+                        cacheConversation && me.updateConversation(cacheConversation);
                         msg.sentTime = data.timestamp;
                         sendCallback.onSuccess(msg);
                     });
