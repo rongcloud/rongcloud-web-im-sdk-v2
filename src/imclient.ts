@@ -85,26 +85,15 @@ module RongIMLib {
                 _serverPath[key] = RongUtil.stringFormat(pathTmpl, [protocol, path]);
             });
 
-            var formatProtoclPath = function(path:string){
-                var flag = '://';
-                var index = path.indexOf(flag);
-                var hasProtocol = (index > -1);
-                
-                if (hasProtocol) {
-                    index += flag.length;
-                    path = path.substring(index);
-                }
-                
-                index = path.indexOf('/');
-                var hasPath = (index > -1);
-                if (hasPath) {
-                    path = path.substr(0, index);
-                }
-                return RongUtil.stringFormat(pathTmpl, [protocol, path]);
-            };
             RongUtil.forEach(_serverPath, function(path: any, key: string){
                 var hasProto = (key in options);
-                path = hasProto ? formatProtoclPath(options[key]) : path;
+                var config = {
+                    path: options[key],
+                    tmpl: pathTmpl,
+                    protocol: protocol,
+                    sub: true
+                };
+                path = hasProto ? RongUtil.formatProtoclPath(config) : path;
                 options[key] = path;
             });
             
@@ -283,8 +272,8 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.connect(token, callback, userId);
         }
 
-        static reconnect(callback: ConnectCallback) {
-            RongIMClient._dataAccessProvider.reconnect(callback);
+        static reconnect(callback: ConnectCallback, config?: any) {
+            RongIMClient._dataAccessProvider.reconnect(callback, config);
         }
         /**
          * 注册消息类型，用于注册用户自定义的消息。

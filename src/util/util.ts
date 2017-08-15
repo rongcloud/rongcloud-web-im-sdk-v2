@@ -256,5 +256,63 @@ module RongIMLib {
             });
             return target;
         }
+        static createXHR(){
+            var item:{[key: string]: any} = {
+                XMLHttpRequest: function(){
+                    return new XMLHttpRequest();
+                },
+                XDomainRequest: function(){
+                    return new XDomainRequest();
+                },
+                ActiveXObject: function(){
+                    return new ActiveXObject('Microsoft.XMLHTTP');
+                }
+            };
+            var isXHR = (typeof XMLHttpRequest == 'function');
+            var isXDR = (typeof XDomainRequest == 'function');
+            var key = isXHR ? 'XMLHttpRequest' : isXDR ? 'XDomainRequest' : 'ActiveXObject'
+            return item[key]();
+        }
+        static request(opts: any){
+            var url = opts.url;
+            var success = opts.success;
+            var error = opts.error;
+            var method = opts.method || 'GET';
+            var xhr = RongUtil.createXHR();
+            xhr.onreadystatechange = function(){
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        success();
+                    }else{
+                        error();
+                    }
+                }
+            };
+            xhr.open(method, url, true);
+            xhr.send(null);
+        }
+        static formatProtoclPath(config: any){
+            var path = config.path;
+            var protocol = config.protocol;
+            var tmpl = config.tmpl || '{0}{1}';
+            var sub = config.sub;
+            
+            var flag = '://';
+            var index = path.indexOf(flag);
+            var hasProtocol = (index > -1);
+            
+            if (hasProtocol) {
+                index += flag.length;
+                path = path.substring(index);
+            }
+            if (sub) {
+                index = path.indexOf('/');
+                var hasPath = (index > -1);
+                if (hasPath) {
+                    path = path.substr(0, index);
+                }
+            }
+            return RongUtil.stringFormat(tmpl, [protocol, path]);
+        };
     }
 }

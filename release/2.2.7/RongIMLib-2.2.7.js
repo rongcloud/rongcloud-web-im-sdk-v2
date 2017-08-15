@@ -1,5 +1,5 @@
 /*
-    说明: header.js 和 footer.js 合并前有语法错误，请忽略
+    说明: 请勿修改 header.js 和 footer.js
     用途: 自动拼接暴露方式
     命令: grunt release 中 concat
 */
@@ -1777,10 +1777,11 @@ var RongIMLib;
             }
             options = options || {};
             var protocol = "//", wsScheme = 'ws://';
-            if (document.location.protocol == "file:") {
+            var protocols = 'http:,https:';
+            if (protocols.indexOf(location.protocol) == -1) {
                 protocol = 'http://';
             }
-            if (document.location.protocol == 'https:') {
+            if (location.protocol == 'https:') {
                 wsScheme = 'wss://';
             }
             var isPolling = false;
@@ -1805,7 +1806,8 @@ var RongIMLib;
                 return support;
             };
             var supportUserData = function () {
-                // return document.documentElement.addBehavior;
+                var element = document.documentElement;
+                return element.addBehavior;
             };
             if (supportLocalStorage()) {
                 RongIMClient._storageProvider = new RongIMLib.LocalStorageProvider();
@@ -1824,24 +1826,15 @@ var RongIMLib;
             RongIMLib.RongUtil.forEach(_serverPath, function (path, key) {
                 _serverPath[key] = RongIMLib.RongUtil.stringFormat(pathTmpl, [protocol, path]);
             });
-            var formatProtoclPath = function (path) {
-                var flag = '://';
-                var index = path.indexOf(flag);
-                var hasProtocol = (index > -1);
-                if (hasProtocol) {
-                    index += flag.length;
-                    path = path.substring(index);
-                }
-                index = path.indexOf('/');
-                var hasPath = (index > -1);
-                if (hasPath) {
-                    path = path.substr(0, index);
-                }
-                return RongIMLib.RongUtil.stringFormat(pathTmpl, [protocol, path]);
-            };
             RongIMLib.RongUtil.forEach(_serverPath, function (path, key) {
                 var hasProto = (key in options);
-                path = hasProto ? formatProtoclPath(options[key]) : path;
+                var config = {
+                    path: options[key],
+                    tmpl: pathTmpl,
+                    protocol: protocol,
+                    sub: true
+                };
+                path = hasProto ? RongIMLib.RongUtil.formatProtoclPath(config) : path;
                 options[key] = path;
             });
             var _sourcePath = {
@@ -2006,8 +1999,8 @@ var RongIMLib;
             RongIMLib.CheckParam.getInstance().check(["string", "object", "string|null|object|global|undefined"], "connect", true, arguments);
             RongIMClient._dataAccessProvider.connect(token, callback, userId);
         };
-        RongIMClient.reconnect = function (callback) {
-            RongIMClient._dataAccessProvider.reconnect(callback);
+        RongIMClient.reconnect = function (callback, config) {
+            RongIMClient._dataAccessProvider.reconnect(callback, config);
         };
         /**
          * 注册消息类型，用于注册用户自定义的消息。
@@ -6494,6 +6487,7 @@ var RongIMLib;
             msg.operation && (this.operation = msg.operation);
             msg.data && (this.data = msg.data);
             msg.message && (this.message = msg.message);
+            msg.extra && (this.extra = msg.extra);
         }
         GroupNotificationMessage.prototype.encode = function () {
             return JSON.stringify(RongIMLib.ModelUtil.modelClone(this));
@@ -7132,9 +7126,78 @@ var RongIMLib;
                 }
             });
         };
-        ServerDataProvider.prototype.reconnect = function (callback) {
+        /*
+            config.auto: 默认 false, true 启用自动重连，启用则为必选参数
+            config.rate: 重试频率 [100, 1000, 3000, 6000, 10000, 18000] 单位为毫秒，可选
+            config.url: 网络嗅探地址 [http(s)://]cdn.ronghub.com/RongIMLib-2.2.6.min.js 可选
+        */
+        ServerDataProvider.prototype.reconnect = function (callback, config) {
             if (RongIMLib.Bridge._client && RongIMLib.Bridge._client.channel && RongIMLib.Bridge._client.channel.connectionStatus != RongIMLib.ConnectionStatus.CONNECTED && RongIMLib.Bridge._client.channel.connectionStatus != RongIMLib.ConnectionStatus.CONNECTING) {
-                RongIMLib.RongIMClient.bridge.reconnect(callback);
+                config = config || {};
+                var key = config.auto ? 'auto' : 'custom';
+                var handler = {
+                    auto: function () {
+                        var repeatConnect = function (options) {
+                            var step = options.step();
+                            var done = 'done';
+                            var url = options.url;
+                            var ping = function () {
+                                RongIMLib.RongUtil.request({
+                                    url: url,
+                                    success: function () {
+                                        options.done();
+                                    },
+                                    error: function () {
+                                        repeat();
+                                    }
+                                });
+                            };
+                            var repeat = function () {
+                                var next = step();
+                                if (next == 'done') {
+                                    var error = RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE;
+                                    options.done(error);
+                                    return;
+                                }
+                                setTimeout(ping, next);
+                            };
+                            repeat();
+                        };
+                        var protocol = RongIMLib.RongIMClient._memoryStore.depend.protocol;
+                        var url = config.url || 'cdn.ronghub.com/RongIMLib-2.2.6.min.js';
+                        var pathConfig = {
+                            protocol: protocol,
+                            path: url
+                        };
+                        url = RongIMLib.RongUtil.formatProtoclPath(pathConfig);
+                        var rate = config.rate || [100, 1000, 3000, 6000, 10000, 18000];
+                        //结束标识
+                        rate.push('done');
+                        var opts = {
+                            url: url,
+                            step: function () {
+                                var index = 0;
+                                return function () {
+                                    var time = rate[index];
+                                    index++;
+                                    return time;
+                                };
+                            },
+                            done: function (error) {
+                                if (error) {
+                                    callback.onError(error);
+                                    return;
+                                }
+                                RongIMLib.RongIMClient.bridge.reconnect(callback);
+                            }
+                        };
+                        repeatConnect(opts);
+                    },
+                    custom: function () {
+                        RongIMLib.RongIMClient.bridge.reconnect(callback);
+                    }
+                };
+                handler[key]();
             }
         };
         ServerDataProvider.prototype.logout = function () {
@@ -7454,9 +7517,13 @@ var RongIMLib;
             modules.setCount(count);
             modules.setOrder(order);
             RongIMLib.RongIMClient.bridge.queryMsg("queryChrmI", RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), chatRoomId, {
-                onSuccess: function (list) {
+                onSuccess: function (ret) {
+                    var userInfos = ret.userInfos;
+                    userInfos.forEach(function (item) {
+                        item.time = RongIMLib.MessageUtil.int64ToTimestamp(item.time);
+                    });
                     setTimeout(function () {
-                        callback.onSuccess(list);
+                        callback.onSuccess(ret);
                     });
                 },
                 onError: function (errcode) {
@@ -8201,7 +8268,7 @@ var RongIMLib;
             /**
             ConnectionStatus_TokenIncorrect = 31004,
             ConnectionStatus_Connected = 0,
-            ConnectionStatus_KickedOff = 6,	// 其他设备登录
+            ConnectionStatus_KickedOff = 6, // 其他设备登录
             ConnectionStatus_Connecting = 10,// 连接中
             ConnectionStatus_SignUp = 12, // 未登录
             ConnectionStatus_NetworkUnavailable = 1, // 连接断开
@@ -9168,7 +9235,7 @@ var RongIMLib;
                     JSON.rx_escapable = new RegExp('[\\\"\\\\\"\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]', "g");
                     JSON.meta = {
                         "\b": "\\b",
-                        "	": "\\t",
+                        "   ": "\\t",
                         "\n": "\\n",
                         "\f": "\\f",
                         "\r": "\\r",
@@ -9449,13 +9516,71 @@ var RongIMLib;
             });
             return target;
         };
+        RongUtil.createXHR = function () {
+            var item = {
+                XMLHttpRequest: function () {
+                    return new XMLHttpRequest();
+                },
+                XDomainRequest: function () {
+                    return new XDomainRequest();
+                },
+                ActiveXObject: function () {
+                    return new ActiveXObject('Microsoft.XMLHTTP');
+                }
+            };
+            var isXHR = (typeof XMLHttpRequest == 'function');
+            var isXDR = (typeof XDomainRequest == 'function');
+            var key = isXHR ? 'XMLHttpRequest' : isXDR ? 'XDomainRequest' : 'ActiveXObject';
+            return item[key]();
+        };
+        RongUtil.request = function (opts) {
+            var url = opts.url;
+            var success = opts.success;
+            var error = opts.error;
+            var method = opts.method || 'GET';
+            var xhr = RongUtil.createXHR();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        success();
+                    }
+                    else {
+                        error();
+                    }
+                }
+            };
+            xhr.open(method, url, true);
+            xhr.send(null);
+        };
+        RongUtil.formatProtoclPath = function (config) {
+            var path = config.path;
+            var protocol = config.protocol;
+            var tmpl = config.tmpl || '{0}{1}';
+            var sub = config.sub;
+            var flag = '://';
+            var index = path.indexOf(flag);
+            var hasProtocol = (index > -1);
+            if (hasProtocol) {
+                index += flag.length;
+                path = path.substring(index);
+            }
+            if (sub) {
+                index = path.indexOf('/');
+                var hasPath = (index > -1);
+                if (hasPath) {
+                    path = path.substr(0, index);
+                }
+            }
+            return RongUtil.stringFormat(tmpl, [protocol, path]);
+        };
+        ;
         return RongUtil;
     })();
     RongIMLib.RongUtil = RongUtil;
 })(RongIMLib || (RongIMLib = {}));
 
 /*
-    说明: header.js 和 footer.js 合并前有语法错误，请忽略
+    说明: 请勿修改 header.js 和 footer.js
     用途: 自动拼接暴露方式
     命令: grunt release 中 concat
 */

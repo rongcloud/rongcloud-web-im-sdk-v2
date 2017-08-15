@@ -5,7 +5,7 @@ module RongIMLib {
 
         connect(token: string, callback: ConnectCallback, userId?: string): void;
 
-        reconnect(callback: ConnectCallback): void;
+        reconnect(callback: ConnectCallback, config?: any): void;
 
         logout(): void;
 

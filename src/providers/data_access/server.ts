@@ -36,10 +36,79 @@ module RongIMLib {
                 }
             });
         }
-
-        reconnect(callback: ConnectCallback): void {
+        /*
+            config.auto: 默认 false, true 启用自动重连，启用则为必选参数
+            config.rate: 重试频率 [100, 1000, 3000, 6000, 10000, 18000] 单位为毫秒，可选
+            config.url: 网络嗅探地址 [http(s)://]cdn.ronghub.com/RongIMLib-2.2.6.min.js 可选
+        */
+        reconnect(callback: ConnectCallback, config?: any): void {
             if (Bridge._client && Bridge._client.channel && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
-                RongIMClient.bridge.reconnect(callback);
+                config = config || {};
+                var key = config.auto ? 'auto' : 'custom';
+                var handler:{[key: string]: any} = {
+                    auto: function(){
+                        var repeatConnect = function(options: any){
+                            var step = options.step();
+                            var done = 'done';
+                            var url = options.url;
+                            var ping = function(){
+                                RongUtil.request({
+                                    url: url,
+                                    success: function(){
+                                        options.done();
+                                    },
+                                    error: function(){
+                                        repeat();
+                                    }
+                                });
+                            };
+                            var repeat = function(){
+                                var next = step();
+                                if (next == 'done') {
+                                    var error = ConnectionStatus.NETWORK_UNAVAILABLE;
+                                    options.done(error);
+                                    return;
+                                }
+                                setTimeout(ping, next);
+                            };
+                            repeat();
+                        }
+                        var protocol = RongIMClient._memoryStore.depend.protocol;
+                        var url = config.url || 'cdn.ronghub.com/RongIMLib-2.2.6.min.js';
+                        var pathConfig = {
+                            protocol: protocol,
+                            path: url
+                        };
+                        url = RongUtil.formatProtoclPath(pathConfig);
+                        var rate = config.rate || [100, 1000, 3000, 6000, 10000, 18000];
+                        //结束标识
+                        rate.push('done');
+
+                        var opts = {
+                            url: url,
+                            step: function(){
+                                var index = 0;
+                                return function(){
+                                    var time = rate[index];
+                                    index++;
+                                    return time;
+                                }
+                            },
+                            done: function(error: ConnectionStatus){
+                                if (error) {
+                                    callback.onError(error);
+                                    return;
+                                }
+                                RongIMClient.bridge.reconnect(callback);
+                            }
+                        };
+                        repeatConnect(opts);
+                    },
+                    custom: function(){
+                        RongIMClient.bridge.reconnect(callback);
+                    }
+                };
+                handler[key]();
             }
         }
 
