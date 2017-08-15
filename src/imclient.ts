@@ -98,7 +98,7 @@ module RongIMLib {
             });
             
             var _sourcePath:{[key:string]:any} = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.1.6.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.2.7.min.js'
             };
 
             RongUtil.forEach(_sourcePath, function(path: string, key: string){

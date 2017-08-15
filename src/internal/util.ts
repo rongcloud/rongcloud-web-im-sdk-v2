@@ -55,7 +55,7 @@ var typeMapping: { [s: string]: any } = {
 module RongIMLib {
     /**
      * 通道标识类
-     */
+     */ 
     export class Transportations {
         static _TransportType: string = Socket.WEBSOCKET;
     }
@@ -65,11 +65,21 @@ module RongIMLib {
         // static schemeArrs: Array<any> = [["http", "ws"], ["https", "wss"]];
         static sign: any = { converNum: 1, msgNum: 1, isMsgStart: true, isConvStart: true };
         static supportLargeStorage(): boolean {
-            if (window.localStorage) {
-                return true;
-            } else {
-                return false;
+            var support = false;
+            if(typeof localStorage == 'object'){
+                try {
+                    var key = 'RC_TMP_KEY', value = 'RC_TMP_VAL';
+                    localStorage.setItem(key, value);
+                    var localVal = localStorage.getItem(key);
+                    if(localVal == value){
+                        support = true;
+                    }
+                } catch (err) {
+                    console.log('localStorage is disabled.');
+                }
+                
             }
+            return support;
         }
 
 
