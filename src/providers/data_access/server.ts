@@ -371,9 +371,13 @@ module RongIMLib {
             modules.setCount(count);
             modules.setOrder(order);
             RongIMClient.bridge.queryMsg("queryChrmI", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatRoomId, {
-                onSuccess: function(list: any[]) {
+                onSuccess: function(ret: any) {
+                    var userInfos = ret.userInfos;
+                    userInfos.forEach(function(item:any){
+                        item.time = RongIMLib.MessageUtil.int64ToTimestamp(item.time)
+                    });
                     setTimeout(function() {
-                        callback.onSuccess(list);
+                        callback.onSuccess(ret);
                     });
                 },
                 onError: function(errcode: ErrorCode) {

@@ -30,10 +30,11 @@ module RongIMLib {
 
             options = options || {};
             var protocol: string = "//", wsScheme = 'ws://';
-            if (document.location.protocol == "file:") {
+            var protocols = 'http:,https:';
+            if (protocols.indexOf(location.protocol) == -1) {
                 protocol = 'http://';
             } 
-            if (document.location.protocol == 'https:') {
+            if (location.protocol == 'https:') {
                 wsScheme = 'wss://';
             }
             
