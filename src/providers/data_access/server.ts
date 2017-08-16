@@ -122,7 +122,7 @@ module RongIMLib {
         }
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback): void {
             var rspkey: string = Bridge._client.userId + conversationType + targetId + 'RECEIVED', me = this;
-            if (MessageUtil.supportLargeStorage()) {
+            if (RongUtil.supportLocalStorage()) {
                 var valObj: any = JSON.parse(RongIMClient._storageProvider.getItem(rspkey));
                 if (valObj) {
                     var vals: any[] = [];
@@ -208,7 +208,7 @@ module RongIMLib {
                     RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
                     var list = data.list.reverse(), tempMsg: Message = null, tempDir: any;
                     var read = RongIMLib.SentStatus.READ;
-                    if (MessageUtil.supportLargeStorage()) {
+                    if (RongUtil.supportLocalStorage()) {
                         for (var i = 0, len = list.length; i < len; i++) {
                             tempMsg = MessageUtil.messageParser(list[i]);
                             tempDir = JSON.parse(RongIMClient._storageProvider.getItem(Bridge._client.userId + tempMsg.messageUId + "SENT"));
@@ -880,7 +880,7 @@ module RongIMLib {
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType == conversationType && RongIMClient._memoryStore.conversationList[i].targetId == targetId) {
                     conver = RongIMClient._memoryStore.conversationList[i];
-                    if (MessageUtil.supportLargeStorage()) {
+                    if (RongUtil.supportLocalStorage()) {
                         var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + conversationType + targetId);
                         if (conver.unreadMessageCount == 0) {
                             conver.unreadMessageCount = Number(count);
@@ -901,7 +901,7 @@ module RongIMLib {
 
             RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
                     onSuccess: function(list: Conversation[]) {
-                        if (MessageUtil.supportLargeStorage()) {
+                        if (RongUtil.supportLocalStorage()) {
                             Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
                                 var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + item.conversationType + item.targetId);
                                 if (item.unreadMessageCount == 0) {
@@ -986,7 +986,7 @@ module RongIMLib {
             this.getConversation(conversationType, targetId, {
                 onSuccess: function(conver: Conversation) {
                     if (conver) {
-                        if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                        if (RongIMLib.RongUtil.supportLocalStorage()) {
                             RongIMClient._storageProvider.removeItem("cu" + Bridge._client.userId + conversationType + targetId);
                         }
                         conver.unreadMessageCount = 0;

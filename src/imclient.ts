@@ -43,28 +43,11 @@ module RongIMLib {
                 isPolling = true;
             }
 
-            var supportLocalStorage = function(){
-                var support = false;
-                if(typeof localStorage == 'object'){
-                    try {
-                        var key = 'RC_TMP_KEY', value = 'RC_TMP_VAL';
-                        localStorage.setItem(key, value);
-                        var localVal = localStorage.getItem(key);
-                        if(localVal == value){
-                            support = true;
-                        }
-                    } catch (err) {
-                        console.log('localStorage is disabled.');
-                    }
-                    
-                }
-                return support;
-            };
             var supportUserData = function(){
                 var element:any = document.documentElement;
                 return element.addBehavior;
             };
-            if (supportLocalStorage()) {
+            if (RongUtil.supportLocalStorage()) {
                 RongIMClient._storageProvider = new RongIMLib.LocalStorageProvider();
             }
             else if (supportUserData()) {
@@ -936,7 +919,7 @@ module RongIMLib {
                         conver.mentionedMsg = info[tempConver.type + "_" + tempConver.userId];
                     }
                     if (!isUseReplace) {
-                        if (MessageUtil.supportLargeStorage()) {
+                        if (RongUtil.supportLocalStorage()) {
                             var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + tempConver.type + tempConver.userId);
                             conver.unreadMessageCount = Number(count);
                         } else {

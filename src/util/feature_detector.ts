@@ -22,7 +22,7 @@ module RongIMLib {
                             if (!callback) {
                                 var token = RongIMClient._memoryStore.token;
                                 var connectCallback = RongIMClient._memoryStore.callback;
-                                RongIMClient.connect(token, connectCallback);
+                                token && RongIMClient.connect(token, connectCallback);
                             }
                         }
                     };

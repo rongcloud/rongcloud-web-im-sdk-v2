@@ -167,7 +167,7 @@ module RongIMLib {
                 if (RongIMClient._memoryStore.depend.isPrivate) {
                     var date = new Date();
                     var qryOpt: any, dateStr: string = date.getFullYear() + "" + (date.getMonth() + 1) + "" + date.getDate();
-                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                    if (RongIMLib.RongUtil.supportLocalStorage()) {
                         qryOpt = RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
                     } else {
                         qryOpt = RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
@@ -193,7 +193,7 @@ module RongIMLib {
                                         nip: naviArrs.length > 1 ? naviArrs[1] : ""
                                     }
                                 }).send(function() {
-                                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                                    if (RongIMLib.RongUtil.supportLocalStorage()) {
                                         qryOpt = RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);
                                     } else {
                                         qryOpt = RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);

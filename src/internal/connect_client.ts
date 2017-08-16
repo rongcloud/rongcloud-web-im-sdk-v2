@@ -639,7 +639,7 @@ module RongIMLib {
 
                         if (con.conversationType != 0 && message.senderUserId != Bridge._client.userId && message.receivedStatus != ReceivedStatus.RETRIEVED && message.messageType != RongIMClient.MessageType["ReadReceiptRequestMessage"] && message.messageType != RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
                             con.unreadMessageCount = con.unreadMessageCount + 1;
-                            if (MessageUtil.supportLargeStorage()) {
+                            if (RongUtil.supportLocalStorage()) {
                                 var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
                                 RongIMClient._storageProvider.setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
                             }
@@ -694,10 +694,10 @@ module RongIMLib {
             //new Date(date).getTime() - message.sentTime < 1 逻辑判断 超过 1 天未收的 ReadReceiptRequestMessage 离线消息自动忽略。
             var dealtime: boolean = new Date(date).getTime() - message.sentTime < 0;
 
-            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime && message.messageDirection == MessageDirection.SEND) {
+            if (RongUtil.supportLocalStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime && message.messageDirection == MessageDirection.SEND) {
                 var sentkey: string = Bridge._client.userId + message.content.messageUId + "SENT";
                 RongIMClient._storageProvider.setItem(sentkey, JSON.stringify({ count: 0, dealtime: message.sentTime, userIds: {} }));
-            } else if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
+            } else if (RongUtil.supportLocalStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
                 var reckey: string = Bridge._client.userId + message.conversationType + message.targetId + 'RECEIVED',
                     recData: any = JSON.parse(RongIMClient._storageProvider.getItem(reckey));
                 if (recData) {
@@ -724,7 +724,7 @@ module RongIMLib {
                 }
             }
 
-            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptResponseMessage"] && dealtime) {
+            if (RongUtil.supportLocalStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptResponseMessage"] && dealtime) {
                 var receiptResponseMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>message.content,
                     uIds: string[] = receiptResponseMsg.receiptMessageDic[Bridge._client.userId], sentkey = "", sentObj: any;
                 message.receiptResponse || (message.receiptResponse = {});

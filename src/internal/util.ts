@@ -64,24 +64,6 @@ module RongIMLib {
         //适配SSL
         // static schemeArrs: Array<any> = [["http", "ws"], ["https", "wss"]];
         static sign: any = { converNum: 1, msgNum: 1, isMsgStart: true, isConvStart: true };
-        static supportLargeStorage(): boolean {
-            var support = false;
-            if(typeof localStorage == 'object'){
-                try {
-                    var key = 'RC_TMP_KEY', value = 'RC_TMP_VAL';
-                    localStorage.setItem(key, value);
-                    var localVal = localStorage.getItem(key);
-                    if(localVal == value){
-                        support = true;
-                    }
-                } catch (err) {
-                    console.log('localStorage is disabled.');
-                }
-                
-            }
-            return support;
-        }
-
 
         /**
          *4680000 为localstorage最小容量5200000字节的90%，超过90%将删除之前过早的存储

@@ -314,5 +314,24 @@ module RongIMLib {
             }
             return RongUtil.stringFormat(tmpl, [protocol, path]);
         };
+
+        static supportLocalStorage(): boolean {
+            var support = false;
+            if(typeof localStorage == 'object'){
+                try {
+                    var key = 'RC_TMP_KEY', value = 'RC_TMP_VAL';
+                    localStorage.setItem(key, value);
+                    var localVal = localStorage.getItem(key);
+                    if(localVal == value){
+                        support = true;
+                    }
+                } catch (err) {
+                    console.log('localStorage is disabled.');
+                }
+                
+            }
+            return support;
+        }
+
     }
 }

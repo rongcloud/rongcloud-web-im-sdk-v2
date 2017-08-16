@@ -111,7 +111,7 @@ module RongIMLib {
 
             me.connectListener = listener;
             this.useConsole && console.log("setConnectionStatusListener");
-            me.addon.setConnectionStatusListener(function(result: number): void {
+            me.addon && me.addon.setConnectionStatusListener(function(result: number): void {
                 switch (result) {
                     case 10:
                         listener.onChanged(ConnectionStatus.CONNECTING);
@@ -151,7 +151,7 @@ module RongIMLib {
             var me = this,localCount = 0;
             me.messageListener = listener;
             this.useConsole && console.log("setOnReceiveMessageListener");
-            me.addon.setOnReceiveMessageListener(function(result: string, leftCount: number): void {
+            me.addon && me.addon.setOnReceiveMessageListener(function(result: string, leftCount: number): void {
                 var message:Message = me.buildMessage(result);
                 if((leftCount == 0 && localCount == 1) || leftCount > 0) {
                     message.offLineMessage = true;
