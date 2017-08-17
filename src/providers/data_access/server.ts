@@ -983,12 +983,10 @@ module RongIMLib {
         }
 
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+            RongIMClient._storageProvider.removeItem("cu" + Bridge._client.userId + conversationType + targetId);
             this.getConversation(conversationType, targetId, {
                 onSuccess: function(conver: Conversation) {
                     if (conver) {
-                        if (RongIMLib.RongUtil.supportLocalStorage()) {
-                            RongIMClient._storageProvider.removeItem("cu" + Bridge._client.userId + conversationType + targetId);
-                        }
                         conver.unreadMessageCount = 0;
                         conver.mentionedMsg = null;
                         var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
