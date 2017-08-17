@@ -1788,28 +1788,11 @@ var RongIMLib;
             if (typeof WebSocket != 'function') {
                 isPolling = true;
             }
-            var supportLocalStorage = function () {
-                var support = false;
-                if (typeof localStorage == 'object') {
-                    try {
-                        var key = 'RC_TMP_KEY', value = 'RC_TMP_VAL';
-                        localStorage.setItem(key, value);
-                        var localVal = localStorage.getItem(key);
-                        if (localVal == value) {
-                            support = true;
-                        }
-                    }
-                    catch (err) {
-                        console.log('localStorage is disabled.');
-                    }
-                }
-                return support;
-            };
             var supportUserData = function () {
                 var element = document.documentElement;
                 return element.addBehavior;
             };
-            if (supportLocalStorage()) {
+            if (RongIMLib.RongUtil.supportLocalStorage()) {
                 RongIMClient._storageProvider = new RongIMLib.LocalStorageProvider();
             }
             else if (supportUserData()) {
@@ -1838,7 +1821,7 @@ var RongIMLib;
                 options[key] = path;
             });
             var _sourcePath = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.1.6.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.2.7.min.js'
             };
             RongIMLib.RongUtil.forEach(_sourcePath, function (path, key) {
                 _sourcePath[key] = RongIMLib.RongUtil.stringFormat(pathTmpl, [protocol, path]);
@@ -1969,7 +1952,13 @@ var RongIMLib;
                 MemberModifyMessage: "MemberModifyMessage",
                 JrmfReadPacketMessage: "JrmfReadPacketMessage",
                 JrmfReadPacketOpenedMessage: "JrmfReadPacketOpenedMessage",
-                RCEUpdateStatusMessage: "RCEUpdateStatusMessage"
+                RCEUpdateStatusMessage: "RCEUpdateStatusMessage",
+                GroupNotificationMessage: "GroupNotificationMessage",
+                PublicServiceRichContentMessage: "PublicServiceRichContentMessage",
+                PublicServiceMultiRichContentMessage: "PublicServiceMultiRichContentMessage",
+                PublicServiceCommandMessage: "PublicServiceCommandMessage",
+                RecallCommandMessage: "RecallCommandMessage",
+                ReadReceiptMessage: "ReadReceiptMessage"
             };
         };
         /**
@@ -2647,7 +2636,7 @@ var RongIMLib;
                         conver.mentionedMsg = info[tempConver.type + "_" + tempConver.userId];
                     }
                     if (!isUseReplace) {
-                        if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                        if (RongIMLib.RongUtil.supportLocalStorage()) {
                             var count = RongIMClient._storageProvider.getItem("cu" + RongIMLib.Bridge._client.userId + tempConver.type + tempConver.userId);
                             conver.unreadMessageCount = Number(count);
                         }
@@ -2701,7 +2690,7 @@ var RongIMLib;
             return RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
         };
         RongIMClient.prototype.getConversationList = function (callback, conversationTypes, count, isGetHiddenConvers) {
-            RongIMLib.CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global", "boolean|undefined|null|object|global"], "getConversationList", false, arguments);
+            RongIMLib.CheckParam.getInstance().check(["object", "null|undefined|array|object|global", "number|undefined|null|object|global", "boolean|undefined|null|object|global"], "getConversationList", false, arguments);
             var me = this;
             RongIMClient._dataAccessProvider.getConversationList({
                 onSuccess: function (data) {
@@ -3872,7 +3861,7 @@ var RongIMLib;
                         }
                         if (con.conversationType != 0 && message.senderUserId != Bridge._client.userId && message.receivedStatus != RongIMLib.ReceivedStatus.RETRIEVED && message.messageType != RongIMLib.RongIMClient.MessageType["ReadReceiptRequestMessage"] && message.messageType != RongIMLib.RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
                             con.unreadMessageCount = con.unreadMessageCount + 1;
-                            if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                            if (RongIMLib.RongUtil.supportLocalStorage()) {
                                 var count = RongIMLib.RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
                                 RongIMLib.RongIMClient._storageProvider.setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
                             }
@@ -3920,11 +3909,11 @@ var RongIMLib;
             var d = new Date(), m = d.getMonth() + 1, date = d.getFullYear() + '/' + (m.toString().length == 1 ? '0' + m : m) + '/' + d.getDate();
             //new Date(date).getTime() - message.sentTime < 1 逻辑判断 超过 1 天未收的 ReadReceiptRequestMessage 离线消息自动忽略。
             var dealtime = new Date(date).getTime() - message.sentTime < 0;
-            if (RongIMLib.MessageUtil.supportLargeStorage() && message.messageType === RongIMLib.RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime && message.messageDirection == RongIMLib.MessageDirection.SEND) {
+            if (RongIMLib.RongUtil.supportLocalStorage() && message.messageType === RongIMLib.RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime && message.messageDirection == RongIMLib.MessageDirection.SEND) {
                 var sentkey = Bridge._client.userId + message.content.messageUId + "SENT";
                 RongIMLib.RongIMClient._storageProvider.setItem(sentkey, JSON.stringify({ count: 0, dealtime: message.sentTime, userIds: {} }));
             }
-            else if (RongIMLib.MessageUtil.supportLargeStorage() && message.messageType === RongIMLib.RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
+            else if (RongIMLib.RongUtil.supportLocalStorage() && message.messageType === RongIMLib.RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
                 var reckey = Bridge._client.userId + message.conversationType + message.targetId + 'RECEIVED', recData = JSON.parse(RongIMLib.RongIMClient._storageProvider.getItem(reckey));
                 if (recData) {
                     if (message.senderUserId in recData) {
@@ -3952,7 +3941,7 @@ var RongIMLib;
                     RongIMLib.RongIMClient._storageProvider.setItem(reckey, JSON.stringify(obj));
                 }
             }
-            if (RongIMLib.MessageUtil.supportLargeStorage() && message.messageType === RongIMLib.RongIMClient.MessageType["ReadReceiptResponseMessage"] && dealtime) {
+            if (RongIMLib.RongUtil.supportLocalStorage() && message.messageType === RongIMLib.RongIMClient.MessageType["ReadReceiptResponseMessage"] && dealtime) {
                 var receiptResponseMsg = message.content, uIds = receiptResponseMsg.receiptMessageDic[Bridge._client.userId], sentkey = "", sentObj;
                 message.receiptResponse || (message.receiptResponse = {});
                 if (uIds) {
@@ -4238,7 +4227,7 @@ var RongIMLib;
                 if (RongIMLib.RongIMClient._memoryStore.depend.isPrivate) {
                     var date = new Date();
                     var qryOpt, dateStr = date.getFullYear() + "" + (date.getMonth() + 1) + "" + date.getDate();
-                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                    if (RongIMLib.RongUtil.supportLocalStorage()) {
                         qryOpt = RongIMLib.RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
                     }
                     else {
@@ -4266,7 +4255,7 @@ var RongIMLib;
                                         nip: naviArrs.length > 1 ? naviArrs[1] : ""
                                     }
                                 }).send(function () {
-                                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                                    if (RongIMLib.RongUtil.supportLocalStorage()) {
                                         qryOpt = RongIMLib.RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);
                                     }
                                     else {
@@ -5850,14 +5839,6 @@ var RongIMLib;
     var MessageUtil = (function () {
         function MessageUtil() {
         }
-        MessageUtil.supportLargeStorage = function () {
-            if (window.localStorage) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        };
         /**
          *4680000 为localstorage最小容量5200000字节的90%，超过90%将删除之前过早的存储
          */
@@ -7209,7 +7190,7 @@ var RongIMLib;
         };
         ServerDataProvider.prototype.sendReceiptResponse = function (conversationType, targetId, sendCallback) {
             var rspkey = RongIMLib.Bridge._client.userId + conversationType + targetId + 'RECEIVED', me = this;
-            if (RongIMLib.MessageUtil.supportLargeStorage()) {
+            if (RongIMLib.RongUtil.supportLocalStorage()) {
                 var valObj = JSON.parse(RongIMLib.RongIMClient._storageProvider.getItem(rspkey));
                 if (valObj) {
                     var vals = [];
@@ -7293,7 +7274,7 @@ var RongIMLib;
                     RongIMLib.RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, RongIMLib.MessageUtil.int64ToTimestamp(data.syncTime));
                     var list = data.list.reverse(), tempMsg = null, tempDir;
                     var read = RongIMLib.SentStatus.READ;
-                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                    if (RongIMLib.RongUtil.supportLocalStorage()) {
                         for (var i = 0, len = list.length; i < len; i++) {
                             tempMsg = RongIMLib.MessageUtil.messageParser(list[i]);
                             tempDir = JSON.parse(RongIMLib.RongIMClient._storageProvider.getItem(RongIMLib.Bridge._client.userId + tempMsg.messageUId + "SENT"));
@@ -7928,7 +7909,7 @@ var RongIMLib;
             for (var i = 0, len = RongIMLib.RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (RongIMLib.RongIMClient._memoryStore.conversationList[i].conversationType == conversationType && RongIMLib.RongIMClient._memoryStore.conversationList[i].targetId == targetId) {
                     conver = RongIMLib.RongIMClient._memoryStore.conversationList[i];
-                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                    if (RongIMLib.RongUtil.supportLocalStorage()) {
                         var count = RongIMLib.RongIMClient._storageProvider.getItem("cu" + RongIMLib.Bridge._client.userId + conversationType + targetId);
                         if (conver.unreadMessageCount == 0) {
                             conver.unreadMessageCount = Number(count);
@@ -7947,7 +7928,7 @@ var RongIMLib;
             }
             RongIMLib.RongIMClient.getInstance().getRemoteConversationList({
                 onSuccess: function (list) {
-                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                    if (RongIMLib.RongUtil.supportLocalStorage()) {
                         Array.forEach(RongIMLib.RongIMClient._memoryStore.conversationList, function (item) {
                             var count = RongIMLib.RongIMClient._storageProvider.getItem("cu" + RongIMLib.Bridge._client.userId + item.conversationType + item.targetId);
                             if (item.unreadMessageCount == 0) {
@@ -8025,7 +8006,7 @@ var RongIMLib;
             this.getConversation(conversationType, targetId, {
                 onSuccess: function (conver) {
                     if (conver) {
-                        if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                        if (RongIMLib.RongUtil.supportLocalStorage()) {
                             RongIMLib.RongIMClient._storageProvider.removeItem("cu" + RongIMLib.Bridge._client.userId + conversationType + targetId);
                         }
                         conver.unreadMessageCount = 0;
@@ -8268,7 +8249,7 @@ var RongIMLib;
             /**
             ConnectionStatus_TokenIncorrect = 31004,
             ConnectionStatus_Connected = 0,
-            ConnectionStatus_KickedOff = 6, // 其他设备登录
+            ConnectionStatus_KickedOff = 6,	// 其他设备登录
             ConnectionStatus_Connecting = 10,// 连接中
             ConnectionStatus_SignUp = 12, // 未登录
             ConnectionStatus_NetworkUnavailable = 1, // 连接断开
@@ -8287,7 +8268,7 @@ var RongIMLib;
             */
             me.connectListener = listener;
             this.useConsole && console.log("setConnectionStatusListener");
-            me.addon.setConnectionStatusListener(function (result) {
+            me.addon && me.addon.setConnectionStatusListener(function (result) {
                 switch (result) {
                     case 10:
                         listener.onChanged(RongIMLib.ConnectionStatus.CONNECTING);
@@ -8326,7 +8307,7 @@ var RongIMLib;
             var me = this, localCount = 0;
             me.messageListener = listener;
             this.useConsole && console.log("setOnReceiveMessageListener");
-            me.addon.setOnReceiveMessageListener(function (result, leftCount) {
+            me.addon && me.addon.setOnReceiveMessageListener(function (result, leftCount) {
                 var message = me.buildMessage(result);
                 if ((leftCount == 0 && localCount == 1) || leftCount > 0) {
                     message.offLineMessage = true;
@@ -9142,7 +9123,7 @@ var RongIMLib;
                             if (!callback) {
                                 var token = RongIMLib.RongIMClient._memoryStore.token;
                                 var connectCallback = RongIMLib.RongIMClient._memoryStore.callback;
-                                RongIMLib.RongIMClient.connect(token, connectCallback);
+                                token && RongIMLib.RongIMClient.connect(token, connectCallback);
                             }
                         }
                     };
@@ -9235,7 +9216,7 @@ var RongIMLib;
                     JSON.rx_escapable = new RegExp('[\\\"\\\\\"\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]', "g");
                     JSON.meta = {
                         "\b": "\\b",
-                        "   ": "\\t",
+                        "	": "\\t",
                         "\n": "\\n",
                         "\f": "\\f",
                         "\r": "\\r",
@@ -9574,6 +9555,23 @@ var RongIMLib;
             return RongUtil.stringFormat(tmpl, [protocol, path]);
         };
         ;
+        RongUtil.supportLocalStorage = function () {
+            var support = false;
+            if (typeof localStorage == 'object') {
+                try {
+                    var key = 'RC_TMP_KEY', value = 'RC_TMP_VAL';
+                    localStorage.setItem(key, value);
+                    var localVal = localStorage.getItem(key);
+                    if (localVal == value) {
+                        support = true;
+                    }
+                }
+                catch (err) {
+                    console.log('localStorage is disabled.');
+                }
+            }
+            return support;
+        };
         return RongUtil;
     })();
     RongIMLib.RongUtil = RongUtil;

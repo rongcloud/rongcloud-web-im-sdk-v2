@@ -223,7 +223,13 @@ module RongIMLib {
                 MemberModifyMessage: "MemberModifyMessage",
                 JrmfReadPacketMessage: "JrmfReadPacketMessage",
                 JrmfReadPacketOpenedMessage: "JrmfReadPacketOpenedMessage",
-                RCEUpdateStatusMessage: "RCEUpdateStatusMessage"
+                RCEUpdateStatusMessage: "RCEUpdateStatusMessage",
+                GroupNotificationMessage: "GroupNotificationMessage",
+                PublicServiceRichContentMessage: "PublicServiceRichContentMessage",
+                PublicServiceMultiRichContentMessage: "PublicServiceMultiRichContentMessage",
+                PublicServiceCommandMessage: "PublicServiceCommandMessage",
+                RecallCommandMessage: "RecallCommandMessage",
+                ReadReceiptMessage: "ReadReceiptMessage"
             };
         }
         /**
@@ -974,7 +980,7 @@ module RongIMLib {
             return RongIMClient._memoryStore.conversationList = convers.concat(conversationList);
         }
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number,isGetHiddenConvers:boolean) {
-            CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global","boolean|undefined|null|object|global"], "getConversationList", false, arguments);
+            CheckParam.getInstance().check(["object", "null|undefined|array|object|global", "number|undefined|null|object|global","boolean|undefined|null|object|global"], "getConversationList", false, arguments);
             var me = this;
             RongIMClient._dataAccessProvider.getConversationList(<ResultCallback<Conversation[]>>{
                 onSuccess: function(data: Conversation[]) {
