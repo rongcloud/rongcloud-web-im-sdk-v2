@@ -3455,7 +3455,7 @@ var RongIMLib;
         function Client(token, appId) {
             this.timeoutMillis = 100000;
             this.timeout_ = 0;
-            this.sdkVer = "2.2.5";
+            this.sdkVer = "2.2.7";
             this.apiVer = Math.floor(Math.random() * 1e6);
             this.channel = null;
             this.handler = null;
@@ -7113,6 +7113,11 @@ var RongIMLib;
             config.url: 网络嗅探地址 [http(s)://]cdn.ronghub.com/RongIMLib-2.2.6.min.js 可选
         */
         ServerDataProvider.prototype.reconnect = function (callback, config) {
+            var store = RongIMLib.RongIMClient._memoryStore;
+            var token = store.token;
+            if (!token) {
+                throw new Error('reconnect: token is empty.');
+            }
             if (RongIMLib.Bridge._client && RongIMLib.Bridge._client.channel && RongIMLib.Bridge._client.channel.connectionStatus != RongIMLib.ConnectionStatus.CONNECTED && RongIMLib.Bridge._client.channel.connectionStatus != RongIMLib.ConnectionStatus.CONNECTING) {
                 config = config || {};
                 var key = config.auto ? 'auto' : 'custom';
@@ -7169,13 +7174,13 @@ var RongIMLib;
                                     callback.onError(error);
                                     return;
                                 }
-                                RongIMLib.RongIMClient.bridge.reconnect(callback);
+                                RongIMLib.RongIMClient.connect(token, callback);
                             }
                         };
                         repeatConnect(opts);
                     },
                     custom: function () {
-                        RongIMLib.RongIMClient.bridge.reconnect(callback);
+                        RongIMLib.RongIMClient.connect(token, callback);
                     }
                 };
                 handler[key]();
@@ -8003,12 +8008,10 @@ var RongIMLib;
             callback.onSuccess(true);
         };
         ServerDataProvider.prototype.clearUnreadCount = function (conversationType, targetId, callback) {
+            RongIMLib.RongIMClient._storageProvider.removeItem("cu" + RongIMLib.Bridge._client.userId + conversationType + targetId);
             this.getConversation(conversationType, targetId, {
                 onSuccess: function (conver) {
                     if (conver) {
-                        if (RongIMLib.RongUtil.supportLocalStorage()) {
-                            RongIMLib.RongIMClient._storageProvider.removeItem("cu" + RongIMLib.Bridge._client.userId + conversationType + targetId);
-                        }
                         conver.unreadMessageCount = 0;
                         conver.mentionedMsg = null;
                         var mentioneds = RongIMLib.RongIMClient._storageProvider.getItem("mentioneds_" + RongIMLib.Bridge._client.userId + '_' + conversationType + '_' + targetId);
@@ -8249,7 +8252,7 @@ var RongIMLib;
             /**
             ConnectionStatus_TokenIncorrect = 31004,
             ConnectionStatus_Connected = 0,
-            ConnectionStatus_KickedOff = 6,	// 其他设备登录
+            ConnectionStatus_KickedOff = 6, // 其他设备登录
             ConnectionStatus_Connecting = 10,// 连接中
             ConnectionStatus_SignUp = 12, // 未登录
             ConnectionStatus_NetworkUnavailable = 1, // 连接断开
@@ -9216,7 +9219,7 @@ var RongIMLib;
                     JSON.rx_escapable = new RegExp('[\\\"\\\\\"\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]', "g");
                     JSON.meta = {
                         "\b": "\\b",
-                        "	": "\\t",
+                        "   ": "\\t",
                         "\n": "\\n",
                         "\f": "\\f",
                         "\r": "\\r",

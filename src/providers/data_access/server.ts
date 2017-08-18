@@ -42,6 +42,11 @@ module RongIMLib {
             config.url: 网络嗅探地址 [http(s)://]cdn.ronghub.com/RongIMLib-2.2.6.min.js 可选
         */
         reconnect(callback: ConnectCallback, config?: any): void {
+            var store = RongIMLib.RongIMClient._memoryStore;
+            var token = store.token;
+            if (!token) {
+                throw new Error('reconnect: token is empty.');
+            }
             if (Bridge._client && Bridge._client.channel && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
                 config = config || {};
                 var key = config.auto ? 'auto' : 'custom';
@@ -99,13 +104,13 @@ module RongIMLib {
                                     callback.onError(error);
                                     return;
                                 }
-                                RongIMClient.bridge.reconnect(callback);
+                                RongIMClient.connect(token, callback);
                             }
                         };
                         repeatConnect(opts);
                     },
                     custom: function(){
-                        RongIMClient.bridge.reconnect(callback);
+                        RongIMClient.connect(token, callback);
                     }
                 };
                 handler[key]();
