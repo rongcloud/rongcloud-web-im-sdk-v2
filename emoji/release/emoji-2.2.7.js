@@ -122,7 +122,7 @@
         "u1F451": { "en": "crown", "zh": "王冠", "tag": "\uD83D\uDC51", "position": "-2550px 0px" },
         "u1F484": { "en": "lipstick", "zh": "口红", "tag": "\uD83D\uDC84", "position": "-2575px 0px" },
         "u1F494": { "en": "broken_heart", "zh": "心碎", "tag": "\uD83D\uDC94", "position": "-2600px 0px" },
-        "u1F525": { "en": "fire", "zh": "火了", "tag": "\uD83D\uDD25", "position": "-2625px 0px" },
+        "u1F525": { "en": "fire", "zh": "火", "tag": "\uD83D\uDD25", "position": "-2625px 0px" },
         "u1F556": { "en": "clock", "zh": "表", "tag": "\uD83D\uDD56", "position": "-2650px 0px" },
         "u1F648": { "en": "see_no_monkey", "zh": "不看", "tag": "\uD83D\uDE48", "position": "-2675px 0px" },
         "u1F649": { "en": "hear_no_monkey", "zh": "不听", "tag": "\uD83D\uDE49", "position": "-2700px 0px" },
