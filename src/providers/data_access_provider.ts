@@ -1,11 +1,11 @@
 module RongIMLib {
     export interface DataAccessProvider {
 
-        init(appKey: string): void;
+        init(appKey: string, callback?: Function): void;
 
         connect(token: string, callback: ConnectCallback, userId?: string): void;
 
-        reconnect(callback: ConnectCallback): void;
+        reconnect(callback: ConnectCallback, config?: any): void;
 
         logout(): void;
 
@@ -46,12 +46,6 @@ module RongIMLib {
         setDiscussionInviteStatus(discussionId: string, status: DiscussionInviteStatus, callback: OperationCallback): void;
 
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback): void;
-
-        joinGroup(groupId: string, groupName: string, callback: OperationCallback): void;
-
-        quitGroup(groupId: string, callback: OperationCallback): void;
-
-        syncGroup(groups: Array<Group>, callback: OperationCallback): void;
 
         joinChatRoom(chatroomId: string, messageCount: number, callback: OperationCallback): void;
 

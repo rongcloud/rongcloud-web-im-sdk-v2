@@ -111,7 +111,7 @@ module RongIMLib {
 
             me.connectListener = listener;
             this.useConsole && console.log("setConnectionStatusListener");
-            me.addon.setConnectionStatusListener(function(result: number): void {
+            me.addon && me.addon.setConnectionStatusListener(function(result: number): void {
                 switch (result) {
                     case 10:
                         listener.onChanged(ConnectionStatus.CONNECTING);
@@ -151,7 +151,7 @@ module RongIMLib {
             var me = this,localCount = 0;
             me.messageListener = listener;
             this.useConsole && console.log("setOnReceiveMessageListener");
-            me.addon.setOnReceiveMessageListener(function(result: string, leftCount: number): void {
+            me.addon && me.addon.setOnReceiveMessageListener(function(result: string, leftCount: number): void {
                 var message:Message = me.buildMessage(result);
                 if((leftCount == 0 && localCount == 1) || leftCount > 0) {
                     message.offLineMessage = true;
@@ -213,7 +213,7 @@ module RongIMLib {
                     callback.onError(errorCode);
                 });
             } catch (e) {
-                callback.onError(ErrorCode.TIMEOUT);
+                callback.onError(e);
             }
         }
 
@@ -236,7 +236,7 @@ module RongIMLib {
                 convers.reverse(); 
                 callback.onSuccess(convers);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_GETLIST_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -254,7 +254,7 @@ module RongIMLib {
                 }
                 callback.onSuccess(true);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_REMOVE_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -405,7 +405,7 @@ module RongIMLib {
                 this.addon.deleteMessages(timestamps);
                 callback.onSuccess(true);
             } catch (e) {
-                callback.onError(ErrorCode.MSG_DEL_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -415,7 +415,7 @@ module RongIMLib {
                 var msg: Message = this.buildMessage(<string>this.addon.getMessage(messageId));
                 callback.onSuccess(msg);
             } catch (e) {
-                callback.onError(ErrorCode.GET_MESSAGE_BY_ID_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -425,7 +425,7 @@ module RongIMLib {
                 this.addon.clearMessages(conversationType, targetId);
                 callback.onSuccess(true);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_GET_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -436,7 +436,7 @@ module RongIMLib {
                 var ret: string = this.addon.getConversation(conversationType, targetId);
                 callback.onSuccess(this.buildConversation(ret));
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_GET_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -451,7 +451,7 @@ module RongIMLib {
                 this.addon.clearConversations();
                 callback.onSuccess(true);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_CLEAR_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -477,7 +477,7 @@ module RongIMLib {
                 }
                 callback.onSuccess(msgs, len == count);
             } catch (e) {
-                callback.onError(ErrorCode.TIMEOUT);
+                callback.onError(e);
             }
         }
 
@@ -492,7 +492,7 @@ module RongIMLib {
                 }
                 callback.onSuccess(result);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_TOTAL_UNREAD_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -507,7 +507,7 @@ module RongIMLib {
                 var result: number = this.addon.getUnreadCount(conversationType, targetId);
                 callback.onSuccess(result);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_TYPE_UNREAD_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -517,7 +517,7 @@ module RongIMLib {
                 var result = this.addon.clearUnreadCount(conversationType, targetId);
                 callback.onSuccess(true);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_CLEAR_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -527,7 +527,7 @@ module RongIMLib {
                 var result = this.addon.clearUnreadCountByTimestamp(conversationType, targetId,timestamp);
                 callback.onSuccess(true);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_CLEAR_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -537,7 +537,7 @@ module RongIMLib {
                 this.addon.setConversationToTop(conversationType, targetId, isTop);
                 callback.onSuccess(true);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_SETOP_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -551,7 +551,7 @@ module RongIMLib {
                 this.addon.setMessageReceivedStatus(messageId, receivedStatus);
                 callback.onSuccess(true);
             } catch (e) {
-                callback.onError(ErrorCode.TIMEOUT);
+                callback.onError(e);
             }
         }
 
@@ -561,7 +561,7 @@ module RongIMLib {
                 this.addon.setMessageSentStatus(messageId, sentStatus);
                 callback.onSuccess(true);
             } catch (e) {
-                callback.onError(ErrorCode.TIMEOUT);
+                callback.onError(e);
             }
         }
 
@@ -605,7 +605,7 @@ module RongIMLib {
                 }
                 callback.onSuccess(convers);
             } catch (e) {
-                callback.onError(ErrorCode.CONVER_GETLIST_ERROR);
+                callback.onError(e);
             }
         }
 
@@ -623,7 +623,7 @@ module RongIMLib {
                 });
 
             } catch (e) {
-                callback.onError(ErrorCode.TIMEOUT);
+                callback.onError(e);
             }
 
         }

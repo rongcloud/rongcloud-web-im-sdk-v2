@@ -246,7 +246,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "2.2.5";
+        sdkVer: string = "2.2.7";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
@@ -392,7 +392,7 @@ module RongIMLib {
             if (temp.type != 2) {
                 //普通消息
                 time = RongIMClient._storageProvider.getItem(this.userId) || '0';
-                modules = new Modules.SyncRequestMsg();
+                modules = new RongIMClient.Protobuf.SyncRequestMsg();
                 modules.setIspolling(false);
                 str = "pullMsg";
                 target = this.userId;
@@ -400,7 +400,7 @@ module RongIMLib {
                 //聊天室消息
                 target = chrmId || me.chatroomId;
                 time = RongIMClient._memoryStore.lastReadTime.get(target + Bridge._client.userId + "CST") || 0;
-                modules = new Modules.ChrmPullMsg();
+                modules = new RongIMClient.Protobuf.ChrmPullMsg();
                 modules.setCount(0);
                 str = "chrmPull";
                 if (!target) {
@@ -472,8 +472,7 @@ module RongIMLib {
         }
         //连接服务器
         connect(appKey: string, token: string, callback: any): Client {
-            if (!window["Modules"]) {
-                RongIMClient._memoryStore.hasModules = false;
+            if (!RongIMClient.Protobuf) {
                 return;
             }
             Bridge._client = new Navigation().connect(appKey, token, callback);
@@ -558,11 +557,11 @@ module RongIMLib {
                 RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
             } else {
                 if (msg.getTopic() == "s_ntf") {
-                    entity = Modules.NotifyMsg.decode(msg.getData());
+                    entity = RongIMClient.Protobuf.NotifyMsg.decode(msg.getData());
                     this._client.syncTime(entity.type, MessageUtil.int64ToTimestamp(entity.time), entity.chrmId);
                     return;
                 } else if (msg.getTopic() == "s_msg") {
-                    entity = Modules.DownStreamMessage.decode(msg.getData());
+                    entity = RongIMClient.Protobuf.DownStreamMessage.decode(msg.getData());
                     var timestamp = MessageUtil.int64ToTimestamp(entity.dataTime);
                     RongIMClient._storageProvider.setItem(this._client.userId, timestamp);
                     RongIMClient._memoryStore.lastReadTime.get(this._client.userId, timestamp);
@@ -570,7 +569,7 @@ module RongIMLib {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;
                     }
-                    entity = Modules.UpStreamMessage.decode(msg.getData());
+                    entity = RongIMClient.Protobuf.UpStreamMessage.decode(msg.getData());
                     var tmpTopic = msg.getTopic();
                     var tmpType = tmpTopic.substr(0, 2);
                     if (tmpType == "pp") {
@@ -640,7 +639,7 @@ module RongIMLib {
 
                         if (con.conversationType != 0 && message.senderUserId != Bridge._client.userId && message.receivedStatus != ReceivedStatus.RETRIEVED && message.messageType != RongIMClient.MessageType["ReadReceiptRequestMessage"] && message.messageType != RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
                             con.unreadMessageCount = con.unreadMessageCount + 1;
-                            if (MessageUtil.supportLargeStorage()) {
+                            if (RongUtil.supportLocalStorage()) {
                                 var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
                                 RongIMClient._storageProvider.setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
                             }
@@ -695,10 +694,10 @@ module RongIMLib {
             //new Date(date).getTime() - message.sentTime < 1 逻辑判断 超过 1 天未收的 ReadReceiptRequestMessage 离线消息自动忽略。
             var dealtime: boolean = new Date(date).getTime() - message.sentTime < 0;
 
-            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime && message.messageDirection == MessageDirection.SEND) {
+            if (RongUtil.supportLocalStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime && message.messageDirection == MessageDirection.SEND) {
                 var sentkey: string = Bridge._client.userId + message.content.messageUId + "SENT";
                 RongIMClient._storageProvider.setItem(sentkey, JSON.stringify({ count: 0, dealtime: message.sentTime, userIds: {} }));
-            } else if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
+            } else if (RongUtil.supportLocalStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptRequestMessage"] && dealtime) {
                 var reckey: string = Bridge._client.userId + message.conversationType + message.targetId + 'RECEIVED',
                     recData: any = JSON.parse(RongIMClient._storageProvider.getItem(reckey));
                 if (recData) {
@@ -725,7 +724,7 @@ module RongIMLib {
                 }
             }
 
-            if (MessageUtil.supportLargeStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptResponseMessage"] && dealtime) {
+            if (RongUtil.supportLocalStorage() && message.messageType === RongIMClient.MessageType["ReadReceiptResponseMessage"] && dealtime) {
                 var receiptResponseMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>message.content,
                     uIds: string[] = receiptResponseMsg.receiptMessageDic[Bridge._client.userId], sentkey = "", sentObj: any;
                 message.receiptResponse || (message.receiptResponse = {});

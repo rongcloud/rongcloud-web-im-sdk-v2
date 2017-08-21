@@ -39,16 +39,6 @@ grunt build
 grunt release
 ```
 
-### 启动本地服务器
+### 使用
 
-```
-grunt connect
-```
-
-### 在浏览器中打开
-
-[http://localhost:8282](http://localhost:8282)
-
-## Coding Guidelines
-
-https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines
+拷贝 `dist` 目录下 RongIMLib.js 至项目，用法请参考参考 [WebSDK 开发指南](http://rongcloud.cn/docs/web.html) 

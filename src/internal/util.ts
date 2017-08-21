@@ -55,7 +55,7 @@ var typeMapping: { [s: string]: any } = {
 module RongIMLib {
     /**
      * 通道标识类
-     */
+     */ 
     export class Transportations {
         static _TransportType: string = Socket.WEBSOCKET;
     }
@@ -64,14 +64,6 @@ module RongIMLib {
         //适配SSL
         // static schemeArrs: Array<any> = [["http", "ws"], ["https", "wss"]];
         static sign: any = { converNum: 1, msgNum: 1, isMsgStart: true, isConvStart: true };
-        static supportLargeStorage(): boolean {
-            if (window.localStorage) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
 
         /**
          *4680000 为localstorage最小容量5200000字节的90%，超过90%将删除之前过早的存储

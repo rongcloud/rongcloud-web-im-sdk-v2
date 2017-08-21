@@ -133,7 +133,7 @@ module RongIMLib {
             this.readTimeOut();
             if (pbtype && data && status == 0) {
                 try {
-                    data = CallbackMapping.getInstance().mapping(Modules[pbtype].decode(data), pbtype);
+                    data = CallbackMapping.getInstance().mapping(RongIMClient.Protobuf[pbtype].decode(data), pbtype);
                 } catch (e) {
                     this._timeout(ErrorCode.UNKNOWN);
                     return;
@@ -167,13 +167,13 @@ module RongIMLib {
                 if (RongIMClient._memoryStore.depend.isPrivate) {
                     var date = new Date();
                     var qryOpt: any, dateStr: string = date.getFullYear() + "" + (date.getMonth() + 1) + "" + date.getDate();
-                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                    if (RongIMLib.RongUtil.supportLocalStorage()) {
                         qryOpt = RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
                     } else {
                         qryOpt = RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
                     }
                     if (!qryOpt) {
-                        var modules = new Modules.GetUserInfoInput();
+                        var modules = new RongIMClient.Protobuf.GetUserInfoInput();
                         modules.setNothing(0);
                         RongIMClient.bridge.queryMsg("qryCfg", MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                             onSuccess: function(data: any) {
@@ -193,7 +193,7 @@ module RongIMLib {
                                         nip: naviArrs.length > 1 ? naviArrs[1] : ""
                                     }
                                 }).send(function() {
-                                    if (RongIMLib.MessageUtil.supportLargeStorage()) {
+                                    if (RongIMLib.RongUtil.supportLocalStorage()) {
                                         qryOpt = RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);
                                     } else {
                                         qryOpt = RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);

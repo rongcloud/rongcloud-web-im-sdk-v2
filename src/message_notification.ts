@@ -189,6 +189,7 @@ module RongIMLib {
         operation: string;
         message: string;
         data: any;
+        extra: string;
         constructor(msg: any) {
             if (arguments.length == 0) {
                 throw new Error("Can not instantiate with empty parameters, use obtain method instead -> GroupNotificationMessage.");
@@ -197,6 +198,7 @@ module RongIMLib {
             msg.operation && (this.operation = msg.operation);
             msg.data && (this.data = msg.data);
             msg.message && (this.message = msg.message);
+            msg.extra && (this.extra = msg.extra);
         }
         encode() {
             return JSON.stringify(ModelUtil.modelClone(this));
