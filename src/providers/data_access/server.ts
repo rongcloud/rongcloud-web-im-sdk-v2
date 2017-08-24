@@ -790,7 +790,7 @@ module RongIMLib {
             if (isAdd) {
                 RongIMClient._memoryStore.conversationList.unshift(conversation);
             }
-            callback.onSuccess(true);
+            callback && callback.onSuccess(true);
         }
 
         updateConversation(conversation: Conversation): Conversation {
@@ -1193,5 +1193,48 @@ module RongIMLib {
         getCurrentConnectionStatus(): number{
             return Bridge._client.channel.connectionStatus;
         }
+        
+        getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>) {
+            var modules = new RongIMClient.Protobuf.VoipDynamicInput();
+            modules.setEngineType(engineType);
+            modules.setChannelName(channelName);
+            RongIMClient.bridge.queryMsg(32, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "VoipDynamicOutput");
+        }
+
+        setDeviceId(deviceId: string):void{
+        
+        }
+
+        setEnvironment(isPrivate: boolean):void{
+        
+        }
+        
+        getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
+            var profile: PublicServiceProfile = RongIMClient._memoryStore.publicServiceMap.get(publicServiceType, publicServiceId);
+            callback.onSuccess(profile);
+        }
+
+        getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any) {
+            if (RongIMClient._memoryStore.depend.openMp) {
+                var modules = new RongIMClient.Protobuf.PullMpInput(), self = this;
+                if (!pullMessageTime) {
+                    modules.setTime(0);
+                } else {
+                    modules.setTime(pullMessageTime);
+                }
+                modules.setMpid("");
+                RongIMClient.bridge.queryMsg(28, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                    onSuccess: function(data: Array<PublicServiceProfile>) {
+                        //TODO 找出最大时间
+                        // self.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
+                        RongIMClient._memoryStore.publicServiceMap.publicServiceList.length = 0;
+                        RongIMClient._memoryStore.publicServiceMap.publicServiceList = data;
+                        callback.onSuccess(data);
+                    },
+                    onError: function() { }
+                }, "PullMpOutput");
+            }
+        }
+
     }
 }

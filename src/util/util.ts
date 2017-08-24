@@ -209,6 +209,9 @@ module RongIMLib {
             }
             return empty;
         }
+        static MD5(str: string, key?:string, raw?:string){
+            return md5(str, key, raw);
+        }
         static isObject(obj: any){
             return Object.prototype.toString.call(obj) == '[object Object]';
         }

@@ -136,7 +136,7 @@ module RongIMLib {
             }
             RongIMClient._dataAccessProvider.init(appKey, callback);
             // 兼容 c++ 设置导航，Web 端不生效
-            RongIMClient._dataAccessProvider.setServerInfo({navi: options.navi +'/navi.xml' });
+            RongIMClient._dataAccessProvider.setServerInfo({navi: location.protocol + options.navi +'/navi.xml' });
             RongIMClient.MessageParams = {
                 TextMessage: { objectName: "RC:TxtMsg", msgTag: new MessageTag(true, true) },
                 ImageMessage: { objectName: "RC:ImgMsg", msgTag: new MessageTag(true, true) },
@@ -174,8 +174,7 @@ module RongIMLib {
                 SuspendMessage: { objectName: "RC:CsSp", msgTag: new MessageTag(false, false) },//主动发送
                 TerminateMessage: { objectName: "RC:CsEnd", msgTag: new MessageTag(false, false) },
                 CustomerStatusUpdateMessage: { objectName: "RC:CsUpdate", msgTag: new MessageTag(false, false) },
-                ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) },
-                RCEUpdateStatusMessage: { objectName: "RCE:UpdateStatus", msgTag: new RongIMLib.MessageTag(false, false) }
+                ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) }
             };
 
             RongIMClient.MessageParams["AcceptMessage"] = { objectName: "RC:VCAccept", msgTag: new RongIMLib.MessageTag(false, false) };
@@ -223,7 +222,6 @@ module RongIMLib {
                 MemberModifyMessage: "MemberModifyMessage",
                 JrmfReadPacketMessage: "JrmfReadPacketMessage",
                 JrmfReadPacketOpenedMessage: "JrmfReadPacketOpenedMessage",
-                RCEUpdateStatusMessage: "RCEUpdateStatusMessage",
                 GroupNotificationMessage: "GroupNotificationMessage",
                 PublicServiceRichContentMessage: "PublicServiceRichContentMessage",
                 PublicServiceMultiRichContentMessage: "PublicServiceMultiRichContentMessage",
@@ -436,7 +434,7 @@ module RongIMLib {
                 RongIMClient._memoryStore.filterMessages = msgFilterNames;
             }
         }
-
+ 
         getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["number", "string", "object"], "getAgoraDynamicKey", false, arguments);
             var modules = new RongIMClient.Protobuf.VoipDynamicInput();
@@ -932,17 +930,6 @@ module RongIMLib {
                             conver.unreadMessageCount = 0;
                         }
                     }
-                    // if (conver.conversationType == ConversationType.PRIVATE) {
-                    //     self.getUserInfo(tempConver.userId, <ResultCallback<UserInfo>>{
-                    //         onSuccess: function(info: UserInfo) {
-                    //             conver.conversationTitle = info.name;
-                    //             conver.senderUserName = info.name;
-                    //             conver.senderUserId = info.userId;
-                    //             conver.senderPortraitUri = info.portraitUri;
-                    //         },
-                    //         onError: function(error: ErrorCode) { }
-                    //     });
-                    // } else
                     if (conver.conversationType == ConversationType.DISCUSSION) {
                         self.getDiscussion(tempConver.userId, {
                             onSuccess: function(info: Discussion) {
@@ -956,6 +943,10 @@ module RongIMLib {
                 onError: function(error: ErrorCode) { }
             });
 
+        }
+
+        addConversation(conversation: Conversation, callback:any):void{
+            RongIMClient._dataAccessProvider.addConversation(conversation, callback);
         }
 
         private sortConversationList(conversationList: Conversation[]) {
@@ -1225,25 +1216,7 @@ module RongIMLib {
 
         // #region Public Service
         getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any) {
-            if (RongIMClient._memoryStore.depend.openMp) {
-                var modules = new RongIMClient.Protobuf.PullMpInput(), self = this;
-                if (!pullMessageTime) {
-                    modules.setTime(0);
-                } else {
-                    modules.setTime(pullMessageTime);
-                }
-                modules.setMpid("");
-                RongIMClient.bridge.queryMsg(28, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                    onSuccess: function(data: Array<PublicServiceProfile>) {
-                        //TODO 找出最大时间
-                        // self.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
-                        RongIMClient._memoryStore.publicServiceMap.publicServiceList.length = 0;
-                        RongIMClient._memoryStore.publicServiceMap.publicServiceList = data;
-                        callback.onSuccess(data);
-                    },
-                    onError: function() { }
-                }, "PullMpOutput");
-            }
+            RongIMClient._dataAccessProvider.getRemotePublicServiceList(callback, pullMessageTime);
         }
         /**
          * [getPublicServiceList ]获取本地的公共账号列表
@@ -1264,8 +1237,7 @@ module RongIMLib {
         getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
             if (RongIMClient._memoryStore.depend.openMp) {
                 CheckParam.getInstance().check(["number", "string|number", "object"], "getPublicServiceProfile", false, arguments);
-                var profile: PublicServiceProfile = RongIMClient._memoryStore.publicServiceMap.get(publicServiceType, publicServiceId);
-                callback.onSuccess(profile);
+                RongIMClient._dataAccessProvider.getPublicServiceProfile(publicServiceType, publicServiceId, callback);
             }
         }
 
