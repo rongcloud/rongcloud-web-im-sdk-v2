@@ -732,11 +732,13 @@ module RongIMLib {
 
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback): void { }
 
-        joinGroup(groupId: string, groupName: string, callback: OperationCallback): void { }
+        setDeviceId(deviceId: string):void{
+            this.addon.setDeviceId(deviceId);
+        }
 
-        quitGroup(groupId: string, callback: OperationCallback): void { }
-
-        syncGroup(groups: Array<Group>, callback: OperationCallback): void { }
+        setEnvironment(isPrivate: boolean):void{
+            this.addon.setEnvironment(isPrivate);
+        }
 
         addConversation(conversation: Conversation, callback: ResultCallback<boolean>): void { }
 
@@ -788,6 +790,75 @@ module RongIMLib {
 
         getCurrentConnectionStatus(): number{
             return this.addon.getConnectionStatus();
+        }
+
+        getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>) {
+          var extra = "";
+          this.addon.getVoIPKey(engineType, channelName, extra,
+            function(token: string) {
+                callback.onSuccess(token);
+            },
+            function(errorCode: any) {
+                  callback.onError(errorCode);
+            });
+        }
+
+        getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
+            var profile = RongIMClient._memoryStore.publicServiceMap.get(publicServiceType, publicServiceId);
+            callback.onSuccess(profile);
+        }
+
+        getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any) {
+            var publicList:any[] = [];
+            var ret = this.addon.getAccounts();
+            var transformProto = function(ret: any){
+                var result:{[key: string]: any} = {
+                    hasFollowed: false,
+                    isGlobal: false,
+                    menu: null
+                };
+                if (!ret.obj) {
+                    var error = {error: ret}
+                    throw new Error('公众账号数据格式错误: ' + JSON.stringify(error));
+                }
+                var obj = JSON.parse(ret.obj);
+                var protoMap:{[key: string]: any} = {
+                    aType: 'conversationType',
+                    aId: 'publicServiceId',
+                    aName: 'introduction',
+                    aUri: 'portraitUri',
+                    follow: 'hasFollowed',
+                    isGlobal: 'isGlobal'
+                };
+                for(var key in obj){
+                    var val = obj[key];
+                    if (key == 'aExtra') {
+                        var extra = JSON.parse(val);
+                        result["hasFollowed"] = extra.follow;
+                        result["isGlobal"] = extra.isGlobal;
+                        result["menu"] = extra.menu;
+                    }
+                    var uId = protoMap[key];
+                    if (uId) {
+                        result[uId] = val;
+                    }
+                }
+                return result;
+            };
+            if (ret) {
+                ret = JSON.parse(ret);
+                var list = ret.list;
+                for(var i = 0, len = list.length; i < len; i++){
+                    var item = list[i];
+                    item = transformProto(item);
+                    publicList.push(item);
+                }
+            }
+            if (publicList.length > 0) {
+                RongIMClient._memoryStore.publicServiceMap.publicServiceList.length = 0;
+                RongIMClient._memoryStore.publicServiceMap.publicServiceList = publicList;
+            }
+            callback.onSuccess(RongIMClient._memoryStore.publicServiceMap.publicServiceList);
         }
 
         private buildUserStatus(result : string):UserStatus{

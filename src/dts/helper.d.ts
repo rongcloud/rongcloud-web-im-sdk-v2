@@ -1,4 +1,4 @@
-declare function md5(str: string): any;
+declare function md5(str: string, key?:string, raw?:string): any;
 declare var Modules: any;
 declare var require: any;
 declare var module: any;
@@ -225,4 +225,12 @@ declare interface Addon {
     setConversationNotificationStatus(conversationType:number, targetId:string, status: boolean, success:Function, error:Function):void;
 
     getConnectionStatus(): number;
+
+    setDeviceId(deviceId: string):void;
+
+    setEnvironment(isPrivate: boolean):void;
+
+    getVoIPKey(engineType: number, channelName: string, extra: string, success: Function, error: Function):void;
+
+    getAccounts(): any;
 }

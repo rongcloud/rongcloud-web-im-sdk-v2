@@ -148,5 +148,15 @@ module RongIMLib {
         setConversationNotificationStatus(params:any, callback:any):void;
 
         getCurrentConnectionStatus():number;
+
+        setDeviceId(deviceId: string):void;
+
+        setEnvironment(isPrivate: boolean):void;
+
+        getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>):void;
+
+        getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any):void;
+
+        getPublicServiceProfile(publicServiceType: number, publicServiceId: string, callback:any): void;
     }
 }
