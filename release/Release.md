@@ -69,3 +69,9 @@
 领创 (1.3.1)
 
     1、c++ getHistoryMessages 增加 objectname、direction
+
+讯飞
+
+修复 Webpack 编译 ES6 Object.prototype.toString.call(null) 为 [object Window] 引发 comet 无法连接
+
+CheckParam.prototype.getType
