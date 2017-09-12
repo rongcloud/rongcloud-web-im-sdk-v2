@@ -95,6 +95,13 @@ a {
    
     // 表情信息可参考 <a href="http://unicode.org/emoji/charts/full-emoji-list.html">http://unicode.org/emoji/charts/full-emoji-list.html</a>
     
+    // <strong>自定义设置</strong>
+    var config = {
+        size: '大小',
+        url: '背景图',
+        lang: '选择的语言',
+        reg: '匹配unicode的正则表达式'
+    };
     // <strong>扩展表情，设置扩展表情的信息</strong>
     var emoji = {
         dataSource: {
@@ -107,15 +114,8 @@ a {
         },
         url: "背景图片地址"
     };
-    // <strong>自定义设置</strong>
-    var config = {
-        size: '大小',
-        url: '背景图',
-        lang: '选择的语言',
-        reg: '匹配unicode的正则表达式'
-    };
     // <strong>初始化</strong>
-    RongIMLib.RongIMEmoji.init(emoji, config);
+    RongIMLib.RongIMEmoji.init(config, emoji);
         </pre>
     </li>
     <li>
@@ -352,7 +352,7 @@ test(RongIMLib.RongIMEmoji);
 function test(RongIMEmoji){
 
 
-    RongIMEmoji.init(emojiNew, enConfig);
+    RongIMEmoji.init(enConfig, emojiNew);
 
     var t = document.querySelector('#show');
     var str;
@@ -379,7 +379,7 @@ function test(RongIMEmoji){
 
 
     //symbolToEmoji english
-    RongIMEmoji.init(emojiNew, config);
+    RongIMEmoji.init(config, emojiNew);
     str = "[狞笑] [露齿而笑]  测试Emoji";
     t.innerHTML += "(2)symbolToEmoji，中文参数： \n";
     t.innerHTML += "参数：\n";
