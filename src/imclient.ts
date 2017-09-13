@@ -1,6 +1,7 @@
 module RongIMLib {
     export class RongIMClient {
         static Protobuf: any;
+        static LogFactory: { [s: number]: any } = {};
         static MessageType: { [s: string]: any } = {};
         static MessageParams: { [s: string]: any };
         static RegisterMessage: { [s: string]: any } = {};
@@ -17,6 +18,43 @@ module RongIMLib {
             }
             return RongIMClient._instance;
         }
+        static showErrorInfo: boolean = true;
+        static showError(errorInfo: any): void {
+            console.error(JSON.stringify(errorInfo));
+        }
+        static logger(params: any): void {
+            var { funcName, code, desc } = params;
+            var errorInfo = RongIMClient.LogFactory[code] || params;
+            errorInfo.funcName = funcName;
+            RongIMClient.showErrorInfo && RongIMClient.showError(errorInfo);
+        }
+        static logCallback(callback: any, funcName: string) {
+            return {
+                onSuccess: callback.onSuccess,
+                onError: function(errorCode: ErrorCode) {
+                    RongIMClient.logger({
+                        code: errorCode,
+                        funcName: funcName
+                    });
+                    callback.onError(errorCode);
+                }
+            };
+        };
+
+        static logSendCallback(callback: any, funcName: string) {
+            return {
+                onSuccess: callback.onSuccess,
+                onError: function(errorCode: ErrorCode, result: Message) {
+                    RongIMClient.logger({
+                        code: errorCode,
+                        funcName: funcName
+                    });
+                    callback.onError(errorCode, result);
+                },
+                onBefore: callback.onBefore
+            };
+        };
+
         /**
          * 初始化 SDK，在整个应用全局只需要调用一次。
          * @param appKey    开发者后台申请的 AppKey，用来标识应用。
@@ -33,7 +71,7 @@ module RongIMLib {
             var protocols = 'http:,https:';
             if (protocols.indexOf(location.protocol) == -1) {
                 protocol = 'http://';
-            } 
+            }
             if (location.protocol == 'https:') {
                 wsScheme = 'wss://';
             }
@@ -229,7 +267,131 @@ module RongIMLib {
                 RecallCommandMessage: "RecallCommandMessage",
                 ReadReceiptMessage: "ReadReceiptMessage"
             };
-        }
+            RongIMClient.LogFactory = {
+                /**
+                 * 个人??????
+                 */
+                -1: {
+                    code: "-1",
+                    msg: "超时???????????????????????????????"
+                },
+                -2: {
+                    code: "-2",
+                    msg: "未知原因失败"
+                },
+                20604: {
+                    code: "20604",
+                    msg: "发送频率过快",
+                    desc: "https://developer.rongcloud.cn/ticket/info/9Q3L6vRKd1cLS7rycA==?type=1"
+                },
+                20406: {
+                    code: "20406",
+                    msg: "被禁言"
+                },
+                23407: {
+                    code: "23407",
+                    msg: "获取用户失败"
+                },
+                405: {
+                    code: "405",
+                    msg: "在黑名单中"
+                },
+                30001: {
+                    code: "30001",
+                    msg: "通信过程中，当前Socket不存在"
+                },
+                30002: {
+                    code: "30002",
+                    msg: "Socket连接不可用"
+                },
+                30003: {
+                    code: "30003",
+                    msg: "通信超时"
+                },
+                30004: {
+                    code: "30004",
+                    msg: "导航操作时，Http请求失败"
+                },
+                30005: {
+                    code: "30005",
+                    msg: "HTTP请求失败"
+                },
+                30006: {
+                    code: "30006",
+                    msg: "HTTP接收失败"
+                }
+                /**
+                 * 群组
+                 */
+                20407: {
+                    code: "20407",
+                    msg: "群组Id无效"
+                },
+                22408: {
+                    code: "22408",
+                    msg: "群组被禁言"
+                },
+                22406: {
+                    code: "22406",
+                    msg: "不在群组"
+                },
+                /**
+                 * 讨论组
+                 */
+                21406: {
+                    code: "21406",
+                    msg: "不在讨论组"
+                },
+                21407: {
+                    code: "21407",
+                    msg: "加入讨论失败"
+                },
+                21408: {
+                    code: "21408",
+                    msg: "创建讨论组失败"
+                },
+                21409: {
+                    code: "21409",
+                    msg: "设置讨论组邀请状态失败"
+                },
+                /**
+                 * 聊天室
+                 */
+                23406: {
+                    code: "23406",
+                    msg: "不在聊天室"
+                },
+                23408: {
+                    code: "23408",
+                    msg: "聊天室被禁言"
+                },
+                23409: {
+                    code: "23409",
+                    msg: "聊天室中成员被踢出"
+                },
+                23410: {
+                    code: "23410",
+                    msg: "聊天室不存在"
+                },
+                23411: {
+                    code: "23411",
+                    msg: "聊天室成员已满"
+                },
+                23412: {
+                    code: "23412",
+                    msg: "获取聊天室信息参数无效"
+                },
+                23413: {
+                    code: "23413",
+                    msg: "聊天室异常"
+                },
+                23414: {
+                    code: "23414",
+                    msg: "没有打开聊天室消息存储"
+                }
+            };
+        };
+
         /**
             var config = {
                 appkey: appkey,
@@ -568,7 +730,7 @@ module RongIMLib {
          */
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any) {
             CheckParam.getInstance().check(["number", "string|number", "object", "object", "undefined|object|null|global|boolean", "undefined|object|null|global|string", "undefined|object|null|global|string", "undefined|object|null|global|number", "undefined|object|null|global"], "sendMessage", false, arguments);
-            RongIMClient._dataAccessProvider.sendMessage(conversationType, targetId, messageContent, sendCallback, mentiondMsg, pushText, appData, methodType, params);
+            RongIMClient._dataAccessProvider.sendMessage(conversationType, targetId, messageContent, RongIMClient.logSendCallback(sendCallback, "sendMessage"), mentiondMsg, pushText, appData, methodType, params);
         }
 
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback) {
