@@ -9,6 +9,8 @@
         window.RongIMLib.RongIMEmoji = factory();
     }
 })(window, function() {
+    /* 所有原生emoji组成的数组 */
+    var nativeEmojis = [];
     /* 所有emoji转化为span组成的数组 */
     var emojiHtmls = [];
     /* 所有emoji的名称，语言为init中设置的语言 */
@@ -247,12 +249,14 @@
         emojiNames.length = 0;
         emojiHtmls.length = 0;
         emojiDetails.length = 0;
+        nativeEmojis.length = 0;
         for (var key in emojiFactory) {
             var detail = emojiFactory[key];
             var lang = configs.lang;
             var span = createSpan(detail);
             detail.name = "[" + detail[lang] + "]";
             detail.html = span;
+            nativeEmojis.push(detail.tag);
             emojiNames.push(detail[lang]);
             emojiHtmls.push(getDom(span));
             emojiDetails.push(detail);
@@ -408,6 +412,7 @@
         setupLanguage: setupLanguage,
         supportLanguage: supportLanguage,
         emojis: emojiHtmls,
+        nativeEmojis: nativeEmojis,
         names: emojiNames,
         getAllEmoji: emojiDetails,
         emojiToSymbol: emojiToSymbol,
