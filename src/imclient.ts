@@ -23,9 +23,10 @@ module RongIMLib {
             console.error(JSON.stringify(errorInfo));
         }
         static logger(params: any): void {
-            var { funcName, code, desc } = params;
+            var code = params.code;
             var errorInfo = RongIMClient.LogFactory[code] || params;
-            errorInfo.funcName = funcName;
+            errorInfo.funcName = params.funcName;
+            errorInfo.msg = params.msg || errorInfo.msg;
             RongIMClient.showErrorInfo && RongIMClient.showError(errorInfo);
         }
         static logCallback(callback: any, funcName: string) {
@@ -280,6 +281,14 @@ module RongIMLib {
                     code: "-2",
                     msg: "未知原因失败"
                 },
+                "-3" : {
+                    code: "-3",
+                    msg: "参数错误"
+                },
+                "-4": {
+                    code: "-4",
+                    msg: "参数不正确或尚未实例化"
+                },
                 "20604": {
                     code: "20604",
                     msg: "发送频率过快",
@@ -420,11 +429,33 @@ module RongIMLib {
          */
         static connect(token: string, callback: ConnectCallback, userId?: string): void {
             CheckParam.getInstance().check(["string", "object", "string|null|object|global|undefined"], "connect", true, arguments);
-            RongIMClient._dataAccessProvider.connect(token, callback, userId);
+            var connectCallback = {
+                onSuccess: callback.onSuccess,
+                onTokenIncorrect: callback.onTokenIncorrect,
+                onError: function(errorCode: any) {
+                    RongIMClient.logger({
+                        code: errorCode,
+                        funcName: "connect"
+                    });
+                    callback.onError(errorCode);
+                }
+            };
+            RongIMClient._dataAccessProvider.connect(token, connectCallback, userId);
         }
 
         static reconnect(callback: ConnectCallback, config?: any) {
-            RongIMClient._dataAccessProvider.reconnect(callback, config);
+            var connectCallback = {
+                onSuccess: callback.onSuccess,
+                onTokenIncorrect: callback.onTokenIncorrect,
+                onError: function(errorCode: any) {
+                    RongIMClient.logger({
+                        code: errorCode,
+                        funcName: "connect"
+                    });
+                    callback.onError(errorCode);
+                }
+            };
+            RongIMClient._dataAccessProvider.reconnect(connectCallback, config);
         }
         /**
          * 注册消息类型，用于注册用户自定义的消息。
@@ -604,7 +635,7 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.VoipDynamicInput();
             modules.setEngineType(engineType);
             modules.setChannelName(channelName);
-            RongIMClient.bridge.queryMsg(32, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "VoipDynamicOutput");
+            RongIMClient.bridge.queryMsg(32, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, RongIMClient.logCallback(callback, "getAgoraDynamicKey"), "VoipDynamicOutput");
         }
 
         /**
@@ -625,15 +656,15 @@ module RongIMLib {
         // #region Message
 
         getMessage(messageId: string, callback: ResultCallback<Message>) {
-            RongIMClient._dataAccessProvider.getMessage(messageId, callback);
+            RongIMClient._dataAccessProvider.getMessage(messageId, RongIMClient.logCallback(callback, "getMessage"));
         }
 
         deleteLocalMessages(conversationType: ConversationType, targetId: string, messageIds: number[], callback: ResultCallback<boolean>) {
-            RongIMClient._dataAccessProvider.removeLocalMessage(conversationType, targetId, messageIds, callback);
+            RongIMClient._dataAccessProvider.removeLocalMessage(conversationType, targetId, messageIds, RongIMClient.logCallback(callback, "deleteLocalMessages"));
         }
 
         updateMessage(message: Message, callback?: ResultCallback<Message>) {
-            RongIMClient._dataAccessProvider.updateMessage(message, callback);
+            RongIMClient._dataAccessProvider.updateMessage(message, RongIMClient.logCallback(callback, "updateMessage"));
         }
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
@@ -645,6 +676,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "clearMessages"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -665,6 +700,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "clearMessagesUnreadStatus"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -674,6 +713,11 @@ module RongIMLib {
         deleteRemoteMessages(conversationType: ConversationType, targetId: string, delMsgs: DeleteMessage[], callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["number", "string|number", "array", "object"], "deleteRemoteMessages", false, arguments);
             if (delMsgs.length == 0) {
+                var errorCode = ErrorCode.DELETE_MESSAGE_ID_IS_NULL;
+                RongIMClient.logger({
+                    code: errorCode,
+                    funcName: "deleteRemoteMessages"
+                });
                 callback.onError(ErrorCode.DELETE_MESSAGE_ID_IS_NULL);
                 return;
             } else if (delMsgs.length > 100) {
@@ -710,6 +754,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "deleteMessages"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -718,7 +766,7 @@ module RongIMLib {
         sendLocalMessage(message: Message, callback: SendMessageCallback) {
             CheckParam.getInstance().check(["object", "object"], "sendLocalMessage", false, arguments);
             RongIMClient._dataAccessProvider.updateMessage(message);
-            this.sendMessage(message.conversationType, message.targetId, message.content, callback);
+            this.sendMessage(message.conversationType, message.targetId, message.content, RongIMClient.logSendCallback(callback, "sendLocalMessage"));
         }
         /**
          * [sendMessage 发送消息。]
@@ -736,11 +784,11 @@ module RongIMLib {
         }
 
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback) {
-            RongIMClient._dataAccessProvider.sendReceiptResponse(conversationType, targetId, sendCallback);
+            RongIMClient._dataAccessProvider.sendReceiptResponse(conversationType, targetId, RongIMClient.logSendCallback(sendCallback, "sendReceiptResponse"));
         }
 
         sendTypingStatusMessage(conversationType: ConversationType, targetId: string, messageName: string, sendCallback: SendMessageCallback) {
-            RongIMClient._dataAccessProvider.sendTypingStatusMessage(conversationType, targetId, messageName, sendCallback);
+            RongIMClient._dataAccessProvider.sendTypingStatusMessage(conversationType, targetId, messageName, RongIMClient.logSendCallback(sendCallback, "sendTypingStatusMessage"));
         }
         /**
          * [sendStatusMessage description]
@@ -757,11 +805,11 @@ module RongIMLib {
          * @param  {ResultCallback<Message>} resultCallback [返回值，参数回调]
          */
         sendTextMessage(conversationType: ConversationType, targetId: string, content: string, sendMessageCallback: SendMessageCallback) {
-            RongIMClient._dataAccessProvider.sendTextMessage(conversationType, targetId, content, sendMessageCallback);
+            RongIMClient._dataAccessProvider.sendTextMessage(conversationType, targetId, content, RongIMClient.logSendCallback(sendMessageCallback, "sendTextMessage"));
         }
 
         sendRecallMessage(content:any, sendMessageCallback: SendMessageCallback): void {
-            RongIMClient._dataAccessProvider.sendRecallMessage(content, sendMessageCallback);
+            RongIMClient._dataAccessProvider.sendRecallMessage(content, RongIMClient.logSendCallback(sendMessageCallback, "sendRecallMessage"));
         }
         /**
          * [insertMessage 向本地插入一条消息，不发送到服务器。]
@@ -772,7 +820,7 @@ module RongIMLib {
          * @param  {ResultCallback<Message>} callback         [description]
          */
         insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: Message, callback: ResultCallback<Message>) {
-            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, content, callback);
+            RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, content, RongIMClient.logCallback(callback, "insertMessage"));
         }
         /**
          * [getHistoryMessages 拉取历史消息记录。]
@@ -791,7 +839,7 @@ module RongIMLib {
             if (conversationType.valueOf() < 0) {
                 throw new Error("ConversationType must be greater than -1");
             }
-            RongIMClient._dataAccessProvider.getHistoryMessages(conversationType, targetId, timestamp, count, callback, objectname, direction);
+            RongIMClient._dataAccessProvider.getHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, "getHistoryMessages"), objectname, direction);
         }
 
         setMessageContent(messageId:number, content:any, objectName: string):void{
@@ -808,15 +856,22 @@ module RongIMLib {
          */
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
             CheckParam.getInstance().check(["number", "string|number", "number|null|global|object", "number", "object"], "getRemoteHistoryMessages", false, arguments);
+            var funcName = "getRemoteHistoryMessages";
+            var log = {
+                errorCode: ErrorCode.RC_CONN_PROTO_VERSION_ERROR,
+                funcName: "getRemoteHistoryMessages"
+            };
             if (count > 20) {
+                RongIMClient.logger(log);
                 callback.onError(ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
                 return;
             }
             if (conversationType.valueOf() < 0) {
+                RongIMClient.logger(log);
                 callback.onError(ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
                 return;
             }
-            RongIMClient._dataAccessProvider.getRemoteHistoryMessages(conversationType, targetId, timestamp, count, callback);
+            RongIMClient._dataAccessProvider.getRemoteHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, funcName));
         }
         /**
          * [hasRemoteUnreadMessages 是否有未接收的消息，jsonp方法]
@@ -825,7 +880,7 @@ module RongIMLib {
          * @param  {ConnectCallback} callback [返回值，参数回调]
          */
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>) {
-            RongIMClient._dataAccessProvider.hasRemoteUnreadMessages(token, callback);
+            RongIMClient._dataAccessProvider.hasRemoteUnreadMessages(token, RongIMClient.logCallback(callback, "hasRemoteUnreadMessages"));
         }
         getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]) {
             RongIMClient._dataAccessProvider.getTotalUnreadCount({
@@ -836,6 +891,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "getTotalUnreadCount"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -855,6 +914,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "getConversationUnreadCount"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -874,6 +937,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "getUnreadCount"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -881,7 +948,7 @@ module RongIMLib {
         }
 
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{
-           RongIMClient._dataAccessProvider.clearUnreadCountByTimestamp(conversationType, targetId, timestamp, callback);
+           RongIMClient._dataAccessProvider.clearUnreadCountByTimestamp(conversationType, targetId, timestamp, RongIMClient.logCallback(callback, "clearUnreadCountByTimestamp"));
         }
 
         /**
@@ -899,6 +966,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "clearUnreadCount"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -919,6 +990,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "setMessageExtra"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -934,6 +1009,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "setMessageReceivedStatus"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -941,7 +1020,7 @@ module RongIMLib {
         }
 
         setMessageStatus(conersationType:ConversationType, targetId: string, timestamp:number, status: string, callback: ResultCallback<boolean>){
-            RongIMClient._dataAccessProvider.setMessageStatus(conersationType, targetId, timestamp, status, callback);
+            RongIMClient._dataAccessProvider.setMessageStatus(conersationType, targetId, timestamp, status, RongIMClient.logCallback(callback, "setMessageStatus"));
         }
 
         setMessageSentStatus(messageId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
@@ -953,6 +1032,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "setMessageSentStatus"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -1004,11 +1087,11 @@ module RongIMLib {
         // #region Conversation
 
         searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void {
-            RongIMClient._dataAccessProvider.searchConversationByContent(keyword, callback, conversationTypes);
+            RongIMClient._dataAccessProvider.searchConversationByContent(keyword, RongIMClient.logCallback(callback, "searchConversationByContent"), conversationTypes);
         }
 
         searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
-            RongIMClient._dataAccessProvider.searchMessageByContent(conversationType, targetId, keyword, timestamp, count, total, callback);
+            RongIMClient._dataAccessProvider.searchMessageByContent(conversationType, targetId, keyword, timestamp, count, total, RongIMClient.logCallback(callback, "searchMessageByContent"));
         }
 
         clearConversations(callback: ResultCallback<boolean>, ...conversationTypes: ConversationType[]) {
@@ -1030,6 +1113,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "clearConversations"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -1051,6 +1138,10 @@ module RongIMLib {
                 },
                 onError: function(error: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: error,
+                            funcName: "getConversation"
+                        });
                         callback.onError(error);
                     });
                 }
@@ -1151,6 +1242,10 @@ module RongIMLib {
                 },
                 onError: function(error: ErrorCode) {
                     setTimeout(function(){
+                        RongIMClient.logger({
+                            code: error,
+                            funcName: "getConversationList"
+                        });
                         callback.onError(error);
                     });
                 }
@@ -1158,7 +1253,7 @@ module RongIMLib {
         }
         getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number,isGetHiddenConvers:boolean) {
             CheckParam.getInstance().check(["object", "null|array|object|global", "number|undefined|null|object|global","boolean|undefined|null|object|global"], "getRemoteConversationList", false, arguments);
-            RongIMClient._dataAccessProvider.getRemoteConversationList(callback, conversationTypes, count,isGetHiddenConvers);
+            RongIMClient._dataAccessProvider.getRemoteConversationList(RongIMClient.logCallback(callback, "getRemoteConversationList"), conversationTypes, count,isGetHiddenConvers);
         }
 
         updateConversation(conversation: Conversation): Conversation {
@@ -1185,7 +1280,7 @@ module RongIMLib {
         //TODO 删除本地和服务器、删除本地和服务器分开
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["number", "string|number", "object"], "removeConversation", false, arguments);
-            RongIMClient._dataAccessProvider.removeConversation(conversationType, targetId, callback);
+            RongIMClient._dataAccessProvider.removeConversation(conversationType, targetId, RongIMClient.logCallback(callback, "removeConversation"));
         }
 
         setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void{
@@ -1203,6 +1298,10 @@ module RongIMLib {
                 },
                 onError: function(errorCode: ErrorCode) {
                     setTimeout(function() {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "setConversationToTop"
+                        });
                         callback.onError(errorCode);
                     });
                 }
@@ -1223,7 +1322,7 @@ module RongIMLib {
                 conversationType: conversationType,
                 targetId: targetId
             };
-            RongIMClient._dataAccessProvider.getConversationNotificationStatus(params, callback);
+            RongIMClient._dataAccessProvider.getConversationNotificationStatus(params, RongIMClient.logCallback(callback, "getConversationNotificationStatus"));
         }
         /**
          * [setConversationNotificationStatus 设置指定用户和会话类型免提醒。]
@@ -1237,7 +1336,7 @@ module RongIMLib {
                 targetId: targetId,
                 status: status
             };
-            RongIMClient._dataAccessProvider.setConversationNotificationStatus(params, callback);
+            RongIMClient._dataAccessProvider.setConversationNotificationStatus(params, RongIMClient.logCallback(callback, "setConversationNotificationStatus"));
         }
         /**
          * [getNotificationQuietHours 获取免提醒消息时间。]
@@ -1272,7 +1371,7 @@ module RongIMLib {
          */
         addMemberToDiscussion(discussionId: string, userIdList: string[], callback: OperationCallback) {
             CheckParam.getInstance().check(["string", "array", "object"], "addMemberToDiscussion", false, arguments);
-            RongIMClient._dataAccessProvider.addMemberToDiscussion(discussionId, userIdList, callback);
+            RongIMClient._dataAccessProvider.addMemberToDiscussion(discussionId, userIdList, RongIMClient.logCallback(callback, "addMemberToDiscussion"));
         }
         /**
          * [createDiscussion 创建讨论组]
@@ -1291,7 +1390,7 @@ module RongIMLib {
          */
         getDiscussion(discussionId: string, callback: ResultCallback<Discussion>) {
             CheckParam.getInstance().check(["string", "object"], "getDiscussion", false, arguments);
-            RongIMClient._dataAccessProvider.getDiscussion(discussionId, callback);
+            RongIMClient._dataAccessProvider.getDiscussion(discussionId, RongIMClient.logCallback(callback, "getDiscussion"));
         }
         /**
          * [quitDiscussion 退出讨论组]
@@ -1300,7 +1399,7 @@ module RongIMLib {
          */
         quitDiscussion(discussionId: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["string", "object"], "quitDiscussion", false, arguments);
-            RongIMClient._dataAccessProvider.quitDiscussion(discussionId, callback);
+            RongIMClient._dataAccessProvider.quitDiscussion(discussionId, RongIMClient.logCallback(callback, "quitDiscussion"));
         }
         /**
          * [removeMemberFromDiscussion 将指定成员移除讨论租]
@@ -1310,7 +1409,7 @@ module RongIMLib {
          */
         removeMemberFromDiscussion(discussionId: string, userId: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["string", "string", "object"], "removeMemberFromDiscussion", false, arguments);
-            RongIMClient._dataAccessProvider.removeMemberFromDiscussion(discussionId, userId, callback);
+            RongIMClient._dataAccessProvider.removeMemberFromDiscussion(discussionId, userId, RongIMClient.logCallback(callback, "removeMemberFromDiscussion"));
         }
         /**
          * [setDiscussionInviteStatus 设置讨论组邀请状态]
@@ -1320,7 +1419,7 @@ module RongIMLib {
          */
         setDiscussionInviteStatus(discussionId: string, status: DiscussionInviteStatus, callback: OperationCallback) {
             CheckParam.getInstance().check(["string", "number", "object"], "setDiscussionInviteStatus", false, arguments);
-            RongIMClient._dataAccessProvider.setDiscussionInviteStatus(discussionId, status, callback);
+            RongIMClient._dataAccessProvider.setDiscussionInviteStatus(discussionId, status, RongIMClient.logCallback(callback, "setDiscussionInviteStatus"));
         }
         /**
          * [setDiscussionName 设置讨论组名称]
@@ -1330,7 +1429,7 @@ module RongIMLib {
          */
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["string", "string", "object"], "setDiscussionName", false, arguments);
-            RongIMClient._dataAccessProvider.setDiscussionName(discussionId, name, callback);
+            RongIMClient._dataAccessProvider.setDiscussionName(discussionId, name, RongIMClient.logCallback(callback, "setDiscussionName"));
         }
 
         // #endregion Discussion
@@ -1346,11 +1445,16 @@ module RongIMLib {
             CheckParam.getInstance().check(["string|number", "number", "object"], "joinChatRoom", false, arguments);
             if (chatroomId == "") {
                 setTimeout(function() {
+                    var errorCode = ErrorCode.CHATROOM_ID_ISNULL;
+                    RongIMClient.logger({
+                        code: errorCode,
+                        funcName: "joinChatRoom"
+                    });
                     callback.onError(ErrorCode.CHATROOM_ID_ISNULL);
                 });
                 return;
             }
-            RongIMClient._dataAccessProvider.joinChatRoom(chatroomId, messageCount, callback);
+            RongIMClient._dataAccessProvider.joinChatRoom(chatroomId, messageCount, RongIMClient.logCallback(callback, "joinChatRoom"));
         }
 
         setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void{
@@ -1359,12 +1463,12 @@ module RongIMLib {
         }
         getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void{
             CheckParam.getInstance().check(["string|number", "number", "number", "object"], "getChatRoomHistoryMessages", false, arguments);
-            RongIMClient._dataAccessProvider.getChatRoomHistoryMessages(chatRoomId, count, order, callback);
+            RongIMClient._dataAccessProvider.getChatRoomHistoryMessages(chatRoomId, count, order, RongIMClient.logCallback(callback, "getChatRoomHistoryMessages"));
         }
 
         getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>) {
             CheckParam.getInstance().check(["string|number", "number", "number", "object"], "getChatRoomInfo", false, arguments);
-            RongIMClient._dataAccessProvider.getChatRoomInfo(chatRoomId, count, order, callback);
+            RongIMClient._dataAccessProvider.getChatRoomInfo(chatRoomId, count, order, RongIMClient.logCallback(callback, "getChatRoomInfo"));
         }
         /**
          * [退出聊天室]
@@ -1373,14 +1477,14 @@ module RongIMLib {
          */
         quitChatRoom(chatroomId: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["string|number", "object"], "quitChatRoom", false, arguments);
-            RongIMClient._dataAccessProvider.quitChatRoom(chatroomId, callback);
+            RongIMClient._dataAccessProvider.quitChatRoom(chatroomId, RongIMClient.logCallback(callback, "quitChatRoom"));
         }
 
         // #endregion ChatRoom
 
         // #region Public Service
         getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any) {
-            RongIMClient._dataAccessProvider.getRemotePublicServiceList(callback, pullMessageTime);
+            RongIMClient._dataAccessProvider.getRemotePublicServiceList(RongIMClient.logCallback(callback, "getRemotePublicServiceList"), pullMessageTime);
         }
         /**
          * [getPublicServiceList ]获取本地的公共账号列表
@@ -1389,7 +1493,7 @@ module RongIMLib {
         getPublicServiceList(callback: ResultCallback<PublicServiceProfile[]>) {
             if (RongIMClient._memoryStore.depend.openMp) {
                 CheckParam.getInstance().check(["object"], "getPublicServiceList", false, arguments);
-                this.getRemotePublicServiceList(callback);
+                this.getRemotePublicServiceList(RongIMClient.logCallback(callback, "getPublicServiceList"));
             }
         }
         /**
@@ -1401,7 +1505,7 @@ module RongIMLib {
         getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
             if (RongIMClient._memoryStore.depend.openMp) {
                 CheckParam.getInstance().check(["number", "string|number", "object"], "getPublicServiceProfile", false, arguments);
-                RongIMClient._dataAccessProvider.getPublicServiceProfile(publicServiceType, publicServiceId, callback);
+                RongIMClient._dataAccessProvider.getPublicServiceProfile(publicServiceType, publicServiceId, RongIMClient.logCallback(callback, "getPublicServiceProfile"));
             }
         }
 
@@ -1452,7 +1556,7 @@ module RongIMLib {
                 var modules = new RongIMClient.Protobuf.SearchMpInput();
                 modules.setType(this.pottingPublicSearchType(0, searchType));
                 modules.setId(keywords);
-                RongIMClient.bridge.queryMsg(29, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "SearchMpOutput");
+                RongIMClient.bridge.queryMsg(29, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, RongIMClient.logCallback(callback, "searchPublicService"), "SearchMpOutput");
             }
         }
         /**
@@ -1469,7 +1573,7 @@ module RongIMLib {
                 var modules: any = new RongIMClient.Protobuf.SearchMpInput();
                 modules.setType(this.pottingPublicSearchType(type, searchType));
                 modules.setId(keywords);
-                RongIMClient.bridge.queryMsg(29, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "SearchMpOutput");
+                RongIMClient.bridge.queryMsg(29, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, RongIMClient.logCallback(callback, "searchPublicServiceByType"), "SearchMpOutput");
             }
         }
         /**
@@ -1492,6 +1596,11 @@ module RongIMLib {
                         callback.onSuccess();
                     },
                     onError: function(code: ErrorCode) {
+                        var errorCode = code;
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "subscribePublicService"
+                        });
                         callback.onError(code);
                     }
                 }, "MPFollowOutput");
@@ -1514,6 +1623,11 @@ module RongIMLib {
                         callback.onSuccess();
                     },
                     onError: function(code: ErrorCode) {
+                        var errorCode = code;
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: "unsubscribePublicService"
+                        });
                         callback.onError(code);
                     }
                 }, "MPFollowOutput");
@@ -1530,7 +1644,7 @@ module RongIMLib {
          */
         addToBlacklist(userId: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["string|number", "object"], "addToBlacklist", false, arguments);
-            RongIMClient._dataAccessProvider.addToBlacklist(userId, callback);
+            RongIMClient._dataAccessProvider.addToBlacklist(userId, RongIMClient.logCallback(callback, "addToBlacklist"));
         }
         /**
          * [获取黑名单列表]
@@ -1548,7 +1662,7 @@ module RongIMLib {
         //TODO 如果人员不在黑名单中，获取状态会出现异常
         getBlacklistStatus(userId: string, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["string|number", "object"], "getBlacklistStatus", false, arguments);
-            RongIMClient._dataAccessProvider.getBlacklistStatus(userId, callback);
+            RongIMClient._dataAccessProvider.getBlacklistStatus(userId, RongIMClient.logCallback(callback, "getBlacklistStatus"));
         }
         /**
          * [将指定用户移除黑名单]
@@ -1557,17 +1671,17 @@ module RongIMLib {
          */
         removeFromBlacklist(userId: string, callback: OperationCallback) {
             CheckParam.getInstance().check(["string|number", "object"], "removeFromBlacklist", false, arguments);
-            RongIMClient._dataAccessProvider.removeFromBlacklist(userId, callback);
+            RongIMClient._dataAccessProvider.removeFromBlacklist(userId, RongIMClient.logCallback(callback, "removeFromBlacklist"));
         }
 
         getFileToken(fileType: FileType, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["number", "object"], "getQnTkn", false, arguments);
-            RongIMClient._dataAccessProvider.getFileToken(fileType, callback);
+            RongIMClient._dataAccessProvider.getFileToken(fileType, RongIMClient.logCallback(callback, "getFileToken"));
         }
 
         getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>) {
             CheckParam.getInstance().check(["number", "string", "string|global|object|null", "object"], "getQnTkn", false, arguments);
-            RongIMClient._dataAccessProvider.getFileUrl(fileType, fileName, oriName, callback);
+            RongIMClient._dataAccessProvider.getFileUrl(fileType, fileName, oriName, RongIMClient.logCallback(callback, "getFileUrl"));
         };
         // #endregion Blacklist
 
@@ -1611,8 +1725,13 @@ module RongIMLib {
         startCall(converType: ConversationType, targetId: string, userIds: string[], mediaType: VoIPMediaType, extra: string, callback: ResultCallback<ErrorCode>) {
             CheckParam.getInstance().check(["number", "string|number", "array", "number", "string", "object"], "startCall", false, arguments);
             if (RongIMClient._memoryStore.voipStategy) {
-                RongIMClient._voipProvider.startCall(converType, targetId, userIds, mediaType, extra, callback);
+                RongIMClient._voipProvider.startCall(converType, targetId, userIds, mediaType, extra, RongIMClient.logCallback(callback, "startCall"));
             } else {
+                var errorCode = ErrorCode.VOIP_NOT_AVALIABLE;
+                RongIMClient.logger({
+                    code: errorCode,
+                    funcName: "startCall"
+                });
                 callback.onError(ErrorCode.VOIP_NOT_AVALIABLE);
             }
         }
@@ -1620,8 +1739,13 @@ module RongIMLib {
         joinCall(mediaType: VoIPMediaType, callback: ResultCallback<ErrorCode>) {
             CheckParam.getInstance().check(['number', 'object'], "joinCall", false, arguments);
             if (RongIMClient._memoryStore.voipStategy) {
-                RongIMClient._voipProvider.joinCall(mediaType, callback);
+                RongIMClient._voipProvider.joinCall(mediaType, RongIMClient.logCallback(callback, "joinCall"));
             } else {
+                var errorCode = ErrorCode.VOIP_NOT_AVALIABLE;
+                RongIMClient.logger({
+                    code: errorCode,
+                    funcName: "joinCall"
+                });
                 callback.onError(ErrorCode.VOIP_NOT_AVALIABLE);
             }
         }
@@ -1636,8 +1760,13 @@ module RongIMLib {
         changeMediaType(converType: ConversationType, targetId: string, mediaType: VoIPMediaType, callback: OperationCallback) {
             CheckParam.getInstance().check(["number", "string", "number", "object"], "changeMediaType", false, arguments);
             if (RongIMClient._memoryStore.voipStategy) {
-                RongIMClient._voipProvider.changeMediaType(converType, targetId, mediaType, callback);
+                RongIMClient._voipProvider.changeMediaType(converType, targetId, mediaType, RongIMClient.logCallback(callback, "changeMediaType"));
             } else {
+                var errorCode = ErrorCode.VOIP_NOT_AVALIABLE;
+                RongIMClient.logger({
+                    code: errorCode,
+                    funcName: "changeMediaType"
+                });
                 callback.onError(ErrorCode.VOIP_NOT_AVALIABLE);
             }
         }
@@ -1654,15 +1783,15 @@ module RongIMLib {
         // UserStatus start
 
         getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
-            RongIMClient._dataAccessProvider.getUserStatus(userId,callback);
+            RongIMClient._dataAccessProvider.getUserStatus(userId,RongIMClient.logCallback(callback, "getUserStatus"));
         }
 
         setUserStatus(status:number, callback:ResultCallback<boolean>) : void{
-            RongIMClient._dataAccessProvider.setUserStatus(status,callback);
+            RongIMClient._dataAccessProvider.setUserStatus(status,RongIMClient.logCallback(callback, "setUserStatus"));
         }
 
         subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void{
-            RongIMClient._dataAccessProvider.subscribeUserStatus(userIds,callback);
+            RongIMClient._dataAccessProvider.subscribeUserStatus(userIds,RongIMClient.logCallback(callback, "subscribeUserStatus"));
         }
 
         setOnReceiveStatusListener(callback:Function) : void{

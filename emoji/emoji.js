@@ -407,6 +407,11 @@
         return emojiToHTML(emoji, sizePx, reg);
     };
 
+    var emojiToUnicode = function(emoji) {
+        var unicode = emoji.codePointAt(0);
+        return unicode.toString(16);
+    }
+
     return {
         init: init,
         setupLanguage: setupLanguage,
@@ -414,7 +419,7 @@
         emojis: emojiHtmls,
         nativeEmojis: nativeEmojis,
         names: emojiNames,
-        getAllEmoji: emojiDetails,
+        data: emojiDetails,
         emojiToSymbol: emojiToSymbol,
         symbolToEmoji: symbolToEmoji,
         emojiToHTML: emojiToHTML,

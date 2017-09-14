@@ -104,15 +104,28 @@ module RongIMLib {
             }
             return CheckParam._instance;
         }
+
+        logger(code: any, funcName: string, msg: string) {
+            RongIMClient.logger({
+                code: code,
+                funcName: funcName,
+                msg: msg
+            });
+        }
+
         check(f: any, position: string, d?: any, c?:any) {
             if (RongIMClient._dataAccessProvider || d) {
                 for (var g = 0, e = c.length; g < e; g++) {
                     if (!new RegExp(this.getType(c[g])).test(f[g])) {
-                        throw new Error("The index of " + g + " parameter was wrong type " + this.getType(c[g]) + " [" + f[g] + "] -> position:" + position);
+                        // throw new Error("The index of " + g + " parameter was wrong type " + this.getType(c[g]) + " [" + f[g] + "] -> position:" + position);
+                        var msg = "第" + (g + 1) + "个参数错误, 错误类型：" + this.getType(c[g]) + " [" + f[g] + "] -> 位置:" + position;
+                        this.logger("-3", position, msg);
                     }
                 }
             } else {
-                throw new Error("The parameter is incorrect or was not yet instantiated RongIMClient -> position:" + position);
+                var msg = "该参数不正确或尚未实例化RongIMClient -> 位置:" + position;
+                this.logger("-4", position, msg);
+                // throw new Error("The parameter is incorrect or was not yet instantiated RongIMClient -> position:" + position);
             }
         }
         getType(str: string): string {
