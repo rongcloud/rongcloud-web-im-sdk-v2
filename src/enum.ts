@@ -427,7 +427,7 @@ module RongIMLib {
          */
         GROUP_SYNC_ERROR = 35001,
         /**
-         * 匹配群信息系异常
+         * 匹配群信息异常
          */
         GROUP_MATCH_ERROR = 35002,
 
