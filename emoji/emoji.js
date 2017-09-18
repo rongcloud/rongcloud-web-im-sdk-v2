@@ -250,10 +250,15 @@
         var testEmoji = '😁';
         var mode = getTextFeature(testEmoji, "#000");
         if (mode) {
+            var otherEmoji = '😨';
             var feature = getTextFeature(testEmoji, "#000");
             var colorFeatrue = getTextFeature(testEmoji, "#FFF");
-            // emoji不能被上色，判断两次上色，结果是否相同
-            return feature && feature === colorFeatrue;
+            var otherFeature = getTextFeature(otherEmoji, "#000");
+            // emoji以图片渲染时不能被上色, 添加不同色, 判断两次上色是否相同
+            var isSameColor = feature && feature === colorFeatrue;
+            // emoji以字符渲染时可以被上色, 添加相同色, 判断两次上色是否不同
+            var isDiffColor = feature && feature !== otherFeature;
+            return isSameColor || isDiffColor;
         } else {
             return false;
         }
