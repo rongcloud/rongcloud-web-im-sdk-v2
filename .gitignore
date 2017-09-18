@@ -5,3 +5,4 @@ typings
 .tscache
 *.log
 docs/**/*.*
+.DS_Store
