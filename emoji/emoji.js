@@ -151,36 +151,58 @@
         "u2744": { "en": "Snowflake", "zh": "雪花", "tag": "\u2744", "position": "-3175px 0px" }
     };
 
-    var CheckParam = {
+    var Logger = {
+        LogFactory: {
+            "-3": {
+                code: -3,
+                msg: "Emoji参数错误"
+            },
+            "-5": {
+                code: -5,
+                msg: "Emoji初始化错误"
+            },
+            "-6": {
+                code: -6,
+                msg: "Emoji语言设置错误"
+            }
+        },
         isShowError: true,
         showErrorInfo: function(errorInfo) {
             console.error(JSON.stringify(errorInfo));
         },
         logger: function(params) {
-            var errorInfo = params;
+            var code = params.code;
+            var logInfo = this.LogFactory[code] || params;
+            var errorInfo = JSON.stringify(logInfo);
+            errorInfo = JSON.parse(errorInfo);
             errorInfo.funcName = params.funcName;
-            errorInfo.msg = params.msg;
+            errorInfo.msg += ', ' + params.msg;
             this.showErrorInfo(errorInfo);
-        },
+        }
+    };
+    var CheckParam = {
         getType: function(str) {
             var temp = Object.prototype.toString.call(str).toLowerCase();
             return temp.slice(8, temp.length - 1);
         },
-        check: function(typeList, funcName, minCount, params) {
+        check: function(typeList, funcName, minCount, maxCount, params) {
             params = params || [];
             if (params.length < minCount) {
                 params.length = minCount;
             }
+            if (params.length > maxCount) {
+                params.length = maxCount;
+            }
             for (var i = 0; i < params.length; i++) {
                 var paramType = this.getType(params[i]);
-                var sucType = typeList[i];
-                sucType += i >= minCount ? "|null|undefined" : "";
+                var type = typeList[i];
+                var sucType = type + (i >= minCount ? "|null|undefined" : "");
                 if (!new RegExp(paramType).test(sucType)) {
-                    var msg = "第" + (i + 1) + "个参数错误, 错误类型: " + paramType + "[" + sucType + "] -> 位置: RongIMEmoji." + funcName;
-                    this.logger({
+                    var msg = "第" + (i + 1) + "个参数错误, 错误类型: " + paramType + "[" + type + "] -> 位置: RongIMEmoji." + funcName;
+                    Logger.logger({
+                        code: -3,
                         funcName: funcName,
-                        msg: msg,
-                        desc: "https://rongcloud.github.io/websdk-demo/emoji.html"
+                        msg: msg
                     });
                 }
             }
@@ -201,23 +223,75 @@
 
     /* 判断是否支持emoji的渲染 */
     var isSupportEmoji = (function() {
-        var node = document.createElement("canvas");
-        if (!node.getContext || !node.getContext("2d") || typeof node.getContext("2d").fillText !== "function") {
-            return false;
-        }
-        var checkEmojis = [ "\ud83d\ude03", "\uD83D\uDD56", "\uD83C\uDFC0" ];
-        for (var i = 0; i < checkEmojis.length; i++) {
-            var emoji = checkEmojis[i];
-            var ctx = node.getContext("2d");
-            ctx.textBaseline = "top";
-            ctx.font = "32px Arial";
-            ctx.fillText(emoji, 0, 0);
-            if (ctx.getImageData(16, 16, 1, 1).data[[0]] !== 0) {
-                return true;
+        var getTextFeature = function(text, color) {
+            try {
+                var canvas = document.createElement("canvas");
+                canvas.width = 2;
+                canvas.height = 2;
+                var ctx = canvas.getContext("2d");
+                ctx.textBaseline = "top";
+                ctx.font = "100px sans-serif";
+                ctx.fillStyle = color;
+                ctx.scale(0.02, 0.02);
+                ctx.fillText(text, 0, 0);
+                var imageData = ctx.getImageData(0, 0, 2, 2).data;
+                var imageDataArr = [];
+                for (var i = 0; i < imageData.length; i++) {
+                    imageDataArr[i] = imageData[i];
+                }
+                var hasColor = imageDataArr.reduce(function(a, b) {
+                    return a + b;
+                }, 0) > 0;
+                return hasColor ? imageDataArr.toString() : false;
+            } catch (e) {
+                return false;
             }
         }
-        return false;
+        var testEmoji = '😁';
+        var mode = getTextFeature(testEmoji, "#000");
+        if (mode) {
+            var feature = getTextFeature(testEmoji, "#000");
+            var colorFeatrue = getTextFeature(testEmoji, "#FFF");
+            // emoji不能被上色，判断两次上色，结果是否相同
+            return feature && feature === colorFeatrue;
+        } else {
+            return false;
+        }
     })();
+
+    var checkLanguage = function(lang, code, funcName) {
+        var isSupportLang = supportLanguage.indexOf(lang) !== -1;
+        if (!isSupportLang) {
+            var msg = "不支持语言: " + lang + ", 支持的语言有: " + supportLanguage.join(', ');
+            Logger.logger({
+                code: code,
+                msg: msg,
+                funcName: funcName
+            });
+        }
+        return isSupportLang;
+    }
+
+    var checkInitParams = function(opt, newEmojis, funcName) {
+        var optParams = { size: "number", url: "string", regExp: "regexp" };
+        for (var key in optParams) {
+            var value = opt[key];
+            var type = optParams[key];
+            var sucType = type + "|null|undefined";
+            var valueType = CheckParam.getType(value);
+            if (!new RegExp(valueType).test(sucType)) {
+                var msg = "option." + key + "类型错误, 错误类型: " + valueType + " [" + type + "] -> 位置:init" ;
+                Logger.logger({
+                    code: -5,
+                    msg: msg,
+                    funcName: funcName
+                });
+            }
+        }
+        if (opt.lang) {
+            checkLanguage(opt.lang, -5, funcName);
+        }
+    }
 
     /**
      * 初始化
@@ -225,7 +299,9 @@
      * @param  {object} newEmojis  可选，包含dataSource和url。 dataSource包含扩展的表情信息, key为标识表情的unicode码
      */
     var init = function(opt, newEmojis) {
-        CheckParam.check(["object", "object"], "init", 0, arguments);
+        CheckParam.check(["object", "object"], "init", 0, 2, arguments);
+        checkInitParams(opt, newEmojis, "init");
+
         addBaseCss();
         configs = extend(configs, opt);
         setupEmojiFactory(opt, newEmojis);
@@ -366,9 +442,11 @@
      * 重新设置语言
      */
     var setupLanguage = function(lang) {
-        CheckParam.check(["string"], "setupLanguage", 1, arguments);
-        configs.lang = lang;
-        setupEmojiDetails();
+        CheckParam.check(["string"], "setupLanguage", 1, 1, arguments);
+        if (checkLanguage(lang, -6, "setupLanguage")) {
+            configs.lang = lang;
+            setupEmojiDetails();
+        }
     };
 
     /**
@@ -378,7 +456,7 @@
      * @return {string}          转化后的字符串
      */
     var messageDecode = function(message, reg) {
-        CheckParam.check(["string", "regexp"], "messageDecode", 1, arguments);
+        CheckParam.check(["string", "regexp"], "messageDecode", 1, 2, arguments);
         reg = reg || configs.reg;
         return message.replace(reg, function(emoji) {
             return calculateUTF(emoji) || emoji;
@@ -392,7 +470,7 @@
      * @return {string}         转化后的字符串
      */
     var emojiToSymbol = function(message, reg) {
-        CheckParam.check(["string", "regexp"], "emojiToSymbol", 1, arguments);
+        CheckParam.check(["string", "regexp"], "emojiToSymbol", 1, 2, arguments);
         message = messageDecode(message, reg);
         return message.replace(tagRegExp, function(emojiTag) {
             var lang = configs.lang;
@@ -411,7 +489,7 @@
      * @return {string}
      */
     var symbolToEmoji = function(text) {
-        CheckParam.check(["string"], "symbolToEmoji", 1, arguments);
+        CheckParam.check(["string"], "symbolToEmoji", 1, 1, arguments);
         return text.replace(/\[([^\[\]]+?)\]/g, function(symbol) {
             return getEmojiBySymbol(symbol);
         });
@@ -425,7 +503,7 @@
      * @return {string}         转化后，包含emoji背景的span标签
      */
     var emojiToHTML = function(message, sizePx, reg) {
-        CheckParam.check(["string", "number", "regexp"], "emojiToHTML", 1, arguments);
+        CheckParam.check(["string", "number", "regexp"], "emojiToHTML", 1, 3, arguments);
         message = messageDecode(message, reg);
         return message.replace(tagRegExp, function(emojiTag) {
             for (var key in emojiFactory) {
@@ -445,7 +523,7 @@
      * @return {span标签}       转化后，包含emoji背景的span标签
      */
     var symbolToHTML = function(text, sizePx, reg) {
-        CheckParam.check(["string", "number", "regexp"], "symbolToHTML", 1, arguments);
+        CheckParam.check(["string", "number", "regexp"], "symbolToHTML", 1, 3, arguments);
         var emoji = symbolToEmoji(text);
         return emojiToHTML(emoji, sizePx, reg);
     };
