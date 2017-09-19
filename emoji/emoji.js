@@ -482,22 +482,12 @@
         return false;
     };
 
-    var init = (function() {
-        // CheckParam.checkInitParam(opt, newEmojis);
-        addBaseCss();
-        // configs = Utils.extends(configs, opt);
-        // setupEmojiFactory(newEmojis);
-        setupEmojiDetails();
-    })();
-
-
-
     /**
      * 自定义设置
      * @param  {[object]} opt 可包含 lang, reg, url, size
      */
     var setupConfig = function(opt) {
-        CheckParam.checkConfigParam(opt, "setupConfig");
+        CheckParam.checkConfigParam(opt || {}, "setupConfig");
         configs = Utils.extends(configs, opt);
         setupEmojiDetails();
     };
@@ -507,7 +497,7 @@
      * @param {object} newEmojis 可包含dataSource和url, url表示背景图, dataSource包含自定义的unicode和所对应emoji特性
      */
     var addNewEmojis = function(newEmojis) {
-        CheckParam.checkAddEmoji(newEmojis, "addNewEmojis");
+        CheckParam.checkAddEmoji(newEmojis || {}, "addNewEmojis");
         setupEmojiFactory(newEmojis);
         setupEmojiDetails();
     };
@@ -617,6 +607,11 @@
             })
         })();
     };
+
+    (function init() {
+        addBaseCss();
+        setupEmojiDetails();
+    })();
 
     return {
         isSupportEmoji: isSupportEmoji,
