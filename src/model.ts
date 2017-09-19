@@ -68,7 +68,8 @@ module RongIMLib {
             public senderPortraitUri?: string,
             public isHidden?:boolean,
             public mentionedMsg?: any,
-            public hasUnreadMention?:boolean
+            public hasUnreadMention?:boolean,
+            public _readTime?: number
         ) { }
         setTop(): void {
             RongIMClient._dataAccessProvider.addConversation(this, <ResultCallback<boolean>>{ onSuccess: function(data) { } });

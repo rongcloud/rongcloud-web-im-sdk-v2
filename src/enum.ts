@@ -735,8 +735,19 @@ module RongIMLib {
         RETRIEVED = 0x8, 
 
         UNREAD = 0
+    }
 
+    export enum ReadStatus{
+        
+        READ = 0x1, // 已读
 
+        LISTENED = 0x2, // 已听
+
+        DOWNLOADED = 0x4, // 已下载
+
+        RETRIEVED = 0x8, 
+
+        UNREAD = 0
     }
 
     export enum SearchType {
