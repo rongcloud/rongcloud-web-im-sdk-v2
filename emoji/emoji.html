@@ -12,6 +12,9 @@
 body{
     font-family:arial;
 }
+.chatbox {
+    margin-bottom: 20px;
+}
 .get-source {
     text-decoration:none;
     background:#000;
@@ -100,7 +103,7 @@ a {
         <p>发消息时, 必须直接发送emoji原生字符. 如：😀 , 转换方法：symbolToEmoji</p>
     </li>
     <li>
-        <p>Web SDK接收消息时接收到的是unicode编码格式, 如：”ef600”.需要使用messageDecode方法转化成原生emoji</p>
+        <p>Web SDK接收消息时接收到的是unicode编码格式, 如：”ef600”.需要转化才能正确显示原生emoji</p>
     </li>
 </ol>
 
@@ -154,35 +157,11 @@ a {
                 </tr>
             </thead>
             <tbody>
-                 <tr>
-                    <td>names</td>
-                    <td>var names = RongIMEmoji.names;</td>
-                    <td>
-                        获取全部表情的对应文字说明<br>
-                        ["[大笑]", "[露齿而笑]", ………]
-                    </td>
-                </tr>
                 <tr>
-                    <td>emojis</td>
-                    <td>var emojis = RongIMEmoji.emojis;</td>
-                    <td>
-                        获取全部表情的html标签<br>
-                        [span, span, ………]
-                    </td>
-                </tr>
-                <tr>
-                    <td>nativeEmojis</td>
-                    <td>var emojis = RongIMEmoji.nativeEmojis;</td>
-                    <td>
-                        获取全部原生emoji字符<br>
-                        ["😀", "😁", ………]
-                    </td>
-                </tr>
-                <tr>
-                    <td>data</td>
-                    <td>var data = emoji.data;</td>
+                    <td>list</td>
+                    <td>var list = RongIMEmoji.list;</td>
                     <td>获取所有数据，方便二次开发<br>
-                        [{emoji:"😀",en:"grinning",name:"[大笑]",zh:"大笑"}, ………]
+                        [{unicode: "u1F600", emoji: "😀", symbol:"[笑嘻嘻]", shadowDom: span }, { }, ………]
                     </td>
                 </tr>
                 <tr>
@@ -206,19 +185,14 @@ a {
                     <td>将原生emoji转化为span标签</td>
                 </tr>
                 <tr>
-                    <td>messageDecode(emoji, reg)</td>
-                    <td>var message = RongIMEmoji.messageDecode('收到一条消息 \uf601'); <br>返回值： 收到一条消息 😁</td>
-                    <td>将emoji的unicode码转化为对应的原生emoji字符</td>
-                </tr>
-                <tr>
                     <td>isSupportEmoji</td>
                     <td>var isSupportEmoji = RongIMEmoji.isSupportEmoji;</td>
                     <td>判断是否支持emoji的渲染</td>
                 </tr>
                 <tr>
-                    <td>setupLanguage(lang)</td>
-                    <td>RongIMEmoji.setupLanguage('en');
-                    <td>设置emoji文字的语言</td>
+                    <td>adaptOldVersion</td>
+                    <td>RongIMEmoji.adaptOldVersion();</td>
+                    <td>兼容老版本RongIMEmoji</td>
                 </tr>
             </tbody>
         </table>
@@ -262,28 +236,28 @@ function setupExpand(expandId) {
     var chatshow = document.getElementById("chatbox-show");
 
     var emojiNew = {
-    dataSource: {
-        "u1F60E":{
-            "en":"smiling face with sunglasses",
-            "zh":"狞笑",
-            "tag":"😎",
-            "position":"0px 0px"
+        dataSource: {
+            "u1F60E":{
+                "en":"smiling face with sunglasses",
+                "zh":"狞笑",
+                "tag":"😎",
+                "position":"0px 0px"
+            },
+            /* 新增怪物表情, u1F701超出了默认的regExp，需要在config中设置全局regExp，或者转化时传入第二个匹配参数 */
+            "u1F701": {
+                "en": "ogre",
+                "zh": "怪物",
+                "tag": "👹",
+                "position": "0px 0px"
+            }
         },
-        /* 新增怪物表情, u1F701超出了默认的regExp，需要在config中设置全局regExp，或者转化时传入第二个匹配参数 */
-        "u1F701": {
-            "en": "ogre",
-            "zh": "怪物",
-            "tag": "👹",
-            "position": "0px 0px"
-        }
-    },
-    url: "http://emoji.fileformat.info/gemoji/sunglasses.png"
-};
-var config = {
-    size : 24,
-    lang: 'zh',
-    url : "./emojis.png"
-};
+        url: "http://emoji.fileformat.info/gemoji/sunglasses.png"
+    };
+    var config = {
+        size : 24,
+        lang: 'zh',
+        url : "./emojis.png"
+    };
 
     var RongIMEmoji = RongIMLib.RongIMEmoji;
     RongIMEmoji.init(config, emojiNew);
@@ -291,7 +265,9 @@ var config = {
     
     btn.onclick = function(){
         panel.style.display = "block";
-        var emojis = RongIMEmoji.emojis;
+        var emojis = RongIMEmoji.list.map(function(item) {
+            return item.shadowDom;
+        });
         for(var i=0;i<emojis.length;i++){
             var emojiHtml = emojis[i];
             panel.appendChild(emojiHtml);
@@ -346,7 +322,7 @@ var config = {
         chatshow.appendChild(child);
     }
 
-})();   
+})();
 </script>
 
 </body>
