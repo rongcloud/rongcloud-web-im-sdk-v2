@@ -113,24 +113,21 @@ a {
         <p>emoji SDK 内置了128个emoji表情的图片, <strong>主要是为了做消息输入框的表情选项, </strong>也可自行扩展配置.</p>
     </li>
     <li>
-        <p><a onclick="setupExpand('initCode')">SDK 初始化</a></p>
+        <p><a onclick="setupExpand('initCode')">SDK 设置选项</a></p>
         <pre id="initCode" style="display: none">
-    <strong>/* 1, 使用默认配置, 直接初始化 */</strong>
-    RongIMLib.RongIMEmoji.init();
-
-    <strong>/* 2, 不使用默认配置, 自定义初始化 */</strong>
-   
     // 表情信息可参考 <a href="http://unicode.org/emoji/charts/full-emoji-list.html">http://unicode.org/emoji/charts/full-emoji-list.html</a>
     
-    // <strong>自定义设置</strong>
+    // <strong>1, 自定义设置</strong>
     var config = {
         size: '大小',
         url: '所有emoji的背景地址',
         lang: '选择的语言',
         reg: '匹配unicode的正则表达式'
     };
-    // <strong>扩展表情, 设置扩展表情的信息</strong>
-    var emoji = {
+    RongIMLib.RongIMEmoji.setupConfig(config);
+
+    // <strong>2, 设置扩展表情, 设置扩展表情的信息</strong>
+    var emojis = {
         dataSource: {
             "表情unicode码":{
                 "en":"英文名称",
@@ -141,8 +138,7 @@ a {
         },
         url: "新增emoji背景图片地址"
     };
-    // <strong>初始化</strong>
-    RongIMLib.RongIMEmoji.init(config, emoji);
+    RongIMLib.RongIMEmoji.addNewEmojis(emojis);
         </pre>
     </li>
 
@@ -260,8 +256,10 @@ function setupExpand(expandId) {
     };
 
     var RongIMEmoji = RongIMLib.RongIMEmoji;
-    RongIMEmoji.init(config, emojiNew);
-    appendChild('初始化');
+    RongIMEmoji.setupConfig(config);
+    RongIMEmoji.addNewEmojis(emojiNew);
+    appendChild('setupConfig: 自定义config');
+    appendChild('addNewEmojis: 增加new emojis');
     
     btn.onclick = function(){
         panel.style.display = "block";
@@ -285,7 +283,7 @@ function setupExpand(expandId) {
     symbolToEmojiBtn.onclick = function(){
         var message = chatbox.value;
         message = RongIMEmoji.symbolToEmoji(message);
-        appendChild('symbolToEmoji：' + message);
+        appendChild('symbolToEmoji: ' + message);
         return false;
     }
 
@@ -293,7 +291,7 @@ function setupExpand(expandId) {
     emojiToSymbol.onclick = function(){
         var message = chatbox.value;
         message = RongIMEmoji.emojiToSymbol(message);
-        appendChild('emojiToSymbol：' + message);
+        appendChild('emojiToSymbol: ' + message);
         return false;
     }
 
@@ -302,7 +300,7 @@ function setupExpand(expandId) {
     emojiToHtmlBtn.onclick = function(){
         var message = chatbox.value;
         message = RongIMEmoji.emojiToHTML(message);
-        appendChild('emojiToHtml：' + message);
+        appendChild('emojiToHtml: ' + message);
         return false;
     }
 
@@ -310,7 +308,7 @@ function setupExpand(expandId) {
     symbolToHtmlBtn.onclick = function(){
         var message = chatbox.value;
         message = RongIMEmoji.symbolToHTML(message);
-        appendChild('symbolToHtml：' + message);
+        appendChild('symbolToHtml: ' + message);
         return false;
     }
 

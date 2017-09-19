@@ -263,11 +263,8 @@
                 }
             }
         },
-        checkInitParam: function(opt, newEmojis) {
-            var funcName = "init";
-            this.check(["object|null|undefined", "object|null|undefined"], funcName, arguments);
+        checkConfigParam: function(opt, funcName) {
             this.checkLanguage(opt.lang || configs.lang, funcName);
-            this.checkAddEmoji(newEmojis, funcName);
             this.checkOptType(opt.size || configs.size, "number", 4, funcName);
             this.checkOptType(opt.reg || configs.reg, "regexp|string", 5, funcName);
             this.checkOptType(opt.url || configs.url, "string", 6, funcName);
@@ -485,10 +482,32 @@
         return false;
     };
 
-    var init = function(opt, newEmojis) {
-        CheckParam.checkInitParam(opt, newEmojis);
+    var init = (function() {
+        // CheckParam.checkInitParam(opt, newEmojis);
         addBaseCss();
+        // configs = Utils.extends(configs, opt);
+        // setupEmojiFactory(newEmojis);
+        setupEmojiDetails();
+    })();
+
+
+
+    /**
+     * 自定义设置
+     * @param  {[object]} opt 可包含 lang, reg, url, size
+     */
+    var setupConfig = function(opt) {
+        CheckParam.checkConfigParam(opt, "setupConfig");
         configs = Utils.extends(configs, opt);
+        setupEmojiDetails();
+    };
+
+    /**
+     * 新增自定义emoji
+     * @param {object} newEmojis 可包含dataSource和url, url表示背景图, dataSource包含自定义的unicode和所对应emoji特性
+     */
+    var addNewEmojis = function(newEmojis) {
+        CheckParam.checkAddEmoji(newEmojis, "addNewEmojis");
         setupEmojiFactory(newEmojis);
         setupEmojiDetails();
     };
@@ -575,7 +594,11 @@
     var adaptOldVersion = function() {
         var context = this;
         context.init = function(newEmojis, opt) {
-            context.init(opt, newEmojis);
+            CheckParam.checkConfigParam(opt, "init");
+            CheckParam.checkAddEmoji(newEmojis, "init");
+            configs = Utils.extends(configs, opt);
+            setupEmojiFactory(newEmojis);
+            setupEmojiDetails();
         };
         context.emojis = this.list.map(function(item) {
             return item.shadowDom;
@@ -597,8 +620,11 @@
 
     return {
         isSupportEmoji: isSupportEmoji,
+
+        setupConfig: setupConfig,
+        addNewEmojis: addNewEmojis,
+
         list: list,
-        init: init,
         emojiToSymbol: emojiToSymbol,
         symbolToEmoji: symbolToEmoji,
         emojiToHTML: emojiToHTML,
