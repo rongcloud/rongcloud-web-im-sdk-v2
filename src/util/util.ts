@@ -260,7 +260,7 @@ module RongIMLib {
                 loopArr();
             }
         }
-        static extends(source:any, target:any, callback?:any, force?: boolean){
+        static extend(source:any, target:any, callback?:any, force?: boolean){
             RongUtil.forEach(source, function(val:any, key:string){
                 var hasProto = (key in target);
                 if (force && hasProto) {

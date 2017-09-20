@@ -605,17 +605,21 @@ module RongIMLib {
             // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳
             // key：'converST_' + 当前用户 + conversationType + targetId
             // RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + message.conversationType + message.targetId, message.sentTime);
-            var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId;
-            var stValue = RongIMClient._memoryStore.lastReadTime.get(stKey);
-            if (stValue) {
-                if (message.sentTime > stValue) {
-                    RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
+          
+            if (message.conversationType != ConversationType.CHATROOM) {
+                var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId;
+                var stValue = RongIMClient._memoryStore.lastReadTime.get(stKey);
+                if (stValue) {
+                    if (message.sentTime > stValue) {
+                        RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
+                    } else {
+                        return;
+                    }
                 } else {
-                    return;
-                }
-            } else {
-                RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
-            } 
+                    RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
+                } 
+            }
+           
             if (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0) {
                 RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
                     onSuccess: function(con: Conversation) {

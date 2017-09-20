@@ -127,7 +127,7 @@ module RongIMLib {
                 _sourcePath[key] = RongUtil.stringFormat(pathTmpl, [protocol, path]);
             });
 
-            RongUtil.extends(_sourcePath, options);
+            RongUtil.extend(_sourcePath, options);
 
             var _defaultOpts:{[key:string]:any} = {
                 isPolling: isPolling,
@@ -136,7 +136,7 @@ module RongIMLib {
                 openMp: true
             };
             
-            RongUtil.extends(_defaultOpts, options);
+            RongUtil.extend(_defaultOpts, options);
 
             if (RongUtil.isFunction(options.protobuf)) {
                 RongIMClient.Protobuf = options.protobuf;
