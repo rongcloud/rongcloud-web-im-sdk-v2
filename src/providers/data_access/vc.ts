@@ -655,18 +655,21 @@ module RongIMLib {
             return this.addon.getDeltaTime();
         }
 
-
         getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
             var me = this;
             this.addon.getUserStatus(userId,function(status:string){
-                callback.onSuccess(me.buildUserStatus(status));
+                var entity = RongInnerTools.convertUserStatus({ 
+                    status: status,
+                    userId: ''
+                });
+                callback.onSuccess(entity);
             },function(code:ErrorCode){
                 callback.onError(code);
             });
         }
 
-        setUserStatus(userId:number, callback:ResultCallback<boolean>) : void{
-            this.addon.setUserStatus(userId,function(){
+        setUserStatus(status:number, callback:ResultCallback<boolean>) : void{
+            this.addon.setUserStatus(status,function(){
                 callback.onSuccess(true);
             },function(code:ErrorCode){
                 callback.onError(code);
@@ -681,10 +684,14 @@ module RongIMLib {
             });
         }
 
-        setOnReceiveStatusListener(callback:Function) : void{
+        setUserStatusListener(callback:Function) : void{
            var me = this;
-           this.addon.setOnReceiveStatusListener(function(userId:string,status:string){
-               callback(userId,me.buildUserStatus(status));
+           this.addon.setOnReceiveStatusListener(function(userId:string, status:string){
+               var entity = RongInnerTools.convertUserStatus({
+                   userId: userId,
+                   status: status
+               });
+               callback(entity);
            });
         }
 
@@ -859,17 +866,6 @@ module RongIMLib {
                 RongIMClient._memoryStore.publicServiceMap.publicServiceList = publicList;
             }
             callback.onSuccess(RongIMClient._memoryStore.publicServiceMap.publicServiceList);
-        }
-
-        private buildUserStatus(result : string):UserStatus{
-            var userStatus:UserStatus = new UserStatus();
-            var obj = JSON.parse(result);
-            if(obj.us && obj.us[0]) {
-                userStatus.platform = obj.us[0].p; 
-                userStatus.online = !!obj.us[0].o;
-                userStatus.status = obj.us[0].s;                 
-             }
-            return userStatus;
         }
 
         private buildMessage(result: string): Message {

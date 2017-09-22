@@ -255,4 +255,17 @@ module RongIMLib {
             return this.messageId;
         }
     }
+
+    export class RongInnerTools {
+        static convertUserStatus(entity: any): any{
+            entity = RongUtil.rename(entity, {subUserId: 'userId'});
+            var status = JSON.parse(entity.status);
+            var us = status.us;
+            if (!us) {
+                return entity;
+            }
+            entity.status = RongUtil.rename(us, {o: 'online', 'p': 'platform', s: 'status'});
+            return entity;
+        }
+    }
 }

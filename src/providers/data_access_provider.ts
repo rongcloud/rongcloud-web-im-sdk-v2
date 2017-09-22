@@ -127,14 +127,14 @@ module RongIMLib {
 
         setServerInfo(info:any):void;
 
-        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void;
+        getUserStatus(userId: string, callback:ResultCallback<UserStatus>) : void;
 
-        setUserStatus(userId:number, callback:ResultCallback<boolean>) : void;
+        setUserStatus(status: number, callback:ResultCallback<boolean>) : void;
 
-        setOnReceiveStatusListener(callback:Function) : void;
+        setUserStatusListener(callback: Function) : void;
 
         subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void;
-
+        
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void;
 
         getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any;

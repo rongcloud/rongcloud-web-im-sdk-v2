@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
-        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg", "qryCHMsg"];
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg", "qryCHMsg", "getUserStatus", "setUserStatus", "subUserStatus"];
     export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
@@ -565,6 +565,14 @@ module RongIMLib {
                     var timestamp = MessageUtil.int64ToTimestamp(entity.dataTime);
                     RongIMClient._storageProvider.setItem(this._client.userId, timestamp);
                     RongIMClient._memoryStore.lastReadTime.get(this._client.userId, timestamp);
+                } else if(msg.getTopic() == "s_stat") {
+                    entity = RongIMLib.RongIMClient.Protobuf.GetUserStatusOutput.decode(msg.getData());
+                    entity = RongInnerTools.convertUserStatus(entity);
+                    var usListener = RongIMClient.userStatusListener;
+                    if (usListener) {
+                        usListener(entity);
+                    }
+                     return;
                 } else {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;

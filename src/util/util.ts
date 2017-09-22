@@ -245,7 +245,7 @@ module RongIMLib {
             callback = callback || RongUtil.noop;
             var loopObj = function(){
                 for(var key in obj){
-                    callback(obj[key], key);
+                    callback(obj[key], key, obj);
                 }
             };
             var loopArr = function(){
@@ -348,6 +348,30 @@ module RongIMLib {
             }
             return support;
         }
-
+        /*
+            //返回新引用，不破坏原始对象
+            rename({n: 'martin'}, {n: 'name'}); => {name: 'martin'}
+            rename([{n: 'martin'}, {a: 18}], {n: 'name', a: 'age'});
+            => [{name: 'martin'}, {age: 18}]
+        */
+        static rename(origin: any, newNames: any): any{
+            var isObject = RongUtil.isObject(origin);
+            if (isObject) {
+                origin = [origin];
+            }
+            origin = JSON.parse(JSON.stringify(origin));
+            var updateProperty = function(val: any, key: string, obj: any){
+                delete obj[key];
+                key = newNames[key];
+                obj[key] = val; 
+            };
+            RongUtil.forEach(origin, function(item: any){
+                RongUtil.forEach(item, function(val: any, key: string, obj: any){
+                    var isRename = (key in newNames);
+                    (isRename ? updateProperty : RongUtil.noop)(val, key, obj);
+                });
+            });
+            return isObject ? origin[0] : origin;
+        }
     }
 }
