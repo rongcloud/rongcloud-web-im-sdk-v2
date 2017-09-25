@@ -131,9 +131,9 @@ module RongIMLib {
 
         setUserStatus(status: number, callback:ResultCallback<boolean>) : void;
 
-        setUserStatusListener(callback: Function) : void;
+        setUserStatusListener(params:any, callback: Function) : void;
 
-        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void;
+        subscribeUserStatus(userIds:string[], callback?:ResultCallback<boolean> ): void;
         
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void;
 

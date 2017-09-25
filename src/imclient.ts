@@ -20,7 +20,10 @@ module RongIMLib {
         }
         static showErrorInfo: boolean = true;
         static showError(errorInfo: any): void {
-            console.error(JSON.stringify(errorInfo));
+            var hasConsole = (console && console.error);
+            if (hasConsole) {
+                console.error(JSON.stringify(errorInfo));
+            }
         }
         static userStatusListener:Function = null;
         static logger(params: any): void {
@@ -2180,8 +2183,8 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.subscribeUserStatus(userIds,RongIMClient.logCallback(callback, "subscribeUserStatus"));
         }
 
-        setUserStatusListener(callback: Function):void{
-            RongIMClient._dataAccessProvider.setUserStatusListener(callback);
+        setUserStatusListener(params: any, callback: Function):void{
+            RongIMClient._dataAccessProvider.setUserStatusListener(params, callback);
         }
         // UserStaus end
 

@@ -42,9 +42,7 @@ module RongIMLib {
             var Object = function(message: any) {
                 var me = this;
                 for (var index in fields) {
-                    if (message[fields[index]]) {
-                        me[fields[index]] = message[fields[index]];
-                    }
+                    me[fields[index]] = message[fields[index]];
                 }
                 Object.prototype.messageName = msgType;
                 Object.prototype.encode = function() {
