@@ -156,7 +156,7 @@
 
     var Utils = {
         symbolRegExp: /\[([^\[\]]+?)\]/g,
-        extends: function() {
+        extend: function() {
             if (arguments.length === 0) {
                 return;
             }
@@ -351,18 +351,17 @@
             } catch (e) {
                 return false;
             }
-        }
+        };
         var testEmoji = "😁";
         var mode = getTextFeature(testEmoji, "#000");
         if (mode) {
             var otherEmoji = "😨";
-            var feature = getTextFeature(testEmoji, "#000");
             var colorFeatrue = getTextFeature(testEmoji, "#FFF");
             var otherFeature = getTextFeature(otherEmoji, "#000");
-            // emoji以图片渲染时不能被上色, 添加不同色, 判断两次上色是否相同
-            var isSameColor = feature && feature === colorFeatrue;
-            // emoji以字符渲染时可以被上色, 添加相同色, 判断两次上色是否不同
-            var isDiffColor = feature && feature !== otherFeature;
+            //为相同emoji添加不同色, 判断两次上色是否相同, 如果相同, 说明emoji以图片渲染, 支持
+            var isSameColor = mode && mode === colorFeatrue;
+            //为不同emoji添加相同色, 判断两次上色是否不同, 如果不同, 说明emoji以字符渲染, 支持
+            var isDiffColor = mode && mode !== otherFeature;
             return isSameColor || isDiffColor;
         } else {
             return false;
@@ -444,7 +443,7 @@
                 newEmojiFactory[key] = _emojiFactory[key];
             }
         }
-        emojiFactory = Utils.extends(emojiFactory, newEmojiFactory);
+        emojiFactory = Utils.extend(emojiFactory, newEmojiFactory);
     };
 
     var calculateUTF = function (char) {
@@ -488,7 +487,7 @@
      */
     var setupConfig = function(opt) {
         CheckParam.checkConfigParam(opt || {}, "setupConfig");
-        configs = Utils.extends(configs, opt);
+        configs = Utils.extend(configs, opt);
         setupEmojiDetails();
     };
 
@@ -586,7 +585,7 @@
         context.init = function(newEmojis, opt) {
             CheckParam.checkConfigParam(opt, "init");
             CheckParam.checkAddEmoji(newEmojis, "init");
-            configs = Utils.extends(configs, opt);
+            configs = Utils.extend(configs, opt);
             setupEmojiFactory(newEmojis);
             setupEmojiDetails();
         };
@@ -604,7 +603,7 @@
                     }
                 }
                 return data;
-            })
+            });
         })();
     };
 
