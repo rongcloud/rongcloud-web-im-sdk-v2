@@ -1,4 +1,62 @@
 var Polling = {
+        SetUserStatusInput: function(){
+            var a = {};
+            this.setStatus = function(b){
+                a.status = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
+        SetUserStatusOutput: function(){
+            var a = {};
+            this.setNothing = function(b){
+                a.nothing = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
+        GetUserStatusInput: function(){
+            var a = {};
+            this.setNothing = function(b){
+                a.nothing = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
+
+        GetUserStatusOutput: function(){
+            var a = {};
+            this.setStatus = function(b){
+                a.status = b;
+            };
+            this.setSubUserId = function(b){
+                a.subUserId = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
+        SubUserStatusInput: function(){
+            var a = {};
+            this.set = function(b){
+
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
+        SubUserStatusOutput: function(){
+            var a = {};
+            this.set = function(b){
+
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
         DeleteMsgInput:function(){
          var a = {};
          this.setType = function(b){

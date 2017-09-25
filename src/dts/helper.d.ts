@@ -206,7 +206,7 @@ declare interface Addon {
 
     getUserStatus(userId:string, success:Function, error:Function) : void;
 
-    setUserStatus(userId:number, success:Function, error:Function) : void;
+    setUserStatus(status:number, success:Function, error:Function) : void;
     
     subscribeUserStatus(userId:string[], success:Function, error:Function) : void;
     

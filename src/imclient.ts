@@ -22,6 +22,7 @@ module RongIMLib {
         static showError(errorInfo: any): void {
             console.error(JSON.stringify(errorInfo));
         }
+        static userStatusListener:Function = null;
         static logger(params: any): void {
             var code = params.code;
             var errorInfo = RongIMClient.LogFactory[code] || params;
@@ -127,7 +128,7 @@ module RongIMLib {
                 _sourcePath[key] = RongUtil.stringFormat(pathTmpl, [protocol, path]);
             });
 
-            RongUtil.extends(_sourcePath, options);
+            RongUtil.extend(_sourcePath, options);
 
             var _defaultOpts:{[key:string]:any} = {
                 isPolling: isPolling,
@@ -136,7 +137,7 @@ module RongIMLib {
                 openMp: true
             };
             
-            RongUtil.extends(_defaultOpts, options);
+            RongUtil.extend(_defaultOpts, options);
 
             if (RongUtil.isFunction(options.protobuf)) {
                 RongIMClient.Protobuf = options.protobuf;
@@ -288,6 +289,15 @@ module RongIMLib {
                 "-4": {
                     code: "-4",
                     msg: "参数不正确或尚未实例化"
+                },
+                "25101": {
+                    code: "25101",
+                    msg: "撤回消息参数错误",
+                    desc: "请检查撤回消息参数 https://rongcloud.github.io/websdk-demo/api-test.html"
+                },
+                "25102": {
+                    code: "25101",
+                    msg: "只能撤回自发发送的消息"
                 },
                 "20604": {
                     code: "20604",
@@ -1183,7 +1193,8 @@ module RongIMLib {
         }
 
         sendRecallMessage(content:any, sendMessageCallback: SendMessageCallback): void {
-            RongIMClient._dataAccessProvider.sendRecallMessage(content, RongIMClient.logSendCallback(sendMessageCallback, "sendRecallMessage"));
+            var callback = RongIMClient.logSendCallback(sendMessageCallback, "sendRecallMessage");
+            RongIMClient._dataAccessProvider.sendRecallMessage(content, callback);
         }
         /**
          * [insertMessage 向本地插入一条消息，不发送到服务器。]
@@ -2157,22 +2168,21 @@ module RongIMLib {
 
         // UserStatus start
 
-        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
+        getUserStatus(userId: string, callback:ResultCallback<UserStatus>) : void{
             RongIMClient._dataAccessProvider.getUserStatus(userId,RongIMClient.logCallback(callback, "getUserStatus"));
         }
 
-        setUserStatus(status:number, callback:ResultCallback<boolean>) : void{
-            RongIMClient._dataAccessProvider.setUserStatus(status,RongIMClient.logCallback(callback, "setUserStatus"));
+        setUserStatus(status: number, callback:ResultCallback<boolean>) : void{
+            RongIMClient._dataAccessProvider.setUserStatus(status, RongIMClient.logCallback(callback, "setUserStatus"));
         }
 
         subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void{
             RongIMClient._dataAccessProvider.subscribeUserStatus(userIds,RongIMClient.logCallback(callback, "subscribeUserStatus"));
         }
 
-        setOnReceiveStatusListener(callback:Function) : void{
-            RongIMClient._dataAccessProvider.setOnReceiveStatusListener(callback);
+        setUserStatusListener(callback: Function):void{
+            RongIMClient._dataAccessProvider.setUserStatusListener(callback);
         }
-
         // UserStaus end
 
     }

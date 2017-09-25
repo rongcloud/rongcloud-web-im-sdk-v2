@@ -130,6 +130,8 @@ module RongIMLib {
 
     export enum ErrorCode {
 
+        RECALL_MESSAGE = 25101,
+
         /**
          * 发送频率过快
          */

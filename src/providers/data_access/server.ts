@@ -1,6 +1,8 @@
 module RongIMLib {
     export class ServerDataProvider implements DataAccessProvider {
 
+        userStatusListener: Function = null;
+
         init(appKey: string, callback?: Function): void {
             new FeatureDectector(callback);
         }
@@ -1122,6 +1124,53 @@ module RongIMLib {
             });
         }
 
+        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
+            var modules = new RongIMClient.Protobuf.GetUserStatusInput();
+            userId = RongIMLib.Bridge._client.userId;
+            RongIMLib.RongIMClient.bridge.queryMsg(35, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
+                onSuccess: function (status: any) {
+                    status = RongInnerTools.convertUserStatus(status);
+                    callback.onSuccess(status);
+                }, onError: function (e: any) {
+                    callback.onError(e);
+                }
+            }, 'GetUserStatusOutput');
+            // callback.onSuccess(new UserStatus());
+        }
+
+        setUserStatus(status:number, callback:ResultCallback<boolean>) : void{
+            var modules = new RongIMClient.Protobuf.SetUserStatusInput();
+            var userId:string = RongIMLib.Bridge._client.userId;    
+            if (status) {
+                modules.setStatus(status); 
+            }  
+            RongIMLib.RongIMClient.bridge.queryMsg(36, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
+                onSuccess: function (status: any) {
+                    callback.onSuccess(true);
+                }, onError: function (e: any) {
+                    callback.onError(e);
+                }
+            }, 'SetUserStatusOutput');
+        }
+
+        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean>) : void{
+            var modules = new RongIMClient.Protobuf.SubUserStatusInput();
+            var userId = RongIMLib.Bridge._client.userId;       
+            modules.setUserid(userIds);
+            RongIMLib.RongIMClient.bridge.queryMsg(37, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
+                onSuccess: function (status: any) {
+                    callback.onSuccess(true);
+                }, onError: function (e: any) {
+                    callback.onError(e);
+                }
+            }, 'SubUserStatusOutput');
+        }
+
+
+        setUserStatusListener(callback: Function):void{
+            RongIMClient.userStatusListener = callback;
+        }
+
         clearListeners(): void{
 
         }
@@ -1172,22 +1221,6 @@ module RongIMLib {
 
         getDelaTime():number{
             return RongIMClient._memoryStore.deltaTime;
-        }
-        
-        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
-            callback.onSuccess(new UserStatus());
-        }
-
-        setUserStatus(userId:number, callback:ResultCallback<boolean>) : void{
-            callback.onSuccess(true);
-        }
-
-        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean>) : void{
-           callback.onSuccess(true);
-        }
-
-        setOnReceiveStatusListener(callback:Function) : void{
-           callback();
         }
         
         getCurrentConnectionStatus(): number{

@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
-        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg", "qryCHMsg"];
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg", "qryCHMsg", "getUserStatus", "setUserStatus", "subUserStatus"];
     export class Channel {
         socket: Socket;
         static _ConnectionStatusListener: any;
@@ -565,6 +565,14 @@ module RongIMLib {
                     var timestamp = MessageUtil.int64ToTimestamp(entity.dataTime);
                     RongIMClient._storageProvider.setItem(this._client.userId, timestamp);
                     RongIMClient._memoryStore.lastReadTime.get(this._client.userId, timestamp);
+                } else if(msg.getTopic() == "s_stat") {
+                    entity = RongIMLib.RongIMClient.Protobuf.GetUserStatusOutput.decode(msg.getData());
+                    entity = RongInnerTools.convertUserStatus(entity);
+                    var usListener = RongIMClient.userStatusListener;
+                    if (usListener) {
+                        usListener(entity);
+                    }
+                     return;
                 } else {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;
@@ -605,17 +613,21 @@ module RongIMLib {
             // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳
             // key：'converST_' + 当前用户 + conversationType + targetId
             // RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + message.conversationType + message.targetId, message.sentTime);
-            var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId;
-            var stValue = RongIMClient._memoryStore.lastReadTime.get(stKey);
-            if (stValue) {
-                if (message.sentTime > stValue) {
-                    RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
+          
+            if (message.conversationType != ConversationType.CHATROOM) {
+                var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId;
+                var stValue = RongIMClient._memoryStore.lastReadTime.get(stKey);
+                if (stValue) {
+                    if (message.sentTime > stValue) {
+                        RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
+                    } else {
+                        return;
+                    }
                 } else {
-                    return;
-                }
-            } else {
-                RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
-            } 
+                    RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
+                } 
+            }
+           
             if (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0) {
                 RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
                     onSuccess: function(con: Conversation) {
