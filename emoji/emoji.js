@@ -485,8 +485,8 @@
      * 自定义设置
      * @param  {[object]} opt 可包含 lang, reg, url, size
      */
-    var setupConfig = function(opt) {
-        CheckParam.checkConfigParam(opt || {}, "setupConfig");
+    var setConfig = function(opt) {
+        CheckParam.checkConfigParam(opt || {}, "setConfig");
         configs = Utils.extend(configs, opt);
         setupEmojiDetails();
     };
@@ -495,8 +495,8 @@
      * 新增自定义emoji
      * @param {object} newEmojis 可包含dataSource和url, url表示背景图, dataSource包含自定义的unicode和所对应emoji特性
      */
-    var addNewEmojis = function(newEmojis) {
-        CheckParam.checkAddEmoji(newEmojis || {}, "addNewEmojis");
+    var addEmojis = function(newEmojis) {
+        CheckParam.checkAddEmoji(newEmojis || {}, "addEmojis");
         setupEmojiFactory(newEmojis);
         setupEmojiDetails();
     };
@@ -615,8 +615,8 @@
     return {
         isSupportEmoji: isSupportEmoji,
 
-        setupConfig: setupConfig,
-        addNewEmojis: addNewEmojis,
+        setConfig: setConfig,
+        addEmojis: addEmojis,
 
         list: list,
         emojiToSymbol: emojiToSymbol,
