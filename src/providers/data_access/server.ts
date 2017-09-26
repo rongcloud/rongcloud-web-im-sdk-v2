@@ -1153,22 +1153,26 @@ module RongIMLib {
             }, 'SetUserStatusOutput');
         }
 
-        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean>) : void{
+        subscribeUserStatus(userIds:string[], callback?:ResultCallback<boolean>) : void{
             var modules = new RongIMClient.Protobuf.SubUserStatusInput();
             var userId = RongIMLib.Bridge._client.userId;       
             modules.setUserid(userIds);
             RongIMLib.RongIMClient.bridge.queryMsg(37, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                 onSuccess: function (status: any) {
-                    callback.onSuccess(true);
+                    callback && callback.onSuccess(true);
                 }, onError: function (e: any) {
-                    callback.onError(e);
+                    callback && callback.onError(e);
                 }
             }, 'SubUserStatusOutput');
         }
 
 
-        setUserStatusListener(callback: Function):void{
+        setUserStatusListener(params:any, callback?: Function):void{
             RongIMClient.userStatusListener = callback;
+            var userIds = params.userIds || [];
+            if (userIds.length) {
+               RongIMClient._dataAccessProvider.subscribeUserStatus(userIds);
+            }
         }
 
         clearListeners(): void{

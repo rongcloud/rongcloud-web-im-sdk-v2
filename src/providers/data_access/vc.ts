@@ -684,7 +684,7 @@ module RongIMLib {
             });
         }
 
-        setUserStatusListener(callback:Function) : void{
+        setUserStatusListener(params: any, callback:Function) : void{
            var me = this;
            this.addon.setOnReceiveStatusListener(function(userId:string, status:string){
                var entity = RongInnerTools.convertUserStatus({
@@ -693,6 +693,10 @@ module RongIMLib {
                });
                callback(entity);
            });
+           var userIds = params.userIds || [];
+           if (userIds.length) {
+               RongIMClient._dataAccessProvider.subscribeUserStatus(userIds);
+           }
         }
 
 
