@@ -124,7 +124,7 @@ a {
         lang: '选择的语言',
         reg: '匹配unicode的正则表达式'
     }; //属性都是可选的
-    RongIMLib.RongIMEmoji.setupConfig(config);
+    RongIMLib.RongIMEmoji.setConfig(config);
 
     // <strong>2, 设置扩展表情, 设置扩展表情的信息</strong>
     var emojis = {
@@ -138,7 +138,7 @@ a {
         },
         url: "新增emoji背景图片地址"
     };
-    RongIMLib.RongIMEmoji.addNewEmojis(emojis);
+    RongIMLib.RongIMEmoji.addEmojis(emojis);
         </pre>
     </li>
 
@@ -256,10 +256,10 @@ function setupExpand(expandId) {
     };
 
     var RongIMEmoji = RongIMLib.RongIMEmoji;
-    RongIMEmoji.setupConfig(config);
-    RongIMEmoji.addNewEmojis(emojiNew);
-    appendChild('setupConfig: 自定义config');
-    appendChild('addNewEmojis: 增加new emojis');
+    RongIMEmoji.setConfig(config);
+    RongIMEmoji.addEmojis(emojiNew);
+    appendChild('setConfig: 自定义config');
+    appendChild('addEmojis: 增加new emojis');
     
     btn.onclick = function(){
         panel.style.display = "block";
