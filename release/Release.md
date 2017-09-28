@@ -7,7 +7,7 @@
 
         3、只允许撤回自己发送的消息
 
-        4、错误信息参数输出
+        4、错误信息参数输出, RongIMClient.init(appkey, null, {showError: true}) 开启，默认关闭
 
     新增:
 

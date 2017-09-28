@@ -373,5 +373,56 @@ module RongIMLib {
             });
             return isObject ? origin[0] : origin;
         }
+
+        static some(arrs: any, callback: Function): boolean{
+            var has:boolean = false;
+            for(var i = 0, len = arrs.length; i < len; i++){
+                if (callback(arrs[i])) {
+                    has = true;
+                    break;
+                }
+            }
+            return has;
+        }
+    }
+
+    /*
+        var observer = new RongObserver();
+        observer.watch({
+            key: 'key',
+            func: function(entity){
+                
+            }
+        });
+
+    */
+    export class RongObserver{
+        watchers:{[key: string]: any}  = {};
+        genUId(key: string):string{
+            var time = new Date().getTime();
+            return [key, time].join('_');
+        }
+        watch(params: any):void{
+            var me = this;
+            var key = params.key
+            key = RongUtil.isArray(key) ? key : [key];
+            var func = params.func;
+            RongUtil.forEach(key, function(k: any){
+                k = me.genUId(key);
+                me.watchers[k] = func;
+            });
+        }
+        notify(params: any): void{
+            var me = this;
+            var key = params.key;
+            var entity = params.entity;
+            for(var k in me.watchers){
+                var isNotify = (k.indexOf(key) == 0);
+                me.watchers[k](entity);
+            }
+        }
+        remove(): void{
+
+        }
     }
 }

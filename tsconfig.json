@@ -25,6 +25,7 @@
     ],
     "files": [
         "./src/callback.ts",
+        "./src/util/util.ts",
         "./src/dts/helper.d.ts",
         "./src/enum.ts",
         "./src/extensions/emoji.ts",
@@ -65,8 +66,7 @@
         "./src/providers/upload_provider.ts",
         "./src/util/feature_detector.ts",
         "./src/util/feature_patcher.ts",
-        "./src/util/script_loader.ts",
-        "./src/util/util.ts"
+        "./src/util/script_loader.ts"
     ],
     "compileOnSave": false,
     "buildOnSave": false,

@@ -206,8 +206,6 @@ module RongIMLib {
          */
         INVITE_DICUSSION = 21409,
 
-
-
         /**
          *获取用户失败
          */

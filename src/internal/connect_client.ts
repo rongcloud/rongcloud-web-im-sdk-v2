@@ -246,7 +246,7 @@ module RongIMLib {
         timeout_: number = 0;
         appId: string;
         token: string;
-        sdkVer: string = "2.2.7";
+        sdkVer: string = "2.2.8";
         apiVer: any = Math.floor(Math.random() * 1e6);
         channel: Channel = null;
         handler: any = null;
@@ -568,11 +568,11 @@ module RongIMLib {
                 } else if(msg.getTopic() == "s_stat") {
                     entity = RongIMLib.RongIMClient.Protobuf.GetUserStatusOutput.decode(msg.getData());
                     entity = RongInnerTools.convertUserStatus(entity);
-                    var usListener = RongIMClient.userStatusListener;
-                    if (usListener) {
-                        usListener(entity);
-                    }
-                     return;
+                    RongIMClient.userStatusObserver.notify({
+                       key: entity.userId,
+                       entity: entity
+                   });
+                    return;
                 } else {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;

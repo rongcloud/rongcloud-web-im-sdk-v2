@@ -39,7 +39,7 @@ module RongIMLib {
 
     }
     export interface SendMessageCallback {
-        onError(error: ErrorCode, result: Message): void;
+        onError(error: ErrorCode, result?: Message): void;
         onSuccess(result?: Message): void;
         onBefore(messageId: any): void;
     }

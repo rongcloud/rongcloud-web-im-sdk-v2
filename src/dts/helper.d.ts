@@ -90,6 +90,8 @@ declare interface Addon {
 
     sendReceiptResponse(conversationType: RongIMLib.ConversationType, targetId: string, sendCallback: RongIMLib.SendMessageCallback): void;
 
+    recallMessage(objectName: string, content: string, push: string, success: Function, error: Function): void;
+
     sendTypingStatusMessage(conversationType: RongIMLib.ConversationType, targetId: string, messageName: string, sendCallback: RongIMLib.SendMessageCallback): void;
 
     sendTextMessage(conversationType: RongIMLib.ConversationType, targetId: string, content: string, sendMessageCallback: RongIMLib.SendMessageCallback): void;

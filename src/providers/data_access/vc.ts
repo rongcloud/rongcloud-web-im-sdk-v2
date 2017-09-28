@@ -63,6 +63,9 @@ module RongIMLib {
             this.useConsole && console.log("connect");
             this.userId = userId;
             this.connectCallback = callback;
+            RongIMLib.Bridge._client = <Client>{
+                userId: userId
+            };
             this.addon.connectWithToken(token, userId);
         }
 
@@ -678,9 +681,9 @@ module RongIMLib {
 
         subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void{
             this.addon.subscribeUserStatus(userIds,function() {
-                callback.onSuccess(true);
+                callback && callback.onSuccess(true);
             }, function(code:ErrorCode) {
-                callback.onError(code);
+                callback && callback.onError(code);
             });
         }
 
@@ -691,14 +694,16 @@ module RongIMLib {
                    userId: userId,
                    status: status
                });
-               callback(entity);
+               RongIMClient.userStatusObserver.notify({
+                   key: userId,
+                   entity: entity
+               });
            });
            var userIds = params.userIds || [];
            if (userIds.length) {
                RongIMClient._dataAccessProvider.subscribeUserStatus(userIds);
            }
         }
-
 
         getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any{
             var me = this;
@@ -715,8 +720,16 @@ module RongIMLib {
             callback.onSuccess(false);
         }
 
-        sendRecallMessage(conent:any, sendMessageCallback: SendMessageCallback): void {
-           // new RecallCommandMessage({conversationType : conent.conversationType, targetId : conent.targetId, sentTime:content.sentTime, messageUId : conent.messageUId, extra : conent.extra, user : conent.user});
+        sendRecallMessage(content:any, sendMessageCallback: SendMessageCallback): void {
+           var me = this;
+           me.addon.recallMessage("RC:RcCmd", JSON.stringify(content), content.push || "",
+            function() {
+                content.objectName = 'RC:RcCmd';
+                sendMessageCallback.onSuccess(me.buildMessage(JSON.stringify(content)));
+            },
+            function(errorCode: any) {
+              sendMessageCallback.onError(errorCode);
+           });
         }
 
         updateMessage(message: Message, callback?: ResultCallback<Message>): void { }

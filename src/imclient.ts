@@ -12,13 +12,13 @@ module RongIMLib {
         static _voipProvider: VoIPProvider;
         private static _instance: RongIMClient;
         static bridge: any;
+        static userStatusObserver:RongObserver = null;
         static getInstance(): RongIMClient {
             if (!RongIMClient._instance) {
                 throw new Error("RongIMClient is not initialized. Call .init() method first.");
             }
             return RongIMClient._instance;
         }
-        static showErrorInfo: boolean = true;
         static showError(errorInfo: any): void {
             var hasConsole = (console && console.error);
             if (hasConsole) {
@@ -31,7 +31,9 @@ module RongIMLib {
             var errorInfo = RongIMClient.LogFactory[code] || params;
             errorInfo.funcName = params.funcName;
             errorInfo.msg = params.msg || errorInfo.msg;
-            RongIMClient.showErrorInfo && RongIMClient.showError(errorInfo);
+            if (RongIMClient._memoryStore.depend.showError) {
+                RongIMClient.showError(errorInfo);
+            }
         }
         static logCallback(callback: any, funcName: string) {
             return {
@@ -124,7 +126,7 @@ module RongIMLib {
             });
             
             var _sourcePath:{[key:string]:any} = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.2.7.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.2.8.min.js'
             };
 
             RongUtil.forEach(_sourcePath, function(path: string, key: string){
@@ -137,6 +139,7 @@ module RongIMLib {
                 isPolling: isPolling,
                 wsScheme: wsScheme,
                 protocol: protocol,
+                showError: false,
                 openMp: true
             };
             
@@ -146,6 +149,8 @@ module RongIMLib {
                 RongIMClient.Protobuf = options.protobuf;
             }
 
+            RongIMClient.userStatusObserver = new RongObserver();
+            
             var pather = new FeaturePatcher();
             pather.patchAll();
             var tempStore:any = {
@@ -1197,7 +1202,16 @@ module RongIMLib {
 
         sendRecallMessage(content:any, sendMessageCallback: SendMessageCallback): void {
             var callback = RongIMClient.logSendCallback(sendMessageCallback, "sendRecallMessage");
+            var senderUserId = content.senderUserId;
+            var userId = Bridge._client.userId;
+            var isOther = (senderUserId != userId);
+            if (isOther) {
+                var callback = RongIMClient.logSendCallback(sendMessageCallback, "sendRecallMessage")
+                callback.onError(ErrorCode.RECALL_MESSAGE, content);
+                return;
+            }
             RongIMClient._dataAccessProvider.sendRecallMessage(content, callback);
+
         }
         /**
          * [insertMessage 向本地插入一条消息，不发送到服务器。]
@@ -1560,7 +1574,6 @@ module RongIMLib {
                     conver.receivedTime = conver.latestMessage.receiveTime;
                     conver.sentStatus = conver.latestMessage.sentStatus;
                     conver.sentTime = conver.latestMessage.sentTime;
-                    conver._readTime = MessageUtil.int64ToTimestamp(tempConver.readMsgTime);
                     var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + conver.conversationType + '_' + conver.targetId);
                     if (mentioneds) {
                         var info = JSON.parse(mentioneds);
@@ -2179,11 +2192,12 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.setUserStatus(status, RongIMClient.logCallback(callback, "setUserStatus"));
         }
 
-        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void{
-            RongIMClient._dataAccessProvider.subscribeUserStatus(userIds,RongIMClient.logCallback(callback, "subscribeUserStatus"));
-        }
-
         setUserStatusListener(params: any, callback: Function):void{
+            var userIds = params.userIds;
+            RongIMClient.userStatusObserver.watch({
+                key: userIds,
+                func: callback
+            });
             RongIMClient._dataAccessProvider.setUserStatusListener(params, callback);
         }
         // UserStaus end
