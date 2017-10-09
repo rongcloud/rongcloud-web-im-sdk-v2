@@ -251,8 +251,7 @@ function setupExpand(expandId) {
     };
     var config = {
         size : 24,
-        lang: 'zh',
-        url : "./emojis.png"
+        lang: 'zh'
     };
 
     var RongIMEmoji = RongIMLib.RongIMEmoji;
@@ -263,16 +262,23 @@ function setupExpand(expandId) {
     
     btn.onclick = function(){
         panel.style.display = "block";
-        var emojis = RongIMEmoji.list.map(function(item) {
-            return item.shadowDom;
-        });
+        var emojis = (function() {
+            var shadowDomList = [];
+            for (var i = 0; i < RongIMEmoji.list.length; i++) {
+                var value = RongIMEmoji.list[i];
+                shadowDomList.push(value.shadowDom);
+            }
+            return shadowDomList;
+        })();
         for(var i=0;i<emojis.length;i++){
             var emojiHtml = emojis[i];
             panel.appendChild(emojiHtml);
             emojiHtml.onclick = function(event) {
                 var e = event || window.event;
                 var target = e.target || e.srcElement;
-                console.log(target);
+                if (document.all && !document.addEventListener === false) {
+                    console.log(target);
+                }
                 chatbox.value = chatbox.value + target.getAttribute("name");
             }
         }
@@ -299,7 +305,7 @@ function setupExpand(expandId) {
     var emojiToHtmlBtn = document.getElementById("emoji-html");
     emojiToHtmlBtn.onclick = function(){
         var message = chatbox.value;
-        message = RongIMEmoji.emojiToHTML(message);
+        message = RongIMEmoji.emojiToHTML(message, 33);
         appendChild('emojiToHtml: ' + message);
         return false;
     }
