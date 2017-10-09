@@ -647,7 +647,9 @@
     };
 
     var adaptOldVersion = function() {
-        var context = RongIMLib.RongIMEmoji;
+        window.RongIMLib = window.RongIMLib || {};
+        window.RongIMLib.RongIMEmoji = window.RongIMLib.RongIMEmoji || {};
+        var context = window.RongIMLib.RongIMEmoji;
         context.init = function(newEmojis, opt) {
             CheckParam.checkConfigParam(opt, "init");
             CheckParam.checkAddEmoji(newEmojis, "init");
@@ -655,8 +657,7 @@
             setupEmojiFactory(newEmojis);
             setupEmojiDetails();
         };
-
-        context.emojis = Utils.map(context.list, function(item) {
+        context.emojis = Utils.map(list, function(item) {
             var shadowDom = item.shadowDom;
             var spanHTML = "<span>" + shadowDom.outerHTML + "</span>";
             return Utils.getDom(spanHTML);
@@ -674,7 +675,7 @@
             }
             return names;
         })();
-        context.data = Utils.map(context.list, function(item) {
+        context.data = Utils.map(list, function(item) {
             var data;
             for (var key in emojiFactory) {
                 var detail = emojiFactory[key];
@@ -690,21 +691,26 @@
     (function init() {
         addBaseCss();
         setupEmojiDetails();
+        adaptOldVersion();
     })();
 
-    return {
-        isSupportEmoji: isSupportEmoji,
+    return (function() {
+        window.RongIMLib = window.RongIMLib || {};
+        window.RongIMLib.RongIMEmoji = window.RongIMLib.RongIMEmoji || {};
+        return Utils.extend(window.RongIMLib.RongIMEmoji, {
+            isSupportEmoji: isSupportEmoji,
 
-        setConfig: setConfig,
-        addEmojis: addEmojis,
+            setConfig: setConfig,
+            addEmojis: addEmojis,
 
-        list: list,
-        emojiToSymbol: emojiToSymbol,
-        symbolToEmoji: symbolToEmoji,
-        emojiToHTML: emojiToHTML,
-        symbolToHTML: symbolToHTML,
+            list: list,
+            emojiToSymbol: emojiToSymbol,
+            symbolToEmoji: symbolToEmoji,
+            emojiToHTML: emojiToHTML,
+            symbolToHTML: symbolToHTML,
 
-        adaptOldVersion: adaptOldVersion
-    };
+            adaptOldVersion: adaptOldVersion
+        })
+    })();
 
 });
