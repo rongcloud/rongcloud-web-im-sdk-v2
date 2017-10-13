@@ -857,6 +857,25 @@ module RongIMLib {
             }
         }
 
+        clearHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
+            var modules = new RongIMClient.Protobuf.HistoryMsgInput();
+            var conversationType = params.conversationType;
+            var targetId = params.targetId;
+            var time = params.time;
+            modules.setTargetId(targetId);
+            modules.setTime(time);
+
+            RongIMClient.bridge.queryMsg(38, MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
+                onSuccess: function(result: any) {
+                    callback.onSuccess(!result);
+                }, onError: function(error: ErrorCode) {
+                    setTimeout(function() {
+                      callback.onError(error);
+                    });
+                }
+            });
+        }
+
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             callback.onSuccess(true);
         }

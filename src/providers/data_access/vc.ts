@@ -484,6 +484,12 @@ module RongIMLib {
             }
         }
 
+
+        clearHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
+            callback.onSuccess(true);
+        }
+
+
         getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]): void {
             try {
                 var result: number;
