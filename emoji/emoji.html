@@ -59,6 +59,11 @@ a {
     cursor: pointer;
 }
 
+pre {
+    margin: 0;
+    border: none;
+}
+
 #chatbox-send {
     margin-left: 1%;
 }
@@ -113,6 +118,11 @@ a {
         <p>emoji SDK 内置了128个emoji表情的图片, <strong>主要是为了做消息输入框的表情选项, </strong>也可自行扩展配置.</p>
     </li>
     <li>
+        <p>
+            emoji SDK 支持范围: IE6+, Chrome, Safari, Firefox, Android, IOS
+        </p>
+    </li>
+    <li>
         <p><a onclick="setupExpand('initCode')">SDK 设置选项</a></p>
         <pre id="initCode" style="display: none">
     // 表情信息可参考 <a href="http://unicode.org/emoji/charts/full-emoji-list.html">http://unicode.org/emoji/charts/full-emoji-list.html</a>
@@ -155,39 +165,80 @@ a {
             <tbody>
                 <tr>
                     <td>list</td>
-                    <td>var list = RongIMEmoji.list;</td>
+                    <td>
+<!-- start -->                        
+                        <pre>
+var list = RongIMEmoji.list;</pre>
+<!-- end -->
+                    </td>
                     <td>获取所有数据，方便二次开发<br>
                         [{unicode: "u1F600", emoji: "😀", symbol:"[笑嘻嘻]", shadowDom: span }, { }, ………]
                     </td>
                 </tr>
                 <tr>
-                    <td>emojiToSymbol(emoji, reg)</td>
-                    <td>var symbol = RongIMEmoji.emojiToSymbol('我是一个表情😁'); <br> 返回值: 我是一个表情[露齿而笑]</td>
+                    <td>emojiToSymbol(emoji, reg, func)</td>
+                    <td>
+<!-- start -->
+                        <pre>
+var symbol = RongIMEmoji.emojiToSymbol('我是一个表情😁');
+<strong>返回值: 我是一个表情[露齿而笑]</strong></pre>
+<!-- end -->
+                    </td>
                     <td>将原生emoji转化为对应文字</td>
                 </tr>
                 <tr>
-                    <td>symbolToEmoji(symbol)</td>
-                    <td>var emoji = RongIMEmoji.symbolToEmoji('我是一个表情[露齿而笑]');<br>返回值: 我是一个表情😁</td>
+                    <td>symbolToEmoji(symbol, func)</td>
+                    <td>
+<!-- start -->
+                        <pre>
+var emoji = RongIMEmoji.symbolToEmoji('我是一个表情[露齿而笑]');
+<strong>返回值: 我是一个表情😁</strong>
+var emoji = RongIMEmoji.symbolToEmoji('我是一个表情[露齿而笑]', function(emoji) { 
+    return '[emoji]'; 
+}); 
+<strong>返回值: 我是一个表情[emoji]</strong></pre>
+<!-- end -->
+                    </td>
                     <td>将emoji的对应名称转化为原生emoji字符</td>
                 </tr>
                 <tr>
-                    <td>emojiToHTML(emoji, size, reg)</td>
-                    <td>var html = RongIMEmoji.emojiToHTML('我是一个表情😁');</td>
+                    <td>emojiToHTML(emoji, size, reg, func)</td>
+                    <td>
+<!-- start -->
+                        <pre>
+var html = RongIMEmoji.emojiToHTML('我是一个表情😁');</pre>
+<!-- end -->
+                    </td>
                     <td>将原生emoji转化为span标签, 默认标签大小为24px</td>
                 </tr>
                 <tr>
-                    <td>symbolToHTML(symbol, size, reg)</td>
-                    <td>var html = RongIMEmoji.symbolToHTML('我是一个表情[露齿而笑]')</td>
+                    <td>symbolToHTML(symbol, size, reg, func)</td>
+                    <td>
+<!-- start -->
+                        <pre>
+var html = RongIMEmoji.symbolToHTML('我是一个表情[露齿而笑]')</pre>
+<!-- end -->
+                    </td>
                     <td>将原生emoji转化为span标签</td>
                 </tr>
                 <tr>
                     <td>isSupportEmoji</td>
-                    <td>var isSupportEmoji = RongIMEmoji.isSupportEmoji;</td>
+                    <td>
+<!-- start -->
+                        <pre>
+var isSupportEmoji = RongIMEmoji.isSupportEmoji;</pre>
+<!-- end -->                            
+                    </td>
                     <td>判断是否支持emoji的渲染</td>
                 </tr>
                 <tr>
                     <td>adaptOldVersion</td>
-                    <td>RongIMEmoji.adaptOldVersion();</td>
+                    <td>
+<!-- start -->
+                        <pre>
+RongIMEmoji.adaptOldVersion();</pre>
+<!-- end -->                             
+                    </td>
                     <td>兼容老版本RongIMEmoji</td>
                 </tr>
             </tbody>
@@ -222,6 +273,9 @@ function setupExpand(expandId) {
         <a class="chatbox-btn" id="emoji-html" onclick="emojiToHtml">EmojiToHtml</a> 
         <a class="chatbox-btn" id="symbol-html" onclick="symbolToHtml">SymbolToHtml</a> 
     </p>
+    <p>
+        <a class="chatbox-btn" id="symbol-emoji-invalid">SymbolToEmoji( 不支持emoji时, 原生emoji字符显示为 [emoji] )</a>
+    </p>
 </div>
 
 <script>
@@ -231,24 +285,6 @@ function setupExpand(expandId) {
     var panel = document.getElementById("chatbox-emoji-panel");
     var chatshow = document.getElementById("chatbox-show");
 
-    var emojiNew = {
-        dataSource: {
-            "u1F60E":{
-                "en":"smiling face with sunglasses",
-                "zh":"狞笑",
-                "tag":"😎",
-                "position":"0px 0px"
-            },
-            /* 新增怪物表情, u1F701超出了默认的regExp，需要在config中设置全局regExp，或者转化时传入第二个匹配参数 */
-            "u1F701": {
-                "en": "ogre",
-                "zh": "怪物",
-                "tag": "👹",
-                "position": "0px 0px"
-            }
-        },
-        url: "http://emoji.fileformat.info/gemoji/sunglasses.png"
-    };
     var config = {
         size : 24,
         lang: 'zh'
@@ -256,9 +292,7 @@ function setupExpand(expandId) {
 
     var RongIMEmoji = RongIMLib.RongIMEmoji;
     RongIMEmoji.setConfig(config);
-    RongIMEmoji.addEmojis(emojiNew);
     appendChild('setConfig: 自定义config');
-    appendChild('addEmojis: 增加new emojis');
     
     btn.onclick = function(){
         panel.style.display = "block";
@@ -283,7 +317,7 @@ function setupExpand(expandId) {
             }
         }
         return false;
-    }
+    };
 
     var symbolToEmojiBtn = document.getElementById("symbol-emoji");
     symbolToEmojiBtn.onclick = function(){
@@ -291,7 +325,7 @@ function setupExpand(expandId) {
         message = RongIMEmoji.symbolToEmoji(message);
         appendChild('symbolToEmoji: ' + message);
         return false;
-    }
+    };
 
     var emojiToSymbol = document.getElementById("emoji-symbol");
     emojiToSymbol.onclick = function(){
@@ -299,7 +333,7 @@ function setupExpand(expandId) {
         message = RongIMEmoji.emojiToSymbol(message);
         appendChild('emojiToSymbol: ' + message);
         return false;
-    }
+    };
 
 
     var emojiToHtmlBtn = document.getElementById("emoji-html");
@@ -308,7 +342,7 @@ function setupExpand(expandId) {
         message = RongIMEmoji.emojiToHTML(message, 33);
         appendChild('emojiToHtml: ' + message);
         return false;
-    }
+    };
 
     var symbolToHtmlBtn = document.getElementById("symbol-html");
     symbolToHtmlBtn.onclick = function(){
@@ -316,7 +350,18 @@ function setupExpand(expandId) {
         message = RongIMEmoji.symbolToHTML(message);
         appendChild('symbolToHtml: ' + message);
         return false;
-    }
+    };
+
+    var symbolToEmojiInvalid = document.getElementById("symbol-emoji-invalid");
+    symbolToEmojiInvalid.onclick = function() {
+        var message = chatbox.value;
+        var isSupportEmoji = RongIMEmoji.isSupportEmoji;
+        message = RongIMEmoji.symbolToEmoji(message, function(emoji) {
+            return isSupportEmoji ? emoji : '<span style="color: rgb(182, 182, 182)">[emoji]</span>';
+        });
+        appendChild('symbolToEmoji: ' + message);
+        return false;
+    };
 
 
     function appendChild(text) {
