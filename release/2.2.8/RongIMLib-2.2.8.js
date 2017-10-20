@@ -4508,6 +4508,9 @@ var RongIMLib;
                 }
                 else if (msg.getTopic() == "s_stat") {
                     entity = RongIMLib.RongIMClient.Protobuf.GetUserStatusOutput.decode(msg.getData());
+                    if (!entity.status) {
+                        return;
+                    }
                     entity = RongIMLib.RongInnerTools.convertUserStatus(entity);
                     RongIMLib.RongIMClient.userStatusObserver.notify({
                         key: entity.userId,

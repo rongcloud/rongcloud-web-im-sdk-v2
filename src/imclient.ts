@@ -139,7 +139,7 @@ module RongIMLib {
                 isPolling: isPolling,
                 wsScheme: wsScheme,
                 protocol: protocol,
-                showError: false,
+                showError: true,
                 openMp: true
             };
             
@@ -1242,6 +1242,10 @@ module RongIMLib {
                 throw new Error("ConversationType must be greater than -1");
             }
             RongIMClient._dataAccessProvider.getHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, "getHistoryMessages"), objectname, direction);
+        }
+
+        clearHistoryMessages(params: any, callback: ResultCallback<Boolean>):void{
+            RongIMClient._dataAccessProvider.clearHistoryMessages(params, RongIMClient.logCallback(callback, "clearHistoryMessages"));            
         }
 
         setMessageContent(messageId:number, content:any, objectName: string):void{
