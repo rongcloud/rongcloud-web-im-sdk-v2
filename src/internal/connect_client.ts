@@ -602,6 +602,15 @@ module RongIMLib {
             }
             //解析实体对象为消息对象。
             message = MessageUtil.messageParser(entity, this._onReceived, offlineMsg);
+
+            var isRecall = (msg.getTopic && msg.getTopic() == "recallMsg");
+            if (isRecall) {
+                var content = message.content;
+                message.conversationType = content.conversationType;
+                message.targetId = content.targetId;
+                message.messageId = null;
+            }
+            
             if (pubAckItem) {
                 message.messageUId = pubAckItem.getMessageUId();
                 message.sentTime = pubAckItem.getTimestamp();
