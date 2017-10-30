@@ -858,19 +858,33 @@ module RongIMLib {
         }
 
         clearHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
-            var modules = new RongIMClient.Protobuf.HistoryMsgInput();
+            var modules = new RongIMClient.Protobuf.CleanHisMsgInput();
             var conversationType = params.conversationType;
+
+            var _topic: {[s: string]: any} = {
+                1: 'cleanPMsg',
+                2: 'cleanDMsg',
+                3: 'cleanGMsg',
+                5: 'cleanCMsg',
+                6: 'cleanSMsg'
+            };
+            var topic = _topic[conversationType];
+            if (!topic) {
+                callback.onError(ErrorCode.CLEAR_HIS_TYPE_ERROR);
+                return;
+            }
             var targetId = params.targetId;
             var time = params.time;
             modules.setTargetId(targetId);
-            modules.setTime(time);
+            modules.setDataTime(time);
 
-            RongIMClient.bridge.queryMsg(38, MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
+            RongIMClient.bridge.queryMsg(topic, MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function(result: any) {
                     callback.onSuccess(!result);
                 }, onError: function(error: ErrorCode) {
+                    // error 1 清除失败，1 与其他错误码冲突，所以自定义错误码返回
                     setTimeout(function() {
-                      callback.onError(error);
+                      callback.onError(ErrorCode.CLEAR_HIS_ERROR);
                     });
                 }
             });
