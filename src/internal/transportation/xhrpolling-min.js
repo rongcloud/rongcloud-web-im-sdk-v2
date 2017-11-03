@@ -41,8 +41,8 @@ var Polling = {
         },
         SubUserStatusInput: function(){
             var a = {};
-            this.set = function(b){
-
+            this.setUserid = function(b){
+                a.userid = b;
             };
             this.toArrayBuffer = function(){
                 return a;
@@ -50,8 +50,23 @@ var Polling = {
         },
         SubUserStatusOutput: function(){
             var a = {};
-            this.set = function(b){
-
+            this.setNothing = function(b){
+               a.nothing = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
+        CleanHisMsgInput: function(){
+            var a = {};
+            this.setTargetId = function(b){
+                a.targetId = b;
+            };
+            this.setDataTime = function(b){
+                a.dataTime = b;
+            };
+            this.setConversationType = function(b){
+                a.conversationType = b;
             };
             this.toArrayBuffer = function(){
                 return a;

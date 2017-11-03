@@ -419,7 +419,13 @@ module RongIMLib {
 
         CONVER_CLEAR_ERROR = 34007,
 
-        CONVER_GET_ERROR = 34008,
+        CLEAR_HIS_TYPE_ERROR = 34008,
+
+        CLEAR_HIS_ERROR = 34010,
+        /*
+            
+        */
+        CONVER_GET_ERROR = 34009,
 
         //群组异常信息
         /**
