@@ -213,69 +213,118 @@
         }
     })();
 
-    (function adaptFromCodePoint() {
-        if (!String.fromCodePoint) {
-            (function() {
-                var defineProperty = (function() {
-                  // IE 8 only supports `Object.defineProperty` on DOM elements
-                  try {
-                    var object = {};
-                    var $defineProperty = Object.defineProperty;
-                    var result = $defineProperty(object, object, object) && $defineProperty;
-                  } catch(error) {}
-                  return result;
-                }());
-                var stringFromCharCode = String.fromCharCode;
-                var floor = Math.floor;
-                var fromCodePoint = function() {
-                  var MAX_SIZE = 0x4000;
-                  var codeUnits = [];
-                  var highSurrogate;
-                  var lowSurrogate;
-                  var index = -1;
-                  var length = arguments.length;
-                  if (!length) {
-                    return '';
-                  }
-                  var result = '';
-                  while (++index < length) {
-                    var codePoint = Number(arguments[index]);
-                    if (
-                      !isFinite(codePoint) ||       // `NaN`, `+Infinity`, or `-Infinity`
-                      codePoint < 0 ||              // not a valid Unicode code point
-                      codePoint > 0x10FFFF ||       // not a valid Unicode code point
-                      floor(codePoint) != codePoint // not an integer
-                    ) {
-                      throw RangeError('Invalid code point: ' + codePoint);
-                    }
-                    if (codePoint <= 0xFFFF) { // BMP code point
-                      codeUnits.push(codePoint);
-                    } else { // Astral code point; split in surrogate halves
-                      // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
-                      codePoint -= 0x10000;
-                      highSurrogate = (codePoint >> 10) + 0xD800;
-                      lowSurrogate = (codePoint % 0x400) + 0xDC00;
-                      codeUnits.push(highSurrogate, lowSurrogate);
-                    }
-                    if (index + 1 == length || codeUnits.length > MAX_SIZE) {
-                      result += stringFromCharCode.apply(null, codeUnits);
-                      codeUnits.length = 0;
-                    }
-                  }
-                  return result;
-                };
-                if (defineProperty) {
-                  defineProperty(String, 'fromCodePoint', {
-                    'value': fromCodePoint,
-                    'configurable': true,
-                    'writable': true
-                  });
-                } else {
-                  String.fromCodePoint = fromCodePoint;
-                }
-            }());
+
+    /*! http://mths.be/codepointat v0.1.0 by @mathias,  codePointAt兼容 */
+    if (!String.prototype.codePointAt) {
+      (function() {
+        'use strict'; // needed to support `apply`/`call` with `undefined`/`null`
+        var codePointAt = function(position) {
+          if (this == null) {
+            throw TypeError();
+          }
+          var string = String(this);
+          var size = string.length;
+          // `ToInteger`
+          var index = position ? Number(position) : 0;
+          if (index != index) { // better `isNaN`
+            index = 0;
+          }
+          // Account for out-of-bounds indices:
+          if (index < 0 || index >= size) {
+            return undefined;
+          }
+          // Get the first code unit
+          var first = string.charCodeAt(index);
+          var second;
+          if ( // check if it’s the start of a surrogate pair
+            first >= 0xD800 && first <= 0xDBFF && // high surrogate
+            size > index + 1 // there is a next code unit
+          ) {
+            second = string.charCodeAt(index + 1);
+            if (second >= 0xDC00 && second <= 0xDFFF) { // low surrogate
+              // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+              return (first - 0xD800) * 0x400 + second - 0xDC00 + 0x10000;
+            }
+          }
+          return first;
+        };
+        var userAgent = navigator.userAgent;
+        var isIE8 = navigator.userAgent.indexOf("MSIE 8.0") > 0;
+        if (Object.defineProperty && !isIE8) {
+          Object.defineProperty(String.prototype, 'codePointAt', {
+            'value': codePointAt,
+            'configurable': true,
+            'writable': true
+          });
+        } else {
+          String.prototype.codePointAt = codePointAt;
         }
-    })();
+      }());
+    }
+
+    /*! http://mths.be/fromcodepoint v0.1.0 by @mathias,   fromCodePoint兼容 */
+    if (!String.fromCodePoint) {
+      (function() {
+        var defineProperty = (function() {
+          // IE 8 only supports `Object.defineProperty` on DOM elements
+          try {
+            var object = {};
+            var $defineProperty = Object.defineProperty;
+            var result = $defineProperty(object, object, object) && $defineProperty;
+          } catch(error) {}
+          return result;
+        }());
+        var stringFromCharCode = String.fromCharCode;
+        var floor = Math.floor;
+        var fromCodePoint = function() {
+          var MAX_SIZE = 0x4000;
+          var codeUnits = [];
+          var highSurrogate;
+          var lowSurrogate;
+          var index = -1;
+          var length = arguments.length;
+          if (!length) {
+            return '';
+          }
+          var result = '';
+          while (++index < length) {
+            var codePoint = Number(arguments[index]);
+            if (
+              !isFinite(codePoint) ||       // `NaN`, `+Infinity`, or `-Infinity`
+              codePoint < 0 ||              // not a valid Unicode code point
+              codePoint > 0x10FFFF ||       // not a valid Unicode code point
+              floor(codePoint) != codePoint // not an integer
+            ) {
+              throw RangeError('Invalid code point: ' + codePoint);
+            }
+            if (codePoint <= 0xFFFF) { // BMP code point
+              codeUnits.push(codePoint);
+            } else { // Astral code point; split in surrogate halves
+              // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+              codePoint -= 0x10000;
+              highSurrogate = (codePoint >> 10) + 0xD800;
+              lowSurrogate = (codePoint % 0x400) + 0xDC00;
+              codeUnits.push(highSurrogate, lowSurrogate);
+            }
+            if (index + 1 == length || codeUnits.length > MAX_SIZE) {
+              result += stringFromCharCode.apply(null, codeUnits);
+              codeUnits.length = 0;
+            }
+          }
+          return result;
+        };
+        if (defineProperty) {
+          defineProperty(String, 'fromCodePoint', {
+            'value': fromCodePoint,
+            'configurable': true,
+            'writable': true
+          });
+        } else {
+          String.fromCodePoint = fromCodePoint;
+        }
+      }());
+    }
+    
 
     var Utils = {
         symbolRegExp: /\[([^\[\]]+?)\]/g,
@@ -364,13 +413,84 @@
                 }
             }
             return array;
+        },
+        emojiToUnicode: function(emoji) {
+            var unicodes = '';
+            for (var i = 0; i < emoji.length; i = i + 2) {
+                var point = emoji.codePointAt(i).toString(16);
+                var isEmojiSameUnicode = point.indexOf("1f") !== 0;
+                var code;
+                if (isEmojiSameUnicode) {
+                    code = "%u" + point;
+                } else {
+                    code = point.replace("1f", "%uf");
+                }
+                unicodes += code;
+            }
+            return unescape(unicodes);
+        },
+        newEmojisAdaptOldVersion: function(newEmojis) {
+            if (newEmojis && Utils.hasKey(newEmojis, 'dataSource')) {
+                var dataSource = newEmojis.dataSource;
+                if (dataSource && typeof dataSource === "object") {
+                    for (var key in dataSource) {
+                        var position = dataSource.bp || "0px 0px";
+                        dataSource[key].position = position;
+                    }
+                }
+                newEmojis.dataSource = dataSource;
+            }
+            return newEmojis;
+        },
+        hasKey: function(object, key) {
+            var has = false;
+            var objectType = CheckParam.getType(object);
+            if (objectType === 'object') {
+                for (var objKey in object) {
+                    if (objKey === key) {
+                        has = true;
+                    }
+                }
+            }
+            return has;
+        },
+        deleteKey: function(object, key) {
+            var newObj = {};
+            for (var objKey in object) {
+                if (objKey !== key) {
+                    newObj[objKey] = object[objKey];
+                }
+            }
+            return newObj;
+        },
+        getInitDetail: function(config) {
+            var newEmojis, opt;
+            var hasExtension = Utils.hasKey(config, "extension");
+            var hasDataSource = Utils.hasKey(config, "dataSource");
+            if (hasDataSource) {
+                newEmojis = config;
+            } else if (hasExtension) {
+                newEmojis = config.extension;
+                opt = Utils.deleteKey(config, 'extension');
+            } else {
+                opt = config;
+            }
+            return {
+                config: opt,
+                newEmojis: newEmojis
+            };
         }
     };
 
-    var errorDesc = "具体信息请参考文档以及Demo示例: www.baidu.com";
+    var errorDesc = "具体信息请参考文档以及Demo示例: https://rongcloud.github.io/websdk-demo/emoji.html";
 
     var Logger = {
         LogFactory: {
+            "0": {
+                code: 0,
+                msg: "初始化参数错误",
+                desc: errorDesc
+            },
             "1": {
                 code: 1,
                 msg: "Emoji参数错误",
@@ -383,7 +503,7 @@
             },
             "3": {
                 code: 3,
-                msg: "新增Emoji错误",
+                msg: "Emoji扩展错误",
                 desc: errorDesc
             },
             "4": {
@@ -518,6 +638,15 @@
                 }
             }
             return true;
+        },
+        checkInit: function(config, type) {
+            var objType = CheckParam.getType(config);
+            var isObject = new RegExp(objType).test(type);
+            var msg = "config参数必须是" + type + "类型";
+            !isObject && Logger.logger({
+                code: 0, msg: msg, funcName: "init"
+            });
+            return isObject;
         }
     };
 
@@ -534,6 +663,8 @@
             style.appendChild(head);
         }
     };
+
+
 
     var createEmojiDom = function(item, sizePx) {
         var position = computeBgPosition(item.position, sizePx);
@@ -585,7 +716,7 @@
                 unicode: key,
                 symbol: symbol,
                 emoji: detail.tag,
-                shadowDom: Utils.getDom(shadowDom)
+                node: Utils.getDom(shadowDom)
             };
             detailList.push(item);
         }
@@ -639,12 +770,24 @@
         return false;
     };
 
+    var init = function(config) {
+        var newEmojis, opt;
+        if (CheckParam.checkInit(config, 'object|null|undefined')) {
+            var initDetail = Utils.getInitDetail(config);
+            newEmojis = initDetail.newEmojis;
+            opt = initDetail.config;
+        }
+        addEmojis(newEmojis);
+        setConfig(opt);
+        isOpenAdaptOldVersion && adaptOldVersion();
+    };
+
     /**
      * 自定义设置
      * @param  {[object]} opt 可包含 lang, reg, url, size
      */
     var setConfig = function(opt) {
-        if (!CheckParam.checkConfigParam(opt || {}, "setConfig")) {
+        if (!CheckParam.checkConfigParam(opt || {}, "init")) {
             return;
         }
         configs = Utils.extend(configs, opt);
@@ -656,7 +799,8 @@
      * @param {object} newEmojis 可包含dataSource和url, url表示背景图, dataSource包含自定义的unicode和所对应emoji特性
      */
     var addEmojis = function(newEmojis) {
-        if (!CheckParam.checkAddEmoji(newEmojis || {}, "addEmojis")) {
+        newEmojis = Utils.newEmojisAdaptOldVersion(newEmojis);
+        if (!CheckParam.checkAddEmoji(newEmojis || {}, "init")) {
             return;
         }
         setupEmojiFactory(newEmojis);
@@ -758,16 +902,19 @@
 
     var context = {};
     var adaptOldVersion = function() {
-        context.init = function(newEmojis, opt) {
-            CheckParam.checkConfigParam(opt || {}, "init");
-            CheckParam.checkAddEmoji(newEmojis, "init");
-            configs = Utils.extend(configs, opt);
-            setupEmojiFactory(newEmojis);
-            setupEmojiDetails();
-        };
         context.emojis = Utils.map(detailList, function(item) {
-            var shadowDom = item.shadowDom;
-            var spanHTML = "<span>" + shadowDom.outerHTML + "</span>";
+            var unicode = item.unicode;
+            var emojiDetail = emojiFactory[unicode];
+            var zh = emojiDetail.zh;
+            var en = emojiDetail.en;
+            var position = emojiDetail.position;
+            en = en.replace(' ', '_').toLowerCase();
+            var oldVersionStyle = "height: 24px; width: 24px; display: inline-block; font-size: 20px !important; text-align: center; vertical-align: middle;overflow: hidden; line-height: 24px;";
+            var oldVersionBHtml = "<b style='width: 24px; height: 24px; display: inline-block; background-image: url({{url}}); background-position: {{position}}'></b>";
+            oldVersionBHtml = oldVersionBHtml.replace("{{url}}", normalImagePath).replace("{{position}}", position);
+            var oldVersionHtml = "<span name='[{{zh}}]' class='RongIMExpression_{{en}}' style='{{style}}'>{{b}}</span>"
+            oldVersionHtml = oldVersionHtml.replace("{{zh}}", zh).replace("{{en}}", en).replace("{{b}}", oldVersionBHtml).replace("{{style}}", oldVersionStyle);
+            var spanHTML = "<span>" + oldVersionHtml + "</span>";
             return Utils.getDom(spanHTML);
         });
         context.names = (function() {
@@ -789,14 +936,14 @@
                 var detail = emojiFactory[key];
                 if (detail.tag === item.emoji) {
                     data = detail;
-                    detail.html = item.shadowDom;
+                    detail.html = item.node;
                 }
             }
             return data;
         });
     };
 
-    (function init() {
+    (function start() {
         addBaseCss();
         setupEmojiDetails();
         isOpenAdaptOldVersion && adaptOldVersion();
@@ -806,8 +953,7 @@
         return Utils.extend(context, {
             isSupportEmoji: isSupportEmoji,
 
-            setConfig: setConfig,
-            addEmojis: addEmojis,
+            init: init,
 
             list: detailList,
             emojiToSymbol: emojiToSymbol,
