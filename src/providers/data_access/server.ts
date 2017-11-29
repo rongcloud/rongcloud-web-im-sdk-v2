@@ -1261,7 +1261,13 @@ module RongIMLib {
         }
         
         getCurrentConnectionStatus(): number{
-            return Bridge._client.channel.connectionStatus;
+            var client:any = RongIMLib.Bridge._client || {};
+            var channel = client.channel || {};
+            var status = RongIMLib.ConnectionStatus.CONNECTION_CLOSED;
+            if (typeof channel.connectionStatus == 'number') {
+                status = channel.connectionStatus;
+            }
+            return status;
         }
         
         getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>) {

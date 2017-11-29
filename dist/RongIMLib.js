@@ -66,8 +66,8 @@ var Polling = {
         },
         SubUserStatusInput: function(){
             var a = {};
-            this.set = function(b){
-
+            this.setUserid = function(b){
+                a.userid = b;
             };
             this.toArrayBuffer = function(){
                 return a;
@@ -75,8 +75,23 @@ var Polling = {
         },
         SubUserStatusOutput: function(){
             var a = {};
-            this.set = function(b){
-
+            this.setNothing = function(b){
+               a.nothing = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
+        CleanHisMsgInput: function(){
+            var a = {};
+            this.setTargetId = function(b){
+                a.targetId = b;
+            };
+            this.setDataTime = function(b){
+                a.dataTime = b;
+            };
+            this.setConversationType = function(b){
+                a.conversationType = b;
             };
             this.toArrayBuffer = function(){
                 return a;
@@ -1471,7 +1486,12 @@ var RongIMLib;
          */
         ErrorCode[ErrorCode["CONVER_ID_TYPE_UNREAD_ERROR"] = 34006] = "CONVER_ID_TYPE_UNREAD_ERROR";
         ErrorCode[ErrorCode["CONVER_CLEAR_ERROR"] = 34007] = "CONVER_CLEAR_ERROR";
-        ErrorCode[ErrorCode["CONVER_GET_ERROR"] = 34008] = "CONVER_GET_ERROR";
+        ErrorCode[ErrorCode["CLEAR_HIS_TYPE_ERROR"] = 34008] = "CLEAR_HIS_TYPE_ERROR";
+        ErrorCode[ErrorCode["CLEAR_HIS_ERROR"] = 34010] = "CLEAR_HIS_ERROR";
+        /*
+            
+        */
+        ErrorCode[ErrorCode["CONVER_GET_ERROR"] = 34009] = "CONVER_GET_ERROR";
         //群组异常信息
         /**
          *
@@ -1931,7 +1951,7 @@ var RongIMLib;
                 isPolling: isPolling,
                 wsScheme: wsScheme,
                 protocol: protocol,
-                showError: false,
+                showError: true,
                 openMp: true
             };
             RongIMLib.RongUtil.extend(_defaultOpts, options);
@@ -2432,6 +2452,14 @@ var RongIMLib;
                 "34008": {
                     code: "34008",
                     msg: "获取会话消息异常"
+                },
+                "34009": {
+                    code: "34009",
+                    msg: "清除历史消息会话类型不正确"
+                },
+                "34010": {
+                    code: "34010",
+                    msg: "清除历史消息失败，请检查传入参数"
                 },
                 /**
                  * 黑名单异常
@@ -3924,9 +3952,11 @@ var RongIMLib;
         };
         RongIMClient.prototype.setUserStatusListener = function (params, callback) {
             var userIds = params.userIds;
+            var multiple = params.multiple;
             RongIMClient.userStatusObserver.watch({
                 key: userIds,
-                func: callback
+                func: callback,
+                multiple: multiple
             });
             RongIMClient._dataAccessProvider.setUserStatusListener(params, callback);
         };
@@ -3970,7 +4000,7 @@ var RongIMLib;
     var Type = RongIMLib.Type;
     var _topic = ["invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
         ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
-        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg", "qryCHMsg", "getUserStatus", "setUserStatus", "subUserStatus"];
+        "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg", "qryCHMsg", "getUserStatus", "setUserStatus", "subUserStatus", "cleanHisMsg"];
     var Channel = (function () {
         function Channel(address, cb, self) {
             this.connectionStatus = -1;
@@ -4177,7 +4207,7 @@ var RongIMLib;
         function Client(token, appId) {
             this.timeoutMillis = 100000;
             this.timeout_ = 0;
-            this.sdkVer = "2.2.8";
+            this.sdkVer = "2.2.9";
             this.apiVer = Math.floor(Math.random() * 1e6);
             this.channel = null;
             this.handler = null;
@@ -4508,9 +4538,6 @@ var RongIMLib;
                 }
                 else if (msg.getTopic() == "s_stat") {
                     entity = RongIMLib.RongIMClient.Protobuf.GetUserStatusOutput.decode(msg.getData());
-                    if (!entity.status) {
-                        return;
-                    }
                     entity = RongIMLib.RongInnerTools.convertUserStatus(entity);
                     RongIMLib.RongIMClient.userStatusObserver.notify({
                         key: entity.userId,
@@ -4551,7 +4578,6 @@ var RongIMLib;
             }
             //解析实体对象为消息对象。
             message = RongIMLib.MessageUtil.messageParser(entity, this._onReceived, offlineMsg);
-
             var isRecall = (msg.getTopic && msg.getTopic() == "recallMsg");
             if (isRecall) {
                 var content = message.content;
@@ -4559,7 +4585,6 @@ var RongIMLib;
                 message.targetId = content.targetId;
                 message.messageId = null;
             }
-
             if (pubAckItem) {
                 message.messageUId = pubAckItem.getMessageUId();
                 message.sentTime = pubAckItem.getTimestamp();
@@ -8647,6 +8672,36 @@ var RongIMLib;
                 callback.onSuccess(message);
             }
         };
+        ServerDataProvider.prototype.clearHistoryMessages = function (params, callback) {
+            var modules = new RongIMLib.RongIMClient.Protobuf.CleanHisMsgInput();
+            var conversationType = params.conversationType;
+            var _topic = {
+                1: 'cleanPMsg',
+                2: 'cleanDMsg',
+                3: 'cleanGMsg',
+                5: 'cleanCMsg',
+                6: 'cleanSMsg'
+            };
+            var topic = _topic[conversationType];
+            if (!topic) {
+                callback.onError(RongIMLib.ErrorCode.CLEAR_HIS_TYPE_ERROR);
+                return;
+            }
+            var targetId = params.targetId;
+            var time = params.time;
+            modules.setTargetId(targetId);
+            modules.setDataTime(time);
+            RongIMLib.RongIMClient.bridge.queryMsg(topic, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
+                onSuccess: function (result) {
+                    callback.onSuccess(!result);
+                }, onError: function (error) {
+                    // error 1 清除失败，1 与其他错误码冲突，所以自定义错误码返回
+                    setTimeout(function () {
+                        callback.onError(RongIMLib.ErrorCode.CLEAR_HIS_ERROR);
+                    });
+                }
+            });
+        };
         ServerDataProvider.prototype.clearMessages = function (conversationType, targetId, callback) {
             callback.onSuccess(true);
         };
@@ -8966,7 +9021,13 @@ var RongIMLib;
             return RongIMLib.RongIMClient._memoryStore.deltaTime;
         };
         ServerDataProvider.prototype.getCurrentConnectionStatus = function () {
-            return RongIMLib.Bridge._client.channel.connectionStatus;
+            var client = RongIMLib.Bridge._client || {};
+            var channel = client.channel || {};
+            var status = RongIMLib.ConnectionStatus.CONNECTION_CLOSED;
+            if (typeof channel.connectionStatus == 'number') {
+                status = channel.connectionStatus;
+            }
+            return status;
         };
         ServerDataProvider.prototype.getAgoraDynamicKey = function (engineType, channelName, callback) {
             var modules = new RongIMLib.RongIMClient.Protobuf.VoipDynamicInput();
@@ -9086,7 +9147,7 @@ var RongIMLib;
             /**
             ConnectionStatus_TokenIncorrect = 31004,
             ConnectionStatus_Connected = 0,
-            ConnectionStatus_KickedOff = 6, // 其他设备登录
+            ConnectionStatus_KickedOff = 6,	// 其他设备登录
             ConnectionStatus_Connecting = 10,// 连接中
             ConnectionStatus_SignUp = 12, // 未登录
             ConnectionStatus_NetworkUnavailable = 1, // 连接断开
@@ -9428,6 +9489,9 @@ var RongIMLib;
             catch (e) {
                 callback.onError(e);
             }
+        };
+        VCDataProvider.prototype.clearHistoryMessages = function (params, callback) {
+            callback.onSuccess(true);
         };
         VCDataProvider.prototype.getTotalUnreadCount = function (callback, conversationTypes) {
             try {
@@ -10131,7 +10195,7 @@ var RongIMLib;
                     JSON.rx_escapable = new RegExp('[\\\"\\\\\"\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]', "g");
                     JSON.meta = {
                         "\b": "\\b",
-                        "   ": "\\t",
+                        "	": "\\t",
                         "\n": "\\n",
                         "\f": "\\f",
                         "\r": "\\r",
@@ -10559,10 +10623,11 @@ var RongIMLib;
         RongObserver.prototype.watch = function (params) {
             var me = this;
             var key = params.key;
+            var multiple = params.multiple;
             key = RongUtil.isArray(key) ? key : [key];
             var func = params.func;
             RongUtil.forEach(key, function (k) {
-                k = me.genUId(key);
+                k = multiple ? me.genUId(k) : k;
                 me.watchers[k] = func;
             });
         };
@@ -10572,7 +10637,9 @@ var RongIMLib;
             var entity = params.entity;
             for (var k in me.watchers) {
                 var isNotify = (k.indexOf(key) == 0);
-                me.watchers[k](entity);
+                if (isNotify) {
+                    me.watchers[k](entity);
+                }
             }
         };
         RongObserver.prototype.remove = function () {

@@ -404,11 +404,12 @@ module RongIMLib {
         }
         watch(params: any):void{
             var me = this;
-            var key = params.key
+            var key = params.key;
+            var multiple = params.multiple;
             key = RongUtil.isArray(key) ? key : [key];
             var func = params.func;
             RongUtil.forEach(key, function(k: any){
-                k = me.genUId(key);
+                k = multiple ? me.genUId(k) : k;
                 me.watchers[k] = func;
             });
         }
@@ -418,7 +419,9 @@ module RongIMLib {
             var entity = params.entity;
             for(var k in me.watchers){
                 var isNotify = (k.indexOf(key) == 0);
-                me.watchers[k](entity);
+                if (isNotify) {
+                    me.watchers[k](entity);
+                }
             }
         }
         remove(): void{

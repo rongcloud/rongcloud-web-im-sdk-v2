@@ -1252,10 +1252,6 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.getHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, "getHistoryMessages"), objectname, direction);
         }
 
-        clearHistoryMessages(params: any, callback: ResultCallback<Boolean>):void{
-            RongIMClient._dataAccessProvider.clearHistoryMessages(params, RongIMClient.logCallback(callback, "clearHistoryMessages"));            
-        }
-
         setMessageContent(messageId:number, content:any, objectName: string):void{
              RongIMClient._dataAccessProvider.setMessageContent(messageId, content, objectName);   
         };
@@ -2206,9 +2202,11 @@ module RongIMLib {
 
         setUserStatusListener(params: any, callback: Function):void{
             var userIds = params.userIds;
+            var multiple = params.multiple;
             RongIMClient.userStatusObserver.watch({
                 key: userIds,
-                func: callback
+                func: callback,
+                multiple: multiple
             });
             RongIMClient._dataAccessProvider.setUserStatusListener(params, callback);
         }
