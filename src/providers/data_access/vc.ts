@@ -469,6 +469,7 @@ module RongIMLib {
                 return;
             }
             objectname = objectname || '';
+            direction = typeof direction == 'undefined' || direction;
             try {
                 var ret: string = this.addon.getHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, objectname, direction);
                 var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [], me = this;
@@ -484,9 +485,32 @@ module RongIMLib {
             }
         }
 
+        clearRemoteHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
+            var conversationType = params.conversationType;
+            var targetId = params.targetId;
+            var sentTime = params.sentTime;
+            this.addon.clearRemoteHistoryMessages(+conversationType, targetId, sentTime, function() {
+                callback.onSuccess(true);
+            }, function(errorCode:any) {
+                if (errorCode == 1) {
+                    // 没有开通历史消息云存储
+                    errorCode = ErrorCode.CLEAR_HIS_ERROR;
+                }
+                callback.onError(errorCode);
+            });
+        }
 
         clearHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
-            callback.onSuccess(true);
+            var conversationType = +params.conversationType;
+            var targetId = params.targetId;
+            try{
+               this.addon.clearMessages(conversationType, targetId);
+               var isSuccess = true;
+               callback.onSuccess(isSuccess);
+            }catch(e){
+               console.log(e);
+               callback.onError(ErrorCode.CLEAR_HIS_ERROR);
+            }
         }
 
 

@@ -3076,6 +3076,12 @@ var RongIMLib;
             }
             RongIMClient._dataAccessProvider.getRemoteHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, funcName));
         };
+        RongIMClient.prototype.clearHistoryMessages = function (params, callback) {
+            RongIMClient._dataAccessProvider.clearHistoryMessages(params, callback);
+        };
+        RongIMClient.prototype.clearRemoteHistoryMessages = function (params, callback) {
+            RongIMClient._dataAccessProvider.clearRemoteHistoryMessages(params, callback);
+        };
         /**
          * [hasRemoteUnreadMessages 是否有未接收的消息，jsonp方法]
          * @param  {string}          appkey   [appkey]
@@ -8672,7 +8678,7 @@ var RongIMLib;
                 callback.onSuccess(message);
             }
         };
-        ServerDataProvider.prototype.clearHistoryMessages = function (params, callback) {
+        ServerDataProvider.prototype.clearRemoteHistoryMessages = function (params, callback) {
             var modules = new RongIMLib.RongIMClient.Protobuf.CleanHisMsgInput();
             var conversationType = params.conversationType;
             var _topic = {
@@ -8688,22 +8694,28 @@ var RongIMLib;
                 return;
             }
             var targetId = params.targetId;
-            var time = params.time;
+            var sentTime = params.sentTime;
             modules.setTargetId(targetId);
-            modules.setDataTime(time);
+            modules.setDataTime(sentTime);
             RongIMLib.RongIMClient.bridge.queryMsg(topic, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function (result) {
                     callback.onSuccess(!result);
                 }, onError: function (error) {
-                    // error 1 清除失败，1 与其他错误码冲突，所以自定义错误码返回
+                    // error 1 历史消息云存储没有开通、传入时间大于服务器时间 清除失败，1 与其他错误码冲突，所以自定义错误码返回
+                    if (error == 1) {
+                        error = RongIMLib.ErrorCode.CLEAR_HIS_ERROR;
+                    }
                     setTimeout(function () {
-                        callback.onError(RongIMLib.ErrorCode.CLEAR_HIS_ERROR);
+                        callback.onError(error);
                     });
                 }
             });
         };
+        ServerDataProvider.prototype.clearHistoryMessages = function (params, callback) {
+            this.clearRemoteHistoryMessages(params, callback);
+        };
+        // 兼容老版本
         ServerDataProvider.prototype.clearMessages = function (conversationType, targetId, callback) {
-            callback.onSuccess(true);
         };
         ServerDataProvider.prototype.updateMessages = function (conversationType, targetId, key, value, callback) {
             var me = this;
@@ -9475,6 +9487,7 @@ var RongIMLib;
                 return;
             }
             objectname = objectname || '';
+            direction = typeof direction == 'undefined' || direction;
             try {
                 var ret = this.addon.getHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, objectname, direction);
                 var list = ret ? JSON.parse(ret).list : [], msgs = [], me = this;
@@ -9490,8 +9503,32 @@ var RongIMLib;
                 callback.onError(e);
             }
         };
+        VCDataProvider.prototype.clearRemoteHistoryMessages = function (params, callback) {
+            var conversationType = params.conversationType;
+            var targetId = params.targetId;
+            var sentTime = params.sentTime;
+            this.addon.clearRemoteHistoryMessages(+conversationType, targetId, sentTime, function () {
+                callback.onSuccess(true);
+            }, function (errorCode) {
+                if (errorCode == 1) {
+                    // 没有开通历史消息云存储
+                    errorCode = RongIMLib.ErrorCode.CLEAR_HIS_ERROR;
+                }
+                callback.onError(errorCode);
+            });
+        };
         VCDataProvider.prototype.clearHistoryMessages = function (params, callback) {
-            callback.onSuccess(true);
+            var conversationType = +params.conversationType;
+            var targetId = params.targetId;
+            try {
+                this.addon.clearMessages(conversationType, targetId);
+                var isSuccess = true;
+                callback.onSuccess(isSuccess);
+            }
+            catch (e) {
+                console.log(e);
+                callback.onError(RongIMLib.ErrorCode.CLEAR_HIS_ERROR);
+            }
         };
         VCDataProvider.prototype.getTotalUnreadCount = function (callback, conversationTypes) {
             try {

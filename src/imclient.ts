@@ -1283,6 +1283,12 @@ module RongIMLib {
             }
             RongIMClient._dataAccessProvider.getRemoteHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, funcName));
         }
+        clearHistoryMessages(params: any, callback:ResultCallback<boolean>):void{
+            RongIMClient._dataAccessProvider.clearHistoryMessages(params, callback);
+        }
+        clearRemoteHistoryMessages(params: any, callback:ResultCallback<boolean>): void{
+            RongIMClient._dataAccessProvider.clearRemoteHistoryMessages(params, callback);   
+        }
         /**
          * [hasRemoteUnreadMessages 是否有未接收的消息，jsonp方法]
          * @param  {string}          appkey   [appkey]

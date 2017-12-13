@@ -235,4 +235,6 @@ declare interface Addon {
     getVoIPKey(engineType: number, channelName: string, extra: string, success: Function, error: Function):void;
 
     getAccounts(): any;
+
+    clearRemoteHistoryMessages(conversationType: number, targetId:string, timestamp: number, success: Function, error: Function): any;
 }

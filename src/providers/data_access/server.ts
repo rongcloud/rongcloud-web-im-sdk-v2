@@ -857,7 +857,8 @@ module RongIMLib {
             }
         }
 
-        clearHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
+
+        clearRemoteHistoryMessages(params: any, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.CleanHisMsgInput();
             var conversationType = params.conversationType;
 
@@ -874,24 +875,31 @@ module RongIMLib {
                 return;
             }
             var targetId = params.targetId;
-            var time = params.time;
+            var sentTime = params.sentTime;
             modules.setTargetId(targetId);
-            modules.setDataTime(time);
+            modules.setDataTime(sentTime);
 
             RongIMClient.bridge.queryMsg(topic, MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function(result: any) {
                     callback.onSuccess(!result);
                 }, onError: function(error: ErrorCode) {
-                    // error 1 清除失败，1 与其他错误码冲突，所以自定义错误码返回
+                    // error 1 历史消息云存储没有开通、传入时间大于服务器时间 清除失败，1 与其他错误码冲突，所以自定义错误码返回
+                    if (error == 1) {
+                        error = ErrorCode.CLEAR_HIS_ERROR;
+                    }
                     setTimeout(function() {
-                      callback.onError(ErrorCode.CLEAR_HIS_ERROR);
+                      callback.onError(error);
                     });
                 }
             });
         }
 
-        clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
-            callback.onSuccess(true);
+        clearHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
+           this.clearRemoteHistoryMessages(params, callback);
+        }
+        // 兼容老版本
+        clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>):void{
+           
         }
 
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>) {
