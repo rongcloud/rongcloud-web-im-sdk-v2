@@ -224,6 +224,7 @@ module RongIMLib {
                                 tempMsg.receiptResponse[tempMsg.messageUId] = tempDir.count;
                             }
                             tempMsg.sentStatus = read
+                            tempMsg.targetId = targetId;
                             list[i] = tempMsg;
                         }
                     } else {
