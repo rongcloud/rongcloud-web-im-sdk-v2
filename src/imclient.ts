@@ -87,7 +87,15 @@ module RongIMLib {
             if(typeof WebSocket != 'function') {
                 isPolling = true;
             }
-
+            var isIntegrity = function(){
+                //iOS 9 
+                var hasWS = (typeof WebSocket);
+                var integrity = (typeof WebSocket.OPEN == 'number');
+                return (hasWS && integrity);
+            };
+            if (typeof WebSocket == 'object' && isIntegrity()) {
+                isPolling = false;
+            }
             var supportUserData = function(){
                 var element:any = document.documentElement;
                 return element.addBehavior;

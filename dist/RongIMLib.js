@@ -1908,6 +1908,15 @@ var RongIMLib;
             if (typeof WebSocket != 'function') {
                 isPolling = true;
             }
+            var isIntegrity = function () {
+                //iOS 9 
+                var hasWS = (typeof WebSocket);
+                var integrity = (typeof WebSocket.OPEN == 'number');
+                return (hasWS && integrity);
+            };
+            if (typeof WebSocket == 'object' && isIntegrity()) {
+                isPolling = false;
+            }
             var supportUserData = function () {
                 var element = document.documentElement;
                 return element.addBehavior;
@@ -10400,13 +10409,6 @@ var RongIMLib;
             this.limit = limit || 10;
         }
         LimitableMap.prototype.set = function (key, value) {
-            if (this.map.hasOwnProperty(key)) {
-                if (this.keys.length === this.limit) {
-                    var firstKey = this.keys.shift();
-                    delete this.map[firstKey];
-                }
-                this.keys.push(key);
-            }
             this.map[key] = value;
         };
         LimitableMap.prototype.get = function (key) {

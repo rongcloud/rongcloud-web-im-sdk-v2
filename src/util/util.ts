@@ -152,13 +152,6 @@ module RongIMLib {
             this.limit = limit || 10;
         }
         set(key: string, value: any): void {
-            if (this.map.hasOwnProperty(key)) {
-                if (this.keys.length === this.limit) {
-                    var firstKey = this.keys.shift();
-                    delete this.map[firstKey];
-                }
-                this.keys.push(key);
-            }
             this.map[key] = value;
         }
         get(key: string): number {
