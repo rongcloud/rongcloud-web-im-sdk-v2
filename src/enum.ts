@@ -419,9 +419,11 @@ module RongIMLib {
 
         CONVER_CLEAR_ERROR = 34007,
 
+        CLEAR_HIS_ERROR = 34010,
+        
         CLEAR_HIS_TYPE_ERROR = 34008,
 
-        CLEAR_HIS_ERROR = 34010,
+        CLEAR_HIS_TIME_ERROR = 34011,
         /*
             
         */

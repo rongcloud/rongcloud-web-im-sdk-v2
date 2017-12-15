@@ -488,8 +488,26 @@ module RongIMLib {
         clearRemoteHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
             var conversationType = params.conversationType;
             var targetId = params.targetId;
-            var sentTime = params.sentTime;
-            this.addon.clearRemoteHistoryMessages(+conversationType, targetId, sentTime, function() {
+            var timestamp = params.timestamp;
+            var _topic: {[s: string]: any} = {
+                1: true,
+                2: true,
+                3: true,
+                5: true,
+                6: true
+            };
+            var topic = _topic[conversationType];
+            if (!topic) {
+                callback.onError(ErrorCode.CLEAR_HIS_TYPE_ERROR);
+                return;
+            }
+
+            if (typeof timestamp != 'number') {
+                callback.onError(ErrorCode.CLEAR_HIS_TIME_ERROR);
+                return;
+            }
+
+            this.addon.clearRemoteHistoryMessages(+conversationType, targetId, timestamp, function() {
                 callback.onSuccess(true);
             }, function(errorCode:any) {
                 if (errorCode == 1) {

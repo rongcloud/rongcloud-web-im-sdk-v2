@@ -1486,8 +1486,9 @@ var RongIMLib;
          */
         ErrorCode[ErrorCode["CONVER_ID_TYPE_UNREAD_ERROR"] = 34006] = "CONVER_ID_TYPE_UNREAD_ERROR";
         ErrorCode[ErrorCode["CONVER_CLEAR_ERROR"] = 34007] = "CONVER_CLEAR_ERROR";
-        ErrorCode[ErrorCode["CLEAR_HIS_TYPE_ERROR"] = 34008] = "CLEAR_HIS_TYPE_ERROR";
         ErrorCode[ErrorCode["CLEAR_HIS_ERROR"] = 34010] = "CLEAR_HIS_ERROR";
+        ErrorCode[ErrorCode["CLEAR_HIS_TYPE_ERROR"] = 34008] = "CLEAR_HIS_TYPE_ERROR";
+        ErrorCode[ErrorCode["CLEAR_HIS_TIME_ERROR"] = 34011] = "CLEAR_HIS_TIME_ERROR";
         /*
             
         */
@@ -3089,7 +3090,7 @@ var RongIMLib;
             RongIMClient._dataAccessProvider.clearHistoryMessages(params, callback);
         };
         RongIMClient.prototype.clearRemoteHistoryMessages = function (params, callback) {
-            RongIMClient._dataAccessProvider.clearRemoteHistoryMessages(params, callback);
+            RongIMClient._dataAccessProvider.clearRemoteHistoryMessages(params, RongIMClient.logCallback(callback, "clearRemoteHistoryMessages"));
         };
         /**
          * [hasRemoteUnreadMessages 是否有未接收的消息，jsonp方法]
@@ -8703,10 +8704,14 @@ var RongIMLib;
                 callback.onError(RongIMLib.ErrorCode.CLEAR_HIS_TYPE_ERROR);
                 return;
             }
+            var timestamp = params.timestamp;
+            if (typeof timestamp != 'number') {
+                callback.onError(RongIMLib.ErrorCode.CLEAR_HIS_TIME_ERROR);
+                return;
+            }
+            modules.setDataTime(timestamp);
             var targetId = params.targetId;
-            var sentTime = params.sentTime;
             modules.setTargetId(targetId);
-            modules.setDataTime(sentTime);
             RongIMLib.RongIMClient.bridge.queryMsg(topic, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function (result) {
                     callback.onSuccess(!result);
@@ -9516,8 +9521,24 @@ var RongIMLib;
         VCDataProvider.prototype.clearRemoteHistoryMessages = function (params, callback) {
             var conversationType = params.conversationType;
             var targetId = params.targetId;
-            var sentTime = params.sentTime;
-            this.addon.clearRemoteHistoryMessages(+conversationType, targetId, sentTime, function () {
+            var timestamp = params.timestamp;
+            var _topic = {
+                1: true,
+                2: true,
+                3: true,
+                5: true,
+                6: true
+            };
+            var topic = _topic[conversationType];
+            if (!topic) {
+                callback.onError(RongIMLib.ErrorCode.CLEAR_HIS_TYPE_ERROR);
+                return;
+            }
+            if (typeof timestamp != 'number') {
+                callback.onError(RongIMLib.ErrorCode.CLEAR_HIS_TIME_ERROR);
+                return;
+            }
+            this.addon.clearRemoteHistoryMessages(+conversationType, targetId, timestamp, function () {
                 callback.onSuccess(true);
             }, function (errorCode) {
                 if (errorCode == 1) {

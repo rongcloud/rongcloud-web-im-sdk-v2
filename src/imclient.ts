@@ -1295,7 +1295,7 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.clearHistoryMessages(params, callback);
         }
         clearRemoteHistoryMessages(params: any, callback:ResultCallback<boolean>): void{
-            RongIMClient._dataAccessProvider.clearRemoteHistoryMessages(params, callback);   
+            RongIMClient._dataAccessProvider.clearRemoteHistoryMessages(params, RongIMClient.logCallback(callback, "clearRemoteHistoryMessages"));   
         }
         /**
          * [hasRemoteUnreadMessages 是否有未接收的消息，jsonp方法]

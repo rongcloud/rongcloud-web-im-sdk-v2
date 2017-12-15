@@ -875,10 +875,16 @@ module RongIMLib {
                 callback.onError(ErrorCode.CLEAR_HIS_TYPE_ERROR);
                 return;
             }
+            var timestamp = params.timestamp;
+
+            if (typeof timestamp != 'number') {
+                callback.onError(ErrorCode.CLEAR_HIS_TIME_ERROR);
+                return;
+            }
+            modules.setDataTime(timestamp);
+            
             var targetId = params.targetId;
-            var sentTime = params.sentTime;
             modules.setTargetId(targetId);
-            modules.setDataTime(sentTime);
 
             RongIMClient.bridge.queryMsg(topic, MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function(result: any) {
