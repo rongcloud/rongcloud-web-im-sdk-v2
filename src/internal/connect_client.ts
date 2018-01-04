@@ -257,7 +257,7 @@ module RongIMLib {
         chatroomId: string = "";
         static userInfoMapping: any = {};
         SyncTimeQueue: any = [];
-        cacheMessageIds: any = [];
+        cacheMessageIds: any = {};
         constructor(token: string, appId: string) {
             this.token = token;
             this.appId = appId;
@@ -440,11 +440,17 @@ module RongIMLib {
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
                     for (let i = 0, len = list.length, count = len; i < len; i++) {
-                        if (!(list[i].msgId in me.cacheMessageIds)) {
+                        var uId = 'R' + list[i].msgId;
+                        if (!(uId in me.cacheMessageIds)) {
                             Bridge._client.handler.onReceived(list[i], undefined, offlineMsg,--count);
-                            var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
-                            if (arrLen > 20) me.cacheMessageIds.length = 20;
-                        }
+                            me.cacheMessageIds[uId] = true;
+
+                            var cacheUIds = RongUtil.keys(me.cacheMessageIds);
+                            if (cacheUIds.length > 10) {
+                                uId = cacheUIds[0];
+                                delete me.cacheMessageIds[uId];
+                            }
+                        } 
                     }
                 },
                 onError: function(error: ErrorCode) {
@@ -755,15 +761,11 @@ module RongIMLib {
                         sentkey = Bridge._client.userId + uIds[i] + "SENT";
                         sentObj = JSON.parse(RongIMClient._storageProvider.getItem(sentkey));
                         if (sentObj && !(message.senderUserId in sentObj.userIds)) {
-                            if (new Date(date).getTime() - sentObj.dealtime > 0) {
-                                RongIMClient._storageProvider.removeItem(sentkey);
-                            } else {
-                                cbuIds.push(uIds[i]);
-                                sentObj.count += 1;
-                                sentObj.userIds[message.senderUserId] = message.sentTime;
-                                message.receiptResponse[uIds[i]] = sentObj.count;
-                                RongIMClient._storageProvider.setItem(sentkey, JSON.stringify(sentObj));
-                            }
+                            cbuIds.push(uIds[i]);
+                            sentObj.count += 1;
+                            sentObj.userIds[message.senderUserId] = message.sentTime;
+                            message.receiptResponse[uIds[i]] = sentObj.count;
+                            RongIMClient._storageProvider.setItem(sentkey, JSON.stringify(sentObj));
                         }
                     }
                     receiptResponseMsg.receiptMessageDic[Bridge._client.userId] = cbuIds;

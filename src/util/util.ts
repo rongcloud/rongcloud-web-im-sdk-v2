@@ -377,6 +377,14 @@ module RongIMLib {
             }
             return has;
         }
+
+        static keys(obj: any): string[]{
+            var props:string[] = [];
+            for(var key in obj){
+                props.push(key);
+            }
+            return props;
+        }
     }
 
     /*

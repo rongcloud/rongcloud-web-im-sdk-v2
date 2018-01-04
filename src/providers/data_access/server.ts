@@ -410,23 +410,36 @@ module RongIMLib {
                     modules.setSyncTime(0);
                     Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
                         onSuccess: function(collection: any) {
-                            var sync = MessageUtil.int64ToTimestamp(collection.syncTime);
-                            RongIMClient._memoryStore.lastReadTime.set(chatroomId + Bridge._client.userId + "CST", sync);
                             var list = collection.list;
-                            if (RongIMClient._memoryStore.filterMessages.length > 0) {
-                                for (var i = 0, mlen = list.length; i < mlen; i++) {
-                                    for (let j = 0, flen = RongIMClient._memoryStore.filterMessages.length; j < flen; j++) {
-                                        if (RongIMClient.MessageParams[RongIMClient._memoryStore.filterMessages[j]].objectName != list[i].classname) {
-                                            Bridge._client.handler.onReceived(list[i]);
+                            var sync = RongIMLib.MessageUtil.int64ToTimestamp(collection.syncTime);
+                            var latestMessage = list[list.length - 1];
+                            if (latestMessage) {
+                                latestMessage = RongIMLib.MessageUtil.messageParser(latestMessage);
+                                sync = latestMessage.sentTime;                                
+                            }
+                            RongIMClient._memoryStore.lastReadTime.set(chatroomId + RongIMLib.Bridge._client.userId + "CST", sync);
+                            var _client = RongIMLib.Bridge._client;
+                            for (var i = 0, mlen = list.length; i < mlen; i++) {
+                                var uId = 'R' + list[i].msgId;
+                                if (!(uId in _client.cacheMessageIds)) {
+                                    _client.cacheMessageIds[uId] = true;
+                                    var cacheUIds = RongUtil.keys(_client.cacheMessageIds);
+                                    if (cacheUIds.length > 10) {
+                                        uId = cacheUIds[0];
+                                        delete _client.cacheMessageIds[uId];
+                                    }
+                                    if (RongIMLib.RongIMClient._memoryStore.filterMessages.length > 0) {
+                                        for (var j = 0, flen = RongIMLib.RongIMClient._memoryStore.filterMessages.length; j < flen; j++) {
+                                            if (RongIMLib.RongIMClient.MessageParams[RongIMLib.RongIMClient._memoryStore.filterMessages[j]].objectName != list[i].classname) {
+                                               _client.handler.onReceived(list[i]);
+                                            }
                                         }
                                     }
-                                }
-                            } else {
-                                for (var i = 0, len = list.length; i < len; i++) {
-                                    Bridge._client.handler.onReceived(list[i]);
+                                    else {
+                                       _client.handler.onReceived(list[i]);
+                                    }   
                                 }
                             }
-
                         },
                         onError: function(x: any) {
                             setTimeout(function() {
