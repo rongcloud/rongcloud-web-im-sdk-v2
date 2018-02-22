@@ -190,7 +190,10 @@ module RongIMLib {
             } else {
                 RongIMClient._dataAccessProvider = new ServerDataProvider();
             }
-            RongIMClient._dataAccessProvider.init(appKey, callback);
+            var tools = {
+                require: options.require
+            };
+            RongIMClient._dataAccessProvider.init(appKey, callback, tools);
             // 兼容 c++ 设置导航，Web 端不生效
             RongIMClient._dataAccessProvider.setServerInfo({navi: location.protocol + options.navi +'/navi.xml' });
             RongIMClient.MessageParams = {

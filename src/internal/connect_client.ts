@@ -442,13 +442,15 @@ module RongIMLib {
                     for (let i = 0, len = list.length, count = len; i < len; i++) {
                         var uId = 'R' + list[i].msgId;
                         if (!(uId in me.cacheMessageIds)) {
-                            Bridge._client.handler.onReceived(list[i], undefined, offlineMsg,--count);
-                            me.cacheMessageIds[uId] = true;
-
-                            var cacheUIds = RongUtil.keys(me.cacheMessageIds);
-                            if (cacheUIds.length > 10) {
-                                uId = cacheUIds[0];
-                                delete me.cacheMessageIds[uId];
+                            count-=1;
+                            var message = list[i];
+                            var sentTime = RongIMLib.MessageUtil.int64ToTimestamp(message.dataTime);
+                            if (sentTime > time) {
+                                Bridge._client.handler.onReceived(message, undefined, offlineMsg, count);
+                                var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
+                                if (arrLen > 20){
+                                    me.cacheMessageIds.length = 20;
+                                }
                             }
                         } 
                     }
@@ -620,20 +622,22 @@ module RongIMLib {
             if (pubAckItem) {
                 message.messageUId = pubAckItem.getMessageUId();
                 message.sentTime = pubAckItem.getTimestamp();
+                RongIMClient._storageProvider.setItem(this._client.userId, message.sentTime);
             }
             if (message === null) {
                 return;
             }
 
-            // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳
+            // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳 
             // key：'converST_' + 当前用户 + conversationType + targetId
             // RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + message.conversationType + message.targetId, message.sentTime);
-          
+              
+            var isPersited = (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0);  
             if (message.conversationType != ConversationType.CHATROOM) {
                 var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId;
                 var stValue = RongIMClient._memoryStore.lastReadTime.get(stKey);
                 if (stValue) {
-                    if (message.sentTime > stValue) {
+                    if (message.sentTime > stValue && isPersited) {
                         RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
                     } else {
                         return;
@@ -643,7 +647,7 @@ module RongIMLib {
                 } 
             }
            
-            if (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0) {
+            if (isPersited) {
                 RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
                     onSuccess: function(con: Conversation) {
                         if (!con) {
@@ -730,8 +734,6 @@ module RongIMLib {
                 if (recData) {
                     if (message.senderUserId in recData) {
                         if (recData[message.senderUserId].uIds && recData[message.senderUserId].uIds && recData[message.senderUserId].uIds.indexOf(message.content.messageUId) == -1) {
-                            // 如果是前一天的 MessaageUId 把数组清空。
-                            new Date(date).getTime() - recData[message.senderUserId].dealtime < 0 || (recData[message.senderUserId].uIds.length = 0);
                             recData[message.senderUserId].uIds.push(message.content.messageUId);
                             recData[message.senderUserId].dealtime = message.sentTime;
                             recData[message.senderUserId].isResponse = false;

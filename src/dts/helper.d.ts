@@ -43,6 +43,7 @@ declare interface Window {
     RCCallback: any;
     RongIMClient: any;
     getServerEndpoint: any;
+    getRongCloudCMPUrl: any;
     WEB_XHR_POLLING: any;
     SCHEMETYPE: any;
     XDomainRequest: any;
@@ -74,9 +75,9 @@ declare interface Document {
 }
 
 declare interface Addon {
-    initWithAppkey(appKey: string): void;
+    initWithAppkey(appKey: string): any;
 
-    connectWithToken(token: string, userId: string): number;
+    connectWithToken(token: string, userId: string, servers: string, openmp: boolean, openus: boolean): number;
 
     reconnect(callback: RongIMLib.ConnectCallback): void;
 

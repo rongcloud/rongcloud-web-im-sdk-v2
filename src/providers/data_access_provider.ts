@@ -1,7 +1,7 @@
 module RongIMLib {
     export interface DataAccessProvider {
 
-        init(appKey: string, callback?: Function): void;
+        init(appKey: string, callback?: Function, tools?: any): void;
 
         connect(token: string, callback: ConnectCallback, userId?: string): void;
 

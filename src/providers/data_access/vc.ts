@@ -13,13 +13,25 @@ module RongIMLib {
 
         useConsole: boolean = false;
 
+        appKey: string = "";
+
+        token: string = "";
+
+        tools: any = {};
+
+        sdkInfo: any = {};
+
         constructor(addon: any) {
             this.addon = addon;
         }
 
-        init(appKey: string): void {
+        init(appKey: string, callback?: Function, tools?: any): void {
+            this.tools = tools;
+            this.appKey = appKey;
             this.useConsole && console.log("init");
-            this.addon.initWithAppkey(appKey);
+
+            var sdkInfo = this.addon.initWithAppkey(appKey);
+            this.sdkInfo = JSON.parse(sdkInfo);
               // 0 不存不计数  1 只存不计数 3 存且计数
             this.addon.registerMessageType("RC:VcMsg", 3);
             this.addon.registerMessageType("RC:ImgTextMsg", 3);
@@ -59,17 +71,93 @@ module RongIMLib {
             this.addon.registerMessageType("RC:RRRspMsg", 0);
         }
 
-        connect(token: string, callback: ConnectCallback, userId?: string): void {
-            this.useConsole && console.log("connect");
-            this.userId = userId;
-            this.connectCallback = callback;
-            RongIMLib.Bridge._client = <Client>{
-                userId: userId
-            };
-            this.addon.connectWithToken(token, userId);
+        getNavi(params: any, callback: any): void{
+            var tools = this.tools;
+
+            var isFunction = (typeof tools.require == 'function');
+            if (!isFunction) {
+                console.error('getNavi: require is not a function');
+                return;
+            }
+            var request = tools.require('request');
+            var appId = params.appkey;
+            var token = params.token;
+            var v = this.sdkInfo.ver;
+            var url = 'https:{0}/navi.json';
+
+            var naviPath = RongIMClient._memoryStore.depend.navi;
+            url = RongUtil.stringFormat(url, [naviPath]);
+
+            var body = 'token={0}&v={1}';
+                body =  RongUtil.stringFormat(body, [encodeURIComponent(token), v]);
+
+            request({
+                url: url,
+                method: 'POST',
+                headers: {
+                    appId: appId
+                },
+                body: body
+            }, function(error: any, response: any, body: any) {
+                if (error) {
+                    callback.onError({
+                        msg: error
+                    });
+                    return;
+                }
+                if (!body) {
+                    callback.onError({
+                        msg: 'request navi error, response is empty.'
+                    });
+                    return;
+                }
+                body = JSON.parse(body);
+                if (body.code != 200) {
+                    callback.onIncorrect();
+                    return;
+                }
+                body.serverList = body.server + ',' + body.bs;
+                callback.onSuccess(body);
+            });
         }
 
-        setServerInfo(info:any):void {
+        connect(token: string, callback: ConnectCallback, userId?: string): void {
+            var that = this;
+
+            that.token = token;
+
+            that.useConsole && console.log("connect");
+            that.connectCallback = callback;
+            
+            var params: any = {
+                appkey: that.appKey,
+                token: token
+            };
+            that.getNavi(params, {
+                onSuccess: function(navi: any){
+                    var type = navi.type;
+                    if (type) {
+                        that.setEnvironment(type);
+                    }
+
+                    that.userId = navi.userId;
+                    RongIMLib.Bridge._client = <Client>{
+                        userId: that.userId
+                    };
+
+                    var openmp: boolean =  Boolean(navi.openMp);
+                    var openus: boolean = Boolean(navi.openUS);
+                    that.addon.connectWithToken(token, that.userId, navi.serverList, openmp, openus);
+                },
+                onError: function(error: any){
+                    console.error(error);
+                    callback.onTokenIncorrect();
+                },
+                onIncorrect: callback.onTokenIncorrect
+            });
+        }
+
+        setServerInfo(info: any):void {
             'setServerInfo' in this.addon && this.addon.setServerInfo(info.navi);
         }
 
@@ -124,6 +212,34 @@ module RongIMLib {
                         break;
                     case 1:
                     case 8:
+                        var token = me.token;
+                        var params: any = {
+                            appkey: me.appKey,
+                            token: token
+                        };
+
+                        me.getNavi(params, {
+                            onSuccess: function(navi: any){
+                                var type = navi.type;
+                                if (type) {
+                                    me.setEnvironment(type);
+                                }
+
+                                me.userId = navi.userId;
+                                RongIMLib.Bridge._client = <Client>{
+                                    userId: me.userId
+                                };
+
+                                var openmp: boolean =  Boolean(navi.openMp);
+                                var openus: boolean = Boolean(navi.openUS);
+                                me.addon.connectWithToken(token, me.userId, navi.serverList, openmp, openus);
+                            },
+                            onError: function(error: any){
+                                console.error(error);
+                                me.connectCallback.onTokenIncorrect();
+                            },
+                            onIncorrect: me.connectCallback.onTokenIncorrect
+                        });
                     case 9:
                     case 11:
                     case 12:
