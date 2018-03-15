@@ -164,61 +164,9 @@ module RongIMLib {
         process(status: number, userId: string, timestamp: number) {
             this.readTimeOut();
             if (status == 0) {
-                if (RongIMClient._memoryStore.depend.isPrivate) {
-                    var date = new Date();
-                    var qryOpt: any, dateStr: string = date.getFullYear() + "" + (date.getMonth() + 1) + "" + date.getDate();
-                    if (RongIMLib.RongUtil.supportLocalStorage()) {
-                        qryOpt = RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
-                    } else {
-                        qryOpt = RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
-                    }
-                    if (!qryOpt) {
-                        var modules = new RongIMClient.Protobuf.GetUserInfoInput();
-                        modules.setNothing(0);
-                        RongIMClient.bridge.queryMsg("qryCfg", MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
-                            onSuccess: function(data: any) {
-                                if (!data) return;
-                                var naviArrs = RongIMClient._memoryStore.depend.navi.split('//');
-                                new RongAjax({
-                                    url: "https://stats.cn.ronghub.com/active.json",
-                                    appKey: RongIMClient._memoryStore.appKey,
-                                    deviceId: Math.floor(Math.random() * 10000),
-                                    timestamp: new Date().getTime(),
-                                    deviceInfo: "",
-                                    type: 1,
-                                    privateInfo: {
-                                        code: encodeURIComponent(data.name),
-                                        ip: RongIMClient._storageProvider._host,
-                                        customId: data.id,
-                                        nip: naviArrs.length > 1 ? naviArrs[1] : ""
-                                    }
-                                }).send(function() {
-                                    if (RongIMLib.RongUtil.supportLocalStorage()) {
-                                        qryOpt = RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);
-                                    } else {
-                                        qryOpt = RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);
-                                    }
-                                });
-                            },
-                            onError: function() { }
-                        }, "GroupInfo");
-                    }
-                }
-
-                var naviStr = RongIMClient._storageProvider.getItem(RongIMClient._storageProvider.getItemKey("navi"));
-                var naviKey = RongIMClient._storageProvider.getItemKey("navi");
-                var arr = decodeURIComponent(naviStr).split(",");
-                if (!arr[1]) {
-                    naviStr = encodeURIComponent(naviStr) + userId;
-                    RongIMClient._storageProvider.setItem(naviKey, naviStr);
-                }
-            
                 this._client.userId = userId;
-                var self = this, temp = RongIMLib.RongIMClient._storageProvider.getItemKey("navi");
-                var naviServer = RongIMLib.RongIMClient._storageProvider.getItem(temp);
-                // TODO  判断拆分 naviServer 后的数组长度。
-                var naviPort = naviServer.split(",")[0].split(":")[1];
-                if (!RongIMClient._memoryStore.depend.isPolling && RongIMClient._memoryStore.isFirstPingMsg && naviPort.length < 4) {
+                var self = this;
+                if (!RongIMClient._memoryStore.depend.isPolling && RongIMClient._memoryStore.isFirstPingMsg) {
                     Bridge._client.checkSocket({
                         onSuccess: function() {
                             if (!RongIMClient.isNotPullMsg) {
@@ -228,15 +176,6 @@ module RongIMLib {
                         onError: function() {
                             RongIMClient._memoryStore.isFirstPingMsg = false;
                             RongIMClient.getInstance().disconnect();
-                            var temp: string = RongIMClient._storageProvider.getItemKey("navi");
-                            var server: string = RongIMClient._storageProvider.getItem("RongBackupServer");
-                            var arrs: string[] = server.split(",");
-                            if (arrs.length < 2) {
-                                throw new Error("navi server is empty");
-                            }
-                            RongIMClient._storageProvider.setItem(temp, RongIMClient._storageProvider.getItem("RongBackupServer"));
-                            var url: string = RongIMLib.Bridge._client.channel.socket.currentURL;
-                            RongIMLib.Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
                             RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMClient._memoryStore.callback);
                         }
                     });

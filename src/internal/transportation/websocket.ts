@@ -27,7 +27,14 @@ module RongIMLib {
         createTransport(url: string, method?: string): any {
             if (!url) { throw new Error("URL can't be empty"); };
             this.url = url;
-            this.socket = new WebSocket(RongIMClient._memoryStore.depend.wsScheme + url);
+            var depend = RongIMClient._memoryStore.depend;
+            var wsScheme = depend.wsScheme;
+            var tpl = '{wsScheme}{url}';
+            url = RongUtil.tplEngine(tpl, {
+                wsScheme: wsScheme,
+                url: url
+            });
+            this.socket = new WebSocket(url);
             this.socket.binaryType = "arraybuffer";
             this.addEvent();
             return this.socket;
@@ -143,6 +150,10 @@ module RongIMLib {
         reconnect(): void {
             this.disconnect();
             this.createTransport(this.url);
+        }
+
+        close():void{
+            this.socket.close();
         }
     }
 }

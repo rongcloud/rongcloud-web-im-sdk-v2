@@ -1201,6 +1201,10 @@ var RongIMLib;
         *  连接关闭。
         */
         ConnectionStatus[ConnectionStatus["CONNECTION_CLOSED"] = 4] = "CONNECTION_CLOSED";
+        /*
+            互踢次数过多（count > 5），此时可能出现：在其它他设备登陆有 reconnect 逻辑
+        */
+        ConnectionStatus[ConnectionStatus["ULTRALIMIT"] = 1101] = "ULTRALIMIT";
     })(RongIMLib.ConnectionStatus || (RongIMLib.ConnectionStatus = {}));
     var ConnectionStatus = RongIMLib.ConnectionStatus;
     (function (ConversationNotificationStatus) {
@@ -1931,6 +1935,8 @@ var RongIMLib;
             else {
                 RongIMClient._storageProvider = new RongIMLib.MemeoryProvider();
             }
+            var serverIndex = RongIMClient._storageProvider.getItem('serverIndex');
+            RongIMClient.serverStore.index = serverIndex || 0;
             var pathTmpl = '{0}{1}';
             var _serverPath = {
                 navi: 'nav.cn.ronghub.com',
@@ -1951,7 +1957,7 @@ var RongIMLib;
                 options[key] = path;
             });
             var _sourcePath = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.3.0.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.3.1.min.js'
             };
             RongIMLib.RongUtil.forEach(_sourcePath, function (path, key) {
                 _sourcePath[key] = RongIMLib.RongUtil.stringFormat(pathTmpl, [protocol, path]);
@@ -1962,7 +1968,8 @@ var RongIMLib;
                 wsScheme: wsScheme,
                 protocol: protocol,
                 showError: true,
-                openMp: true
+                openMp: true,
+                snifferTime: 2000
             };
             RongIMLib.RongUtil.extend(_defaultOpts, options);
             if (RongIMLib.RongUtil.isFunction(options.protobuf)) {
@@ -1999,7 +2006,10 @@ var RongIMLib;
             else {
                 RongIMClient._dataAccessProvider = new RongIMLib.ServerDataProvider();
             }
-            RongIMClient._dataAccessProvider.init(appKey, callback);
+            var tools = {
+                require: options.require
+            };
+            RongIMClient._dataAccessProvider.init(appKey, callback, tools);
             // 兼容 c++ 设置导航，Web 端不生效
             RongIMClient._dataAccessProvider.setServerInfo({ navi: location.protocol + options.navi + '/navi.xml' });
             RongIMClient.MessageParams = {
@@ -2548,69 +2558,6 @@ var RongIMLib;
                 "61001": {
                     code: "61001",
                     msg: "删除消息数组长度为 0"
-                },
-                /**
-                 * 通话
-                 */
-                "1": {
-                    code: "1",
-                    msg: "己方取消已发出的通话请求"
-                },
-                "2": {
-                    code: "2",
-                    msg: "己方拒绝收到的通话请求"
-                },
-                "3": {
-                    code: "3",
-                    msg: "己方挂断"
-                },
-                "4": {
-                    code: "4",
-                    msg: "己方忙碌"
-                },
-                "5": {
-                    code: "5",
-                    msg: "己方未接听"
-                },
-                "6": {
-                    code: "6",
-                    msg: "己方不支持当前引擎"
-                },
-                "7": {
-                    code: "7",
-                    msg: "己方网络出错"
-                },
-                "11": {
-                    code: "11",
-                    msg: "对方取消已发出的通话请求"
-                },
-                "12": {
-                    code: "12",
-                    msg: "对方拒绝收到的通话请求"
-                },
-                "13": {
-                    code: "13",
-                    msg: "通话过程对方挂断"
-                },
-                "14": {
-                    code: "14",
-                    msg: "对方忙碌"
-                },
-                "15": {
-                    code: "15",
-                    msg: "对方未接听"
-                },
-                "16": {
-                    code: "16",
-                    msg: "对方网络错误"
-                },
-                "17": {
-                    code: "17",
-                    msg: "对方网络错误"
-                },
-                "18": {
-                    code: "18",
-                    msg: "VoIP 不可用"
                 }
             };
         };
@@ -2638,17 +2585,17 @@ var RongIMLib;
          * @param token     从服务端获取的用户身份令牌（Token）。
          * @param callback  连接回调，返回连接的成功或者失败状态。
          */
-        RongIMClient.connect = function (token, callback, userId) {
+        RongIMClient.connect = function (token, _callback, userId) {
             RongIMLib.CheckParam.getInstance().check(["string", "object", "string|null|object|global|undefined"], "connect", true, arguments);
             var connectCallback = {
-                onSuccess: callback.onSuccess,
-                onTokenIncorrect: callback.onTokenIncorrect,
+                onSuccess: _callback.onSuccess,
+                onTokenIncorrect: _callback.onTokenIncorrect,
                 onError: function (errorCode) {
                     RongIMClient.logger({
                         code: errorCode,
                         funcName: "connect"
                     });
-                    callback.onError(errorCode);
+                    _callback.onError(errorCode);
                 }
             };
             RongIMClient._dataAccessProvider.connect(token, connectCallback, userId);
@@ -3979,9 +3926,12 @@ var RongIMLib;
         RongIMClient.LogFactory = {};
         RongIMClient.MessageType = {};
         RongIMClient.RegisterMessage = {};
-        RongIMClient._memoryStore = { listenerList: [] };
+        RongIMClient._memoryStore = { listenerList: [], isPullFinished: true, syncMsgQueue: [] };
         RongIMClient.isNotPullMsg = false;
         RongIMClient.userStatusObserver = null;
+        RongIMClient.sdkver = '2.3.1';
+        RongIMClient.otherDeviceLoginCount = 0;
+        RongIMClient.serverStore = { index: 0 };
         RongIMClient.userStatusListener = null;
         return RongIMClient;
     })();
@@ -4018,67 +3968,134 @@ var RongIMLib;
         ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN"], "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm",
         "createChrm", "exitChrm", "queryChrm", "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", "qnUrl", "qryVoipK", "delMsg", "qryCHMsg", "getUserStatus", "setUserStatus", "subUserStatus", "cleanHisMsg"];
     var Channel = (function () {
-        function Channel(address, cb, self) {
+        function Channel(cb, self) {
             this.connectionStatus = -1;
-            this.delOnChangedCount = 0;
-            this.url = address.host + "/websocket?appId=" + self.appId + "&token=" + encodeURIComponent(self.token) + "&sdkVer=" + self.sdkVer + "&apiVer=" + self.apiVer;
+            var appId = self.appId;
+            var token = encodeURIComponent(self.token);
+            var sdkVer = self.sdkVer;
+            var apiVer = self.apiVer;
             this.self = self;
             this.socket = Socket.getInstance().createServer();
-            this.socket.connect(this.url, cb);
-            //注册状态改变观察者
-            if (typeof Channel._ConnectionStatusListener == "object" && "onChanged" in Channel._ConnectionStatusListener) {
-                var me = this;
-                me.socket.on("StatusChanged", function (code) {
-                    me.connectionStatus = code;
-                    if (code === RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE) {
-                        var temp = RongIMLib.RongIMClient._storageProvider.getItemKey("navi");
-                        var naviServer = RongIMLib.RongIMClient._storageProvider.getItem(temp);
-                        var naviPort = naviServer.split(",")[0].split(":")[1];
-                        naviPort && naviPort.length < 4 || RongIMLib.RongIMClient._storageProvider.setItem("rongSDK", "");
-                        // TODO  判断拆分 naviServer 后的数组长度。
-                        if (!RongIMLib.RongIMClient._memoryStore.depend.isPolling && naviPort && naviPort.length < 4) {
-                            Bridge._client.handler.connectCallback.pauseTimer();
-                            var temp = RongIMLib.RongIMClient._storageProvider.getItemKey("navi");
-                            var server = RongIMLib.RongIMClient._storageProvider.getItem("RongBackupServer");
-                            if (server) {
-                                var arrs = server.split(",");
-                                if (arrs.length < 2) {
-                                    throw new Error("navi server is empty,postion:StatusChanged");
-                                }
-                                RongIMLib.RongIMClient._storageProvider.setItem(temp, RongIMLib.RongIMClient._storageProvider.getItem("RongBackupServer"));
-                                var url = RongIMLib.Bridge._client.channel.socket.currentURL;
-                                Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
-                                if (Bridge._client.channel && Bridge._client.channel.connectionStatus != RongIMLib.ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != RongIMLib.ConnectionStatus.CONNECTING) {
-                                    RongIMLib.RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMLib.RongIMClient._memoryStore.callback);
-                                }
-                            }
-                        }
-                    }
-                    if (code === RongIMLib.ConnectionStatus.DISCONNECTED && !RongIMLib.RongIMClient._memoryStore.otherDevice) {
-                        Channel._ConnectionStatusListener.onChanged(RongIMLib.ConnectionStatus.DISCONNECTED);
-                        self.clearHeartbeat();
-                        return;
-                    }
-                    else if (code === RongIMLib.ConnectionStatus.DISCONNECTED && RongIMLib.RongIMClient._memoryStore.otherDevice) {
-                        return;
-                    }
-                    Channel._ConnectionStatusListener.onChanged(code);
-                    if (RongIMLib.RongIMClient._memoryStore.otherDevice) {
-                        if (me.delOnChangedCount > 5) {
-                            delete Channel._ConnectionStatusListener["onChanged"];
-                        }
-                        me.delOnChangedCount++;
-                    }
+            var that = this;
+            var storage = RongIMLib.RongIMClient._storageProvider;
+            var servers = storage.getItem('servers');
+            servers = JSON.parse(servers);
+            var startConnect = function (host) {
+                var tpl = '{host}/websocket?appId={appId}&token={token}&sdkVer={sdkVer}&apiVer={apiVer}';
+                that.url = RongIMLib.RongUtil.tplEngine(tpl, {
+                    host: host,
+                    appId: appId,
+                    token: token,
+                    sdkVer: sdkVer,
+                    apiVer: apiVer
                 });
-            }
-            else {
-                throw new Error("setConnectStatusListener:Parameter format is incorrect");
-            }
+                that.socket.connect(that.url, cb);
+                // 临时兼容 Comet 逻辑，Comet 中用到
+                var userId = storage.getItem('rong_current_user');
+                RongIMLib.Navigation.Endpoint = {
+                    host: host,
+                    userId: userId
+                };
+            };
+            var connectMap = {
+                ws: function () {
+                    // 所有链接计算器，超过 15 秒后认为所有 CMP 地址均不可用
+                    var totalTimer = new RongIMLib.Timer({
+                        timeout: 1 * 1000 * 15
+                    });
+                    var timers = [];
+                    var elements = [];
+                    var isFinished = false;
+                    var clearHandler = function () {
+                        for (var i = 0; i < timers.length; i++) {
+                            var timer = timers[i];
+                            clearTimeout(timer);
+                        }
+                        for (var i = 0; i < elements.length; i++) {
+                            var el = elements[i];
+                            document.body.removeChild(el);
+                        }
+                    };
+                    var request = function (config, callback) {
+                        var url = config.url;
+                        var time = config.time;
+                        if (isFinished) {
+                            return;
+                        }
+                        var timer = setTimeout(function () {
+                            var el = document.createElement("script");
+                            el.src = url;
+                            document.body.appendChild(el);
+                            el.onerror = function () {
+                                if (isFinished) {
+                                    return;
+                                }
+                                clearHandler();
+                                isFinished = true;
+                                totalTimer.pause();
+                                var url = el.src;
+                                callback(url);
+                            };
+                            elements.push(el);
+                        }, time);
+                        timers.push(timer);
+                    };
+                    var snifferCallback = function (url) {
+                        var reg = /(http|https):\/\/([^\/]+)/i;
+                        var host = url.match(reg)[2];
+                        startConnect(host);
+                    };
+                    var snifferTpl = '//{server}/{path}';
+                    for (var i = 0; i < servers.length; i++) {
+                        var server = RongIMLib.RongUtil.tplEngine(snifferTpl, {
+                            server: servers[i],
+                            path: i
+                        });
+                        request({
+                            url: server,
+                            time: i * 1000
+                        }, snifferCallback);
+                    }
+                    totalTimer.resume(function () {
+                        clearHandler();
+                        that.socket.fire("StatusChanged", RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE);
+                    });
+                },
+                comet: function () {
+                    var host = servers[0];
+                    startConnect(host);
+                }
+            };
+            var depend = RongIMLib.RongIMClient._memoryStore.depend;
+            var isPolling = depend.isPolling;
+            var type = isPolling ? 'comet' : 'ws';
+            connectMap[type]();
+            //注册状态改变观察者
+            var StatusEvent = Channel._ConnectionStatusListener;
+            var hasEvent = (typeof StatusEvent == "object");
+            var me = this;
+            me.socket.on("StatusChanged", function (code) {
+                if (!hasEvent) {
+                    throw new Error("setConnectStatusListener:Parameter format is incorrect");
+                }
+                me.connectionStatus = code;
+                StatusEvent.onChanged(code);
+                var isDisconnected = (code == RongIMLib.ConnectionStatus.DISCONNECTED);
+                if (isDisconnected) {
+                    self.clearHeartbeat();
+                }
+                var isOtherDevice = (code == RongIMLib.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT);
+                if (isOtherDevice) {
+                    // 累计其他设备登陆次数，超过 5 次后，自动销毁内部对象
+                    // 删除位置：ServerDataProivder.prototype.connect
+                    RongIMLib.RongIMClient.otherDeviceLoginCount++;
+                }
+            });
             //注册message观察者
             this.socket.on("message", self.handler.handleMessage);
             //注册断开连接观察者
             this.socket.on("disconnect", function (status) {
-                self.channel.socket.fire("StatusChanged", status ? status : 2);
+                that.socket.fire("StatusChanged", status ? status : 2);
             });
         }
         Channel.prototype.writeAndFlush = function (val) {
@@ -4148,9 +4165,6 @@ var RongIMLib;
             this.fire("message", data);
         };
         Socket.prototype.disconnect = function (status) {
-            if (RongIMLib.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT === status) {
-                RongIMLib.RongIMClient._memoryStore.otherDevice = true;
-            }
             this.socket.disconnect(status);
             this.fire("disconnect", status);
             return this;
@@ -4223,7 +4237,7 @@ var RongIMLib;
         function Client(token, appId) {
             this.timeoutMillis = 100000;
             this.timeout_ = 0;
-            this.sdkVer = "2.3.0";
+            this.sdkVer = '';
             this.apiVer = Math.floor(Math.random() * 1e6);
             this.channel = null;
             this.handler = null;
@@ -4237,6 +4251,7 @@ var RongIMLib;
             this.token = token;
             this.appId = appId;
             this.SyncTimeQueue.state = "complete";
+            this.sdkVer = RongIMLib.RongIMClient.sdkver;
         }
         Client.prototype.resumeTimer = function () {
             if (!this.timeout_) {
@@ -4264,37 +4279,28 @@ var RongIMLib;
             }
         };
         Client.prototype.connect = function (_callback) {
-            if (RongIMLib.Navigation.Endpoint.host) {
-                if (RongIMLib.Transportations._TransportType == Socket.WEBSOCKET) {
-                    if (!window.WebSocket) {
-                        _callback.onError(RongIMLib.ConnectionState.UNACCEPTABLE_PROTOCOL_VERSION);
-                        return;
-                    }
-                }
-                //实例消息处理类
-                this.handler = new MessageHandler(this);
-                //设置连接回调
-                this.handler.setConnectCallback(_callback);
-                //实例通道类型
-                var me = this;
-                this.channel = new Channel(RongIMLib.Navigation.Endpoint, function () {
-                    RongIMLib.Transportations._TransportType == Socket.WEBSOCKET && me.keepLive();
-                }, this);
-                //触发状态改变观察者
-                this.channel.socket.fire("StatusChanged", 1);
-            }
-            else {
-                //没有返回地址就手动抛出错误
-                _callback.onError(RongIMLib.ConnectionState.NOT_AUTHORIZED);
-            }
+            //实例消息处理类
+            this.handler = new MessageHandler(this);
+            //设置连接回调
+            this.handler.setConnectCallback(_callback);
+            //实例通道类型
+            var me = this;
+            this.channel = new Channel(function () {
+                RongIMLib.Transportations._TransportType == Socket.WEBSOCKET && me.keepLive();
+            }, this);
+            //触发状态改变观察者
+            this.channel.socket.fire("StatusChanged", RongIMLib.ConnectionStatus.CONNECTING);
+            //没有返回地址就手动抛出错误
+            //_callback.onError(ConnectionState.NOT_AUTHORIZED);
         };
         Client.prototype.checkSocket = function (callback) {
             var me = this;
             me.channel.writeAndFlush(new RongIMLib.PingReqMessage());
+            var count = 0;
             var checkTimeout = setInterval(function () {
                 if (!RongIMLib.RongIMClient._memoryStore.isFirstPingMsg) {
-                    callback.onSuccess();
                     clearInterval(checkTimeout);
+                    callback.onSuccess();
                 }
                 else {
                     if (count > 15) {
@@ -4303,7 +4309,7 @@ var RongIMLib;
                     }
                 }
                 count++;
-            }, 200), count = 0;
+            }, 100);
         };
         Client.prototype.keepLive = function () {
             if (this.heartbeat > 0) {
@@ -4419,12 +4425,20 @@ var RongIMLib;
                     var list = collection.list;
                     for (var i = 0, len = list.length, count = len; i < len; i++) {
                         if (!(list[i].msgId in me.cacheMessageIds)) {
-                            Bridge._client.handler.onReceived(list[i], undefined, offlineMsg, --count);
-                            var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
-                            if (arrLen > 20)
-                                me.cacheMessageIds.length = 20;
+                            count -= 1;
+                            var message = list[i];
+                            var sentTime = RongIMLib.MessageUtil.int64ToTimestamp(message.dataTime);
+                            if (sentTime > time) {
+                                Bridge._client.handler.onReceived(message, undefined, offlineMsg, count);
+                                var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
+                                if (arrLen > 20) {
+                                    me.cacheMessageIds.length = 20;
+                                }
+                            }
                         }
                     }
+                    var isPullFinished = collection.finished;
+                    RongIMLib.RongIMClient._memoryStore.isPullFinished = isPullFinished;
                 },
                 onError: function (error) {
                     me.SyncTimeQueue.state = "complete";
@@ -4440,7 +4454,7 @@ var RongIMLib;
             }
         };
         Client.prototype.__init = function (f) {
-            this.channel = new Channel(RongIMLib.Navigation.Endpoint, f, this);
+            this.channel = new Channel(f, this);
         };
         Client.userInfoMapping = {};
         return Client;
@@ -4475,7 +4489,6 @@ var RongIMLib;
             Bridge._client.channel.reconnect(callabck);
         };
         Bridge.prototype.disconnect = function () {
-            Bridge._client.clearHeartbeat();
             Bridge._client.channel.disconnect(2);
         };
         //执行queryMessage请求
@@ -4526,7 +4539,6 @@ var RongIMLib;
         MessageHandler.prototype.setConnectCallback = function (_connectCallback) {
             if (_connectCallback) {
                 this.connectCallback = new RongIMLib.ConnectAck(_connectCallback.onSuccess, _connectCallback.onError, this._client);
-                this.connectCallback.resumeTimer();
             }
         };
         MessageHandler.prototype.onReceived = function (msg, pubAckItem, offlineMsg, leftCount) {
@@ -4563,6 +4575,9 @@ var RongIMLib;
                 }
                 else {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
+                        return;
+                    }
+                    if (!RongIMLib.RongIMClient._memoryStore.isPullFinished) {
                         return;
                     }
                     entity = RongIMLib.RongIMClient.Protobuf.UpStreamMessage.decode(msg.getData());
@@ -4604,29 +4619,29 @@ var RongIMLib;
             if (pubAckItem) {
                 message.messageUId = pubAckItem.getMessageUId();
                 message.sentTime = pubAckItem.getTimestamp();
+                RongIMLib.RongIMClient._storageProvider.setItem(this._client.userId, message.sentTime);
             }
             if (message === null) {
                 return;
             }
-            // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳
+            // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳 
             // key：'converST_' + 当前用户 + conversationType + targetId
             // RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + message.conversationType + message.targetId, message.sentTime);
-            if (message.conversationType != RongIMLib.ConversationType.CHATROOM) {
-                var stKey = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId;
-                var stValue = RongIMLib.RongIMClient._memoryStore.lastReadTime.get(stKey);
-                if (stValue) {
-                    if (message.sentTime > stValue) {
-                        RongIMLib.RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
-                    }
-                    else {
-                        return;
-                    }
-                }
-                else {
-                    RongIMLib.RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
-                }
-            }
-            if (RongIMLib.RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0) {
+            var isPersited = (RongIMLib.RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0);
+            // if (message.conversationType != ConversationType.CHATROOM) {
+            //     var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId;
+            //     var stValue = RongIMClient._memoryStore.lastReadTime.get(stKey);
+            //     if (stValue) {
+            //         if (message.sentTime > stValue && isPersited) {
+            //             RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
+            //         } else {
+            //             return;
+            //         }
+            //     } else {
+            //         RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
+            //     } 
+            // }
+            if (isPersited) {
                 RongIMLib.RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
                     onSuccess: function (con) {
                         if (!con) {
@@ -4704,8 +4719,6 @@ var RongIMLib;
                 if (recData) {
                     if (message.senderUserId in recData) {
                         if (recData[message.senderUserId].uIds && recData[message.senderUserId].uIds && recData[message.senderUserId].uIds.indexOf(message.content.messageUId) == -1) {
-                            // 如果是前一天的 MessaageUId 把数组清空。
-                            new Date(date).getTime() - recData[message.senderUserId].dealtime < 0 || (recData[message.senderUserId].uIds.length = 0);
                             recData[message.senderUserId].uIds.push(message.content.messageUId);
                             recData[message.senderUserId].dealtime = message.sentTime;
                             recData[message.senderUserId].isResponse = false;
@@ -4736,16 +4749,11 @@ var RongIMLib;
                         sentkey = Bridge._client.userId + uIds[i] + "SENT";
                         sentObj = JSON.parse(RongIMLib.RongIMClient._storageProvider.getItem(sentkey));
                         if (sentObj && !(message.senderUserId in sentObj.userIds)) {
-                            if (new Date(date).getTime() - sentObj.dealtime > 0) {
-                                RongIMLib.RongIMClient._storageProvider.removeItem(sentkey);
-                            }
-                            else {
-                                cbuIds.push(uIds[i]);
-                                sentObj.count += 1;
-                                sentObj.userIds[message.senderUserId] = message.sentTime;
-                                message.receiptResponse[uIds[i]] = sentObj.count;
-                                RongIMLib.RongIMClient._storageProvider.setItem(sentkey, JSON.stringify(sentObj));
-                            }
+                            cbuIds.push(uIds[i]);
+                            sentObj.count += 1;
+                            sentObj.userIds[message.senderUserId] = message.sentTime;
+                            message.receiptResponse[uIds[i]] = sentObj.count;
+                            RongIMLib.RongIMClient._storageProvider.setItem(sentkey, JSON.stringify(sentObj));
                         }
                     }
                     receiptResponseMsg.receiptMessageDic[Bridge._client.userId] = cbuIds;
@@ -5010,62 +5018,9 @@ var RongIMLib;
         ConnectAck.prototype.process = function (status, userId, timestamp) {
             this.readTimeOut();
             if (status == 0) {
-                if (RongIMLib.RongIMClient._memoryStore.depend.isPrivate) {
-                    var date = new Date();
-                    var qryOpt, dateStr = date.getFullYear() + "" + (date.getMonth() + 1) + "" + date.getDate();
-                    if (RongIMLib.RongUtil.supportLocalStorage()) {
-                        qryOpt = RongIMLib.RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
-                    }
-                    else {
-                        qryOpt = RongIMLib.RongIMClient._storageProvider.getItem("RongQryOpt" + dateStr);
-                    }
-                    if (!qryOpt) {
-                        var modules = new RongIMLib.RongIMClient.Protobuf.GetUserInfoInput();
-                        modules.setNothing(0);
-                        RongIMLib.RongIMClient.bridge.queryMsg("qryCfg", RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
-                            onSuccess: function (data) {
-                                if (!data)
-                                    return;
-                                var naviArrs = RongIMLib.RongIMClient._memoryStore.depend.navi.split('//');
-                                new RongIMLib.RongAjax({
-                                    url: "https://stats.cn.ronghub.com/active.json",
-                                    appKey: RongIMLib.RongIMClient._memoryStore.appKey,
-                                    deviceId: Math.floor(Math.random() * 10000),
-                                    timestamp: new Date().getTime(),
-                                    deviceInfo: "",
-                                    type: 1,
-                                    privateInfo: {
-                                        code: encodeURIComponent(data.name),
-                                        ip: RongIMLib.RongIMClient._storageProvider._host,
-                                        customId: data.id,
-                                        nip: naviArrs.length > 1 ? naviArrs[1] : ""
-                                    }
-                                }).send(function () {
-                                    if (RongIMLib.RongUtil.supportLocalStorage()) {
-                                        qryOpt = RongIMLib.RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);
-                                    }
-                                    else {
-                                        qryOpt = RongIMLib.RongIMClient._storageProvider.setItem("RongQryOpt" + dateStr, dateStr);
-                                    }
-                                });
-                            },
-                            onError: function () { }
-                        }, "GroupInfo");
-                    }
-                }
-                var naviStr = RongIMLib.RongIMClient._storageProvider.getItem(RongIMLib.RongIMClient._storageProvider.getItemKey("navi"));
-                var naviKey = RongIMLib.RongIMClient._storageProvider.getItemKey("navi");
-                var arr = decodeURIComponent(naviStr).split(",");
-                if (!arr[1]) {
-                    naviStr = encodeURIComponent(naviStr) + userId;
-                    RongIMLib.RongIMClient._storageProvider.setItem(naviKey, naviStr);
-                }
                 this._client.userId = userId;
-                var self = this, temp = RongIMLib.RongIMClient._storageProvider.getItemKey("navi");
-                var naviServer = RongIMLib.RongIMClient._storageProvider.getItem(temp);
-                // TODO  判断拆分 naviServer 后的数组长度。
-                var naviPort = naviServer.split(",")[0].split(":")[1];
-                if (!RongIMLib.RongIMClient._memoryStore.depend.isPolling && RongIMLib.RongIMClient._memoryStore.isFirstPingMsg && naviPort.length < 4) {
+                var self = this;
+                if (!RongIMLib.RongIMClient._memoryStore.depend.isPolling && RongIMLib.RongIMClient._memoryStore.isFirstPingMsg) {
                     RongIMLib.Bridge._client.checkSocket({
                         onSuccess: function () {
                             if (!RongIMLib.RongIMClient.isNotPullMsg) {
@@ -5075,15 +5030,6 @@ var RongIMLib;
                         onError: function () {
                             RongIMLib.RongIMClient._memoryStore.isFirstPingMsg = false;
                             RongIMLib.RongIMClient.getInstance().disconnect();
-                            var temp = RongIMLib.RongIMClient._storageProvider.getItemKey("navi");
-                            var server = RongIMLib.RongIMClient._storageProvider.getItem("RongBackupServer");
-                            var arrs = server.split(",");
-                            if (arrs.length < 2) {
-                                throw new Error("navi server is empty");
-                            }
-                            RongIMLib.RongIMClient._storageProvider.setItem(temp, RongIMLib.RongIMClient._storageProvider.getItem("RongBackupServer"));
-                            var url = RongIMLib.Bridge._client.channel.socket.currentURL;
-                            RongIMLib.Bridge._client.channel.socket.currentURL = arrs[0] + url.substring(url.indexOf("/"), url.length);
                             RongIMLib.RongIMClient.connect(RongIMLib.RongIMClient._memoryStore.token, RongIMLib.RongIMClient._memoryStore.callback);
                         }
                     });
@@ -5144,29 +5090,41 @@ var RongIMLib;
 (function (RongIMLib) {
     var Navigation = (function () {
         function Navigation() {
-            window.getServerEndpoint = function (x) {
-                //把导航返回的server字段赋值给CookieHelper._host，因为flash widget需要使用 decodeURIComponent
-                RongIMLib.RongIMClient._storageProvider._host = Navigation.Endpoint.host = x["server"];
-                RongIMLib.RongIMClient._storageProvider.setItem("RongBackupServer", x["backupServer"] + "," + (x.userId || ""));
-                //设置当前用户 Id 只有 comet 使用。
-                Navigation.Endpoint.userId = x["userId"];
-                if (x["voipCallInfo"]) {
-                    var callInfo = JSON.parse(x["voipCallInfo"]);
+            window.getServerEndpoint = function (result) {
+                var server = result.server;
+                if (server) {
+                    server += ',';
+                }
+                var backupServer = result.backupServer || '';
+                var tpl = '{server}{backupServer}';
+                var servers = RongIMLib.RongUtil.tplEngine(tpl, {
+                    server: server,
+                    backupServer: backupServer
+                });
+                var storage = RongIMLib.RongIMClient._storageProvider;
+                servers = servers.split(',');
+                storage.setItem('servers', JSON.stringify(servers));
+                var token = RongIMLib.Bridge._client.token;
+                var uid = RongIMLib.InnerUtil.getUId(token);
+                storage.setItem('rc_uid', uid);
+                var userId = result.userId;
+                storage.setItem('current_user', userId);
+                if (result.voipCallInfo) {
+                    var callInfo = JSON.parse(result.voipCallInfo);
                     RongIMLib.RongIMClient._memoryStore.voipStategy = callInfo.strategy;
-                    RongIMLib.RongIMClient._storageProvider.setItem("voipStrategy", callInfo.strategy);
+                    storage.setItem("voipStrategy", callInfo.strategy);
                 }
                 //替换本地存储的导航信息 
-                // var temp = RongIMClient._storageProvider.getItemKey("navi");
-                // temp !== null && RongIMClient._storageProvider.removeItem(temp);
-                // 注：以上两行代码废弃，试用后删除。
-                var md5Token = md5(RongIMLib.Bridge._client.token).slice(8, 16), openMp = x['openMp'] == 0 ? 0 : 1;
-                RongIMLib.RongIMClient._storageProvider.setItem("navi" + md5Token, x["server"] + "," + (x.userId || ""));
-                RongIMLib.RongIMClient._storageProvider.setItem('openMp' + md5Token, openMp);
-                if (!openMp) {
-                    RongIMLib.RongIMClient._memoryStore.depend.openMp = false;
-                }
+                var openMp = result.openMp;
+                storage.setItem('openMp' + uid, openMp);
+                RongIMLib.RongIMClient._memoryStore.depend.openMp = openMp;
             };
         }
+        Navigation.clear = function () {
+            var storage = RongIMLib.RongIMClient._storageProvider;
+            storage.removeItem('rc_uid');
+            storage.removeItem('serverIndex');
+        };
         Navigation.prototype.connect = function (appId, token, callback) {
             var oldAppId = RongIMLib.RongIMClient._storageProvider.getItem("appId");
             //如果appid和本地存储的不一样，清空所有本地存储数据
@@ -5184,29 +5142,44 @@ var RongIMLib;
             }, callback.onError, true);
             return client;
         };
-        Navigation.prototype.getServerEndpoint = function (_token, _appId, _onsuccess, _onerror, unignore) {
+        Navigation.prototype.getServerEndpoint = function (token, appId, _onsuccess, _onerror, unignore) {
             if (unignore) {
                 //根据token生成MD5截取8-16下标的数据与本地存储的导航信息进行比对
                 //如果信息和上次的通道类型都一样，不执行navi请求，用本地存储的导航信息连接服务器
-                var naviStr = md5(_token).slice(8, 16), _old = RongIMLib.RongIMClient._storageProvider.getItem(RongIMLib.RongIMClient._storageProvider.getItemKey("navi")), _new = RongIMLib.RongIMClient._storageProvider.getItem("navi" + naviStr);
-                if (_old == _new && _new !== null && RongIMLib.RongIMClient._storageProvider.getItem("rongSDK") == RongIMLib.Transportations._TransportType) {
-                    var obj = decodeURIComponent(_old).split(",");
+                var uId = md5(token).slice(8, 16);
+                var storage = RongIMLib.RongIMClient._storageProvider;
+                var transportType = storage.getItem("rongSDK");
+                var isSameType = (RongIMLib.Transportations._TransportType == transportType);
+                var _old = storage.getItem('rc_uid');
+                var isSameUser = (_old == uId);
+                if (isSameUser && isSameType) {
+                    RongIMLib.RongIMClient._memoryStore.voipStategy = storage.getItem("voipStrategy");
+                    var openMp = storage.getItem('openMp' + uId);
+                    RongIMLib.RongIMClient._memoryStore.depend.openMp = openMp;
                     setTimeout(function () {
-                        RongIMLib.RongIMClient._storageProvider._host = Navigation.Endpoint.host = obj[0];
-                        RongIMLib.RongIMClient._memoryStore.voipStategy = RongIMLib.RongIMClient._storageProvider.getItem("voipStrategy");
-                        if (!RongIMLib.RongIMClient._storageProvider.getItem('openMp' + naviStr)) {
-                            RongIMLib.RongIMClient._memoryStore.depend.openMp = false;
-                        }
-                        Navigation.Endpoint.userId = obj[1];
                         _onsuccess();
-                    }, 500);
+                    }, 300);
                     return;
                 }
             }
+            Navigation.clear();
             //导航信息，切换Url对象的key进行线上线下测试操作
             var xss = document.createElement("script");
             //进行jsonp请求
-            xss.src = RongIMLib.RongIMClient._memoryStore.depend.navi + (RongIMLib.RongIMClient._memoryStore.depend.isPolling ? "/cometnavi.js" : "/navi.js") + "?appId=" + _appId + "&token=" + encodeURIComponent(_token) + "&" + "callBack=getServerEndpoint&t=" + (new Date).getTime();
+            var depend = RongIMLib.RongIMClient._memoryStore.depend;
+            var domain = depend.navi;
+            var path = (depend.isPolling ? 'cometnavi' : 'navi');
+            token = encodeURIComponent(token);
+            var sdkver = RongIMLib.RongIMClient.sdkver;
+            var tpl = '{domain}/{path}.js?appId={appId}&token={token}&callBack=getServerEndpoint&v={sdkver}';
+            var url = RongIMLib.RongUtil.tplEngine(tpl, {
+                domain: domain,
+                path: path,
+                appId: appId,
+                token: token,
+                sdkver: sdkver
+            });
+            xss.src = url;
             document.body.appendChild(xss);
             xss.onerror = function () {
                 _onerror(RongIMLib.ConnectionState.TOKEN_INCORRECT);
@@ -6247,7 +6220,14 @@ var RongIMLib;
             }
             ;
             this.url = url;
-            this.socket = new WebSocket(RongIMLib.RongIMClient._memoryStore.depend.wsScheme + url);
+            var depend = RongIMLib.RongIMClient._memoryStore.depend;
+            var wsScheme = depend.wsScheme;
+            var tpl = '{wsScheme}{url}';
+            url = RongIMLib.RongUtil.tplEngine(tpl, {
+                wsScheme: wsScheme,
+                url: url
+            });
+            this.socket = new WebSocket(url);
             this.socket.binaryType = "arraybuffer";
             this.addEvent();
             return this.socket;
@@ -6364,6 +6344,9 @@ var RongIMLib;
         SocketTransportation.prototype.reconnect = function () {
             this.disconnect();
             this.createTransport(this.url);
+        };
+        SocketTransportation.prototype.close = function () {
+            this.socket.close();
         };
         return SocketTransportation;
     })();
@@ -6553,6 +6536,10 @@ var RongIMLib;
             this.onClose();
             this.connected = false;
             this.socket.fire("disconnect");
+        };
+        PollingTransportation.prototype.close = function () {
+            this.xhr.abort();
+            this.sendxhr = null;
         };
         return PollingTransportation;
     })();
@@ -7884,6 +7871,11 @@ var RongIMLib;
             if (RongIMLib.Bridge._client && RongIMLib.Bridge._client.channel && RongIMLib.Bridge._client.channel.connectionStatus == RongIMLib.ConnectionStatus.CONNECTED && RongIMLib.Bridge._client.channel.connectionStatus == RongIMLib.ConnectionStatus.CONNECTING) {
                 return;
             }
+            var isGreater = (RongIMLib.RongIMClient.otherDeviceLoginCount > 5);
+            if (isGreater) {
+                callback.onError(RongIMLib.ConnectionStatus.ULTRALIMIT);
+                return;
+            }
             //循环设置监听事件，追加之后清空存放事件数据
             for (var i = 0, len = RongIMLib.RongIMClient._memoryStore.listenerList.length; i < len; i++) {
                 RongIMLib.RongIMClient.bridge["setListener"](RongIMLib.RongIMClient._memoryStore.listenerList[i]);
@@ -8269,21 +8261,34 @@ var RongIMLib;
                     modules.setSyncTime(0);
                     RongIMLib.Bridge._client.queryMessage("chrmPull", RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
                         onSuccess: function (collection) {
-                            var sync = RongIMLib.MessageUtil.int64ToTimestamp(collection.syncTime);
-                            RongIMLib.RongIMClient._memoryStore.lastReadTime.set(chatroomId + RongIMLib.Bridge._client.userId + "CST", sync);
                             var list = collection.list;
-                            if (RongIMLib.RongIMClient._memoryStore.filterMessages.length > 0) {
-                                for (var i = 0, mlen = list.length; i < mlen; i++) {
-                                    for (var j = 0, flen = RongIMLib.RongIMClient._memoryStore.filterMessages.length; j < flen; j++) {
-                                        if (RongIMLib.RongIMClient.MessageParams[RongIMLib.RongIMClient._memoryStore.filterMessages[j]].objectName != list[i].classname) {
-                                            RongIMLib.Bridge._client.handler.onReceived(list[i]);
+                            var sync = RongIMLib.MessageUtil.int64ToTimestamp(collection.syncTime);
+                            var latestMessage = list[list.length - 1];
+                            if (latestMessage) {
+                                latestMessage = RongIMLib.MessageUtil.messageParser(latestMessage);
+                                sync = latestMessage.sentTime;
+                            }
+                            RongIMLib.RongIMClient._memoryStore.lastReadTime.set(chatroomId + RongIMLib.Bridge._client.userId + "CST", sync);
+                            var _client = RongIMLib.Bridge._client;
+                            for (var i = 0, mlen = list.length; i < mlen; i++) {
+                                var uId = 'R' + list[i].msgId;
+                                if (!(uId in _client.cacheMessageIds)) {
+                                    _client.cacheMessageIds[uId] = true;
+                                    var cacheUIds = RongIMLib.RongUtil.keys(_client.cacheMessageIds);
+                                    if (cacheUIds.length > 10) {
+                                        uId = cacheUIds[0];
+                                        delete _client.cacheMessageIds[uId];
+                                    }
+                                    if (RongIMLib.RongIMClient._memoryStore.filterMessages.length > 0) {
+                                        for (var j = 0, flen = RongIMLib.RongIMClient._memoryStore.filterMessages.length; j < flen; j++) {
+                                            if (RongIMLib.RongIMClient.MessageParams[RongIMLib.RongIMClient._memoryStore.filterMessages[j]].objectName != list[i].classname) {
+                                                _client.handler.onReceived(list[i]);
+                                            }
                                         }
                                     }
-                                }
-                            }
-                            else {
-                                for (var i = 0, len = list.length; i < len; i++) {
-                                    RongIMLib.Bridge._client.handler.onReceived(list[i]);
+                                    else {
+                                        _client.handler.onReceived(list[i]);
+                                    }
                                 }
                             }
                         },
@@ -8557,6 +8562,7 @@ var RongIMLib;
                     setTimeout(function () {
                         cacheConversation && me.updateConversation(cacheConversation);
                         msg.sentTime = data.timestamp;
+                        msg.messageUId = data.messageUId;
                         sendCallback.onSuccess(msg);
                     });
                 },
@@ -9102,11 +9108,18 @@ var RongIMLib;
         function VCDataProvider(addon) {
             this.userId = "";
             this.useConsole = false;
+            this.appKey = "";
+            this.token = "";
+            this.tools = {};
+            this.sdkInfo = {};
             this.addon = addon;
         }
-        VCDataProvider.prototype.init = function (appKey) {
+        VCDataProvider.prototype.init = function (appKey, callback, tools) {
+            this.tools = tools;
+            this.appKey = appKey;
             this.useConsole && console.log("init");
-            this.addon.initWithAppkey(appKey);
+            var sdkInfo = this.addon.initWithAppkey(appKey);
+            this.sdkInfo = JSON.parse(sdkInfo);
             // 0 不存不计数  1 只存不计数 3 存且计数
             this.addon.registerMessageType("RC:VcMsg", 3);
             this.addon.registerMessageType("RC:ImgTextMsg", 3);
@@ -9143,6 +9156,51 @@ var RongIMLib;
             this.addon.registerMessageType("RC:SRSMsg", 0);
             this.addon.registerMessageType("RC:RRReqMsg", 0);
             this.addon.registerMessageType("RC:RRRspMsg", 0);
+        };
+        VCDataProvider.prototype.getNavi = function (params, callback) {
+            var tools = this.tools;
+            var isFunction = (typeof tools.require == 'function');
+            if (!isFunction) {
+                console.error('getNavi: require is not a function');
+                return;
+            }
+            var request = tools.require('request');
+            var appId = params.appkey;
+            var token = params.token;
+            var v = this.sdkInfo.ver;
+            var url = 'https:{0}/navi.json';
+            var naviPath = RongIMLib.RongIMClient._memoryStore.depend.navi;
+            url = RongIMLib.RongUtil.stringFormat(url, [naviPath]);
+            var body = 'token={0}&v={1}';
+            body = RongIMLib.RongUtil.stringFormat(body, [encodeURIComponent(token), v]);
+            request({
+                url: url,
+                method: 'POST',
+                headers: {
+                    appId: appId
+                },
+                body: body
+            }, function (error, response, body) {
+                if (error) {
+                    callback.onError({
+                        msg: error
+                    });
+                    return;
+                }
+                if (!body) {
+                    callback.onError({
+                        msg: 'request navi error, response is empty.'
+                    });
+                    return;
+                }
+                body = JSON.parse(body);
+                if (body.code != 200) {
+                    callback.onIncorrect();
+                    return;
+                }
+                body.serverList = body.server + ',' + body.bs;
+                callback.onSuccess(body);
+            });
         };
         VCDataProvider.prototype.connect = function (token, callback, userId) {
             this.useConsole && console.log("connect");
@@ -10519,6 +10577,25 @@ var RongIMLib;
             }
             return tmpl;
         };
+        RongUtil.tplEngine = function (temp, data, regexp) {
+            if (!(Object.prototype.toString.call(data) === "[object Array]")) {
+                data = [data];
+            }
+            var ret = [];
+            for (var i = 0, j = data.length; i < j; i++) {
+                ret.push(replaceAction(data[i]));
+            }
+            return ret.join("");
+            function replaceAction(object) {
+                return temp.replace(regexp || (/{([^}]+)}/g), function (match, name) {
+                    if (match.charAt(0) == '\\') {
+                        return match.slice(1);
+                    }
+                    return (object[name] != undefined) ? object[name] : '{' + name + '}';
+                });
+            }
+        };
+        ;
         RongUtil.forEach = function (obj, callback) {
             callback = callback || RongUtil.noop;
             var loopObj = function () {
@@ -10660,6 +10737,13 @@ var RongIMLib;
             }
             return has;
         };
+        RongUtil.keys = function (obj) {
+            var props = [];
+            for (var key in obj) {
+                props.push(key);
+            }
+            return props;
+        };
         return RongUtil;
     })();
     RongIMLib.RongUtil = RongUtil;
@@ -10708,6 +10792,30 @@ var RongIMLib;
         return RongObserver;
     })();
     RongIMLib.RongObserver = RongObserver;
+    var Timer = (function () {
+        function Timer(config) {
+            this.timeout = 0;
+            this.timer = null;
+            this.timeout = config.timeout;
+        }
+        Timer.prototype.resume = function (callback) {
+            this.timer = setTimeout(callback, this.timeout);
+        };
+        Timer.prototype.pause = function () {
+            clearTimeout(this.timer);
+        };
+        return Timer;
+    })();
+    RongIMLib.Timer = Timer;
+    var InnerUtil = (function () {
+        function InnerUtil() {
+        }
+        InnerUtil.getUId = function (token) {
+            return md5(token).slice(8, 16);
+        };
+        return InnerUtil;
+    })();
+    RongIMLib.InnerUtil = InnerUtil;
 })(RongIMLib || (RongIMLib = {}));
 
 /*

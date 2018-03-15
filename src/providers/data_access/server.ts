@@ -14,6 +14,11 @@ module RongIMLib {
             if (Bridge._client && Bridge._client.channel && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTING) {
                 return;
             }
+            var isGreater = (RongIMClient.otherDeviceLoginCount > 5);
+            if (isGreater) {
+                callback.onError(ConnectionStatus.ULTRALIMIT);
+                return;
+            }
             //循环设置监听事件，追加之后清空存放事件数据
             for (let i = 0, len = RongIMClient._memoryStore.listenerList.length; i < len; i++) {
                 RongIMClient.bridge["setListener"](RongIMClient._memoryStore.listenerList[i]);
@@ -731,6 +736,7 @@ module RongIMLib {
                     setTimeout(function() {
                         cacheConversation && me.updateConversation(cacheConversation);
                         msg.sentTime = data.timestamp;
+                        msg.messageUId = data.messageUId;
                         sendCallback.onSuccess(msg);
                     });
                 },

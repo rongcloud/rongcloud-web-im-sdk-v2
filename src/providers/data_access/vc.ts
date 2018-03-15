@@ -122,39 +122,13 @@ module RongIMLib {
         }
 
         connect(token: string, callback: ConnectCallback, userId?: string): void {
-            var that = this;
-
-            that.token = token;
-
-            that.useConsole && console.log("connect");
-            that.connectCallback = callback;
-            
-            var params: any = {
-                appkey: that.appKey,
-                token: token
+            this.useConsole && console.log("connect");
+            this.userId = userId;
+            this.connectCallback = callback;
+            RongIMLib.Bridge._client = <any>{
+                userId: userId
             };
-            that.getNavi(params, {
-                onSuccess: function(navi: any){
-                    var type = navi.type;
-                    if (type) {
-                        that.setEnvironment(type);
-                    }
-
-                    that.userId = navi.userId;
-                    RongIMLib.Bridge._client = <Client>{
-                        userId: that.userId
-                    };
-
-                    var openmp: boolean =  Boolean(navi.openMp);
-                    var openus: boolean = Boolean(navi.openUS);
-                    that.addon.connectWithToken(token, that.userId, navi.serverList, openmp, openus);
-                },
-                onError: function(error: any){
-                    console.error(error);
-                    callback.onTokenIncorrect();
-                },
-                onIncorrect: callback.onTokenIncorrect
-            });
+            this.addon.connectWithToken(token, userId);
         }
 
         setServerInfo(info: any):void {
@@ -212,34 +186,6 @@ module RongIMLib {
                         break;
                     case 1:
                     case 8:
-                        var token = me.token;
-                        var params: any = {
-                            appkey: me.appKey,
-                            token: token
-                        };
-
-                        me.getNavi(params, {
-                            onSuccess: function(navi: any){
-                                var type = navi.type;
-                                if (type) {
-                                    me.setEnvironment(type);
-                                }
-
-                                me.userId = navi.userId;
-                                RongIMLib.Bridge._client = <Client>{
-                                    userId: me.userId
-                                };
-
-                                var openmp: boolean =  Boolean(navi.openMp);
-                                var openus: boolean = Boolean(navi.openUS);
-                                me.addon.connectWithToken(token, me.userId, navi.serverList, openmp, openus);
-                            },
-                            onError: function(error: any){
-                                console.error(error);
-                                me.connectCallback.onTokenIncorrect();
-                            },
-                            onIncorrect: me.connectCallback.onTokenIncorrect
-                        });
                     case 9:
                     case 11:
                     case 12:

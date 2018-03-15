@@ -234,6 +234,25 @@ module RongIMLib {
             }
             return tmpl;
         }
+        static tplEngine(temp:any, data:any, regexp?:any) {
+            if (!(Object.prototype.toString.call(data) === "[object Array]")) {
+                data = [data];
+            }
+            var ret:any[] = [];
+            for (var i = 0, j = data.length; i < j; i++) {
+                ret.push(replaceAction(data[i]));
+            }
+            return ret.join("");
+
+            function replaceAction(object: any) {
+                return temp.replace(regexp || (/{([^}]+)}/g), function(match:any, name:any) {
+                    if (match.charAt(0) == '\\') {
+                        return match.slice(1);
+                    }
+                    return (object[name] != undefined) ? object[name] : '{' + name + '}';
+                });
+            }
+        };
         static forEach(obj:any, callback:Function){
             callback = callback || RongUtil.noop;
             var loopObj = function(){
@@ -385,8 +404,8 @@ module RongIMLib {
             }
             return props;
         }
-    }
 
+    }
     /*
         var observer = new RongObserver();
         observer.watch({
@@ -427,6 +446,26 @@ module RongIMLib {
         }
         remove(): void{
 
+        }
+    }
+
+    export class Timer{
+        timeout:number = 0;
+        timer: any = null;
+        constructor(config: any) {
+            this.timeout = config.timeout;
+        }
+        resume(callback: Function){
+            this.timer = setTimeout(callback, this.timeout);
+        }
+        pause(){
+            clearTimeout(this.timer);
+        }
+    }
+
+    export class InnerUtil{
+        static getUId(token: string){
+            return md5(token).slice(8, 16)
         }
     }
 }

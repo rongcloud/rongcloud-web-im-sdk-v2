@@ -12,5 +12,7 @@ module RongIMLib {
         onError(error: any): void;
         //断开连接
         disconnect(): void;
+
+        close():void;
     }
 }

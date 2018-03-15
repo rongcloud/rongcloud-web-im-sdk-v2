@@ -182,5 +182,9 @@ module RongIMLib {
             this.socket.fire("disconnect");
         }
 
+        close(){
+           this.xhr.abort(); 
+           this.sendxhr = null;
+        }
     }
 }

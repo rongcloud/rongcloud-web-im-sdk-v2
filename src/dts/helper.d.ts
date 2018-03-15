@@ -77,7 +77,7 @@ declare interface Document {
 declare interface Addon {
     initWithAppkey(appKey: string): any;
 
-    connectWithToken(token: string, userId: string, servers: string, openmp: boolean, openus: boolean): number;
+    connectWithToken(token: string, userId: string, servers?: string, openmp?: boolean, openus?: boolean): number;
 
     reconnect(callback: RongIMLib.ConnectCallback): void;
 

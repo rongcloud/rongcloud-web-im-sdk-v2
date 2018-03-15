@@ -1,28 +1,46 @@
 module RongIMLib {
     export class Navigation {
         static Endpoint: any = new Object;
+        static clear(){
+            var storage = RongIMClient._storageProvider;
+            storage.removeItem('rc_uid');
+            storage.removeItem('serverIndex');
+        }
         constructor() {
-            window.getServerEndpoint = function(x: any) {
-                //把导航返回的server字段赋值给CookieHelper._host，因为flash widget需要使用 decodeURIComponent
-                RongIMClient._storageProvider._host = Navigation.Endpoint.host = x["server"];
-                RongIMClient._storageProvider.setItem("RongBackupServer", x["backupServer"] + "," + (x.userId || ""));
-                //设置当前用户 Id 只有 comet 使用。
-                Navigation.Endpoint.userId = x["userId"];
-                if (x["voipCallInfo"]) {
-                    var callInfo = JSON.parse(x["voipCallInfo"]);
+            window.getServerEndpoint = function(result: any) {
+                var server = result.server;
+                if (server) {
+                    server += ','
+                }
+                var backupServer = result.backupServer || '';
+
+                var tpl = '{server}{backupServer}';
+                var servers:any = RongUtil.tplEngine(tpl, {
+                    server: server,
+                    backupServer: backupServer
+                });
+                var storage = RongIMClient._storageProvider;
+
+                servers = servers.split(',');
+                storage.setItem('servers', JSON.stringify(servers));
+
+                var token = Bridge._client.token;
+                var uid = InnerUtil.getUId(token);
+                storage.setItem('rc_uid', uid);
+
+                var userId = result.userId;
+                storage.setItem('current_user', userId);
+
+                if (result.voipCallInfo) {
+                    var callInfo = JSON.parse(result.voipCallInfo);
                     RongIMClient._memoryStore.voipStategy = callInfo.strategy;
-                    RongIMClient._storageProvider.setItem("voipStrategy", callInfo.strategy);
+                    storage.setItem("voipStrategy", callInfo.strategy);
                 }
+
                 //替换本地存储的导航信息 
-                // var temp = RongIMClient._storageProvider.getItemKey("navi");
-                // temp !== null && RongIMClient._storageProvider.removeItem(temp);
-                // 注：以上两行代码废弃，试用后删除。
-                var md5Token: string = md5(RongIMLib.Bridge._client.token).slice(8, 16), openMp: number = x['openMp'] == 0 ? 0 : 1;
-                RongIMClient._storageProvider.setItem("navi" + md5Token, x["server"] + "," + (x.userId || ""));
-                RongIMClient._storageProvider.setItem('openMp' + md5Token, openMp);
-                if (!openMp) {
-                    RongIMClient._memoryStore.depend.openMp = false;
-                }
+                var openMp = result.openMp;
+                storage.setItem('openMp' + uid, openMp);
+                RongIMClient._memoryStore.depend.openMp = openMp;
             };
         }
         connect(appId?: string, token?: string, callback?: any) {
@@ -42,31 +60,47 @@ module RongIMLib {
             }, callback.onError, true);
             return client;
         }
-        getServerEndpoint(_token: string, _appId: string, _onsuccess?: any, _onerror?: any, unignore?: any) {
+        getServerEndpoint(token: string, appId: string, _onsuccess?: any, _onerror?: any, unignore?: any) {
             if (unignore) {
                 //根据token生成MD5截取8-16下标的数据与本地存储的导航信息进行比对
                 //如果信息和上次的通道类型都一样，不执行navi请求，用本地存储的导航信息连接服务器
-                var naviStr = md5(_token).slice(8, 16),
-                    _old = RongIMClient._storageProvider.getItem(RongIMClient._storageProvider.getItemKey("navi")),
-                    _new = RongIMClient._storageProvider.getItem("navi" + naviStr);
-                if (_old == _new && _new !== null && RongIMClient._storageProvider.getItem("rongSDK") == Transportations._TransportType) {
-                    var obj = decodeURIComponent(_old).split(",");
-                    setTimeout(function() {
-                        RongIMClient._storageProvider._host = Navigation.Endpoint.host = obj[0];
-                        RongIMClient._memoryStore.voipStategy = RongIMClient._storageProvider.getItem("voipStrategy");
-                        if (!RongIMClient._storageProvider.getItem('openMp' + naviStr)) {
-                            RongIMClient._memoryStore.depend.openMp = false;
-                        }
-                        Navigation.Endpoint.userId = obj[1];
-                        _onsuccess();
-                    }, 500);
+                var uId = md5(token).slice(8, 16);
+
+                var storage = RongIMClient._storageProvider;
+
+                var transportType = storage.getItem("rongSDK");
+                var isSameType = (Transportations._TransportType == transportType);
+                var _old = storage.getItem('rc_uid');
+                var isSameUser = (_old == uId);
+                if (isSameUser && isSameType) {
+                    RongIMClient._memoryStore.voipStategy = storage.getItem("voipStrategy");
+                    var openMp = storage.getItem('openMp' + uId);
+                    RongIMClient._memoryStore.depend.openMp = openMp;
+                    setTimeout(function(){
+                        _onsuccess()
+                    }, 300);
                     return;
                 }
             }
+            Navigation.clear();
             //导航信息，切换Url对象的key进行线上线下测试操作
             var xss = document.createElement("script");
             //进行jsonp请求
-            xss.src = RongIMClient._memoryStore.depend.navi + (RongIMClient._memoryStore.depend.isPolling ? "/cometnavi.js" : "/navi.js") + "?appId=" + _appId + "&token=" + encodeURIComponent(_token) + "&" + "callBack=getServerEndpoint&t=" + (new Date).getTime();
+            var depend = RongIMClient._memoryStore.depend;
+            var domain = depend.navi;
+            var path = (depend.isPolling ? 'cometnavi' : 'navi');
+                token = encodeURIComponent(token);
+            var sdkver = RongIMClient.sdkver;
+
+            var tpl = '{domain}/{path}.js?appId={appId}&token={token}&callBack=getServerEndpoint&v={sdkver}';
+            var url = RongUtil.tplEngine(tpl, {
+                domain: domain,
+                path: path,
+                appId: appId,
+                token: token,
+                sdkver: sdkver 
+            });
+            xss.src = url;
             document.body.appendChild(xss);
             xss.onerror = function() {
                 _onerror(ConnectionState.TOKEN_INCORRECT);

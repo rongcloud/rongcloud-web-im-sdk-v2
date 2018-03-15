@@ -5,7 +5,7 @@ module RongIMLib {
         static MessageType: { [s: string]: any } = {};
         static MessageParams: { [s: string]: any };
         static RegisterMessage: { [s: string]: any } = {};
-        static _memoryStore: any = { listenerList: [] };
+        static _memoryStore: any = { listenerList: [], isPullFinished: true, syncMsgQueue: []  };
         static isNotPullMsg: boolean = false;
         static _storageProvider: StorageProvider;
         static _dataAccessProvider: DataAccessProvider;
@@ -13,6 +13,9 @@ module RongIMLib {
         private static _instance: RongIMClient;
         static bridge: any;
         static userStatusObserver:RongObserver = null;
+        static sdkver:string = '2.3.1';
+        static otherDeviceLoginCount:number = 0;
+        static serverStore: any = { index: 0 };
         static getInstance(): RongIMClient {
             if (!RongIMClient._instance) {
                 throw new Error("RongIMClient is not initialized. Call .init() method first.");
@@ -109,7 +112,8 @@ module RongIMLib {
             else {
                 RongIMClient._storageProvider = new RongIMLib.MemeoryProvider();
             }
-            
+            var serverIndex = RongIMClient._storageProvider.getItem('serverIndex');
+            RongIMClient.serverStore.index = serverIndex || 0;
             var pathTmpl = '{0}{1}';
 
             var _serverPath:{[key:string]:any} = {
@@ -134,7 +138,7 @@ module RongIMLib {
             });
             
             var _sourcePath:{[key:string]:any} = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.3.0.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.3.1.min.js'
             };
 
             RongUtil.forEach(_sourcePath, function(path: string, key: string){
@@ -148,7 +152,8 @@ module RongIMLib {
                 wsScheme: wsScheme,
                 protocol: protocol,
                 showError: true,
-                openMp: true
+                openMp: true,
+                snifferTime: 2000
             };
             
             RongUtil.extend(_defaultOpts, options);
@@ -747,69 +752,6 @@ module RongIMLib {
                 "61001": {
                     code: "61001",
                     msg: "删除消息数组长度为 0"
-                },
-                /**
-                 * 通话
-                 */
-                "1": {
-                    code: "1",
-                    msg: "己方取消已发出的通话请求"
-                },
-                "2": {
-                    code: "2",
-                    msg: "己方拒绝收到的通话请求"
-                },
-                "3": {
-                    code: "3",
-                    msg: "己方挂断"
-                },
-                "4": {
-                    code: "4",
-                    msg: "己方忙碌"
-                },
-                "5": {
-                    code: "5",
-                    msg: "己方未接听"
-                },
-                "6": {
-                    code: "6",
-                    msg: "己方不支持当前引擎"
-                },
-                "7": {
-                    code: "7",
-                    msg: "己方网络出错"
-                },
-                "11": {
-                    code: "11",
-                    msg: "对方取消已发出的通话请求"
-                },
-                "12": {
-                    code: "12",
-                    msg: "对方拒绝收到的通话请求"
-                },
-                "13": {
-                    code: "13",
-                    msg: "通话过程对方挂断"
-                },
-                "14": {
-                    code: "14",
-                    msg: "对方忙碌"
-                },
-                "15": {
-                    code: "15",
-                    msg: "对方未接听"
-                },
-                "16": {
-                    code: "16",
-                    msg: "对方网络错误"
-                },
-                "17": {
-                    code: "17",
-                    msg: "对方网络错误"
-                },
-                "18": {
-                    code: "18",
-                    msg: "VoIP 不可用"
                 }
             };
         };
@@ -838,17 +780,17 @@ module RongIMLib {
          * @param token     从服务端获取的用户身份令牌（Token）。
          * @param callback  连接回调，返回连接的成功或者失败状态。
          */
-        static connect(token: string, callback: ConnectCallback, userId?: string): void {
+        static connect(token: string, _callback: ConnectCallback, userId?: string): void {
             CheckParam.getInstance().check(["string", "object", "string|null|object|global|undefined"], "connect", true, arguments);
             var connectCallback = {
-                onSuccess: callback.onSuccess,
-                onTokenIncorrect: callback.onTokenIncorrect,
+                onSuccess: _callback.onSuccess,
+                onTokenIncorrect: _callback.onTokenIncorrect,
                 onError: function(errorCode: any) {
                     RongIMClient.logger({
                         code: errorCode,
                         funcName: "connect"
                     });
-                    callback.onError(errorCode);
+                    _callback.onError(errorCode);
                 }
             };
             RongIMClient._dataAccessProvider.connect(token, connectCallback, userId);

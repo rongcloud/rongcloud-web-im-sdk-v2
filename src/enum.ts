@@ -87,7 +87,11 @@ module RongIMLib {
         /**
         *  连接关闭。
         */
-        CONNECTION_CLOSED = 4
+        CONNECTION_CLOSED = 4,
+        /*
+            互踢次数过多（count > 5），此时可能出现：在其它他设备登陆有 reconnect 逻辑
+        */
+        ULTRALIMIT = 1101
     }
 
     export enum ConversationNotificationStatus {
