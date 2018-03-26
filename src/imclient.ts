@@ -195,10 +195,9 @@ module RongIMLib {
             } else {
                 RongIMClient._dataAccessProvider = new ServerDataProvider();
             }
-            var tools = {
-                require: options.require
-            };
-            RongIMClient._dataAccessProvider.init(appKey, callback, tools);
+
+            var sdkInfo = RongIMClient._dataAccessProvider.init(appKey, callback);
+
             // 兼容 c++ 设置导航，Web 端不生效
             RongIMClient._dataAccessProvider.setServerInfo({navi: location.protocol + options.navi +'/navi.xml' });
             RongIMClient.MessageParams = {
@@ -754,6 +753,8 @@ module RongIMLib {
                     msg: "删除消息数组长度为 0"
                 }
             };
+
+            return sdkInfo;
         };
 
         /**
@@ -780,8 +781,8 @@ module RongIMLib {
          * @param token     从服务端获取的用户身份令牌（Token）。
          * @param callback  连接回调，返回连接的成功或者失败状态。
          */
-        static connect(token: string, _callback: ConnectCallback, userId?: string): void {
-            CheckParam.getInstance().check(["string", "object", "string|null|object|global|undefined"], "connect", true, arguments);
+        static connect(token: string, _callback: ConnectCallback, userId?: string, serverConf?:any): void {
+            CheckParam.getInstance().check(["string", "object", "string|null|object|global|undefined", "object|null|global|undefined"], "connect", true, arguments);
             var connectCallback = {
                 onSuccess: _callback.onSuccess,
                 onTokenIncorrect: _callback.onTokenIncorrect,
@@ -793,7 +794,7 @@ module RongIMLib {
                     _callback.onError(errorCode);
                 }
             };
-            RongIMClient._dataAccessProvider.connect(token, connectCallback, userId);
+            RongIMClient._dataAccessProvider.connect(token, connectCallback, userId, serverConf);
         }
 
         static reconnect(callback: ConnectCallback, config?: any) {

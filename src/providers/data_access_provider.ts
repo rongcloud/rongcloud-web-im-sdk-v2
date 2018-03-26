@@ -3,7 +3,7 @@ module RongIMLib {
 
         init(appKey: string, callback?: Function, tools?: any): void;
 
-        connect(token: string, callback: ConnectCallback, userId?: string): void;
+        connect(token: string, callback: ConnectCallback, userId?: string, serverConf?: any): void;
 
         reconnect(callback: ConnectCallback, config?: any): void;
 

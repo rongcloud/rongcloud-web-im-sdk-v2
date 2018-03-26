@@ -17,21 +17,16 @@ module RongIMLib {
 
         token: string = "";
 
-        tools: any = {};
-
-        sdkInfo: any = {};
-
         constructor(addon: any) {
             this.addon = addon;
         }
 
-        init(appKey: string, callback?: Function, tools?: any): void {
-            this.tools = tools;
+        init(appKey: string, callback?: Function): void {
             this.appKey = appKey;
             this.useConsole && console.log("init");
 
             var sdkInfo = this.addon.initWithAppkey(appKey);
-            this.sdkInfo = JSON.parse(sdkInfo);
+            sdkInfo = JSON.parse(sdkInfo);
               // 0 不存不计数  1 只存不计数 3 存且计数
             this.addon.registerMessageType("RC:VcMsg", 3);
             this.addon.registerMessageType("RC:ImgTextMsg", 3);
@@ -69,66 +64,19 @@ module RongIMLib {
             this.addon.registerMessageType("RC:SRSMsg", 0);
             this.addon.registerMessageType("RC:RRReqMsg", 0);
             this.addon.registerMessageType("RC:RRRspMsg", 0);
+            return sdkInfo;
         }
 
-        getNavi(params: any, callback: any): void{
-            var tools = this.tools;
-
-            var isFunction = (typeof tools.require == 'function');
-            if (!isFunction) {
-                console.error('getNavi: require is not a function');
-                return;
-            }
-            var request = tools.require('request');
-            var appId = params.appkey;
-            var token = params.token;
-            var v = this.sdkInfo.ver;
-            var url = 'https:{0}/navi.json';
-
-            var naviPath = RongIMClient._memoryStore.depend.navi;
-            url = RongUtil.stringFormat(url, [naviPath]);
-
-            var body = 'token={0}&v={1}';
-                body =  RongUtil.stringFormat(body, [encodeURIComponent(token), v]);
-
-            request({
-                url: url,
-                method: 'POST',
-                headers: {
-                    appId: appId
-                },
-                body: body
-            }, function(error: any, response: any, body: any) {
-                if (error) {
-                    callback.onError({
-                        msg: error
-                    });
-                    return;
-                }
-                if (!body) {
-                    callback.onError({
-                        msg: 'request navi error, response is empty.'
-                    });
-                    return;
-                }
-                body = JSON.parse(body);
-                if (body.code != 200) {
-                    callback.onIncorrect();
-                    return;
-                }
-                body.serverList = body.server + ',' + body.bs;
-                callback.onSuccess(body);
-            });
-        }
-
-        connect(token: string, callback: ConnectCallback, userId?: string): void {
+        connect(token: string, callback: ConnectCallback, userId?: string, serverConf?: any): void {
             this.useConsole && console.log("connect");
             this.userId = userId;
             this.connectCallback = callback;
             RongIMLib.Bridge._client = <any>{
                 userId: userId
             };
-            this.addon.connectWithToken(token, userId);
+            var openmp: boolean =  !!serverConf.openMp;
+            var openus: boolean = !!serverConf.openUS;
+            this.addon.connectWithToken(token, userId, serverConf.serverList, openmp, openus);
         }
 
         setServerInfo(info: any):void {
