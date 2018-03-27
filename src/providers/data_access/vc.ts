@@ -26,7 +26,9 @@ module RongIMLib {
             this.useConsole && console.log("init");
 
             var sdkInfo = this.addon.initWithAppkey(appKey);
-            sdkInfo = JSON.parse(sdkInfo);
+            if (sdkInfo) {
+                sdkInfo = JSON.parse(sdkInfo);
+            }
               // 0 不存不计数  1 只存不计数 3 存且计数
             this.addon.registerMessageType("RC:VcMsg", 3);
             this.addon.registerMessageType("RC:ImgTextMsg", 3);

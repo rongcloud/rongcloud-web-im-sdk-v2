@@ -417,6 +417,7 @@ module RongIMLib {
                         that.sendMessage(message.conversationType, message.targetId, rejectMsg);
                         return;
                     }
+                    that._memorySessions["isActiveCall"] = true;
                     that._memorySessions.message = message;
                     that._memorySessions['chnl_' + message.targetId] = { Id: ret.callId, Key: "" };
                     var msg: RingingMessage = new RingingMessage({ callId: ret.callId });
@@ -436,7 +437,6 @@ module RongIMLib {
                     that._memorySessions.client.init(channelInfo.Key, function(obj: any) {
                         that._memorySessions.client.join(channelInfo.Key, channelInfo.Id, that._memorySessions["sentTime"] & 0x7fffffff, function(uid: string) {
                             that._memorySessions["startVoIPTime"] = +new Date;
-                            that._memorySessions["isActiveCall"] = true;
                             that.initLocalStream(uid, accMsg.mediaType);
                         });
                     }, function(err: any) {
