@@ -359,8 +359,10 @@ module RongIMLib {
     export class AcceptMessage implements MessageContent {
         messageName: string = "AcceptMessage";
         callId: string;
+        mediaId: string;
         mediaType: VoIPMediaType;
         constructor(message: any) {
+            this.mediaId = message.mediaId;
             this.callId = message.callId;
             this.mediaType = message.mediaType;
         }
@@ -420,6 +422,7 @@ module RongIMLib {
 
     export class InviteMessage implements MessageContent {
         messageName: string = "InviteMessage";
+        mediaId: string;
         callId: string;
         engineType: number;
         channelInfo: ChannelInfo;
@@ -427,6 +430,7 @@ module RongIMLib {
         inviteUserIds: string[];
         extra: string;
         constructor(message: any) {
+            this.mediaId = message.mediaId;
             this.callId = message.callId;
             this.engineType = message.engineType;
             this.channelInfo = message.channelInfo;
