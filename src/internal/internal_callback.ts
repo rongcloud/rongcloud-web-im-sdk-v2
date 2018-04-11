@@ -95,7 +95,7 @@ module RongIMLib {
                     return entity;
             }
         }
-    }
+    } 
     export class PublishCallback extends MessageCallback {
         _cb: any;
         _timeout: any;
@@ -110,8 +110,12 @@ module RongIMLib {
                 if (_msg) {
                     _msg.setSentStatus = _status;
                 }
-                RongIMClient._storageProvider.setItem(Bridge._client.userId, timestamp);
-                RongIMClient._memoryStore.lastReadTime.get(Bridge._client.userId, timestamp);
+                var userId = RongIMLib.Bridge._client.userId;
+                var stroageProvider = RongIMLib.RongIMClient._storageProvider;
+                stroageProvider.setItem(userId, timestamp);
+                stroageProvider.setItem('last_sentTime_' + userId, timestamp);
+                RongIMLib.RongIMClient._memoryStore.lastReadTime.get(userId, timestamp);
+                
                 this._cb({ messageUId: messageUId, timestamp: timestamp, messageId: messageId });
             } else {
                 this._timeout(_status);

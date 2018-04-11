@@ -632,7 +632,7 @@ module RongIMLib {
             }
         }
 
-        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean, leftCount?: number): void {
+        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean, leftCount?: number, isSync?: boolean): void {
             //实体对象
             var entity: any,
                 //解析完成的消息对象
@@ -708,6 +708,17 @@ module RongIMLib {
             }
             if (message === null) {
                 return;
+            }
+
+            var isSend = (message.messageDirection == RongIMLib.MessageDirection.SEND);
+            if (isSend) {
+                var storageProvider = RongIMLib.RongIMClient._storageProvider;
+                var userId = RongIMLib.Bridge._client.userId;
+                var lastSentTime = storageProvider.getItem('last_sentTime_' + userId) || 0;
+                if (message.sentTime <= lastSentTime && !isSync) {
+                    return;
+                }
+                
             }
 
             // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳 
@@ -910,7 +921,9 @@ module RongIMLib {
                         item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(), msg.getTimestamp(), item.Message, msg.getMessageId());
                         delete Bridge._client.handler.map[msg.getMessageId()];
                     } else {
-                        Bridge._client.handler.onReceived(Bridge._client.handler.syncMsgMap[msg.messageId], msg);
+                       var userId = RongIMLib.Bridge._client.userId;
+                        RongIMLib.RongIMClient._storageProvider.setItem('last_sentTime_' + userId, msg.timestamp);
+                        Bridge._client.handler.onReceived(Bridge._client.handler.syncMsgMap[msg.messageId], msg, null, null, true);
                         delete Bridge._client.handler.syncMsgMap[msg.getMessageId()];
                     }
                     break;
