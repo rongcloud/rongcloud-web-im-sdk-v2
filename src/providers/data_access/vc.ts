@@ -21,11 +21,12 @@ module RongIMLib {
             this.addon = addon;
         }
 
-        init(appKey: string, callback?: Function): void {
+        init(appKey: string, config?:any): void {
             this.appKey = appKey;
             this.useConsole && console.log("init");
 
-            var sdkInfo = this.addon.initWithAppkey(appKey);
+            config = config || {};
+            var sdkInfo = this.addon.initWithAppkey(appKey, config.dbPath);
             if (sdkInfo) {
                 sdkInfo = JSON.parse(sdkInfo);
             }
@@ -76,6 +77,7 @@ module RongIMLib {
             RongIMLib.Bridge._client = <any>{
                 userId: userId
             };
+            serverConf = serverConf || {};
             var openmp: boolean =  !!serverConf.openMp;
             var openus: boolean = !!serverConf.openUS;
             this.addon.connectWithToken(token, userId, serverConf.serverList, openmp, openus);
@@ -471,6 +473,7 @@ module RongIMLib {
         }
 
         setMessageContent(messageId:number, content:any, objectName:string):void{
+            content = JSON.stringify(content);
             this.addon.setMessageContent(messageId, content, objectName);
         }
 
@@ -816,10 +819,6 @@ module RongIMLib {
 
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback): void { }
 
-        setDeviceId(deviceId: string):void{
-            this.addon.setDeviceId(deviceId);
-        }
-
         setEnvironment(isPrivate: boolean):void{
             this.addon.setEnvironment(isPrivate);
         }
@@ -890,6 +889,11 @@ module RongIMLib {
         getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
             var profile = RongIMClient._memoryStore.publicServiceMap.get(publicServiceType, publicServiceId);
             callback.onSuccess(profile);
+        }
+
+        setDeviceInfo(device: any): void{
+            var id = device.id || '';
+            this.addon.setDeviceId(id);
         }
 
         getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any) {
@@ -971,6 +975,9 @@ module RongIMLib {
         }
 
         private buildConversation(val: string): Conversation {
+            if (val === '') {
+                return null;
+            }
             var conver: Conversation = new Conversation(),
                 c: any = JSON.parse(val),
                 lastestMsg: any = c.lastestMsg ? this.buildMessage(c.lastestMsg) : {};

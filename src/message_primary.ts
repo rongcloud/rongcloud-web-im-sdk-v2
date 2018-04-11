@@ -467,6 +467,7 @@ module RongIMLib {
         extra: string;
         inviteUserIds: string[];
         existedMemberStatusList: string[];
+        existedUserPofiles: any;
         constructor(message: any) {
             this.modifyMemType = message.modifyMemType;
             this.callId = message.callId;
@@ -477,6 +478,7 @@ module RongIMLib {
             this.extra = message.extra;
             this.inviteUserIds = message.inviteUserIds;
             this.existedMemberStatusList = message.existedMemberStatusList;
+            this.existedUserPofiles = message.existedUserPofiles;
         }
         encode() {
             return JSON.stringify(ModelUtil.modelClone(this));

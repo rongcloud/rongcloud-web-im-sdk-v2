@@ -1,7 +1,7 @@
 module RongIMLib {
     export interface DataAccessProvider {
 
-        init(appKey: string, callback?: Function, tools?: any): void;
+        init(appKey: string, config?: any): void;
 
         connect(token: string, callback: ConnectCallback, userId?: string, serverConf?: any): void;
 
@@ -153,8 +153,6 @@ module RongIMLib {
 
         getCurrentConnectionStatus():number;
 
-        setDeviceId(deviceId: string):void;
-
         setEnvironment(isPrivate: boolean):void;
 
         getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>):void;
@@ -162,5 +160,7 @@ module RongIMLib {
         getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any):void;
 
         getPublicServiceProfile(publicServiceType: number, publicServiceId: string, callback:any): void;
+
+        setDeviceInfo(device: any):void;
     }
 }

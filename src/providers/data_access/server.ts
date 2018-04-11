@@ -3,8 +3,8 @@ module RongIMLib {
 
         userStatusListener: Function = null;
 
-        init(appKey: string, callback?: Function): void {
-            new FeatureDectector(callback);
+        init(appKey: string, options?: any): void {
+            new FeatureDectector(options.appCallback);
         }
 
         connect(token: string, callback: ConnectCallback) {
@@ -1311,7 +1311,7 @@ module RongIMLib {
             RongIMClient.bridge.queryMsg(32, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, callback, "VoipDynamicOutput");
         }
 
-        setDeviceId(deviceId: string):void{
+        setDeviceInfo(deviceId: string):void{
         
         }
 
