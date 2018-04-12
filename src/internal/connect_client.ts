@@ -178,7 +178,9 @@ module RongIMLib {
                     throw new Error("setConnectStatusListener:Parameter format is incorrect");
                 }
                 me.connectionStatus = code;
-                StatusEvent.onChanged(code);
+                setTimeout(function(){
+                    StatusEvent.onChanged(code);
+                });
                 
                 var isDisconnected = (code == ConnectionStatus.DISCONNECTED);
                 if (isDisconnected) {
@@ -210,7 +212,7 @@ module RongIMLib {
                 this.self.reconnectObj = callback;
             }
         }
-        disconnect(status: number) {
+        disconnect(status?: number) {
             this.socket.disconnect(status);
         }
     }
@@ -327,7 +329,7 @@ module RongIMLib {
     }
     //连接端消息累
     export class Client {
-        timeoutMillis: number = 100000;
+        timeoutMillis: number = 6000;
         timeout_: number = 0;
         appId: string;
         token: string;
@@ -350,22 +352,10 @@ module RongIMLib {
             this.sdkVer = RongIMClient.sdkver;
         }
         resumeTimer() {
-            if (!this.timeout_) {
-                this.timeout_ = setTimeout(function() {
-                    if (!this.timeout_) {
-                        return;
-                    }
-                    try {
-                        this.channel.disconnect();
-                    } catch (e) {
-                        throw new Error(e);
-                    }
-                    clearTimeout(this.timeout_);
-                    this.timeout_ = 0;
-                    this.channel.reconnect();
-                    this.channel.socket.fire("StatusChanged", 5);
-                }, this.timeoutMillis);
-            }
+            var me = this;
+            this.timeout_ = setTimeout(function() {
+                me.channel.disconnect();
+            }, this.timeoutMillis);
         }
         pauseTimer() {
             if (this.timeout_) {
@@ -857,15 +847,21 @@ module RongIMLib {
 
             var that = this;
             if (RongIMClient._voipProvider && ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'].indexOf(message.messageType) > -1) {
-                RongIMClient._voipProvider.onReceived(message);
+                setTimeout(function(){
+                    RongIMClient._voipProvider.onReceived(message);
+                });
             } else {
                 var lcount = leftCount || 0;
                 RongIMClient._dataAccessProvider.addMessage(message.conversationType, message.targetId, message, {
                     onSuccess: function(ret: Message) {
-                        that._onReceived(ret, lcount);
+                        setTimeout(function(){
+                            that._onReceived(ret, lcount);
+                        });
                     },
                     onError: function(error: ErrorCode) {
-                        that._onReceived(message, lcount);
+                        setTimeout(function(){
+                            that._onReceived(message, lcount);
+                        });
                     }
                 });
             }

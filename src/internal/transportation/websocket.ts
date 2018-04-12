@@ -141,7 +141,7 @@ module RongIMLib {
                 if (status) {
                     me._status = status;
                 }
-                this.socket.close();
+                me.socket.close();
             }
         }
         /**

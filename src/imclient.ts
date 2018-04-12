@@ -74,9 +74,10 @@ module RongIMLib {
          */
 
         static init(appKey: string, dataAccessProvider?: DataAccessProvider, options?: any, callback?:Function): void {
-            if (!RongIMClient._instance) {
-                RongIMClient._instance = new RongIMClient();
+            if (RongIMClient._instance) {
+                return RongIMClient._memoryStore.sdkInfo;
             }
+            RongIMClient._instance = new RongIMClient();
 
             options = options || {};
             var protocol: string = "//", wsScheme = 'ws://';
@@ -200,6 +201,8 @@ module RongIMLib {
 
             options.appCallback = callback;
             var sdkInfo = RongIMClient._dataAccessProvider.init(appKey, options);
+
+            RongIMClient._memoryStore.sdkInfo = sdkInfo;
 
             // 兼容 c++ 设置导航，Web 端不生效
             RongIMClient._dataAccessProvider.setServerInfo({navi: location.protocol + options.navi +'/navi.xml' });

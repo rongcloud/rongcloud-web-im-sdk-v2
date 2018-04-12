@@ -131,10 +131,14 @@ module RongIMLib {
             me.addon && me.addon.setConnectionStatusListener(function(result: number): void {
                 switch (result) {
                     case 10:
-                        listener.onChanged(ConnectionStatus.CONNECTING);
+                        setTimeout(function(){
+                            listener.onChanged(ConnectionStatus.CONNECTING);
+                        });
                         break;
                     case 31004:
-                        me.connectCallback.onTokenIncorrect();
+                        setTimeout(function(){
+                            me.connectCallback.onTokenIncorrect();
+                        });
                         break;
                     case 1:
                     case 8:
@@ -150,15 +154,21 @@ module RongIMLib {
                     case 30007:
                     case 30008:
                     case 30009:
-                        listener.onChanged(ConnectionStatus.DISCONNECTED);
+                        setTimeout(function(){
+                            listener.onChanged(ConnectionStatus.DISCONNECTED);
+                        });
                         break;
                     case 0:
                     case 33005:
-                        me.connectCallback.onSuccess(me.userId);
-                        listener.onChanged(ConnectionStatus.CONNECTED);
+                        setTimeout(function(){
+                            me.connectCallback.onSuccess(me.userId);
+                            listener.onChanged(ConnectionStatus.CONNECTED);
+                        });
                         break;
                     case 6:
-                        listener.onChanged(ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT);
+                        setTimeout(function(){
+                            listener.onChanged(ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT);
+                        });
                         break;
                 }
             });
@@ -176,7 +186,9 @@ module RongIMLib {
                     message.offLineMessage = false;
                 }
                 localCount = leftCount;
-                listener.onReceived(message, leftCount);
+                setTimeout(function(){
+                    listener.onReceived(message, leftCount);
+                });
             });
         }
 
