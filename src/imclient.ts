@@ -28,6 +28,7 @@ module RongIMLib {
                 console.error(JSON.stringify(errorInfo));
             }
         }
+
         static userStatusListener:Function = null;
         static logger(params: any): void {
             var code = params.code;
@@ -38,6 +39,7 @@ module RongIMLib {
                 RongIMClient.showError(errorInfo);
             }
         }
+
         static logCallback(callback: any, funcName: string) {
             return {
                 onSuccess: callback.onSuccess,
@@ -203,22 +205,22 @@ module RongIMLib {
             RongIMClient.MessageParams = {
                 TextMessage: { objectName: "RC:TxtMsg", msgTag: new MessageTag(true, true) },
                 ImageMessage: { objectName: "RC:ImgMsg", msgTag: new MessageTag(true, true) },
-                DiscussionNotificationMessage: { objectName: "RC:DizNtf", msgTag: new MessageTag(true, true) },
+                DiscussionNotificationMessage: { objectName: "RC:DizNtf", msgTag: new MessageTag(false, true) },
                 VoiceMessage: { objectName: "RC:VcMsg", msgTag: new MessageTag(true, true) },
                 RichContentMessage: { objectName: "RC:ImgTextMsg", msgTag: new MessageTag(true, true) },
                 FileMessage: { objectName: "RC:FileMsg", msgTag: new MessageTag(true, true) },
                 HandshakeMessage: { objectName: "", msgTag: new MessageTag(true, true) },
                 UnknownMessage: { objectName: "", msgTag: new MessageTag(true, true) },
                 LocationMessage: { objectName: "RC:LBSMsg", msgTag: new MessageTag(true, true) },
-                InformationNotificationMessage: { objectName: "RC:InfoNtf", msgTag: new MessageTag(true, true) },
-                ContactNotificationMessage: { objectName: "RC:ContactNtf", msgTag: new MessageTag(true, true) },
-                ProfileNotificationMessage: { objectName: "RC:ProfileNtf", msgTag: new MessageTag(true, true) },
+                InformationNotificationMessage: { objectName: "RC:InfoNtf", msgTag: new MessageTag(false, true) },
+                ContactNotificationMessage: { objectName: "RC:ContactNtf", msgTag: new MessageTag(false, true) },
+                ProfileNotificationMessage: { objectName: "RC:ProfileNtf", msgTag: new MessageTag(false, true) },
                 CommandNotificationMessage: { objectName: "RC:CmdNtf", msgTag: new MessageTag(true, true) },
                 PublicServiceRichContentMessage: { objectName: "RC:PSImgTxtMsg", msgTag: new MessageTag(true, true) },
                 PublicServiceMultiRichContentMessage: { objectName: "RC:PSMultiImgTxtMsg", msgTag: new MessageTag(true, true) },
                 JrmfReadPacketMessage : { objectName: "RCJrmf:RpMsg", msgTag: new MessageTag(true, true) },
                 JrmfReadPacketOpenedMessage : { objectName: "RCJrmf:RpOpendMsg", msgTag: new MessageTag(true, true) },
-                GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(true, true) },
+                GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(false, true) },
 
                 CommandMessage: { objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) },
                 TypingStatusMessage: { objectName: "RC:TypSts", msgTag: new MessageTag(false, false) },
