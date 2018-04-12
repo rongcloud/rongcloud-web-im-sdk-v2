@@ -198,7 +198,8 @@ module RongIMLib {
                 RongIMClient._dataAccessProvider = new ServerDataProvider();
             }
 
-            var sdkInfo = RongIMClient._dataAccessProvider.init(appKey, callback);
+            options.appCallback = callback;
+            var sdkInfo = RongIMClient._dataAccessProvider.init(appKey, options);
 
             // 兼容 c++ 设置导航，Web 端不生效
             RongIMClient._dataAccessProvider.setServerInfo({navi: location.protocol + options.navi +'/navi.xml' });
@@ -987,11 +988,7 @@ module RongIMLib {
         }
  
         getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["number", "string", "object"], "getAgoraDynamicKey", false, arguments);
-            var modules = new RongIMClient.Protobuf.VoipDynamicInput();
-            modules.setEngineType(engineType);
-            modules.setChannelName(channelName);
-            RongIMClient.bridge.queryMsg(32, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, RongIMClient.logCallback(callback, "getAgoraDynamicKey"), "VoipDynamicOutput");
+            RongIMClient._dataAccessProvider.getAgoraDynamicKey(engineType, channelName, callback);
         }
 
         /**
@@ -1185,7 +1182,7 @@ module RongIMLib {
          * @param  {MessageContent}          content          [description]
          * @param  {ResultCallback<Message>} callback         [description]
          */
-        insertMessage(conversationType: ConversationType, targetId: string, senderUserId: string, content: Message, callback: ResultCallback<Message>) {
+        insertMessage(conversationType: ConversationType, targetId: string, content: Message, callback: ResultCallback<Message>) {
             RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, content, RongIMClient.logCallback(callback, "insertMessage"));
         }
         /**
@@ -1827,6 +1824,10 @@ module RongIMLib {
                 return;
             }
             RongIMClient._dataAccessProvider.joinChatRoom(chatroomId, messageCount, RongIMClient.logCallback(callback, "joinChatRoom"));
+        }
+
+        setDeviceInfo(device: any):void{
+            RongIMClient._dataAccessProvider.setDeviceInfo(device);
         }
 
         setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void{

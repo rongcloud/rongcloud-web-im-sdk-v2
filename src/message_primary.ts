@@ -359,8 +359,10 @@ module RongIMLib {
     export class AcceptMessage implements MessageContent {
         messageName: string = "AcceptMessage";
         callId: string;
+        mediaId: string;
         mediaType: VoIPMediaType;
         constructor(message: any) {
+            this.mediaId = message.mediaId;
             this.callId = message.callId;
             this.mediaType = message.mediaType;
         }
@@ -420,6 +422,7 @@ module RongIMLib {
 
     export class InviteMessage implements MessageContent {
         messageName: string = "InviteMessage";
+        mediaId: string;
         callId: string;
         engineType: number;
         channelInfo: ChannelInfo;
@@ -427,6 +430,7 @@ module RongIMLib {
         inviteUserIds: string[];
         extra: string;
         constructor(message: any) {
+            this.mediaId = message.mediaId;
             this.callId = message.callId;
             this.engineType = message.engineType;
             this.channelInfo = message.channelInfo;
@@ -463,6 +467,7 @@ module RongIMLib {
         extra: string;
         inviteUserIds: string[];
         existedMemberStatusList: string[];
+        existedUserPofiles: any;
         constructor(message: any) {
             this.modifyMemType = message.modifyMemType;
             this.callId = message.callId;
@@ -473,6 +478,7 @@ module RongIMLib {
             this.extra = message.extra;
             this.inviteUserIds = message.inviteUserIds;
             this.existedMemberStatusList = message.existedMemberStatusList;
+            this.existedUserPofiles = message.existedUserPofiles;
         }
         encode() {
             return JSON.stringify(ModelUtil.modelClone(this));

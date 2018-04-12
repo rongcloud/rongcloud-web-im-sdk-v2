@@ -477,7 +477,7 @@ module RongIMLib {
                 target = this.userId;
             } else {
                 //聊天室消息
-                target = chrmId || me.chatroomId;
+                target = temp.chrmId || me.chatroomId;
                 time = RongIMClient._memoryStore.lastReadTime.get(target + Bridge._client.userId + "CST") || 0;
                 modules = new RongIMClient.Protobuf.ChrmPullMsg();
                 modules.setCount(0);
@@ -543,7 +543,7 @@ module RongIMLib {
             }, "DownStreamMessages");
         }
         syncTime(_type?: any, pullTime?: any, chrmId?: string, offlineMsg?: boolean) {
-            this.SyncTimeQueue.push({ type: _type, pulltime: pullTime });
+            this.SyncTimeQueue.push({ type: _type, pulltime: pullTime, chrmId: chrmId });
             //如果队列中只有一个成员并且状态已经完成就执行invoke方法
             if (this.SyncTimeQueue.length == 1 && this.SyncTimeQueue.state == "complete") {
                 this.invoke(!_type, chrmId, offlineMsg);
@@ -632,7 +632,7 @@ module RongIMLib {
             }
         }
 
-        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean, leftCount?: number): void {
+        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean, leftCount?: number, isSync?: boolean): void {
             //实体对象
             var entity: any,
                 //解析完成的消息对象
@@ -710,24 +710,22 @@ module RongIMLib {
                 return;
             }
 
+            var isSend = (message.messageDirection == RongIMLib.MessageDirection.SEND);
+            if (isSend) {
+                var storageProvider = RongIMLib.RongIMClient._storageProvider;
+                var userId = RongIMLib.Bridge._client.userId;
+                var lastSentTime = storageProvider.getItem('last_sentTime_' + userId) || 0;
+                if (message.sentTime <= lastSentTime && !isSync) {
+                    return;
+                }
+                
+            }
+
             // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳 
             // key：'converST_' + 当前用户 + conversationType + targetId
             // RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + message.conversationType + message.targetId, message.sentTime);
               
             var isPersited = (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0);  
-            // if (message.conversationType != ConversationType.CHATROOM) {
-            //     var stKey: string = 'converST_' + Bridge._client.userId + message.conversationType + message.targetId;
-            //     var stValue = RongIMClient._memoryStore.lastReadTime.get(stKey);
-            //     if (stValue) {
-            //         if (message.sentTime > stValue && isPersited) {
-            //             RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
-            //         } else {
-            //             return;
-            //         }
-            //     } else {
-            //         RongIMClient._memoryStore.lastReadTime.set(stKey, message.sentTime);
-            //     } 
-            // }
            
             if (isPersited) {
                 RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
@@ -910,7 +908,9 @@ module RongIMLib {
                         item.Callback.process(msg.getStatus() || 0, msg.getMessageUId(), msg.getTimestamp(), item.Message, msg.getMessageId());
                         delete Bridge._client.handler.map[msg.getMessageId()];
                     } else {
-                        Bridge._client.handler.onReceived(Bridge._client.handler.syncMsgMap[msg.messageId], msg);
+                       var userId = RongIMLib.Bridge._client.userId;
+                        RongIMLib.RongIMClient._storageProvider.setItem('last_sentTime_' + userId, msg.timestamp);
+                        Bridge._client.handler.onReceived(Bridge._client.handler.syncMsgMap[msg.messageId], msg, null, null, true);
                         delete Bridge._client.handler.syncMsgMap[msg.getMessageId()];
                     }
                     break;
