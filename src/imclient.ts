@@ -222,8 +222,8 @@ module RongIMLib {
                 CommandNotificationMessage: { objectName: "RC:CmdNtf", msgTag: new MessageTag(true, true) },
                 PublicServiceRichContentMessage: { objectName: "RC:PSImgTxtMsg", msgTag: new MessageTag(true, true) },
                 PublicServiceMultiRichContentMessage: { objectName: "RC:PSMultiImgTxtMsg", msgTag: new MessageTag(true, true) },
-                JrmfReadPacketMessage : { objectName: "RCJrmf:RpMsg", msgTag: new MessageTag(true, true) },
-                JrmfReadPacketOpenedMessage : { objectName: "RCJrmf:RpOpendMsg", msgTag: new MessageTag(true, true) },
+                JrmfRedPacketMessage : { objectName: "RCJrmf:RpMsg", msgTag: new MessageTag(true, true) },
+                JrmfRedPacketOpenedMessage : { objectName: "RCJrmf:RpOpendMsg", msgTag: new MessageTag(true, true) },
                 GroupNotificationMessage: { objectName: "RC:GrpNtf", msgTag: new MessageTag(false, true) },
 
                 CommandMessage: { objectName: "RC:CmdMsg", msgTag: new MessageTag(false, false) },
@@ -289,8 +289,8 @@ module RongIMLib {
                 InviteMessage: "InviteMessage",
                 MediaModifyMessage: "MediaModifyMessage",
                 MemberModifyMessage: "MemberModifyMessage",
-                JrmfReadPacketMessage: "JrmfReadPacketMessage",
-                JrmfReadPacketOpenedMessage: "JrmfReadPacketOpenedMessage",
+                JrmfRedPacketMessage: "JrmfRedPacketMessage",
+                JrmfRedPacketOpenedMessage: "JrmfRedPacketOpenedMessage",
                 GroupNotificationMessage: "GroupNotificationMessage",
                 PublicServiceRichContentMessage: "PublicServiceRichContentMessage",
                 PublicServiceMultiRichContentMessage: "PublicServiceMultiRichContentMessage",
@@ -830,6 +830,10 @@ module RongIMLib {
             RongIMClient.MessageParams[messageType] = { objectName: objectName, msgTag: messageTag };
         }
 
+        setMessageTypes(types: any):any{
+            types = types || {};
+            RongIMClient._dataAccessProvider.setMessageTypes(types);
+        }
         /** 
          * 设置连接状态变化的监听器。
          *
@@ -1021,6 +1025,10 @@ module RongIMLib {
 
         updateMessage(message: Message, callback?: ResultCallback<Message>) {
             RongIMClient._dataAccessProvider.updateMessage(message, RongIMClient.logCallback(callback, "updateMessage"));
+        }
+
+        clearData():boolean{
+            return RongIMClient._dataAccessProvider.clearData();
         }
 
         clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {

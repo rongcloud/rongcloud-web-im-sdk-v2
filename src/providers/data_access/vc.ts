@@ -80,6 +80,9 @@ module RongIMLib {
             serverConf = serverConf || {};
             var openmp: boolean =  !!serverConf.openMp;
             var openus: boolean = !!serverConf.openUS;
+            if (serverConf.type) {
+                this.addon.setEnvironment(true);
+            }
             this.addon.connectWithToken(token, userId, serverConf.serverList, openmp, openus);
         }
 
@@ -101,6 +104,11 @@ module RongIMLib {
             this.addon.setOnReceiveStatusListener();
             this.addon.setConnectionStatusListener();
             this.addon.setOnReceiveMessageListener();
+        }
+
+        clearData():boolean{
+           this.useConsole && console.log("clearData");
+           return this.addon.clearData();
         }
 
         setConnectionStatusListener(listener: ConnectionStatusListener): void {
@@ -187,7 +195,13 @@ module RongIMLib {
                 }
                 localCount = leftCount;
                 setTimeout(function(){
-                    listener.onReceived(message, leftCount);
+                    var voipMsgTypes = ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'];
+                    var isVoIPMsg = voipMsgTypes.indexOf(message.messageType) > -1;         
+                    if (isVoIPMsg) {
+                        RongIMClient._voipProvider && RongIMClient._voipProvider.onReceived(message);
+                    }else{
+                        listener.onReceived(message, leftCount);
+                    }
                 });
             });
         }
@@ -256,11 +270,13 @@ module RongIMLib {
                 isGetHiddenConvers = typeof isGetHiddenConvers === 'boolean' ? isGetHiddenConvers : false;
                 for (let i = 0, len = list.length; i < len; i++) {
                     var tmpObj = list[i].obj,obj:any = JSON.parse(tmpObj);
-                    if(obj.isHidden == 1 && isGetHiddenConvers) {
-                        continue;
+                    if (obj != "") {
+                        if(obj.isHidden == 1 && isGetHiddenConvers) {
+                            continue;
+                        }
+                        convers[index] = me.buildConversation(tmpObj);
+                        index++;
                     }
-                    convers[index] = me.buildConversation(tmpObj);
-                    index++;
                 }
                 convers.reverse(); 
                 callback.onSuccess(convers);
@@ -410,7 +426,46 @@ module RongIMLib {
             typeMapping[objectName] = messageType;
         }
 
+        setMessageTypes(messages: any):void{
+          var types:any = [];
+  
+          var getProtos = function(proto: any){
+            var protos:any = [];
+            for(var p in proto){
+              protos.push(p);
+            }
+            return protos;
+          };
+          //转换消息为自定义消息参数格式
+          for(var name in messages){
+            var message = messages[name];
+            
+            var proto = message.proto;
+            var protos = getProtos(proto);
 
+            var flag = message.flag || 3;
+            var tag = MessageTag.getTagByStatus(flag);
+            flag = new RongIMLib.MessageTag(tag.isCounted, tag.isPersited);
+            types.push({
+              type: name,
+              name: message.name,
+              flag: flag,
+              protos: protos
+            });
+          }
+
+          var register = function(message:any){
+            var type = message.type;
+            var name = message.name;
+            var flag = message.flag;
+            var protos = message.protos;
+            RongIMClient.registerMessageType(type, name, flag, protos);
+          };
+          for(var i = 0, len = types.length; i < len; i++){
+            var message:any = types[i];
+            register(message);
+          }
+        }
 
         addMessage(conversationType: ConversationType, targetId: string, message: any, callback?: ResultCallback<Message>): void {
             this.useConsole && console.log("addMessage");
@@ -503,7 +558,6 @@ module RongIMLib {
                 list.reverse();
                 for (var i = 0, len = list.length; i < len; i++) {
                     var message = me.buildMessage(list[i].obj);
-                    message.sentStatus = RongIMLib.SentStatus.READ;
                     msgs[i] = message;
                 }
                 callback.onSuccess(msgs, len == count);

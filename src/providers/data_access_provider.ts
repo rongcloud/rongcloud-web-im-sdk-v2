@@ -162,5 +162,9 @@ module RongIMLib {
         getPublicServiceProfile(publicServiceType: number, publicServiceId: string, callback:any): void;
 
         setDeviceInfo(device: any):void;
+
+        setMessageTypes(messages: any):void;
+
+        clearData():boolean;
     }
 }

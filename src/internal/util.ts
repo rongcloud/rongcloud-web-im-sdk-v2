@@ -36,8 +36,8 @@ var typeMapping: { [s: string]: any } = {
     "RC:SRSMsg": "SyncReadStatusMessage",
     "RC:RRReqMsg": "ReadReceiptRequestMessage",
     "RC:RRRspMsg": "ReadReceiptResponseMessage",
-    "RCJrmf:RpMsg": "JrmfReadPacketMessage",
-    "RCJrmf:RpOpendMsg": "JrmfReadPacketOpenedMessage",
+    "RCJrmf:RpMsg": "JrmfRedPacketMessage",
+    "RCJrmf:RpOpendMsg": "JrmfRedPacketOpenedMessage",
     "RCE:UpdateStatus": "RCEUpdateStatusMessage"
 },
     //自定义消息类型

@@ -146,10 +146,12 @@ module RongIMLib {
                             server: servers[i],
                             path: i
                         });
-                        request({
-                            url: server,
-                            time: i * 1000
-                        }, snifferCallback);
+                        if (server) {
+                            request({
+                                url: server,
+                                time: i * 1000
+                            }, snifferCallback);
+                        }
                     }
 
                     totalTimer.resume(function(){

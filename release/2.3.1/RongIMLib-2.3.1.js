@@ -4047,14 +4047,17 @@ var RongIMLib;
                     };
                     var snifferTpl = '//{server}/{path}';
                     for (var i = 0; i < servers.length; i++) {
-                        var server = RongIMLib.RongUtil.tplEngine(snifferTpl, {
-                            server: servers[i],
-                            path: i
-                        });
-                        request({
-                            url: server,
-                            time: i * 1000
-                        }, snifferCallback);
+                        var server = servers[i];
+                        if (server) {
+                            server = RongIMLib.RongUtil.tplEngine(snifferTpl, {
+                                server: server,
+                                path: i
+                            });
+                            request({
+                                url: server,
+                                time: i * 1000
+                            }, snifferCallback);
+                        }
                     }
                     totalTimer.resume(function () {
                         clearHandler();

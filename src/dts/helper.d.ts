@@ -237,5 +237,7 @@ declare interface Addon {
 
     getAccounts(): any;
 
+    clearData():boolean;
+
     clearRemoteHistoryMessages(conversationType: number, targetId:string, timestamp: number, success: Function, error: Function): any;
 }

@@ -874,6 +874,47 @@ module RongIMLib {
             registerMessageTypeMapping[objectName] = messageType;
         }
 
+        setMessageTypes(messages: any):void{
+          var types:any = [];
+  
+          var getProtos = function(proto: any){
+            var protos:any = [];
+            for(var p in proto){
+              protos.push(p);
+            }
+            return protos;
+          };
+          //转换消息为自定义消息参数格式
+          for(var name in messages){
+            var message = messages[name];
+            
+            var proto = message.proto;
+            var protos = getProtos(proto);
+
+            var flag = message.flag || 3;
+            var tag = MessageTag.getTagByStatus(flag);
+            flag = new RongIMLib.MessageTag(tag.isCounted, tag.isPersited);
+            types.push({
+              type: name,
+              name: message.name,
+              flag: flag,
+              protos: protos
+            });
+          }
+
+          var register = function(message:any){
+            var type = message.type;
+            var name = message.name;
+            var flag = message.flag;
+            var protos = message.protos;
+            RongIMClient.registerMessageType(type, name, flag, protos);
+          };
+          for(var i = 0, len = types.length; i < len; i++){
+            var message:any = types[i];
+            register(message);
+          }
+        }
+
         addConversation(conversation: Conversation, callback: ResultCallback<boolean>) {
             var isAdd: boolean = true;
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
@@ -1470,6 +1511,10 @@ module RongIMLib {
 
         setEnvironment(isPrivate: boolean):void{
         
+        }
+
+        clearData():boolean{
+            return true;
         }
         
         getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
