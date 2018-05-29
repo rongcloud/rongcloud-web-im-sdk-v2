@@ -163,7 +163,7 @@ module RongIMLib {
 
         setDeviceInfo(device: any):void;
 
-        setMessageTypes(messages: any):void;
+        registerMessageTypes(messages: any):void;
 
         clearData():boolean;
     }

@@ -2,7 +2,7 @@
     "version": "1.5.3",
     "compilerOptions": {
         "target": "es5",
-        "module": "umd",
+        "module": "amd",
         "declaration": false,
         "noImplicitAny": true,
         "removeComments": true,
@@ -15,7 +15,7 @@
         "suppressImplicitAnyIndexErrors": false,
         "sourceMap": true,
         "rootDir": "./src",
-        "out": "./dist/RongIMLib.js"
+        "out": "./dist/RongIMLib.d.ts"
     },
     "filesGlob": [
         "./dist/*.ts",
@@ -34,7 +34,6 @@
         "./src/extensions/upload/RongUploadLib.ts",
         "./src/extensions/upload/upload.ts",
         "./src/extensions/voices/voice.ts",
-        "./src/extensions/voices/VoiceRecorder.ts",
         "./src/extensions/voip/RongCallLib.ts",
         "./src/imclient.ts",
         "./src/internal/connect_client.ts",
@@ -56,12 +55,9 @@
         "./src/providers/data_access_provider.ts",
         "./src/providers/data_access/server.ts",
         "./src/providers/data_access/vc.ts",
-        "./src/providers/data_access/websql/DBUtil.ts",
-        "./src/providers/data_access/websql/websql.ts",
         "./src/providers/storage_provider.ts",
         "./src/providers/storage/cookie.ts",
         "./src/providers/storage/localstorage.ts",
-        "./src/providers/storage/memory.ts",
         "./src/providers/storage/userDataProvider.ts",
         "./src/providers/upload_provider.ts",
         "./src/util/feature_detector.ts",

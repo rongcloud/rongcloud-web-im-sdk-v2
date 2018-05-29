@@ -874,7 +874,7 @@ module RongIMLib {
             registerMessageTypeMapping[objectName] = messageType;
         }
 
-        setMessageTypes(messages: any):void{
+        registerMessageTypes(messages: any):void{
           var types:any = [];
   
           var getProtos = function(proto: any){

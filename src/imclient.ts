@@ -13,7 +13,7 @@ module RongIMLib {
         private static _instance: RongIMClient;
         static bridge: any;
         static userStatusObserver:RongObserver = null;
-        static sdkver:string = '2.3.1';
+        static sdkver:string = '2.3.2';
         static otherDeviceLoginCount:number = 0;
         static serverStore: any = { index: 0 };
         static getInstance(): RongIMClient {
@@ -80,13 +80,10 @@ module RongIMLib {
             RongIMClient._instance = new RongIMClient();
 
             options = options || {};
-            var protocol: string = "//", wsScheme = 'ws://';
-            var protocols = 'http:,https:';
-            if (protocols.indexOf(location.protocol) == -1) {
-                protocol = 'http://';
-            }
+            var protocol: string = "http://", wsScheme = 'ws://';
             if (location.protocol == 'https:') {
                 wsScheme = 'wss://';
+                protocol = 'https://';
             }
             
             var isPolling = false;
@@ -830,9 +827,9 @@ module RongIMLib {
             RongIMClient.MessageParams[messageType] = { objectName: objectName, msgTag: messageTag };
         }
 
-        setMessageTypes(types: any):any{
+        registerMessageTypes(types: any):any{
             types = types || {};
-            RongIMClient._dataAccessProvider.setMessageTypes(types);
+            RongIMClient._dataAccessProvider.registerMessageTypes(types);
         }
         /** 
          * 设置连接状态变化的监听器。

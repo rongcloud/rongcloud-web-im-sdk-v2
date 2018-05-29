@@ -67,6 +67,8 @@ module RongIMLib {
             var servers = storage.getItem('servers');
             servers = JSON.parse(servers);
 
+            var depend = RongIMClient._memoryStore.depend;
+
             var startConnect = function(host: string){
                 var tpl = '{host}/websocket?appId={appId}&token={token}&sdkVer={sdkVer}&apiVer={apiVer}';
                 that.url = RongUtil.tplEngine(tpl, {
@@ -106,6 +108,8 @@ module RongIMLib {
                             var el = elements[i];
                             document.body.removeChild(el);
                         }
+                        timers.length = 0;
+                        elements.length = 0;
                     };
 
                     var request = function(config: any, callback: Function){
@@ -116,20 +120,20 @@ module RongIMLib {
                             return;
                         }
                         var timer = setTimeout(function(){
-                            var el = document.createElement("script");
-                            el.src = url;
-                            document.body.appendChild(el);
-                            el.onerror = function () {
+                            var xss:any = document.createElement("script");
+                            xss.src = url;
+                            document.body.appendChild(xss);
+                            xss.onload = function () {
                                 if (isFinished) {
                                     return;
                                 }
                                 clearHandler();
                                 isFinished = true;
                                 totalTimer.pause();
-                                var url = el.src;
+                                var url = xss.src;
                                 callback(url);
                             };
-                            elements.push(el);
+                            elements.push(xss);
                         }, time);
                         timers.push(timer);
                     };
@@ -140,11 +144,11 @@ module RongIMLib {
                         startConnect(host);
                     }
 
-                    var snifferTpl = '//{server}/{path}';
+                    var snifferTpl = '{protocol}{server}/ping';
                     for(var i = 0; i < servers.length; i++){
                         var server = RongUtil.tplEngine(snifferTpl, {
-                            server: servers[i],
-                            path: i
+                            protocol: depend.protocol,
+                            server: servers[i]
                         });
                         if (server) {
                             request({
@@ -164,10 +168,9 @@ module RongIMLib {
                     startConnect(host);
                 }
             };
-
-            var depend = RongIMClient._memoryStore.depend;
-            var isPolling = depend.isPolling;
             
+            var isPolling = depend.isPolling;
+             
             var type = isPolling ? 'comet' : 'ws';
             connectMap[type]();
 
