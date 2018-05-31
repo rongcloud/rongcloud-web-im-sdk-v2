@@ -146,11 +146,12 @@ module RongIMLib {
 
                     var snifferTpl = '{protocol}{server}/ping';
                     for(var i = 0; i < servers.length; i++){
-                        var server = RongUtil.tplEngine(snifferTpl, {
-                            protocol: depend.protocol,
-                            server: servers[i]
-                        });
+                        var server = servers[i];
                         if (server) {
+                            server = RongUtil.tplEngine(snifferTpl, {
+                                protocol: depend.protocol,
+                                server: server
+                            });
                             request({
                                 url: server,
                                 time: i * 1000
