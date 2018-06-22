@@ -75,7 +75,7 @@ declare interface Document {
 }
 
 declare interface Addon {
-    initWithAppkey(appKey: string, dbPath?: string): any;
+    initWithAppkey(appKey: string, dbPath?: string, options?:any): any;
 
     connectWithToken(token: string, userId: string, servers?: string, openmp?: boolean, openus?: boolean): number;
 

@@ -1,6 +1,9 @@
 module RongIMLib {
     export class VCDataProvider implements DataAccessProvider {
 
+        // C++ 需要的 SDK 版本号
+        version: string = '2.8.27';
+
         addon: Addon;
 
         messageListener: OnReceiveMessageListener;
@@ -26,7 +29,8 @@ module RongIMLib {
             this.useConsole && console.log("init");
 
             config = config || {};
-            var sdkInfo = this.addon.initWithAppkey(appKey, config.dbPath);
+            config.version = this.version;
+            var sdkInfo = this.addon.initWithAppkey(appKey, config.dbPath, config);
             if (sdkInfo) {
                 sdkInfo = JSON.parse(sdkInfo);
             }
@@ -136,7 +140,7 @@ module RongIMLib {
 
             me.connectListener = listener;
             this.useConsole && console.log("setConnectionStatusListener");
-            me.addon && me.addon.setConnectionStatusListener(function(result: number): void {
+            me.addon && me.addon.setConnectionStatusListener(function(result: any): void {
                 switch (result) {
                     case 10:
                         setTimeout(function(){
@@ -156,12 +160,6 @@ module RongIMLib {
                     case 31011:
                     case 30000:
                     case 30002:
-                    case 30004:
-                    case 30005:
-                    case 30006:
-                    case 30007:
-                    case 30008:
-                    case 30009:
                         setTimeout(function(){
                             listener.onChanged(ConnectionStatus.DISCONNECTED);
                         });
@@ -176,6 +174,11 @@ module RongIMLib {
                     case 6:
                         setTimeout(function(){
                             listener.onChanged(ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT);
+                        });
+                        break;
+                    default:
+                        setTimeout(function(){
+                            listener.onChanged(result);
                         });
                         break;
                 }
