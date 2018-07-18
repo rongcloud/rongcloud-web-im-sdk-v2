@@ -838,8 +838,10 @@ module RongIMLib {
                         sendCallback.onSuccess(msg);
                     });
                 },
-                onError: function(errorCode: ErrorCode) {
+                onError: function(errorCode: ErrorCode, _msg:any) {
                     msg.sentStatus = SentStatus.FAILED;
+                    msg.messageUId = _msg.messageUId;
+                    msg.sentTime = _msg.sentTime;
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
                         RongIMClient._memoryStore.converStore.latestMessage = msg;
                     }

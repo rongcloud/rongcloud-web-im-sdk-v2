@@ -21,4 +21,4 @@
         global.RongIMLib = tempIMLib;
         global.RongIMClient = tempClient;
     }
-})(this, function(){
+})(window, function(){
