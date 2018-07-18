@@ -214,17 +214,41 @@ module RongIMLib {
             if(count <= 1) {
                 throw new Error("the count must be greater than 1.");
             }
+            
+            var getKey = function(){
+                return [conversationType, targetId].join('');
+            };
+            var key = getKey();
+            if (!RongUtil.isNumber(timestamp)) {
+                timestamp = RongIMClient._memoryStore.lastReadTime.get(key);
+            }
+            var memoryStore = RongIMClient._memoryStore;
+            var historyMessageLimit = memoryStore.historyMessageLimit;
+            /* 
+                limit 属性:
+                var limit = {
+                    time: '时间戳, 最后一次拉取时间',
+                    hasMore: '是否还有历史消息, bool 值'
+                };
+            */
+            var limit:any = historyMessageLimit.get(key) || {};
+            var hasMore = limit.hasMore;
+            var isFecth = (hasMore || limit.time != timestamp);
+            if (!isFecth) {
+                return callback.onSuccess([], hasMore);
+            }
             var modules = new RongIMClient.Protobuf.HistoryMessageInput(), self = this;
             modules.setTargetId(targetId);
-            if (timestamp === 0 || timestamp > 0) {
-                modules.setDataTime(timestamp);
-            } else {
-                modules.setDataTime(RongIMClient._memoryStore.lastReadTime.get(conversationType + targetId));
-            }
+            modules.setDataTime(timestamp);
             modules.setSize(count);
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function(data: any) {
-                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
+                    var fetchTime = MessageUtil.int64ToTimestamp(data.syncTime);
+                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, fetchTime);
+                    historyMessageLimit.set(key, {
+                        hasMore: !!data.hasMsg,
+                        time: fetchTime
+                    });
                     var list = data.list.reverse(), tempMsg: Message = null, tempDir: any;
                     var read = RongIMLib.SentStatus.READ;
                     if (RongUtil.supportLocalStorage()) {

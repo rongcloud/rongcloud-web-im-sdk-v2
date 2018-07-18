@@ -57,7 +57,7 @@ module RongIMLib {
             var token = encodeURIComponent(self.token);
             var sdkVer = self.sdkVer;
             var apiVer = self.apiVer;
-            
+
             this.self = self;
             this.socket = Socket.getInstance().createServer();
 
@@ -160,6 +160,7 @@ module RongIMLib {
                     }
 
                     totalTimer.resume(function(){
+                        Navigation.clear();
                         clearHandler();
                         that.socket.fire("StatusChanged", ConnectionStatus.NETWORK_UNAVAILABLE);
                     });
@@ -169,9 +170,9 @@ module RongIMLib {
                     startConnect(host);
                 }
             };
-            
+
             var isPolling = depend.isPolling;
-             
+
             var type = isPolling ? 'comet' : 'ws';
             connectMap[type]();
 
@@ -187,7 +188,7 @@ module RongIMLib {
                 setTimeout(function(){
                     StatusEvent.onChanged(code);
                 });
-                
+
                 var isDisconnected = (code == ConnectionStatus.DISCONNECTED);
                 if (isDisconnected) {
                     self.clearHeartbeat();
@@ -200,7 +201,7 @@ module RongIMLib {
                    RongIMClient.otherDeviceLoginCount++;
                 }
             });
-            
+
             //注册message观察者
             this.socket.on("message", self.handler.handleMessage);
             //注册断开连接观察者
@@ -509,7 +510,7 @@ module RongIMLib {
 
                     //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
                     //offlineMsg && (RongIMClient._memoryStore.isSyncRemoteConverList = true);
-                    
+
                     me.SyncTimeQueue.state = "complete";
                     me.invoke(isPullMsg, target);
                     //把拉取到的消息逐条传给消息监听器
@@ -526,7 +527,7 @@ module RongIMLib {
                                     me.cacheMessageIds.length = 20;
                                 }
                             }
-                        } 
+                        }
                     }
 
                     var isPullFinished = collection.finished;
@@ -696,7 +697,7 @@ module RongIMLib {
                 message.targetId = content.targetId;
                 message.messageId = null;
             }
-            
+
             if (pubAckItem) {
                 message.messageUId = pubAckItem.getMessageUId();
                 message.sentTime = pubAckItem.getTimestamp();
@@ -714,15 +715,15 @@ module RongIMLib {
                 if (message.sentTime <= lastSentTime && !isSync) {
                     return;
                 }
-                
+
             }
 
-            // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳 
+            // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳
             // key：'converST_' + 当前用户 + conversationType + targetId
             // RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + message.conversationType + message.targetId, message.sentTime);
-              
-            var isPersited = (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0);  
-           
+
+            var isPersited = (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0);
+
             if (isPersited) {
                 RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
                     onSuccess: function(con: Conversation) {

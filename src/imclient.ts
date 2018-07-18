@@ -170,6 +170,7 @@ module RongIMLib {
                 token: "",
                 callback: null,
                 lastReadTime: new LimitableMap(),
+                historyMessageLimit: new MemoryCache(),
                 conversationList: [],
                 appKey: appKey,
                 publicServiceMap: new PublicServiceMap(),

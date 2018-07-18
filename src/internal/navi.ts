@@ -84,7 +84,7 @@ module RongIMLib {
             }
             Navigation.clear();
             //导航信息，切换Url对象的key进行线上线下测试操作
-            var xss = document.createElement("script");
+            var xss:any = document.createElement("script");
             //进行jsonp请求
             var depend = RongIMClient._memoryStore.depend;
             var domain = depend.navi;
