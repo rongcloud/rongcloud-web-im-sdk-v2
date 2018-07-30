@@ -165,21 +165,113 @@
         "u1F30F": { "en": "Globe", "zh": "地球", "tag": "\uD83C\uDF0F", "position": "-1225px 0px" }
     };
 
-    var Configs = {
+    var Config = {
         url: getOnlineImagePath(),
         size: DefaultSize,
         lang: DefaultLang,
         reg: UnicodeReg
     };
 
-    var Utils = getUtils();
-    var CheckParam = getCheckParam();
+    var Utils = {
+        extend: function() {
+            if (arguments.length === 0) {
+                return;
+            }
+            var obj = arguments[0];
+            for (var i = 1, len = arguments.length; i < len; i ++) {
+                var other = arguments[i];
+                for (var item in other) {
+                    obj[item] = other[item];
+                }
+            }
+            return obj;
+        },
+        filter: function(arr, func) {
+            var array = [];
+            for (var i = 0; i < arr.length; i++) {
+                var value = arr[i];
+                if (func(value)) {
+                    array.push(value);
+                }
+            }
+            return array;
+        },
+        cutString: function(string, start, length) {
+            var array = [];
+            for (var i = start; i < start + length; i++) {
+                array.push(string.charAt(i));
+            }
+            return array.join('');
+        },
+        map: function(arr, func) {
+            var tempArr = arr.concat([]);
+            for (var i = 0; i < tempArr.length; i++) {
+                var value = tempArr[i];
+                if (func && typeof func === "function") {
+                    tempArr[i] = func(value);
+                }
+            }
+            return tempArr;
+        },
+        indexOf: function(array, value) {
+            if (typeof array === "string") {
+                for (var i = 0; i <= array.length - value.length; i++) {
+                    var string = Utils.cutString(array, i, value.length);
+                    if (array.charAt(i) == value.charAt(0) && Utils.cutString(array, i, value.length) == value) {
+                        return i;
+                    }
+                }
+            } else if (Object.prototype.toString.call(array) === '[object Array]') {
+                for (var i = 0; i < array.length; i++) {
+                    var item = array[i];
+                    if (item == value) {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        },
+        getDom: function(html) {
+            var div = document.createElement("div");
+            div.innerHTML = html;
+            return div.childNodes[0];
+        }
+    };
+
+    var CheckParam = {
+        getType: function(str) {
+            /* IE下不准确问题 */
+            if (str === undefined) {
+                return "undefined";
+            }
+            if (str === null) {
+                return "null";
+            }
+            var temp = Object.prototype.toString.call(str).toLowerCase();
+            return temp.slice(8, temp.length - 1);
+        },
+        check: function(typeList, funcName, params) {
+            params = params || [];
+            var maxCount = typeList.length;
+            if (params.length > maxCount) {
+                params.length = maxCount;
+            }
+            for (var i = 0; i < typeList.length; i++) {
+                var paramType = this.getType(params[i]);
+                var sucType = typeList[i];
+                if (!new RegExp(paramType).test(sucType)) {
+                    var msgTemp = "第{{index}}个参数错误, 传入参数类型为: {{errType}}, 应传参数类型为: {{sucType}}, 错误所在位置为: {{funcName}}";
+                    var msg = msgTemp.replace(/{{index}}/g, i + 1).replace(/{{errType}}/g, paramType).replace(/{{sucType}}/g, sucType).replace(/{{funcName}}/g, funcName);
+                    console.error(msg);
+                }
+            }
+        }
+    };
 
     var init = function(option) {
-        CheckParam.check(['object|undefined'], 'init', arguments);
         addBaseCss();
         option = option || {};
-        Configs = Utils.extend(Configs, option);
+        Config = Utils.extend(Config, option);
         extendEmojis(option.extension);
         setEmojiReg();
         setEmojiList();
@@ -196,12 +288,9 @@
         CheckParam.check(['string', 'regexp|null|undefined'], 'emojiToSymbol', arguments);
         content = unicodeToEmoji(content, reg);
         return content.replace(EmojiReg, function(tag) {
-            var lang = Configs.lang;
+            var lang = Config.lang;
             var detail = getDetail('tag', tag);
-            var symbol = tag;
-            if (detail) {
-                symbol = '[' + detail[lang] + ']';
-            }
+            symbol = detail ? '[' + detail[lang] + ']' : tag;
             return func ? func(symbol) : symbol;
         });
     };
@@ -217,12 +306,9 @@
         text = unicodeToEmoji(text);
         var emojiText = text.replace(/\[([^\[\]]+?)\]/g, function(symbol) {
             symbol = symbol.substr(1, symbol.length - 2);
-            var lang = Configs.lang;
+            var lang = Config.lang;
             var detail = getDetail(lang, symbol);
-            if (detail) {
-                return detail.tag;
-            }
-            return '[' + symbol + ']';
+            return detail ? detail.tag : '[' + symbol + ']';
         });
         return emojiText.replace(EmojiReg, function(tag) {
             return func ? func(tag) : tag;
@@ -288,17 +374,17 @@
     }
 
     function getEmojiHTML(item, sizePx) {
-        var size = sizePx || Configs.size;
+        var size = sizePx || Config.size;
         var position = getBgPosition(item.position, size);
         if (isIE8) {
             position = item.position;
-            size = Configs.size;
+            size = Config.size;
         }
         var emojiObj = {
             size: size,
             position: position,
-            background: item.background || Configs.url,
-            name: item[Configs.lang],
+            background: item.background || Config.url,
+            name: item[Config.lang],
             tag: item.tag
         };
         var style = "width: {{size}}px; height: {{size}}px; line-height: {{size}}px; background-image: url({{background}}); background-position: {{position}}; background-size: auto {{size}}px; overflow: hidden; vertical-align: middle; font-size: 0 !important;";
@@ -311,7 +397,7 @@
     }
 
     function getBgPosition(position, sizePx) {
-        var size = sizePx || Configs.size;
+        var size = sizePx || Config.size;
         var baseSize = isIE8 ? 24 : 25;
         var scale = size / baseSize;
         position = position.split(" ");
@@ -328,7 +414,7 @@
      * @return {string}          转化后的字符串
      */
     function unicodeToEmoji(content, reg) {
-        reg = reg || Configs.reg;
+        reg = reg || Config.reg;
         return content.replace(reg, function(unicode) {
             return calculateUTF(unicode);
         });
@@ -347,11 +433,7 @@
             }
             return '0x' + code;
         });
-        var codes = [];
-        for (var i = 0; i < 10; i++) {
-            codes[i] = unicodes[i] || 0;
-        }
-        return String.fromCodePoint(codes[0], codes[1], codes[2], codes[3], codes[4], codes[5], codes[6], codes[7], codes[8], codes[9]);
+        return String.RongFromCodePoint(unicodes);
     }
 
     function extendEmojis(extension) {
@@ -360,7 +442,7 @@
             return;
         }
         var dataSource = extension.dataSource;
-        var url = extension.url || Configs.url;
+        var url = extension.url || Config.url;
         for (var key in dataSource) {
             var detail = dataSource[key];
             EmojiFactory[key] = detail;
@@ -372,19 +454,18 @@
         EmojiList.length = 0;
         for (var unicode in EmojiFactory) {
             var detail = EmojiFactory[unicode];
-            if (!detail.tag) {
-                continue;
+            if (detail.tag) {
+                var lang = Config.lang;
+                var html = getHTMLByEmoji(detail.tag);
+                var node = Utils.getDom(html);
+                var symbol = detail[lang];
+                EmojiList.push({
+                    unicode: unicode,
+                    symbol: '[' + symbol + ']',
+                    emoji: detail.tag,
+                    node: node
+                });
             }
-            var lang = Configs.lang;
-            var html = getHTMLByEmoji(detail.tag);
-            var node = Utils.getDom(html);
-            var symbol = detail[lang];
-            EmojiList.push({
-                unicode: unicode,
-                symbol: '[' + symbol + ']',
-                emoji: detail.tag,
-                node: node
-            });
         }
     }
 
@@ -451,74 +532,6 @@
         }
     }
 
-    function getUtils() {
-        return {
-            extend: function() {
-                if (arguments.length === 0) {
-                    return;
-                }
-                var obj = arguments[0];
-                for (var i = 1, len = arguments.length; i < len; i ++) {
-                    var other = arguments[i];
-                    for (var item in other) {
-                        obj[item] = other[item];
-                    }
-                }
-                return obj;
-            },
-            filter: function(arr, func) {
-                var array = [];
-                for (var i = 0; i < arr.length; i++) {
-                    var value = arr[i];
-                    if (func(value)) {
-                        array.push(value);
-                    }
-                }
-                return array;
-            },
-            cutString: function(string, start, length) {
-                var array = [];
-                for (var i = start; i < start + length; i++) {
-                    array.push(string.charAt(i));
-                }
-                return array.join('');
-            },
-            map: function(arr, func) {
-                var tempArr = arr.concat([]);
-                for (var i = 0; i < tempArr.length; i++) {
-                    var value = tempArr[i];
-                    if (func && typeof func === "function") {
-                        tempArr[i] = func(value);
-                    }
-                }
-                return tempArr;
-            },
-            indexOf: function(array, value) {
-                if (typeof array === "string") {
-                    for (var i = 0; i <= array.length - value.length; i++) {
-                        var string = Utils.cutString(array, i, value.length);
-                        if (array.charAt(i) == value.charAt(0) && Utils.cutString(array, i, value.length) == value) {
-                            return i;
-                        }
-                    }
-                } else if (Object.prototype.toString.call(array) === '[object Array]') {
-                    for (var i = 0; i < array.length; i++) {
-                        var item = array[i];
-                        if (item == value) {
-                            return i;
-                        }
-                    }
-                }
-                return -1;
-            },
-            getDom: function(html) {
-                var div = document.createElement("div");
-                div.innerHTML = html;
-                return div.childNodes[0];
-            }
-        };
-    }
-
     function addBaseCss() {
         var baseCss = ".rong-emoji-content { display: inline-block; overflow: hidden; font-size: 20px !important; text-align: center; vertical-align: middle; overflow: hidden;}";
         var style = document.createElement("style");
@@ -533,40 +546,7 @@
         }
     }
 
-    function getCheckParam() {
-        return {
-            getType: function(str) {
-                /* IE下不准确问题 */
-                if (str === undefined) {
-                    return "undefined";
-                }
-                if (str === null) {
-                    return "null";
-                }
-                var temp = Object.prototype.toString.call(str).toLowerCase();
-                return temp.slice(8, temp.length - 1);
-            },
-            check: function(typeList, funcName, params) {
-                params = params || [];
-                var maxCount = typeList.length;
-                if (params.length > maxCount) {
-                    params.length = maxCount;
-                }
-                for (var i = 0; i < typeList.length; i++) {
-                    var paramType = this.getType(params[i]);
-                    var sucType = typeList[i];
-                    if (!new RegExp(paramType).test(sucType)) {
-                        var msgTemp = "第{{index}}个参数错误, 传入参数类型为: {{errType}}, 应传参数类型为: {{sucType}}, 错误所在位置为: {{funcName}}";
-                        var msg = msgTemp.replace(/{{index}}/g, i + 1).replace(/{{errType}}/g, paramType).replace(/{{sucType}}/g, sucType).replace(/{{funcName}}/g, funcName);
-                        console.error(msg);
-                    }
-                }
-            }
-        };
-    }
-
     /*! http://mths.be/fromcodepoint v0.1.0 by @mathias,   fromCodePoint兼容 */
-    if (!String.fromCodePoint) {
       (function() {
         var defineProperty = (function() {
           // IE 8 only supports `Object.defineProperty` on DOM elements
@@ -579,19 +559,19 @@
         }());
         var stringFromCharCode = String.fromCharCode;
         var floor = Math.floor;
-        var fromCodePoint = function() {
+        var RongFromCodePoint = function(codeList) {
           var MAX_SIZE = 0x4000;
           var codeUnits = [];
           var highSurrogate;
           var lowSurrogate;
           var index = -1;
-          var length = arguments.length;
+          var length = codeList.length || [];
           if (!length) {
             return '';
           }
           var result = '';
           while (++index < length) {
-            var codePoint = Number(arguments[index]);
+            var codePoint = Number(codeList[index]);
             if (
               !isFinite(codePoint) ||       // `NaN`, `+Infinity`, or `-Infinity`
               codePoint < 0 ||              // not a valid Unicode code point
@@ -617,16 +597,15 @@
           return result;
         };
         if (defineProperty) {
-          defineProperty(String, 'fromCodePoint', {
-            'value': fromCodePoint,
+          defineProperty(String, 'RongFromCodePoint', {
+            'value': RongFromCodePoint,
             'configurable': true,
             'writable': true
           });
         } else {
-          String.fromCodePoint = fromCodePoint;
+          String.RongFromCodePoint = RongFromCodePoint;
         }
       }());
-    }
 
     return {
         isSupportEmoji: isSupportEmoji,
