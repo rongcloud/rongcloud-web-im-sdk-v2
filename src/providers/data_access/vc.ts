@@ -406,8 +406,13 @@ module RongIMLib {
             var msg: string = me.addon.sendMessage(conversationType,
                 targetId, RongIMClient.MessageParams[messageContent.messageName].objectName, messageContent.encode(), pushText || "", appData || "", function(progress: any) {
                 },
-                function(message: string) {
-                    sendCallback.onSuccess(me.buildMessage(message));
+                function(message: string, code: number) {
+                    var msg = me.buildMessage(message)
+                    var errorCode = ErrorCode.SENSITIVE_REPLACE;
+                    if(code == errorCode){
+                        return  sendCallback.onError(errorCode, msg);
+                    }
+                    sendCallback.onSuccess(msg);
                 },
                 function(message: string, code: ErrorCode) {
                     sendCallback.onError(code, me.buildMessage(message));
