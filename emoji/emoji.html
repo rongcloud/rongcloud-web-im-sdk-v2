@@ -126,7 +126,7 @@ th {
 
 </style>
     
-<script src="emoji.js"></script> 
+<script src="release/emoji-2.2.7.min.js"></script> 
 
 <h1>Emoji</h1>
 
@@ -317,19 +317,26 @@ function setupExpand(expandId) {
 
     var config = {
         size: 24,
-        lang: 'zh',
-        extension: {
-            dataSource: {
-                u1F914: {
-                    zh: '思考',
-                    en: 'thinking face',
-                    tag: '🤔',
-                    position: '0px 0px'
-                }
-            },
-            url: 'https://emojipedia-us.s3.amazonaws.com/thumbs/160/apple/96/thinking-face_1f914.png'
-        }
+        lang: 'zh'
     };
+
+    // 扩展表情
+    // var config = {
+    //     size: 28,
+    //     url: './emojis.png',
+    //     lang: 'zh',
+    //     extension: {
+    //         dataSource: {
+    //             u1F914: {
+    //                 zh: '思考',
+    //                 en: 'thinking face',
+    //                 tag: '🤔',
+    //                 position: '0px 0px'
+    //             }
+    //         },
+    //         url: 'https://cdn.ronghub.com/thinking-face.png'
+    //     }
+    // };
 
     RongIMEmoji.init(config);
     appendChild('init: 初始化RongIMEmoji');
