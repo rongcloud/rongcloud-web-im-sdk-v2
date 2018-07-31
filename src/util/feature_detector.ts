@@ -12,7 +12,7 @@ module RongIMLib {
                     script.src = url;
                     this.head.appendChild(script);
                     script.onload = script.onreadystatechange = function(){
-                        var isLoaded = (!this.readState || this.readyState == 'loaded' || this.readyState == 'complete');
+                        var isLoaded = (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete');
                         if (isLoaded) {
                             // 防止 IE6、7 下偶发触发两次 loaded
                             script.onload = script.onreadystatechange = null;

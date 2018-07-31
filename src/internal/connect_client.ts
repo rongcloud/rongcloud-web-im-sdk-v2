@@ -144,13 +144,14 @@ module RongIMLib {
                         startConnect(host);
                     }
 
-                    var snifferTpl = '{protocol}{server}/ping';
+                    var snifferTpl = '{protocol}{server}/ping?r={random}';
                     for(var i = 0; i < servers.length; i++){
                         var server = servers[i];
                         if (server) {
                             server = RongUtil.tplEngine(snifferTpl, {
                                 protocol: depend.protocol,
-                                server: server
+                                server: server,
+                                random: Date.now()
                             });
                             request({
                                 url: server,

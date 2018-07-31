@@ -76,9 +76,7 @@ module RongIMLib {
                     RongIMClient._memoryStore.voipStategy = storage.getItem("voipStrategy");
                     var openMp = storage.getItem('openMp' + uId);
                     RongIMClient._memoryStore.depend.openMp = openMp;
-                    setTimeout(function(){
-                        _onsuccess()
-                    }, 300);
+                    _onsuccess()
                     return;
                 }
             }
