@@ -874,7 +874,7 @@ module RongIMLib {
             }
         }
 
-        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void {
+        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any, searchProps: string[]): void {
             if (!messageType) {
                 throw new Error("messageType can't be empty,postion -> registerMessageType");
             }

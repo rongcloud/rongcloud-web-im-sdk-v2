@@ -825,8 +825,8 @@ module RongIMLib {
          * 自定义消息声明需放在执行顺序最高的位置（在RongIMClient.init(appkey)之后即可）
          * @param objectName  消息内置名称
          */
-        static registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void {
-            RongIMClient._dataAccessProvider.registerMessageType(messageType, objectName, messageTag, messageContent);
+        static registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: string[], searchProps: string[]): void {
+            RongIMClient._dataAccessProvider.registerMessageType(messageType, objectName, messageTag, messageContent, searchProps);
             RongIMClient.RegisterMessage[messageType].messageName = messageType;
             RongIMClient.MessageType[messageType] = messageType;
             RongIMClient.MessageParams[messageType] = { objectName: objectName, msgTag: messageTag };

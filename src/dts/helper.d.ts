@@ -145,7 +145,7 @@ declare interface Addon {
 
     sendMessage(conversationType: RongIMLib.ConversationType, targetId: string, objectname: string, messageContent: string, pushText: string, appData: string, progress: Function, success: Function, error: Function, mentiondMsg?: any): string;
 
-    registerMessageType(messageType: string, persistentFlag: number): void;
+    registerMessageType(messageType: string, persistentFlag: number, searchProp: string[]): void;
 
     addConversation(conversation: RongIMLib.Conversation, callback: RongIMLib.ResultCallback<boolean>): void;
 

@@ -422,9 +422,9 @@ module RongIMLib {
             RongIMLib.MessageIdHandler.messageId = tempMessage.messageId;
         }
 
-        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void {
+        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any, searchProps: string[]): void {
             this.useConsole && console.log("registerMessageType");
-            this.addon.registerMessageType(objectName, messageTag.getMessageTag());
+            this.addon.registerMessageType(objectName, messageTag.getMessageTag(), searchProps);
             var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent, messageType);
             RongIMLib.RongIMClient.RegisterMessage[messageType] = regMsg;
             RongIMClient.RegisterMessage[messageType].messageName = messageType;

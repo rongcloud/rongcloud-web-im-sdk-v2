@@ -71,7 +71,7 @@ module RongIMLib {
 
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any): void;
 
-        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void;
+        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: string[], searchProps: string[]): void;
 
         addConversation(conversation: Conversation, callback: ResultCallback<boolean>): void;
 
