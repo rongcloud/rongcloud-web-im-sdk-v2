@@ -6,4 +6,4 @@ typings
 *.log
 docs/**/*.*
 .DS_Store
-dist/*.js
+dist
