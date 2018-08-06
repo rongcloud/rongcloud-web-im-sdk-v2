@@ -24,7 +24,7 @@ module RongIMLib {
                 servers = servers.split(',');
                 storage.setItem('servers', JSON.stringify(servers));
 
-                var token = Bridge._client.token;
+                var token = RongIMClient._memoryStore.token;
                 var uid = InnerUtil.getUId(token);
                 storage.setItem('rc_uid', uid);
 
