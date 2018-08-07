@@ -772,7 +772,7 @@ module RongIMLib {
             if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
                 content = [].slice.call(new Int8Array(content));
             }
-            var c: Conversation = null, me = this, msg: Message = new RongIMLib.Message();
+            var me = this, msg: Message = new RongIMLib.Message();
             var c: Conversation = this.getConversation(conversationType, targetId);
             if (RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag() == 3) {
                 if (!c) {
@@ -991,6 +991,10 @@ module RongIMLib {
             });
         }
 
+        setOfflineMessageDuration(duration: string, callback: ResultCallback<boolean>){
+
+        }
+
         getMessage(messageId: string, callback: ResultCallback<Message>) {
             callback.onSuccess(new Message());
         }
@@ -1143,6 +1147,11 @@ module RongIMLib {
                 }, conversationTypes, count,isHidden);
         }
 
+        clearCache(){
+            var memoryStore = RongIMClient._memoryStore || {};
+            memoryStore.conversationList = [];
+        }
+
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>) {
             Array.forEach(conversationTypes, function(conversationType: ConversationType) {
                 Array.forEach(RongIMClient._memoryStore.conversationList, function(conver: Conversation) {
@@ -1194,6 +1203,13 @@ module RongIMLib {
             setTimeout(function(){
                 callback.onSuccess(count);
             });
+        }
+
+        //由于 Web 端未读消息数按会话统计，撤回消息会导致未读数不准确，提供设置未读数接口，桌面版不实现此方法
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number){
+            var storageProvider = RongIMClient._storageProvider;
+            var key = "cu" + Bridge._client.userId + conversationType + targetId;
+            storageProvider.setItem(key, count);
         }
 
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>) {

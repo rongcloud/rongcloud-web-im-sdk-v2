@@ -501,6 +501,20 @@ module RongIMLib {
             }
         }
 
+        setOfflineMessageDuration(duration: string, callback: ResultCallback<boolean>){
+            try {
+                this.useConsole && console.log("setOfflineMessageDuration");
+                duration = duration.toString();
+                this.addon.setOfflineMessageDuration(duration, function(){
+                    callback.onSuccess(true);
+                },function(errorCode: ErrorCode){
+                    callback.onError(errorCode);
+                });
+            } catch (e) {
+                callback.onError(e);
+            }
+        }
+
         getMessage(messageId: string, callback: ResultCallback<Message>): void {
             try {
                 this.useConsole && console.log("getMessage");
@@ -521,6 +535,10 @@ module RongIMLib {
             }
         }
 
+        // Web 端接口，桌面版无需实现
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number){
+
+        }
 
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void {
             try {
@@ -535,6 +553,11 @@ module RongIMLib {
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void {
             this.useConsole && console.log("getConversationList");
             this.getRemoteConversationList(callback, conversationTypes, count,isGetHiddenConvers);
+        }
+
+        clearCache(){
+            var memoryStore = RongIMClient._memoryStore || {};
+            memoryStore.conversationList = [];
         }
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void {

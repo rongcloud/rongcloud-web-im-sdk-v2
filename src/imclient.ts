@@ -825,7 +825,7 @@ module RongIMLib {
          * 自定义消息声明需放在执行顺序最高的位置（在RongIMClient.init(appkey)之后即可）
          * @param objectName  消息内置名称
          */
-        static registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: string[], searchProps: string[]): void {
+        static registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: string[], searchProps?: string[]): void {
             RongIMClient._dataAccessProvider.registerMessageType(messageType, objectName, messageTag, messageContent, searchProps);
             RongIMClient.RegisterMessage[messageType].messageName = messageType;
             RongIMClient.MessageType[messageType] = messageType;
@@ -1329,6 +1329,11 @@ module RongIMLib {
             });
         }
 
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number){
+            CheckParam.getInstance().check(["number", "string", "number"], "setUnreadCount", false, arguments);
+            RongIMClient._dataAccessProvider.setUnreadCount(conversationType, targetId, count);
+        }
+
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{
            RongIMClient._dataAccessProvider.clearUnreadCountByTimestamp(conversationType, targetId, timestamp, RongIMClient.logCallback(callback, "clearUnreadCountByTimestamp"));
         }
@@ -1474,6 +1479,10 @@ module RongIMLib {
 
         searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
             RongIMClient._dataAccessProvider.searchMessageByContent(conversationType, targetId, keyword, timestamp, count, total, RongIMClient.logCallback(callback, "searchMessageByContent"));
+        }
+
+        clearCache(){
+            RongIMClient._dataAccessProvider.clearCache()
         }
 
         clearConversations(callback: ResultCallback<boolean>, ...conversationTypes: ConversationType[]) {
