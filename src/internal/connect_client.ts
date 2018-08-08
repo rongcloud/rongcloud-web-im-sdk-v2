@@ -65,7 +65,7 @@ module RongIMLib {
             var storage = RongIMClient._storageProvider;
 
             var servers = storage.getItem('servers');
-            servers = JSON.parse(servers);
+            servers = JSON.parse(servers) || [];
 
             var depend = RongIMClient._memoryStore.depend;
 
