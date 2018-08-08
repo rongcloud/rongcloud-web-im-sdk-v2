@@ -422,6 +422,11 @@ module RongIMLib {
             return Object.prototype.toString.call(num) == '[object Number]';
         }
 
+        static getTimestamp(): number{
+            var date = new Date();
+            return date.getTime()
+        }
+
     }
     /*
         var observer = new RongObserver();

@@ -90,7 +90,7 @@ module RongIMLib {
             var path = (depend.isPolling ? 'cometnavi' : 'navi');
                 token = encodeURIComponent(token);
             var sdkver = RongIMClient.sdkver;
-            var random = Date.now();
+            var random = RongUtil.getTimestamp();
 
             var tpl = '{domain}/{path}.js?appId={appId}&token={token}&callBack=getServerEndpoint&v={sdkver}&r={random}';
             var url = RongUtil.tplEngine(tpl, {

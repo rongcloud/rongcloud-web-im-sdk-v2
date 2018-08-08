@@ -153,7 +153,7 @@ module RongIMLib {
                             server = RongUtil.tplEngine(snifferTpl, {
                                 protocol: depend.protocol,
                                 server: server,
-                                random: Date.now()
+                                random: RongUtil.getTimestamp()
                             });
                             request({
                                 url: server,
