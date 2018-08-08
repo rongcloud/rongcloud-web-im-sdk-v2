@@ -544,6 +544,7 @@ module RongIMLib {
         clearCache(){
             var memoryStore = RongIMClient._memoryStore || {};
             memoryStore.conversationList = [];
+            memoryStore.isSyncRemoteConverList;
         }
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void {

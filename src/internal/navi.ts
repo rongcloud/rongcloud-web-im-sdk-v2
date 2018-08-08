@@ -5,6 +5,7 @@ module RongIMLib {
             var storage = RongIMClient._storageProvider;
             storage.removeItem('rc_uid');
             storage.removeItem('serverIndex');
+            storage.removeItem('rongSDK');
         }
         constructor() {
             window.getServerEndpoint = function(result: any) {

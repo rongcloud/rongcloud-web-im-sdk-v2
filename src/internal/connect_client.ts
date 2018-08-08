@@ -133,6 +133,8 @@ module RongIMLib {
                                 var url = xss.src;
                                 callback(url);
                             };
+                            // 此处不处理 xss.onerror 15 秒不执行 onload 自动超时
+
                             elements.push(xss);
                         }, time);
                         timers.push(timer);
