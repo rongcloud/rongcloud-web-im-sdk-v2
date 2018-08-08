@@ -89,14 +89,16 @@ module RongIMLib {
             var path = (depend.isPolling ? 'cometnavi' : 'navi');
                 token = encodeURIComponent(token);
             var sdkver = RongIMClient.sdkver;
+            var random = Date.now();
 
-            var tpl = '{domain}/{path}.js?appId={appId}&token={token}&callBack=getServerEndpoint&v={sdkver}';
+            var tpl = '{domain}/{path}.js?appId={appId}&token={token}&callBack=getServerEndpoint&v={sdkver}&r={random}';
             var url = RongUtil.tplEngine(tpl, {
                 domain: domain,
                 path: path,
                 appId: appId,
                 token: token,
-                sdkver: sdkver 
+                sdkver: sdkver,
+                random: random
             });
             xss.src = url;
             document.body.appendChild(xss);

@@ -501,20 +501,6 @@ module RongIMLib {
             }
         }
 
-        setOfflineMessageDuration(duration: string, callback: ResultCallback<boolean>){
-            try {
-                this.useConsole && console.log("setOfflineMessageDuration");
-                duration = duration.toString();
-                this.addon.setOfflineMessageDuration(duration, function(){
-                    callback.onSuccess(true);
-                },function(errorCode: ErrorCode){
-                    callback.onError(errorCode);
-                });
-            } catch (e) {
-                callback.onError(e);
-            }
-        }
-
         getMessage(messageId: string, callback: ResultCallback<Message>): void {
             try {
                 this.useConsole && console.log("getMessage");

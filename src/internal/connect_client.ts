@@ -547,7 +547,10 @@ module RongIMLib {
                 this.invoke(!_type, chrmId, offlineMsg);
             }
         }
-        __init(f: any) {
+        __init(f: any) { //实例消息处理类
+            this.handler = new MessageHandler(this);
+            //设置连接回调
+            this.handler.setConnectCallback(RongIMClient._memoryStore.callback);
             this.channel = new Channel(f, this);
         }
     }

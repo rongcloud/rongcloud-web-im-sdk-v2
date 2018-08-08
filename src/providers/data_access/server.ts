@@ -991,10 +991,6 @@ module RongIMLib {
             });
         }
 
-        setOfflineMessageDuration(duration: string, callback: ResultCallback<boolean>){
-
-        }
-
         getMessage(messageId: string, callback: ResultCallback<Message>) {
             callback.onSuccess(new Message());
         }
