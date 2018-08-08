@@ -2070,12 +2070,12 @@ module RongIMLib {
         }
 
         getFileToken(fileType: FileType, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["number", "object"], "getQnTkn", false, arguments);
+            CheckParam.getInstance().check(["number", "object"], "getQngetFileTokenTkn", false, arguments);
             RongIMClient._dataAccessProvider.getFileToken(fileType, RongIMClient.logCallback(callback, "getFileToken"));
         }
 
         getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["number", "string", "string|global|object|null", "object"], "getQnTkn", false, arguments);
+            CheckParam.getInstance().check(["number", "string", "string|global|object|null", "object"], "getFileUrl", false, arguments);
             RongIMClient._dataAccessProvider.getFileUrl(fileType, fileName, oriName, RongIMClient.logCallback(callback, "getFileUrl"));
         };
         // #endregion Blacklist
