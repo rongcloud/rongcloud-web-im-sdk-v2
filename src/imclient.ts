@@ -13,7 +13,7 @@ module RongIMLib {
         private static _instance: RongIMClient;
         static bridge: any;
         static userStatusObserver:RongObserver = null;
-        static sdkver:string = '2.3.2';
+        static sdkver:string = '2.3.3';
         static otherDeviceLoginCount:number = 0;
         static serverStore: any = { index: 0 };
         static getInstance(): RongIMClient {
