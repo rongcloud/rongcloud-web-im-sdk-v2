@@ -73,7 +73,10 @@ module RongIMLib {
                 var isSameType = (Transportations._TransportType == transportType);
                 var _old = storage.getItem('rc_uid');
                 var isSameUser = (_old == uId);
-                if (isSameUser && isSameType) {
+                var servers = storage.getItem('servers');
+                var hasServers = (typeof servers == 'string')
+                
+                if (isSameUser && isSameType && hasServers) {
                     RongIMClient._memoryStore.voipStategy = storage.getItem("voipStrategy");
                     var openMp = storage.getItem('openMp' + uId);
                     RongIMClient._memoryStore.depend.openMp = openMp;
