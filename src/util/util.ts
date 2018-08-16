@@ -162,6 +162,19 @@ module RongIMLib {
         }
     }
 
+    export class MemoryCache{
+        cache: any = {};
+        set(key:string, value:any){
+            this.cache[key] = value;
+        }
+        get(key: string):any{
+            return this.cache[key];
+        }
+        remove(key: string){
+            delete this.cache[key];
+        }
+    }
+
     export class RongAjax {
         options: any;
         xmlhttp: any;
@@ -403,6 +416,15 @@ module RongIMLib {
                 props.push(key);
             }
             return props;
+        }
+
+        static isNumber(num:number): boolean{
+            return Object.prototype.toString.call(num) == '[object Number]';
+        }
+
+        static getTimestamp(): number{
+            var date = new Date();
+            return date.getTime()
         }
 
     }

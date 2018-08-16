@@ -5,6 +5,7 @@ module RongIMLib {
             var storage = RongIMClient._storageProvider;
             storage.removeItem('rc_uid');
             storage.removeItem('serverIndex');
+            storage.removeItem('rongSDK');
         }
         constructor() {
             window.getServerEndpoint = function(result: any) {
@@ -24,7 +25,7 @@ module RongIMLib {
                 servers = servers.split(',');
                 storage.setItem('servers', JSON.stringify(servers));
 
-                var token = Bridge._client.token;
+                var token = RongIMClient._memoryStore.token;
                 var uid = InnerUtil.getUId(token);
                 storage.setItem('rc_uid', uid);
 
@@ -72,33 +73,36 @@ module RongIMLib {
                 var isSameType = (Transportations._TransportType == transportType);
                 var _old = storage.getItem('rc_uid');
                 var isSameUser = (_old == uId);
-                if (isSameUser && isSameType) {
+                var servers = storage.getItem('servers');
+                var hasServers = (typeof servers == 'string')
+                
+                if (isSameUser && isSameType && hasServers) {
                     RongIMClient._memoryStore.voipStategy = storage.getItem("voipStrategy");
                     var openMp = storage.getItem('openMp' + uId);
                     RongIMClient._memoryStore.depend.openMp = openMp;
-                    setTimeout(function(){
-                        _onsuccess()
-                    }, 300);
+                    _onsuccess()
                     return;
                 }
             }
             Navigation.clear();
             //导航信息，切换Url对象的key进行线上线下测试操作
-            var xss = document.createElement("script");
+            var xss:any = document.createElement("script");
             //进行jsonp请求
             var depend = RongIMClient._memoryStore.depend;
             var domain = depend.navi;
             var path = (depend.isPolling ? 'cometnavi' : 'navi');
                 token = encodeURIComponent(token);
             var sdkver = RongIMClient.sdkver;
+            var random = RongUtil.getTimestamp();
 
-            var tpl = '{domain}/{path}.js?appId={appId}&token={token}&callBack=getServerEndpoint&v={sdkver}';
+            var tpl = '{domain}/{path}.js?appId={appId}&token={token}&callBack=getServerEndpoint&v={sdkver}&r={random}';
             var url = RongUtil.tplEngine(tpl, {
                 domain: domain,
                 path: path,
                 appId: appId,
                 token: token,
-                sdkver: sdkver 
+                sdkver: sdkver,
+                random: random
             });
             xss.src = url;
             document.body.appendChild(xss);

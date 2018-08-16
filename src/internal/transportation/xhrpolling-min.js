@@ -39,6 +39,30 @@ var Polling = {
                 return a;
             };
         },
+        VoipDynamicInput: function(){
+            var a = {};
+            this.setEngineType = function(b){
+                a.engineType = b;
+            };
+            this.setChannelName = function(b){
+                a.channelName = b;
+            };
+            this.setChannelExtra = function(b){
+                a.channelExtra = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
+        VoipDynamicOutput: function(){
+            var a = {};
+            this.setDynamicKey = function(b){
+                a.dynamicKey = b;
+            };
+            this.toArrayBuffer = function(){
+                return a;
+            };
+        },
         SubUserStatusInput: function(){
             var a = {};
             this.setUserid = function(b){

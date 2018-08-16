@@ -191,6 +191,13 @@ module RongIMLib {
          */
         CHATROOM_NOT_OPEN_HISTORYMSG_STORE  = 23414,
 
+        /**
+         * 敏感词屏蔽
+         */
+        SENSITIVE_SHIELD  = 21501,
+
+        SENSITIVE_REPLACE  = 21502,
+
         TIMEOUT = -1,
         /**
          * 未知原因失败。

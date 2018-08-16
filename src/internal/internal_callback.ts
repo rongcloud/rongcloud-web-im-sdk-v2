@@ -118,7 +118,10 @@ module RongIMLib {
                 
                 this._cb({ messageUId: messageUId, timestamp: timestamp, messageId: messageId });
             } else {
-                this._timeout(_status);
+                this._timeout(_status, {
+                    messageUId: messageUId,
+                    sentTime: timestamp
+                });
             }
         }
         readTimeOut(x?: any) {
@@ -205,15 +208,18 @@ module RongIMLib {
                 }
 
             } else if (status == 6) {
+                RongIMClient.getInstance().disconnect();
                 //重定向 连错 CMP
-                var x: any = {};
                 var me = this;
-                new Navigation().getServerEndpoint(this._client.token, this._client.appId, function() {
-                    me._client.clearHeartbeat();
-                    new Client(me._client.token, me._client.appId).__init.call(x, function() {
-                        Transportations._TransportType == "websocket" && me._client.keepLive();
+                var _client = me._client;
+                var appId = _client.appId, token = _client.token;
+                new Navigation().getServerEndpoint(token, appId, function() {
+                    _client.clearHeartbeat();
+                    var newClient = new Client(token, appId);
+                    Bridge._client = newClient;
+                    newClient.__init(function() {
+                        Transportations._TransportType == "websocket" && _client.keepLive();
                     });
-                    me._client.channel.socket.fire("StatusChanged", 2);
                 }, me._timeout, false);
             } else {
                 Bridge._client.channel.socket.socket._status = status;

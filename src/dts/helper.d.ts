@@ -75,7 +75,7 @@ declare interface Document {
 }
 
 declare interface Addon {
-    initWithAppkey(appKey: string, dbPath?: string): any;
+    initWithAppkey(appKey: string, dbPath?: string, options?:any): any;
 
     connectWithToken(token: string, userId: string, servers?: string, openmp?: boolean, openus?: boolean): number;
 
@@ -145,7 +145,7 @@ declare interface Addon {
 
     sendMessage(conversationType: RongIMLib.ConversationType, targetId: string, objectname: string, messageContent: string, pushText: string, appData: string, progress: Function, success: Function, error: Function, mentiondMsg?: any): string;
 
-    registerMessageType(messageType: string, persistentFlag: number): void;
+    registerMessageType(messageType: string, persistentFlag: number, searchProp?: string[]): void;
 
     addConversation(conversation: RongIMLib.Conversation, callback: RongIMLib.ResultCallback<boolean>): void;
 
@@ -156,6 +156,8 @@ declare interface Addon {
     insertMessage(conversationType: number, targetId: string, senderUserId: string, objectName: string, content: string, success: Function, error: Function, diection?:number): string;
 
     deleteMessages(delMsgs: number[]): void;
+
+    setOfflineMessageDuration(duration: string, success: Function, error: Function): void;
 
     getMessage(messageId: string): string;
 

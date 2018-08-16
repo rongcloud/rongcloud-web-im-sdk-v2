@@ -13,7 +13,7 @@ module RongIMLib {
         private static _instance: RongIMClient;
         static bridge: any;
         static userStatusObserver:RongObserver = null;
-        static sdkver:string = '2.3.2';
+        static sdkver:string = '2.3.3';
         static otherDeviceLoginCount:number = 0;
         static serverStore: any = { index: 0 };
         static getInstance(): RongIMClient {
@@ -170,6 +170,7 @@ module RongIMLib {
                 token: "",
                 callback: null,
                 lastReadTime: new LimitableMap(),
+                historyMessageLimit: new MemoryCache(),
                 conversationList: [],
                 appKey: appKey,
                 publicServiceMap: new PublicServiceMap(),
@@ -533,6 +534,10 @@ module RongIMLib {
                     code: "30014",
                     msg: "消息发送失败"
                 },
+                "30016": {
+                    code: "30016",
+                    msg: "消息大小超限，最大 128 KB"
+                },
                 /**
                  * 连接
                  */
@@ -820,8 +825,8 @@ module RongIMLib {
          * 自定义消息声明需放在执行顺序最高的位置（在RongIMClient.init(appkey)之后即可）
          * @param objectName  消息内置名称
          */
-        static registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void {
-            RongIMClient._dataAccessProvider.registerMessageType(messageType, objectName, messageTag, messageContent);
+        static registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: string[], searchProps?: string[]): void {
+            RongIMClient._dataAccessProvider.registerMessageType(messageType, objectName, messageTag, messageContent, searchProps);
             RongIMClient.RegisterMessage[messageType].messageName = messageType;
             RongIMClient.MessageType[messageType] = messageType;
             RongIMClient.MessageParams[messageType] = { objectName: objectName, msgTag: messageTag };
@@ -1324,6 +1329,11 @@ module RongIMLib {
             });
         }
 
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number){
+            CheckParam.getInstance().check(["number", "string", "number"], "setUnreadCount", false, arguments);
+            RongIMClient._dataAccessProvider.setUnreadCount(conversationType, targetId, count);
+        }
+
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{
            RongIMClient._dataAccessProvider.clearUnreadCountByTimestamp(conversationType, targetId, timestamp, RongIMClient.logCallback(callback, "clearUnreadCountByTimestamp"));
         }
@@ -1469,6 +1479,10 @@ module RongIMLib {
 
         searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
             RongIMClient._dataAccessProvider.searchMessageByContent(conversationType, targetId, keyword, timestamp, count, total, RongIMClient.logCallback(callback, "searchMessageByContent"));
+        }
+
+        clearCache(){
+            RongIMClient._dataAccessProvider.clearCache()
         }
 
         clearConversations(callback: ResultCallback<boolean>, ...conversationTypes: ConversationType[]) {
@@ -2056,12 +2070,12 @@ module RongIMLib {
         }
 
         getFileToken(fileType: FileType, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["number", "object"], "getQnTkn", false, arguments);
+            CheckParam.getInstance().check(["number", "object"], "getQngetFileTokenTkn", false, arguments);
             RongIMClient._dataAccessProvider.getFileToken(fileType, RongIMClient.logCallback(callback, "getFileToken"));
         }
 
         getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>) {
-            CheckParam.getInstance().check(["number", "string", "string|global|object|null", "object"], "getQnTkn", false, arguments);
+            CheckParam.getInstance().check(["number", "string", "string|global|object|null", "object"], "getFileUrl", false, arguments);
             RongIMClient._dataAccessProvider.getFileUrl(fileType, fileName, oriName, RongIMClient.logCallback(callback, "getFileUrl"));
         };
         // #endregion Blacklist

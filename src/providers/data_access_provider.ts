@@ -71,7 +71,7 @@ module RongIMLib {
 
         sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any): void;
 
-        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void;
+        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: string[], searchProps: string[]): void;
 
         addConversation(conversation: Conversation, callback: ResultCallback<boolean>): void;
 
@@ -96,11 +96,13 @@ module RongIMLib {
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void;
 
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void;
+        
+        clearCache(): void;
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void;
 
         clearHistoryMessages(params: any, callback: ResultCallback<boolean>): void;
-
+        
         clearRemoteHistoryMessages(params: any, callback: ResultCallback<boolean>): void;
 
         getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, directrion?:boolean): void;
@@ -116,6 +118,8 @@ module RongIMLib {
         setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>): void;
 
         setConversationHidden(conversationType:ConversationType,targetId:string,isHidden:boolean):void;
+
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number):void;
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>): void;
 

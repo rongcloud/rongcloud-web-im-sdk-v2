@@ -214,17 +214,41 @@ module RongIMLib {
             if(count <= 1) {
                 throw new Error("the count must be greater than 1.");
             }
+            
+            var getKey = function(){
+                return [conversationType, targetId].join('');
+            };
+            var key = getKey();
+            if (!RongUtil.isNumber(timestamp)) {
+                timestamp = RongIMClient._memoryStore.lastReadTime.get(key);
+            }
+            var memoryStore = RongIMClient._memoryStore;
+            var historyMessageLimit = memoryStore.historyMessageLimit;
+            /* 
+                limit 属性:
+                var limit = {
+                    time: '时间戳, 最后一次拉取时间',
+                    hasMore: '是否还有历史消息, bool 值'
+                };
+            */
+            var limit:any = historyMessageLimit.get(key) || {};
+            var hasMore = limit.hasMore;
+            var isFecth = (hasMore || limit.time != timestamp);
+            if (!isFecth) {
+                return callback.onSuccess([], hasMore);
+            }
             var modules = new RongIMClient.Protobuf.HistoryMessageInput(), self = this;
             modules.setTargetId(targetId);
-            if (timestamp === 0 || timestamp > 0) {
-                modules.setDataTime(timestamp);
-            } else {
-                modules.setDataTime(RongIMClient._memoryStore.lastReadTime.get(conversationType + targetId));
-            }
+            modules.setDataTime(timestamp);
             modules.setSize(count);
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function(data: any) {
-                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
+                    var fetchTime = MessageUtil.int64ToTimestamp(data.syncTime);
+                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, fetchTime);
+                    historyMessageLimit.set(key, {
+                        hasMore: !!data.hasMsg,
+                        time: fetchTime
+                    });
                     var list = data.list.reverse(), tempMsg: Message = null, tempDir: any;
                     var read = RongIMLib.SentStatus.READ;
                     if (RongUtil.supportLocalStorage()) {
@@ -265,7 +289,7 @@ module RongIMLib {
                 xss.parentNode.removeChild(xss);
             };
             xss = document.createElement("script");
-            xss.src = RongIMClient._memoryStore.depend.api + "/message/exist.js?appKey=" + encodeURIComponent(RongIMClient._memoryStore.appKey) + "&token=" + encodeURIComponent(token) + "&callBack=RCCallback&_=" + Date.now();
+            xss.src = RongIMClient._memoryStore.depend.api + "/message/exist.js?appKey=" + encodeURIComponent(RongIMClient._memoryStore.appKey) + "&token=" + encodeURIComponent(token) + "&callBack=RCCallback&_=" + RongUtil.getTimestamp();
             document.body.appendChild(xss);
             xss.onerror = function() {
                 setTimeout(function() { callback.onError(ErrorCode.UNKNOWN); });
@@ -748,26 +772,23 @@ module RongIMLib {
             if (Object.prototype.toString.call(content) == "[object ArrayBuffer]") {
                 content = [].slice.call(new Int8Array(content));
             }
-            var c: Conversation = null, me = this, msg: Message = new RongIMLib.Message();
-            this.getConversation(conversationType, targetId, <ResultCallback<Conversation>>{
-                onSuccess: function(conver: Conversation) {
-                    c = conver;
-                    if (RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag() == 3) {
-                        if (!c) {
-                            c = RongIMClient.getInstance().createConversation(conversationType, targetId, "");
-                        }
-                        c.sentTime = new Date().getTime();
-                        c.sentStatus = SentStatus.SENDING;
-                        c.senderUserName = "";
-                        c.senderUserId = Bridge._client.userId;
-                        c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-                        c.latestMessage = msg;
-                        c.unreadMessageCount = 0;
-                        RongIMClient._dataAccessProvider.addConversation(c, <ResultCallback<boolean>>{ onSuccess: function(data) { } });
-                    }
-                    RongIMClient._memoryStore.converStore = c;
+            var me = this, msg: Message = new RongIMLib.Message();
+            var c: Conversation = this.getConversation(conversationType, targetId);
+            if (RongIMClient.MessageParams[messageContent.messageName].msgTag.getMessageTag() == 3) {
+                if (!c) {
+                    c = RongIMClient.getInstance().createConversation(conversationType, targetId, "");
                 }
-            });
+                c.sentTime = new Date().getTime();
+                c.sentStatus = SentStatus.SENDING;
+                c.senderUserName = "";
+                c.senderUserId = Bridge._client.userId;
+                c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
+                c.latestMessage = msg;
+                c.unreadMessageCount = 0;
+                RongIMClient._dataAccessProvider.addConversation(c, <ResultCallback<boolean>>{ onSuccess: function(data) { } });
+            }
+            RongIMClient._memoryStore.converStore = c;
+
             msg.content = messageContent;
             msg.conversationType = conversationType;
             msg.senderUserId = Bridge._client.userId;
@@ -814,8 +835,10 @@ module RongIMLib {
                         sendCallback.onSuccess(msg);
                     });
                 },
-                onError: function(errorCode: ErrorCode) {
+                onError: function(errorCode: ErrorCode, _msg:any) {
                     msg.sentStatus = SentStatus.FAILED;
+                    msg.messageUId = _msg.messageUId;
+                    msg.sentTime = _msg.sentTime;
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
                         RongIMClient._memoryStore.converStore.latestMessage = msg;
                     }
@@ -851,7 +874,7 @@ module RongIMLib {
             }
         }
 
-        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void {
+        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any, searchProps: string[]): void {
             if (!messageType) {
                 throw new Error("messageType can't be empty,postion -> registerMessageType");
             }
@@ -1068,7 +1091,7 @@ module RongIMLib {
             });
         }
 
-        getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>) {
+        getConversation(conversationType: ConversationType, targetId: string, callback?: ResultCallback<Conversation>) {
             var conver: Conversation = null;
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType == conversationType && RongIMClient._memoryStore.conversationList[i].targetId == targetId) {
@@ -1082,8 +1105,9 @@ module RongIMLib {
                 }
             }
             setTimeout(function() {
-                callback.onSuccess(conver);
+                callback && callback.onSuccess(conver);
             });
+            return conver;
         }
 
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isHidden?:boolean) {
@@ -1117,6 +1141,12 @@ module RongIMLib {
                         });
                     }
                 }, conversationTypes, count,isHidden);
+        }
+
+        clearCache(){
+            var memoryStore = RongIMClient._memoryStore || {};
+            memoryStore.conversationList = [];
+            memoryStore.isSyncRemoteConverList = true;
         }
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>) {
@@ -1170,6 +1200,13 @@ module RongIMLib {
             setTimeout(function(){
                 callback.onSuccess(count);
             });
+        }
+
+        //由于 Web 端未读消息数按会话统计，撤回消息会导致未读数不准确，提供设置未读数接口，桌面版不实现此方法
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number){
+            var storageProvider = RongIMClient._storageProvider;
+            var key = "cu" + Bridge._client.userId + conversationType + targetId;
+            storageProvider.setItem(key, count);
         }
 
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>) {

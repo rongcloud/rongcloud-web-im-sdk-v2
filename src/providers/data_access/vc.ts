@@ -1,6 +1,9 @@
 module RongIMLib {
     export class VCDataProvider implements DataAccessProvider {
 
+        // C++ 需要的 SDK 版本号
+        version: string = '2.8.27';
+
         addon: Addon;
 
         messageListener: OnReceiveMessageListener;
@@ -26,7 +29,8 @@ module RongIMLib {
             this.useConsole && console.log("init");
 
             config = config || {};
-            var sdkInfo = this.addon.initWithAppkey(appKey, config.dbPath);
+            config.version = this.version;
+            var sdkInfo = this.addon.initWithAppkey(appKey, config.dbPath, config);
             if (sdkInfo) {
                 sdkInfo = JSON.parse(sdkInfo);
             }
@@ -136,7 +140,7 @@ module RongIMLib {
 
             me.connectListener = listener;
             this.useConsole && console.log("setConnectionStatusListener");
-            me.addon && me.addon.setConnectionStatusListener(function(result: number): void {
+            me.addon && me.addon.setConnectionStatusListener(function(result: any): void {
                 switch (result) {
                     case 10:
                         setTimeout(function(){
@@ -156,12 +160,6 @@ module RongIMLib {
                     case 31011:
                     case 30000:
                     case 30002:
-                    case 30004:
-                    case 30005:
-                    case 30006:
-                    case 30007:
-                    case 30008:
-                    case 30009:
                         setTimeout(function(){
                             listener.onChanged(ConnectionStatus.DISCONNECTED);
                         });
@@ -176,6 +174,11 @@ module RongIMLib {
                     case 6:
                         setTimeout(function(){
                             listener.onChanged(ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT);
+                        });
+                        break;
+                    default:
+                        setTimeout(function(){
+                            listener.onChanged(result);
                         });
                         break;
                 }
@@ -403,8 +406,13 @@ module RongIMLib {
             var msg: string = me.addon.sendMessage(conversationType,
                 targetId, RongIMClient.MessageParams[messageContent.messageName].objectName, messageContent.encode(), pushText || "", appData || "", function(progress: any) {
                 },
-                function(message: string) {
-                    sendCallback.onSuccess(me.buildMessage(message));
+                function(message: string, code: number) {
+                    var msg = me.buildMessage(message)
+                    var errorCode = ErrorCode.SENSITIVE_REPLACE;
+                    if(code == errorCode){
+                        return  sendCallback.onError(errorCode, msg);
+                    }
+                    sendCallback.onSuccess(msg);
                 },
                 function(message: string, code: ErrorCode) {
                     sendCallback.onError(code, me.buildMessage(message));
@@ -414,9 +422,9 @@ module RongIMLib {
             RongIMLib.MessageIdHandler.messageId = tempMessage.messageId;
         }
 
-        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any): void {
+        registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: any, searchProps: string[]): void {
             this.useConsole && console.log("registerMessageType");
-            this.addon.registerMessageType(objectName, messageTag.getMessageTag());
+            this.addon.registerMessageType(objectName, messageTag.getMessageTag(), searchProps);
             var regMsg = RongIMLib.ModelUtil.modleCreate(messageContent, messageType);
             RongIMLib.RongIMClient.RegisterMessage[messageType] = regMsg;
             RongIMClient.RegisterMessage[messageType].messageName = messageType;
@@ -513,6 +521,10 @@ module RongIMLib {
             }
         }
 
+        // Web 端接口，桌面版无需实现
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number){
+
+        }
 
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void {
             try {
@@ -527,6 +539,12 @@ module RongIMLib {
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void {
             this.useConsole && console.log("getConversationList");
             this.getRemoteConversationList(callback, conversationTypes, count,isGetHiddenConvers);
+        }
+
+        clearCache(){
+            var memoryStore = RongIMClient._memoryStore || {};
+            memoryStore.conversationList = [];
+            memoryStore.isSyncRemoteConverList;
         }
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void {
