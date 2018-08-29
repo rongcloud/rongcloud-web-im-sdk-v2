@@ -386,14 +386,40 @@
       });
       return isObject ? origin[0] : origin;
     },
+    getPropType: function(obj){
+      return Object.prototype.toString.call(obj);
+    },
     isObject: function (obj) {
-      return (Object.prototype.toString.call(obj) == '[object Object]');
+      return (utils.getPropType(obj) == '[object Object]');
     },
     isArray: function (arr) {
-      return (Object.prototype.toString.call(arr) == '[object Array]');
+      return (utils.getPropType(arr) == '[object Array]');
     },
     isFunction: function (arr) {
-      return (Object.prototype.toString.call(arr) == '[object Function]');
+      return (utils.getPropType(arr) == '[object Function]');
+    },
+    isNull: function(obj){
+      return (utils.getPropType(obj) == '[object Null]');
+    },
+    isUndefined: function(obj){
+      return (utils.getPropType(obj) == '[object Undefined]');
+    },
+    isEmpty: function(obj){
+      if(utils.isUndefined(obj) || utils.isNull(obj)){
+        return true;
+      }
+      if(typeof obj == 'string' || utils.isArray(obj)){
+        return obj.length == 0;
+      }
+      if(utils.isObject(obj)){
+        var result = true;
+        for(var key in obj){
+          result = false;
+          break;
+        }
+        return result;
+      }
+      return false;
     }
   };
 
@@ -450,7 +476,7 @@
     return url;
   };
 
-  var errorHandler = function (result) {
+  var errorHandler = function (result, content) {
     var errors = {
       1004: {
         code: 1004,
@@ -459,6 +485,10 @@
       403: {
         code: 403,
         msg: 'AppKey 无效，请移步融云开发者后台获取 AppKey: https://developer.rongcloud.cn/'
+      },
+      20001: {
+        code: 20001,
+        msg: '{name} 为空，请检查参数'
       }
     };
     var error = errors[result.code];
@@ -467,6 +497,9 @@
         code: 20000,
         msg: result
       };
+    }else{
+      content = content || {};
+      error.msg = utils.tplEngine(error.msg, content);
     }
     return error;
   }
@@ -513,6 +546,23 @@
       stickerId = message.stickerId;
 
     var error = null;
+
+    if(utils.isEmpty(packageId)){
+      error = errorHandler({code: 20001}, {
+        name: 'packageId'
+      });
+    }
+
+    if(utils.isEmpty(stickerId)){
+      error = errorHandler({code: 20001}, {
+        name: 'stickerId'
+      });
+    }
+
+    if(error){
+      var result = null;
+      return callback(result, error);
+    }
 
     var stickers = StickerCache.get(packageId) || {};
     var sticker = stickers[stickerId];
