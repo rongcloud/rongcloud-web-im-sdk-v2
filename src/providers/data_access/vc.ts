@@ -242,7 +242,7 @@ module RongIMLib {
             this.sendMessage(conversationType, targetId, msgContent, sendMessageCallback);
         }
 
-        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void {
+        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, config?: any): void {
             try {
                 var me = this;
                 me.useConsole && console.log("getRemoteHistoryMessages");

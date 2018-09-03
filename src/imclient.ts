@@ -1198,6 +1198,11 @@ module RongIMLib {
         insertMessage(conversationType: ConversationType, targetId: string, content: Message, callback: ResultCallback<Message>) {
             RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, content, RongIMClient.logCallback(callback, "insertMessage"));
         }
+
+        setMessageContent(messageId:number, content:any, objectName: string):void{
+             RongIMClient._dataAccessProvider.setMessageContent(messageId, content, objectName);   
+        };
+
         /**
          * [getHistoryMessages 拉取历史消息记录。]
          * @param  {ConversationType}          conversationType [会话类型]
@@ -1207,21 +1212,16 @@ module RongIMLib {
          * @param  {ResultCallback<Message[]>} callback         [回调函数]
          * @param  {string}                    objectName       [objectName]
          */
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, direction?: boolean) {
-            CheckParam.getInstance().check(["number", "string|number", "number|null|global|object", "number", "object", "undefined|object|null|global|string", "boolean|null|global|object"], "getHistoryMessages", false, arguments);
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, order?: boolean) {
+            CheckParam.getInstance().check(["number", "string|number", "number|null|global|object", "number", "object", "undefined|object|null|global|string", "number|null|global|object"], "getHistoryMessages", false, arguments);
             if (count > 20) {
                 throw new Error("HistroyMessage count must be less than or equal to 20!");
             }
             if (conversationType.valueOf() < 0) {
                 throw new Error("ConversationType must be greater than -1");
             }
-            RongIMClient._dataAccessProvider.getHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, "getHistoryMessages"), objectname, direction);
+            RongIMClient._dataAccessProvider.getHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, "getHistoryMessages"), objectname, order);
         }
-
-        setMessageContent(messageId:number, content:any, objectName: string):void{
-             RongIMClient._dataAccessProvider.setMessageContent(messageId, content, objectName);   
-        };
-
         /**
          * [getRemoteHistoryMessages 拉取某个时间戳之前的消息]
          * @param  {ConversationType}          conversationType [description]
@@ -1230,8 +1230,8 @@ module RongIMLib {
          * @param  {number}                    count            [description]
          * @param  {ResultCallback<Message[]>} callback         [description]
          */
-        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
-            CheckParam.getInstance().check(["number", "string|number", "number|null|global|object", "number", "object"], "getRemoteHistoryMessages", false, arguments);
+        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, config?: any) {
+            CheckParam.getInstance().check(["number", "string|number", "number|null|global|object", "number", "object", "undefined|null|global|object"], "getRemoteHistoryMessages", false, arguments);
             var funcName = "getRemoteHistoryMessages";
             var log = {
                 errorCode: ErrorCode.RC_CONN_PROTO_VERSION_ERROR,
@@ -1247,7 +1247,7 @@ module RongIMLib {
                 callback.onError(ErrorCode.RC_CONN_PROTO_VERSION_ERROR);
                 return;
             }
-            RongIMClient._dataAccessProvider.getRemoteHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, funcName));
+            RongIMClient._dataAccessProvider.getRemoteHistoryMessages(conversationType, targetId, timestamp, count, RongIMClient.logCallback(callback, funcName), config);
         }
         clearHistoryMessages(params: any, callback:ResultCallback<boolean>):void{
             RongIMClient._dataAccessProvider.clearHistoryMessages(params, callback);
