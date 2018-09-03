@@ -331,7 +331,7 @@
         extendEmojis(option.extension);
         setEmojiReg();
         setEmojiList();
-        initRecentList(option.recent);
+        initRecentList(option.recentList);
         adaptOldVersion();
     };
 
@@ -428,6 +428,7 @@
         CheckParam.check(["string", "number|null|undefined", "regexp|null|undefined"], "symbolToHTML", arguments);
         emojiText = text.replace(/\[([^\[\]]+?)\]/g, function(symbol) {
             var emoji = getEmojiBySymbol(symbol) || symbol;
+            addRecent(emoji);
             return getHTMLByEmoji(emoji, sizePx);
         });
         isTextChanged = emojiText !== text;
