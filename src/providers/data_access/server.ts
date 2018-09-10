@@ -236,7 +236,8 @@ module RongIMLib {
             var limit:any = historyMessageLimit.get(key) || {};
             var hasMore = limit.hasMore;
             var isFecth = (hasMore || limit.time != timestamp);
-            if (!isFecth) {
+            // 正序获取消息时不做限制，防止有新消息导致无法获取
+            if (!isFecth && order == 0) {
                 return callback.onSuccess([], hasMore);
             }
             

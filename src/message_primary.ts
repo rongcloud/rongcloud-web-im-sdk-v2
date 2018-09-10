@@ -361,10 +361,14 @@ module RongIMLib {
         callId: string;
         mediaId: string;
         mediaType: VoIPMediaType;
+        mode: string;
+        subInfo: string[];
         constructor(message: any) {
             this.mediaId = message.mediaId;
             this.callId = message.callId;
             this.mediaType = message.mediaType;
+            this.mode = message.mode;
+            this.subInfo = message.subInfo;
         }
         encode(): string {
             return JSON.stringify(ModelUtil.modelClone(this));
@@ -411,9 +415,13 @@ module RongIMLib {
         messageName: string = "HungupMessage";
         callId: string;
         reason: string;
+        mode: string;
+        subInfo: string[];
         constructor(message: any) {
             this.callId = message.callId;
             this.reason = message.reason;
+            this.mode = message.mode;
+            this.subInfo = message.subInfo;
         }
         encode() {
             return JSON.stringify(ModelUtil.modelClone(this));
@@ -430,6 +438,8 @@ module RongIMLib {
         inviteUserIds: string[];
         observerUserIds: any[];
         extra: string;
+        mode: string;
+        subInfo: string[];
         constructor(message: any) {
             this.mediaId = message.mediaId;
             this.callId = message.callId;
@@ -439,6 +449,8 @@ module RongIMLib {
             this.extra = message.extra;
             this.inviteUserIds = message.inviteUserIds;
             this.observerUserIds = message.observerUserIds;
+            this.mode = message.mode;
+            this.subInfo = message.subInfo;
         }
         encode() {
             return JSON.stringify(ModelUtil.modelClone(this));
@@ -449,9 +461,13 @@ module RongIMLib {
         messageName: string = "MediaModifyMessage";
         callId: string;
         mediaType: VoIPMediaType;
+        mode: string;
+        subInfo: string[];
         constructor(message: any) {
             this.callId = message.callId;
             this.mediaType = message.mediaType;
+            this.mode = message.mode;
+            this.subInfo = message.subInfo;
         }
         encode() {
             return JSON.stringify(ModelUtil.modelClone(this));
@@ -471,6 +487,8 @@ module RongIMLib {
         existedMemberStatusList: string[];
         existedUserPofiles: any;
         observerUserIds: any;
+        mode: string;
+        subInfo: string[];
         constructor(message: any) {
             this.modifyMemType = message.modifyMemType;
             this.callId = message.callId;
@@ -483,6 +501,8 @@ module RongIMLib {
             this.existedMemberStatusList = message.existedMemberStatusList;
             this.existedUserPofiles = message.existedUserPofiles;
             this.observerUserIds = message.observerUserIds;
+            this.mode = message.mode;
+            this.subInfo = message.subInfo;
         }
         encode() {
             return JSON.stringify(ModelUtil.modelClone(this));
