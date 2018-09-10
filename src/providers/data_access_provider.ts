@@ -25,7 +25,7 @@ module RongIMLib {
 
         sendRecallMessage(conent:any, sendMessageCallback: SendMessageCallback, user?:UserInfo): void;
 
-        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void;
+        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, config?: any): void;
 
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>): void;
 
