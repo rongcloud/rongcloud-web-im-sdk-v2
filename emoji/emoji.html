@@ -126,7 +126,7 @@ th {
 
 </style>
     
-<script src="./emoji.js"></script> 
+<script src="./release/emoji-2.2.7.min.js"></script> 
 
 <h1>Emoji</h1>
 
@@ -345,7 +345,7 @@ function setupExpand(expandId) {
     if (recentList && recentList.length) {
         showRecentPanel(RongIMEmoji.recentList);
     }
-    RongIMEmoji.on('recent-change', function(list) {
+    RongIMEmoji.on && RongIMEmoji.on('recent-change', function(list) {
         showRecentPanel(list);
         saveLocalRecentList(list);
     });
