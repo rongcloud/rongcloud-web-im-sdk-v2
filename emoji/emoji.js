@@ -6,7 +6,7 @@
     'use strict';
     if (typeof exports === 'object' && typeof module !== undefined) {
         module.exports = factory();
-    } else if (typeof define === 'function' && define.amd) {
+    } else if (typeof define === 'function' && (define.amd || define.cmd)) {
         define(factory);
     } else {
         window.RongIMLib = window.RongIMLib || {};
@@ -331,7 +331,7 @@
         extendEmojis(option.extension);
         setEmojiReg();
         setEmojiList();
-        initRecentList(option.recent);
+        initRecentList(option.recentList);
         adaptOldVersion();
     };
 
@@ -428,6 +428,7 @@
         CheckParam.check(["string", "number|null|undefined", "regexp|null|undefined"], "symbolToHTML", arguments);
         emojiText = text.replace(/\[([^\[\]]+?)\]/g, function(symbol) {
             var emoji = getEmojiBySymbol(symbol) || symbol;
+            addRecent(emoji);
             return getHTMLByEmoji(emoji, sizePx);
         });
         isTextChanged = emojiText !== text;

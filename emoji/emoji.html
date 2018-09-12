@@ -126,7 +126,7 @@ th {
 
 </style>
     
-<script src="./emoji.js"></script> 
+<script src="./release/emoji-2.2.7.min.js"></script> 
 
 <h1>Emoji</h1>
 
@@ -338,16 +338,16 @@ function setupExpand(expandId) {
             },
             url: 'https://emojipedia-us.s3.amazonaws.com/thumbs/160/apple/96/thinking-face_1f914.png'
         },
-        recent: recentList
+        recentList: recentList
     };
 
     RongIMEmoji.init(config);
     if (recentList && recentList.length) {
         showRecentPanel(RongIMEmoji.recentList);
     }
-    RongIMEmoji.on('recent-change', function(recentList) {
-        showRecentPanel(recentList);
-        saveLocalRecentList(recentList);
+    RongIMEmoji.on && RongIMEmoji.on('recent-change', function(list) {
+        showRecentPanel(list);
+        saveLocalRecentList(list);
     });
     appendChild('init: 初始化RongIMEmoji');
     
