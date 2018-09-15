@@ -7,10 +7,13 @@ module RongIMLib {
             new FeatureDectector(options.appCallback);
         }
 
-        connect(token: string, callback: ConnectCallback) {
+        connect(token: string, callback: ConnectCallback, userId?: string, option?: any) {
             RongIMClient.bridge = Bridge.getInstance();
             RongIMClient._memoryStore.token = token;
             RongIMClient._memoryStore.callback = callback;
+
+            userId = userId || '';
+            option = option || {};
 
             var isConnecting = false, isConnected = false;
             if (Bridge._client && Bridge._client.channel) {
@@ -25,6 +28,10 @@ module RongIMLib {
             if (isGreater) {
                 callback.onError(ConnectionStatus.ULTRALIMIT);
                 return;
+            }
+            // 清除本地导航缓存
+            if(option.force){
+                RongIMClient._storageProvider.removeItem('servers');
             }
             //循环设置监听事件，追加之后清空存放事件数据
             for (let i = 0, len = RongIMClient._memoryStore.listenerList.length; i < len; i++) {

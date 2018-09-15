@@ -91,7 +91,15 @@ module RongIMLib {
         /*
             互踢次数过多（count > 5），此时可能出现：在其它他设备登陆有 reconnect 逻辑
         */
-        ULTRALIMIT = 1101
+        ULTRALIMIT = 1101,
+        /* 
+            开始请求导航
+        */
+        REQUEST_NAVI = 201,
+        /* 
+            请求导航结束
+        */
+        RESPONSE_NAVI = 202
     }
 
     export enum ConversationNotificationStatus {
