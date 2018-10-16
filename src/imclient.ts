@@ -874,14 +874,9 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.disconnect();
         }
 
-        startCustomService(custId: string, callback: any,groupId?: string): void {
+        startCustomService(custId: string, callback: any, content: any): void {
             if (!custId || !callback) return;
-            var msg: MessageContent;
-            if(typeof groupId == 'undefined') {
-                msg =  new HandShakeMessage();
-            }else{
-                msg = new HandShakeMessage({ groupid:groupId});
-            }
+            var msg = new HandShakeMessage(content);
             var me = this;
             RongIMLib.RongIMClient._memoryStore.custStore["isInit"] = true;
             RongIMClient.getInstance().sendMessage(ConversationType.CUSTOMER_SERVICE, custId, msg, <SendMessageCallback>{
