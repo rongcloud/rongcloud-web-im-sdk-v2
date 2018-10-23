@@ -183,9 +183,15 @@ module RongIMLib {
             var StatusEvent = Channel._ConnectionStatusListener;
             var hasEvent = (typeof StatusEvent == "object");
             var me = this;
+            var isFirstConnect = true;
             me.socket.on("StatusChanged", function(code: any) {
                 if (!hasEvent) {
                     throw new Error("setConnectStatusListener:Parameter format is incorrect");
+                }
+                var isNetworkUnavailable = (code == ConnectionStatus.NETWORK_UNAVAILABLE);
+                var isWebSocket = !RongIMClient._memoryStore.depend.isPolling;
+                if (isFirstConnect && isNetworkUnavailable && isWebSocket) {
+                    code = ConnectionStatus.WEBSOCKET_UNAVAILABLE;
                 }
                 me.connectionStatus = code;
                 setTimeout(function(){
@@ -203,6 +209,17 @@ module RongIMLib {
                    // 删除位置：ServerDataProivder.prototype.connect
                    RongIMClient.otherDeviceLoginCount++;
                 }
+
+                var isConnected = (code == ConnectionStatus.CONNECTED);
+                if (isConnected) {
+                    isFirstConnect = false;
+                }
+                var isWebsocketUnAvailable = (code == ConnectionStatus.WEBSOCKET_UNAVAILABLE);
+                if (isWebsocketUnAvailable) {
+                    me.changeConnectType();
+                    isFirstConnect = false;
+                    RongIMClient.connect(self.token, RongIMClient._memoryStore.callback);
+                }
             });
 
             //注册message观察者
@@ -211,6 +228,10 @@ module RongIMLib {
             this.socket.on("disconnect", function(status: number) {
                 that.socket.fire("StatusChanged", status ? status : 2);
             });
+        }
+        changeConnectType() {
+            RongIMClient._memoryStore.depend.isPolling = !RongIMClient._memoryStore.depend.isPolling;
+            new FeatureDectector();
         }
         writeAndFlush(val: any) {
             this.socket.send(val);

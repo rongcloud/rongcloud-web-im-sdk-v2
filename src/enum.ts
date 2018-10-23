@@ -76,6 +76,11 @@ module RongIMLib {
         KICKED_OFFLINE_BY_OTHER_CLIENT = 6,
 
         /**
+         * websocket 连接失败
+         */
+        WEBSOCKET_UNAVAILABLE = 7,
+
+        /**
          * 网络不可用。
          */
         NETWORK_UNAVAILABLE = 3,
