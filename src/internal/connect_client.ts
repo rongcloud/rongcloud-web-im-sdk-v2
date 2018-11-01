@@ -484,18 +484,22 @@ module RongIMLib {
             this.channel.writeAndFlush(msg);
         }
         invoke(isPullMsg?: boolean, chrmId?: string, offlineMsg?: boolean) {
-            var time: string, modules: any, str: string, me = this, target: string, temp: any = this.SyncTimeQueue.shift();
+            var time: number, modules: any, str: string, me = this, target: string, temp: any = this.SyncTimeQueue.shift();
             if (temp == undefined) {
                 return;
             }
             this.SyncTimeQueue.state = "pending";
+            var localSyncTime = SyncTimeUtil.get();
             if (temp.type != 2) {
                 //普通消息
-                time = RongIMClient._storageProvider.getItem(this.userId) || '0';
+                time = localSyncTime.received;
                 modules = new RongIMClient.Protobuf.SyncRequestMsg();
                 modules.setIspolling(false);
                 str = "pullMsg";
                 target = this.userId;
+
+                var sentBoxTime = localSyncTime.sent;
+                modules.setSendBoxSyncTime(sentBoxTime);
             } else {
                 //聊天室消息
                 target = temp.chrmId || me.chatroomId;
@@ -734,6 +738,12 @@ module RongIMLib {
                 return;
             }
 
+            var msgTag = RongIMLib.RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag();
+
+            if (msgTag == 3 || msgTag == 1){
+                RongIMLib.SyncTimeUtil.set(message);
+            }
+
             var isSend = (message.messageDirection == RongIMLib.MessageDirection.SEND);
             if (isSend) {
                 var storageProvider = RongIMLib.RongIMClient._storageProvider;
@@ -772,13 +782,14 @@ module RongIMLib {
                             }
                         }
 
-                        if (con.conversationType != 0 && message.senderUserId != Bridge._client.userId && message.receivedStatus != ReceivedStatus.RETRIEVED && message.messageType != RongIMClient.MessageType["ReadReceiptRequestMessage"] && message.messageType != RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
+                        var isReceiver = message.messageDirection == RongIMLib.MessageDirection.RECEIVE;
+                        if (isReceiver) {
                             con.unreadMessageCount = con.unreadMessageCount + 1;
                             if (RongUtil.supportLocalStorage()) {
                                 var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
                                 RongIMClient._storageProvider.setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
-                            }
-                        }
+                            } 
+                        } 
                         con.receivedTime = new Date().getTime();
                         con.receivedStatus = message.receivedStatus;
                         con.senderUserId = message.sendUserId;

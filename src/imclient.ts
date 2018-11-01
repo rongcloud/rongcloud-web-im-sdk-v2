@@ -13,7 +13,7 @@ module RongIMLib {
         private static _instance: RongIMClient;
         static bridge: any;
         static userStatusObserver:RongObserver = null;
-        static sdkver:string = '2.3.3';
+        static sdkver:string = '2.3.4';
         static otherDeviceLoginCount:number = 0;
         static serverStore: any = { index: 0 };
         static getInstance(): RongIMClient {
@@ -138,7 +138,7 @@ module RongIMLib {
             });
             
             var _sourcePath:{[key:string]:any} = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.3.1.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.3.2.min.js'
             };
 
             RongUtil.forEach(_sourcePath, function(path: string, key: string){

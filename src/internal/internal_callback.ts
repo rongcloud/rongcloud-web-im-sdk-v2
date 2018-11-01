@@ -110,12 +110,15 @@ module RongIMLib {
                 if (_msg) {
                     _msg.setSentStatus = _status;
                 }
-                var userId = RongIMLib.Bridge._client.userId;
-                var stroageProvider = RongIMLib.RongIMClient._storageProvider;
-                stroageProvider.setItem(userId, timestamp);
+                var userId = Bridge._client.userId;
+                var stroageProvider = RongIMClient._storageProvider;
                 stroageProvider.setItem('last_sentTime_' + userId, timestamp);
-                RongIMLib.RongIMClient._memoryStore.lastReadTime.get(userId, timestamp);
-                
+
+                SyncTimeUtil.set({
+                    messageDirection: MessageDirection.SEND,
+                    sentTime: timestamp
+                });
+
                 this._cb({ messageUId: messageUId, timestamp: timestamp, messageId: messageId });
             } else {
                 this._timeout(_status, {
