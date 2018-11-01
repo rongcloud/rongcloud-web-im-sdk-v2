@@ -87,7 +87,9 @@ module RongIMLib {
                     if (entity.info) {
                         var self = this;
                         Array.forEach(entity.info, function(item: any) {
-                            setTimeout(self.pottingProfile(item), 100);
+                            setTimeout(function(){
+                                self.pottingProfile(item);
+                            }, 100);
                         });
                     }
                     return this.publicServiceList;
