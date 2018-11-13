@@ -1999,7 +1999,7 @@ var RongIMLib;
                 options[key] = path;
             });
             var _sourcePath = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.3.2.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.3.3.min.js'
             };
             RongIMLib.RongUtil.forEach(_sourcePath, function (path, key) {
                 _sourcePath[key] = RongIMLib.RongUtil.stringFormat(pathTmpl, [protocol, path]);
@@ -4702,7 +4702,7 @@ var RongIMLib;
                 return;
             }
             var msgTag = RongIMLib.RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag();
-            if (msgTag == 3 || msgTag == 1 || msgTag == 0) {
+            if (msgTag == 3 || msgTag == 2 || msgTag == 1 || msgTag == 0) {
                 RongIMLib.SyncTimeUtil.set(message);
             }
             var isSend = (message.messageDirection == RongIMLib.MessageDirection.SEND);
