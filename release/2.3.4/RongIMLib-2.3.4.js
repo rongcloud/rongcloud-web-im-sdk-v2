@@ -4702,7 +4702,7 @@ var RongIMLib;
                 return;
             }
             var msgTag = RongIMLib.RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag();
-            if (msgTag == 3 || msgTag == 1) {
+            if (msgTag == 3 || msgTag == 1 || msgTag == 0) {
                 RongIMLib.SyncTimeUtil.set(message);
             }
             var isSend = (message.messageDirection == RongIMLib.MessageDirection.SEND);
@@ -5022,7 +5022,9 @@ var RongIMLib;
                     if (entity.info) {
                         var self = this;
                         Array.forEach(entity.info, function (item) {
-                            setTimeout(self.pottingProfile(item), 100);
+                            setTimeout(function () {
+                                self.pottingProfile(item);
+                            }, 100);
                         });
                     }
                     return this.publicServiceList;
