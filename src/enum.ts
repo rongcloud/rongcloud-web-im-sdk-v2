@@ -76,6 +76,11 @@ module RongIMLib {
         KICKED_OFFLINE_BY_OTHER_CLIENT = 6,
 
         /**
+         * websocket 连接失败
+         */
+        WEBSOCKET_UNAVAILABLE = 7,
+
+        /**
          * 网络不可用。
          */
         NETWORK_UNAVAILABLE = 3,
@@ -91,7 +96,15 @@ module RongIMLib {
         /*
             互踢次数过多（count > 5），此时可能出现：在其它他设备登陆有 reconnect 逻辑
         */
-        ULTRALIMIT = 1101
+        ULTRALIMIT = 1101,
+        /* 
+            开始请求导航
+        */
+        REQUEST_NAVI = 201,
+        /* 
+            请求导航结束
+        */
+        RESPONSE_NAVI = 202
     }
 
     export enum ConversationNotificationStatus {

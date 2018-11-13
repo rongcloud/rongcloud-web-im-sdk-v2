@@ -4,7 +4,7 @@ module RongIMLib {
     }
 
     export interface OnReceiveMessageListener {
-        onReceived(message: Message, left: number): void;
+        onReceived(message: Message, left: number, hasMore: boolean): void;
     }
 
     export interface RealTimeLocationListener {

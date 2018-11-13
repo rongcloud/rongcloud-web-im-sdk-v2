@@ -78,8 +78,26 @@ module RongIMLib {
     export class HandShakeMessage implements MessageContent {
         messageName: string = "HandShakeMessage";
         groupid : string;
+        /* 
+           var requestInfo = {
+                define: "",
+                productId: "123",
+                referrer: "10001"
+           };
+        */
+        requestInfo: any;
+        /* 
+           var userInfo = {
+                grade: "VIP",
+                name: "Martin"
+           };
+        */
+        userInfo: any;
         constructor(message?:any) { 
-            message && (this.groupid = message.groupid);
+           if(message){
+               this.requestInfo = message.requestInfo;
+               this.userInfo = message.userInfo;
+           }
         }
         static obtain(): HandShakeMessage {
             return null;

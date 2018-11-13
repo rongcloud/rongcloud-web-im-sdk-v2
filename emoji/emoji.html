@@ -126,7 +126,7 @@ th {
 
 </style>
     
-<script src="release/emoji-2.2.7.min.js"></script> 
+<script src="./release/emoji-2.2.7.min.js"></script> 
 
 <h1>Emoji</h1>
 
@@ -288,6 +288,10 @@ function setupExpand(expandId) {
             <a href="#emoji" class="chatbox-emoji-btn" id="chatbox-emoji-btn">表情</a>
             <div class="chatbox-emoji-panel" id="chatbox-emoji-panel"></div>
         </div>
+        <div id="chatbox-common-emoji" class="chatbox-tools-emoji" style="display: none;">
+            <a href="#emoji" class="chatbox-emoji-btn" id="chatbox-emoji-btn-common">常用表情</a>
+            <div class="chatbox-emoji-panel" id="chatbox-emoji-panel-common"></div>
+        </div>
     </div>
     <ol class="chatbox-show" id="chatbox-show"></ol>
     <textarea class="chatbox-message" id="chatbox-message">今天心情很不错[笑嘻嘻]</textarea>
@@ -312,33 +316,39 @@ function setupExpand(expandId) {
     var btn = document.getElementById("chatbox-emoji-btn");
     var panel = document.getElementById("chatbox-emoji-panel");
     var chatshow = document.getElementById("chatbox-show");
+    var commonBtn = document.getElementById('chatbox-emoji-btn-common');
+    var recentPanel = document.getElementById('chatbox-emoji-panel-common');
 
     var RongIMEmoji = RongIMLib.RongIMEmoji;
+    var recentList = getLocalRecentList();
 
     var config = {
         size: 24,
-        lang: 'zh'
+        // url: '//f2e.cn.ronghub.com/sdk/emoji-48.png?replace', // 传入服务器路径
+        url: 'emojis-hd.png?replace', // 传入本地路径
+        lang: 'zh',
+        extension: {
+            dataSource: {
+                u1F914: {
+                    zh: '思考',
+                    en: 'thinking face',
+                    tag: '🤔',
+                    position: '0px 0px'
+                }
+            },
+            url: 'https://emojipedia-us.s3.amazonaws.com/thumbs/160/apple/96/thinking-face_1f914.png'
+        },
+        recentList: recentList
     };
 
-    // 扩展表情
-    // var config = {
-    //     size: 28,
-    //     url: './emojis.png',
-    //     lang: 'zh',
-    //     extension: {
-    //         dataSource: {
-    //             u1F914: {
-    //                 zh: '思考',
-    //                 en: 'thinking face',
-    //                 tag: '🤔',
-    //                 position: '0px 0px'
-    //             }
-    //         },
-    //         url: 'https://cdn.ronghub.com/thinking-face.png'
-    //     }
-    // };
-
     RongIMEmoji.init(config);
+    if (recentList && recentList.length) {
+        showRecentPanel(RongIMEmoji.recentList);
+    }
+    RongIMEmoji.on && RongIMEmoji.on('recent-change', function(list) {
+        showRecentPanel(list);
+        saveLocalRecentList(list);
+    });
     appendChild('init: 初始化RongIMEmoji');
     
     btn.onclick = function(){
@@ -347,6 +357,20 @@ function setupExpand(expandId) {
         bindClickEmoji(emojis);
         return false;
     };
+
+    function showRecentPanel(recentList) {
+        if (recentList.length) {
+            var recentBox = document.getElementById('chatbox-common-emoji');
+            recentBox.style.display = 'block';
+            recentPanel.style.display = 'block';
+            var emojis = getEmojiDetailList(recentList);
+            for(var i = 0; i < emojis.length; i++){
+                var emojiHtml = emojis[i];
+                recentPanel.appendChild(emojiHtml);
+                emojiHtml.onclick = clickEmoji;
+            }
+        }
+    }
 
     var symbolToEmojiBtn = document.getElementById("symbol-emoji");
     symbolToEmojiBtn.onclick = function(){
@@ -400,10 +424,11 @@ function setupExpand(expandId) {
         chatshow.appendChild(child);
     }
 
-    function getEmojiDetailList() {
+    function getEmojiDetailList(list) {
+        list = list || RongIMEmoji.list;
         var shadowDomList = [];
-        for (var i = 0; i < RongIMEmoji.list.length; i++) {
-            var value = RongIMEmoji.list[i];
+        for (var i = 0; i < list.length; i++) {
+            var value = list[i];
             shadowDomList.push(value.node);
         }
         return shadowDomList;
@@ -424,6 +449,16 @@ function setupExpand(expandId) {
             console.log(target);
         }
         chatbox.value = chatbox.value + target.getAttribute("name");
+    }
+
+    function saveLocalRecentList(recentList) {
+        recentList = JSON.stringify(recentList);
+        localStorage.setItem('recentList', recentList);
+    }
+
+    function getLocalRecentList() {
+        var recentList = localStorage.getItem('recentList');
+        return JSON.parse(recentList);
     }
 
 

@@ -60,6 +60,42 @@ module RongIMLib {
         static _TransportType: string = Socket.WEBSOCKET;
     }
 
+    export class SyncTimeUtil {
+        static $getKey(message: any){
+            var client = Bridge._client;
+            var userId = client.userId;
+            var direction = (message.messageDirection == 1 ? 'send' : 'receive');
+            var appkey = RongIMClient._memoryStore.appKey;
+            var tpl = '{appkey}_{userId}_{direction}box';
+            return RongUtil.tplEngine(tpl, {
+                appkey: appkey,
+                userId: userId,
+                direction: direction
+            });
+        }
+        static set(message: any){
+            var key = SyncTimeUtil.$getKey(message)
+            var sentTime = message.sentTime;
+            var storage = RongIMClient._storageProvider;
+            storage.setItem(key, sentTime);
+        }
+        static get(){
+            var sent = SyncTimeUtil.$getKey({
+                messageDirection: MessageDirection.SEND
+            });
+    
+            var received = SyncTimeUtil.$getKey({
+                messageDirection: MessageDirection.RECEIVE
+            });
+    
+            var storage = RongIMClient._storageProvider;
+            return {
+                sent: Number(storage.getItem(sent) || 0),
+                received: Number(storage.getItem(received) || 0)
+            };
+        }
+    }
+
     export class MessageUtil {
         //适配SSL
         // static schemeArrs: Array<any> = [["http", "ws"], ["https", "wss"]];

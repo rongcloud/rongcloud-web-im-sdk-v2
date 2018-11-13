@@ -42,6 +42,8 @@ module RongIMLib {
                 var openMp = result.openMp;
                 storage.setItem('openMp' + uid, openMp);
                 RongIMClient._memoryStore.depend.openMp = openMp;
+                var StatusEvent = Channel._ConnectionStatusListener;
+                StatusEvent.onChanged(ConnectionStatus.RESPONSE_NAVI);
             };
         }
         connect(appId?: string, token?: string, callback?: any) {
@@ -85,6 +87,8 @@ module RongIMLib {
                 }
             }
             Navigation.clear();
+            var StatusEvent = Channel._ConnectionStatusListener;
+            StatusEvent.onChanged(ConnectionStatus.REQUEST_NAVI);
             //导航信息，切换Url对象的key进行线上线下测试操作
             var xss:any = document.createElement("script");
             //进行jsonp请求

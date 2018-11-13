@@ -189,21 +189,16 @@ module RongIMLib {
             var me = this,localCount = 0;
             me.messageListener = listener;
             this.useConsole && console.log("setOnReceiveMessageListener");
-            me.addon && me.addon.setOnReceiveMessageListener(function(result: string, leftCount: number): void {
+            me.addon && me.addon.setOnReceiveMessageListener(function(result: string, leftCount: number, offline: boolean, hasMore: boolean): void {
                 var message:Message = me.buildMessage(result);
-                if((leftCount == 0 && localCount == 1) || leftCount > 0) {
-                    message.offLineMessage = true;
-                }else{    
-                    message.offLineMessage = false;
-                }
-                localCount = leftCount;
+                message.offLineMessage = offline;
                 setTimeout(function(){
                     var voipMsgTypes = ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'];
                     var isVoIPMsg = voipMsgTypes.indexOf(message.messageType) > -1;         
                     if (isVoIPMsg) {
                         RongIMClient._voipProvider && RongIMClient._voipProvider.onReceived(message);
                     }else{
-                        listener.onReceived(message, leftCount);
+                        listener.onReceived(message, leftCount, hasMore);
                     }
                 });
             });
@@ -242,7 +237,7 @@ module RongIMLib {
             this.sendMessage(conversationType, targetId, msgContent, sendMessageCallback);
         }
 
-        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void {
+        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, config?: any): void {
             try {
                 var me = this;
                 me.useConsole && console.log("getRemoteHistoryMessages");

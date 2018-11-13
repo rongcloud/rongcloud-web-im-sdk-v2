@@ -7,10 +7,13 @@ module RongIMLib {
             new FeatureDectector(options.appCallback);
         }
 
-        connect(token: string, callback: ConnectCallback) {
+        connect(token: string, callback: ConnectCallback, userId?: string, option?: any) {
             RongIMClient.bridge = Bridge.getInstance();
             RongIMClient._memoryStore.token = token;
             RongIMClient._memoryStore.callback = callback;
+
+            userId = userId || '';
+            option = option || {};
 
             var isConnecting = false, isConnected = false;
             if (Bridge._client && Bridge._client.channel) {
@@ -25,6 +28,10 @@ module RongIMLib {
             if (isGreater) {
                 callback.onError(ConnectionStatus.ULTRALIMIT);
                 return;
+            }
+            // 清除本地导航缓存
+            if(option.force){
+                RongIMClient._storageProvider.removeItem('servers');
             }
             //循环设置监听事件，追加之后清空存放事件数据
             for (let i = 0, len = RongIMClient._memoryStore.listenerList.length; i < len; i++) {
@@ -210,13 +217,15 @@ module RongIMLib {
             this.sendMessage(conversationType, targetId, msgContent, sendMessageCallback);
         }
 
-        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback): void {
+        getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, config?: any): void {
             if(count <= 1) {
                 throw new Error("the count must be greater than 1.");
             }
-            
+            config = config || {};
+            var order = config.order || 0;
+
             var getKey = function(){
-                return [conversationType, targetId].join('');
+                return [conversationType, targetId,'_', order].join('');
             };
             var key = getKey();
             if (!RongUtil.isNumber(timestamp)) {
@@ -234,17 +243,21 @@ module RongIMLib {
             var limit:any = historyMessageLimit.get(key) || {};
             var hasMore = limit.hasMore;
             var isFecth = (hasMore || limit.time != timestamp);
-            if (!isFecth) {
+            // 正序获取消息时不做限制，防止有新消息导致无法获取
+            if (!isFecth && order == 0) {
                 return callback.onSuccess([], hasMore);
             }
-            var modules = new RongIMClient.Protobuf.HistoryMessageInput(), self = this;
+            
+            var modules = new RongIMClient.Protobuf.HistoryMsgInput(), self = this;
             modules.setTargetId(targetId);
-            modules.setDataTime(timestamp);
-            modules.setSize(count);
+            modules.setTime(timestamp);
+            modules.setCount(count);
+            modules.setOrder(order);
+
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
                 onSuccess: function(data: any) {
                     var fetchTime = MessageUtil.int64ToTimestamp(data.syncTime);
-                    RongIMClient._memoryStore.lastReadTime.set(conversationType + targetId, fetchTime);
+                    RongIMClient._memoryStore.lastReadTime.set(key, fetchTime);
                     historyMessageLimit.set(key, {
                         hasMore: !!data.hasMsg,
                         time: fetchTime
@@ -1166,8 +1179,12 @@ module RongIMLib {
             
         };
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback) {
-            RongIMClient.getInstance().getRemoteHistoryMessages(conversationType, targetId, timestamp, count, callback);
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, order?: boolean) {
+            var config = {
+                objectname: objectname,
+                order: order
+            };
+            RongIMClient.getInstance().getRemoteHistoryMessages(conversationType, targetId, timestamp, count, callback, config);
         }
 
         getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]) {

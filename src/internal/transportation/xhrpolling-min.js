@@ -257,6 +257,9 @@ var Polling = {
             this.setIsPullSend = function (b) {
                 a.isPullSend = !!b;
             };
+            this.setSendBoxSyncTime = function (b) {
+                a.sendBoxSyncTime = b;
+            };
             this.toArrayBuffer = function () {
                 return a;
             };
