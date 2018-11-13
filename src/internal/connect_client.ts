@@ -740,7 +740,7 @@ module RongIMLib {
 
             var msgTag = RongIMLib.RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag();
 
-            if (msgTag == 3 || msgTag == 1){
+            if (msgTag == 3 || msgTag == 1 || msgTag == 0){
                 RongIMLib.SyncTimeUtil.set(message);
             }
 
