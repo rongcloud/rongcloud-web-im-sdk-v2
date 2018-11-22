@@ -535,21 +535,17 @@ module RongIMLib {
                             storage.setItem(symbol, sync);
                         }
                     }
-
-                    //防止因离线消息造成会话列表不为空而无法从服务器拉取会话列表。
-                    //offlineMsg && (RongIMClient._memoryStore.isSyncRemoteConverList = true);
-
-                    me.SyncTimeQueue.state = "complete";
-                    me.invoke(isPullMsg, target);
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
+                    var isPullFinished = !!collection.finished;
                     for (let i = 0, len = list.length, count = len; i < len; i++) {
                         if (!(list[i].msgId in me.cacheMessageIds)) {
                             count-=1;
                             var message = list[i];
                             var sentTime = RongIMLib.MessageUtil.int64ToTimestamp(message.dataTime);
                             if (sentTime > time) {
-                                Bridge._client.handler.onReceived(message, undefined, offlineMsg, count);
+                                var isSyncMessage = false;
+                                Bridge._client.handler.onReceived(message, undefined, offlineMsg, count, isSyncMessage, isPullFinished);
                                 var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
                                 if (arrLen > 20){
                                     me.cacheMessageIds.length = 20;
@@ -557,8 +553,8 @@ module RongIMLib {
                             }
                         }
                     }
-
-                    var isPullFinished = collection.finished;
+                    me.SyncTimeQueue.state = "complete";
+                    me.invoke(isPullMsg, target);
                     RongIMLib.RongIMClient._memoryStore.isPullFinished = isPullFinished;
                 },
                 onError: function(error: ErrorCode) {
@@ -660,7 +656,7 @@ module RongIMLib {
             }
         }
 
-        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean, leftCount?: number, isSync?: boolean): void {
+        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean, leftCount?: number, isSync?: boolean, isPullFinished?: boolean): void {
             //实体对象
             var entity: any,
                 //解析完成的消息对象
@@ -896,16 +892,16 @@ module RongIMLib {
                     RongIMClient._voipProvider.onReceived(message);
                 });
             } else {
-                var lcount = leftCount || 0;
+                var count = leftCount || 0;
                 RongIMClient._dataAccessProvider.addMessage(message.conversationType, message.targetId, message, {
-                    onSuccess: function(ret: Message) {
+                    onSuccess: function(msg: Message) {
                         setTimeout(function(){
-                            that._onReceived(ret, lcount);
+                            that._onReceived(msg, count, !!isPullFinished);
                         });
                     },
                     onError: function(error: ErrorCode) {
                         setTimeout(function(){
-                            that._onReceived(message, lcount);
+                            that._onReceived(message, count, !!isPullFinished);
                         });
                     }
                 });
