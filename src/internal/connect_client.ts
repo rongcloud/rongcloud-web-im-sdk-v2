@@ -893,17 +893,9 @@ module RongIMLib {
                 });
             } else {
                 var count = leftCount || 0;
-                RongIMClient._dataAccessProvider.addMessage(message.conversationType, message.targetId, message, {
-                    onSuccess: function(msg: Message) {
-                        setTimeout(function(){
-                            that._onReceived(msg, count, !!isPullFinished);
-                        });
-                    },
-                    onError: function(error: ErrorCode) {
-                        setTimeout(function(){
-                            that._onReceived(message, count, !!isPullFinished);
-                        });
-                    }
+                var hasMore = !isPullFinished;
+                setTimeout(function(){
+                    that._onReceived(message, count, hasMore);
                 });
             }
         }
