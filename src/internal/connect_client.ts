@@ -123,7 +123,7 @@ module RongIMLib {
                             var xss:any = document.createElement("script");
                             xss.src = url;
                             document.body.appendChild(xss);
-                            xss.onload = function () {
+                            var onSuccess = function(){
                                 if (isFinished) {
                                     return;
                                 }
@@ -133,8 +133,8 @@ module RongIMLib {
                                 var url = xss.src;
                                 callback(url);
                             };
-                            // 此处不处理 xss.onerror 15 秒不执行 onload 自动超时
-
+                            xss.onload = onSuccess;
+                            xss.onerror = onSuccess;
                             elements.push(xss);
                         }, time);
                         timers.push(timer);
