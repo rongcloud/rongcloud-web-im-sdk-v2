@@ -955,6 +955,7 @@ module RongIMLib {
             var isAdd: boolean = true;
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType === conversation.conversationType && RongIMClient._memoryStore.conversationList[i].targetId === conversation.targetId) {
+                    // RongIMClient._memoryStore.conversationList[i] = conversation;
                     RongIMClient._memoryStore.conversationList.unshift(RongIMClient._memoryStore.conversationList.splice(i, 1)[0]);
                     isAdd = false;
                     break;
@@ -1104,7 +1105,7 @@ module RongIMLib {
             });
         }
 
-        getConversation(conversationType: ConversationType, targetId: string, callback?: ResultCallback<Conversation>) {
+        getConversation(conversationType: ConversationType, targetId: string, callback?: ResultCallback<Conversation>): Conversation {
             var conver: Conversation = null;
             for (let i = 0, len = RongIMClient._memoryStore.conversationList.length; i < len; i++) {
                 if (RongIMClient._memoryStore.conversationList[i].conversationType == conversationType && RongIMClient._memoryStore.conversationList[i].targetId == targetId) {
@@ -1241,6 +1242,24 @@ module RongIMLib {
             });
         }
 
+        cleanMentioneds(conver: Conversation) {
+            if (conver) {
+                conver.mentionedMsg = null;
+                var targetId = conver.targetId;
+                var conversationType = conver.conversationType;
+                var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
+                if (mentioneds) {
+                    var info: any = JSON.parse(mentioneds);
+                    delete info[conversationType + "_" + targetId];
+                    if (!MessageUtil.isEmpty(info)) {
+                        RongIMClient._storageProvider.setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info));
+                    } else {
+                        RongIMClient._storageProvider.removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
+                    }
+                }
+            }
+        }
+
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{
             setTimeout(function(){
                 callback.onSuccess(true);
@@ -1248,22 +1267,13 @@ module RongIMLib {
         }
 
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
+            var me = this;
             RongIMClient._storageProvider.removeItem("cu" + Bridge._client.userId + conversationType + targetId);
             this.getConversation(conversationType, targetId, {
                 onSuccess: function(conver: Conversation) {
                     if (conver) {
                         conver.unreadMessageCount = 0;
-                        conver.mentionedMsg = null;
-                        var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
-                        if (mentioneds) {
-                            var info: any = JSON.parse(mentioneds);
-                            delete info[conversationType + "_" + targetId];
-                            if (!MessageUtil.isEmpty(info)) {
-                                RongIMClient._storageProvider.setItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId, JSON.stringify(info));
-                            } else {
-                                RongIMClient._storageProvider.removeItem("mentioneds_" + Bridge._client.userId + '_' + conversationType + '_' + targetId);
-                            }
-                        }
+                        me.cleanMentioneds(conver);
                     }
                     setTimeout(function(){
                         callback.onSuccess(true);
@@ -1278,6 +1288,31 @@ module RongIMLib {
 
 
         }
+
+        clearTotalUnreadCount(callback: ResultCallback<boolean>) {
+            var list = RongIMClient._memoryStore.conversationList;
+            var me = this;
+            if (list) {
+                // 清除 mentioneds、清除 list 中的 unreadMessageCount
+                for (var i = 0; i < list.length; i++) {
+                    var conver = list[i];
+                    if (conver) {
+                        conver.unreadMessageCount = 0;
+                        me.cleanMentioneds(conver);
+                    }
+                }
+            }
+            // 1. 获取所有 key 2. 清除
+            var unreadKeys = RongIMClient._storageProvider.getItemKeyList("cu" + Bridge._client.userId);
+            for (var i = 0; i < unreadKeys.length; i++) {
+                var key = unreadKeys[i];
+                RongIMClient._storageProvider.removeItem(key);
+            }
+            setTimeout(() => {
+                callback.onSuccess(true);
+            });
+        }
+
         setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>) {
             var me = this;
             this.getConversation(conversationType, targetId, {

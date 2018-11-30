@@ -10,6 +10,8 @@ module RongIMLib {
 
         getItemKey(composedStr: string): string;
 
+        getItemKeyList(composedStr: string): Array<string>;
+
         removeItem(composedKey: string): void;
 
         clearItem(): void;

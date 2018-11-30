@@ -521,7 +521,7 @@ module RongIMLib {
 
         }
 
-        getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void {
+        getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): any {
             try {
                 this.useConsole && console.log("getConversation");
                 var ret: string = this.addon.getConversation(conversationType, targetId);
@@ -664,6 +664,10 @@ module RongIMLib {
             } catch (e) {
                 callback.onError(e);
             }
+        }
+
+        clearTotalUnreadCount(callback: ResultCallback<boolean>): void {
+            this.useConsole && console.log("clearTotalUnreadCount");
         }
 
         clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{

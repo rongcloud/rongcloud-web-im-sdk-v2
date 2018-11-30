@@ -762,46 +762,46 @@ module RongIMLib {
             var isPersited = (RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag() > 0);
 
             if (isPersited) {
-                RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
-                    onSuccess: function(con: Conversation) {
-                        if (!con) {
-                            con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
-                        }
-
-                        if (message.messageDirection == MessageDirection.RECEIVE && (entity.status & 64) == 64) {
-                            var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId);
-                            var key: string = message.conversationType + '_' + message.targetId, info: any = {};
-                            if (message.content && message.content.mentionedInfo) {
-                                info[key] = { uid: message.messageUId, time: message.sentTime, mentionedInfo: message.content.mentionedInfo };
-                                RongIMClient._storageProvider.setItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId, JSON.stringify(info));
-                                mentioneds = JSON.stringify(info);
-                            }
-                            if (mentioneds) {
-                                var info: any = JSON.parse(mentioneds);
-                                con.mentionedMsg = info[key];
-                            }
-                        }
-
-                        var isReceiver = message.messageDirection == RongIMLib.MessageDirection.RECEIVE;
-                        if (isReceiver) {
-                            con.unreadMessageCount = con.unreadMessageCount + 1;
-                            if (RongUtil.supportLocalStorage()) {
-                                var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
-                                RongIMClient._storageProvider.setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, Number(count) + 1);
-                            } 
-                        } 
-                        con.receivedTime = new Date().getTime();
-                        con.receivedStatus = message.receivedStatus;
-                        con.senderUserId = message.sendUserId;
-                        con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
-                        con.latestMessageId = message.messageId;
-                        con.latestMessage = message
-                        con.sentTime = message.sentTime;
-                        RongIMClient._dataAccessProvider.addConversation(con, { onSuccess: function(data) { }, onError: function() { } });
-                    },
-                    onError: function(error: ErrorCode) { }
+                con = RongIMClient._dataAccessProvider.getConversation(message.conversationType, message.targetId, {
+                    onSuccess: function () {},
+                    onError: function () {}
                 });
+                if (!con) {
+                    con = RongIMClient.getInstance().createConversation(message.conversationType, message.targetId, "");
+                }
 
+                if (message.messageDirection == MessageDirection.RECEIVE && (entity.status & 64) == 64) {
+                    var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId);
+                    var key: string = message.conversationType + '_' + message.targetId, info: any = {};
+                    if (message.content && message.content.mentionedInfo) {
+                        info[key] = { uid: message.messageUId, time: message.sentTime, mentionedInfo: message.content.mentionedInfo };
+                        RongIMClient._storageProvider.setItem("mentioneds_" + Bridge._client.userId + '_' + message.conversationType + '_' + message.targetId, JSON.stringify(info));
+                        mentioneds = JSON.stringify(info);
+                    }
+                    if (mentioneds) {
+                        var info: any = JSON.parse(mentioneds);
+                        con.mentionedMsg = info[key];
+                    }
+                }
+
+                var isReceiver = message.messageDirection == RongIMLib.MessageDirection.RECEIVE;
+                if (isReceiver) {
+                    con.unreadMessageCount = con.unreadMessageCount + 1;
+                    if (RongUtil.supportLocalStorage()) {
+                        var originUnreadCount = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
+                        var newUnreadCount = Number(originUnreadCount) + 1;
+                        RongIMClient._storageProvider.setItem("cu" + Bridge._client.userId + con.conversationType + message.targetId, newUnreadCount);
+                        con.unreadMessageCount = newUnreadCount;
+                    }
+                }
+                con.receivedTime = new Date().getTime();
+                con.receivedStatus = message.receivedStatus;
+                con.senderUserId = message.sendUserId;
+                con.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
+                con.latestMessageId = message.messageId;
+                con.latestMessage = message
+                con.sentTime = message.sentTime;
+                RongIMClient._dataAccessProvider.addConversation(con, { onSuccess: function (data) { }, onError: function () { } });
             }
 
             if (message.conversationType == ConversationType.CUSTOMER_SERVICE && (message.messageType == "ChangeModeResponseMessage" || message.messageType == "SuspendMessage" || message.messageType == "HandShakeResponseMessage" ||
