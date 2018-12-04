@@ -326,23 +326,26 @@ module RongIMLib {
                             RongIMClient.getInstance().pottingConversation(list.info[i]);
                         }
                     }
-                    if (conversationTypes) {
-                        var convers: Conversation[] = [];
-                        Array.forEach(conversationTypes, function(converType: ConversationType) {
-                            Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
-                                if (item.conversationType == converType) {
-                                    convers.push(item);
-                                }
-                            });
-                        });
-                        setTimeout(function(){
-                            callback.onSuccess(convers);
-                        });
-                    } else {
-                        setTimeout(function(){
-                            callback.onSuccess(RongIMClient._memoryStore.conversationList);
-                        });
-                    }
+                    // if (conversationTypes) {
+                    //     var convers: Conversation[] = [];
+                    //     Array.forEach(conversationTypes, function(converType: ConversationType) {
+                    //         Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
+                    //             if (item.conversationType == converType) {
+                    //                 convers.push(item);
+                    //             }
+                    //         });
+                    //     });
+                    //     setTimeout(function(){
+                    //         callback.onSuccess(convers);
+                    //     });
+                    // } else {
+                    //     setTimeout(function(){
+                    //         callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                    //     });
+                    // }
+                    setTimeout(function(){
+                        callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                    });
                 },
                 onError: function(error: ErrorCode) {
                     callback.onError(error);
@@ -1127,9 +1130,11 @@ module RongIMLib {
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isHidden?:boolean) {
             var isSync = RongIMClient._memoryStore.isSyncRemoteConverList;
             var list = RongIMClient._memoryStore.conversationList;
-            if (!isSync) {
+            var isLocalInclude = list.length > count;
+            if (!isSync && isLocalInclude) {
                 setTimeout(function() {
-                    callback.onSuccess(list);
+                    var localList = list.slice(0, count);
+                    callback.onSuccess(localList);
                 });
                 return;
             }
@@ -1190,17 +1195,22 @@ module RongIMLib {
 
         getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]) {
             var count: number = 0;
+            var storageProvider = RongIMClient._storageProvider;
             if (conversationTypes) {
-                for (var i = 0, len = conversationTypes.length; i < len; i++) {
-                    Array.forEach(RongIMClient._memoryStore.conversationList, function(conver: Conversation) {
-                        if (conver.conversationType == conversationTypes[i]) {
-                            count += conver.unreadMessageCount;
-                        }
+                RongUtil.forEach(conversationTypes, function (type:number) {
+                    var unreadKeys = storageProvider.getItemKeyList("cu" + Bridge._client.userId + type);
+                    RongUtil.forEach(unreadKeys, function (key: string) {
+                        var unread = storageProvider.getItem(key);
+                        var unreadCount = Number(unread) || 0;
+                        count += unreadCount;
                     });
-                }
+                });
             } else {
-                Array.forEach(RongIMClient._memoryStore.conversationList, function(conver: Conversation) {
-                    count += conver.unreadMessageCount;
+                var unreadKeys = storageProvider.getItemKeyList("cu" + Bridge._client.userId);
+                RongUtil.forEach(unreadKeys, function (key: string) {
+                    var unread = storageProvider.getItem(key);
+                    var unreadCount = Number(unread) || 0;
+                    count += unreadCount;
                 });
             }
             callback.onSuccess(count);
@@ -1228,17 +1238,11 @@ module RongIMLib {
         }
 
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>) {
-            this.getConversation(conversationType, targetId, {
-                onSuccess: function(conver: Conversation) {
-                    setTimeout(function(){
-                        callback.onSuccess(conver ? conver.unreadMessageCount : 0);
-                    });
-                },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function(){
-                        callback.onError(error);
-                    });
-                }
+            var key = "cu" + Bridge._client.userId + conversationType + targetId;
+            var unread = RongIMClient._storageProvider.getItem(key);
+            var unreadCount = Number(unread);
+            setTimeout(function () {
+                callback.onSuccess(unreadCount || 0);
             });
         }
 
@@ -1285,8 +1289,6 @@ module RongIMLib {
                     });
                 }
             });
-
-
         }
 
         clearTotalUnreadCount(callback: ResultCallback<boolean>) {
@@ -1304,10 +1306,9 @@ module RongIMLib {
             }
             // 1. 获取所有 key 2. 清除
             var unreadKeys = RongIMClient._storageProvider.getItemKeyList("cu" + Bridge._client.userId);
-            for (var i = 0; i < unreadKeys.length; i++) {
-                var key = unreadKeys[i];
+            RongUtil.forEach(unreadKeys, function (key:string) {
                 RongIMClient._storageProvider.removeItem(key);
-            }
+            });
             setTimeout(() => {
                 callback.onSuccess(true);
             });
