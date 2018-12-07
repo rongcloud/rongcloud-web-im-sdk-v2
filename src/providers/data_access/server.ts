@@ -326,25 +326,12 @@ module RongIMLib {
                             RongIMClient.getInstance().pottingConversation(list.info[i]);
                         }
                     }
-                    // if (conversationTypes) {
-                    //     var convers: Conversation[] = [];
-                    //     Array.forEach(conversationTypes, function(converType: ConversationType) {
-                    //         Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
-                    //             if (item.conversationType == converType) {
-                    //                 convers.push(item);
-                    //             }
-                    //         });
-                    //     });
-                    //     setTimeout(function(){
-                    //         callback.onSuccess(convers);
-                    //     });
-                    // } else {
-                    //     setTimeout(function(){
-                    //         callback.onSuccess(RongIMClient._memoryStore.conversationList);
-                    //     });
-                    // }
+                    var conversations = RongIMClient._memoryStore.conversationList;
                     setTimeout(function(){
-                        callback.onSuccess(RongIMClient._memoryStore.conversationList);
+                        if(conversationTypes){
+                            return callback.onSuccess(self.filterConversations(conversationTypes, conversations));
+                        }
+                        callback.onSuccess(conversations);
                     });
                 },
                 onError: function(error: ErrorCode) {
@@ -1127,13 +1114,29 @@ module RongIMLib {
             return conver;
         }
 
+        filterConversations(types: ConversationType[], list: Conversation[]): Conversation[]{
+            var conversaions: Conversation[] = [];
+            RongUtil.forEach(types, function(type: number){
+                RongUtil.forEach(list, function(conversation: Conversation){
+                    if(conversation.conversationType == type){
+                        conversaions.push(conversation);
+                    }
+                });
+            });
+            return conversaions;
+        }
+
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isHidden?:boolean) {
+            var that = this;
             var isSync = RongIMClient._memoryStore.isSyncRemoteConverList;
             var list = RongIMClient._memoryStore.conversationList;
             var isLocalInclude = list.length > count;
             if (!isSync && isLocalInclude) {
                 setTimeout(function() {
                     var localList = list.slice(0, count);
+                    if(conversationTypes){
+                        localList = that.filterConversations(conversationTypes, localList);
+                    }
                     callback.onSuccess(localList);
                 });
                 return;

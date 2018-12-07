@@ -277,6 +277,11 @@ module RongIMLib {
                     }
                 }
                 convers.reverse(); 
+                var len = convers.length;
+                count = count || len;
+                if(len > count){
+                    convers.length = count;
+                }
                 callback.onSuccess(convers);
             } catch (e) {
                 callback.onError(e);
