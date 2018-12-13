@@ -490,6 +490,7 @@ module RongIMLib {
             }
             this.SyncTimeQueue.state = "pending";
             var localSyncTime = SyncTimeUtil.get();
+            var sentBoxTime = localSyncTime.sent;
             if (temp.type != 2) {
                 //普通消息
                 time = localSyncTime.received;
@@ -498,7 +499,6 @@ module RongIMLib {
                 str = "pullMsg";
                 target = this.userId;
 
-                var sentBoxTime = localSyncTime.sent;
                 modules.setSendBoxSyncTime(sentBoxTime);
             } else {
                 //聊天室消息
@@ -538,24 +538,20 @@ module RongIMLib {
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
                     var isPullFinished = !!collection.finished;
+                    RongIMClient._memoryStore.isPullFinished = isPullFinished;
                     for (let i = 0, len = list.length, count = len; i < len; i++) {
-                        if (!(list[i].msgId in me.cacheMessageIds)) {
-                            count-=1;
-                            var message = list[i];
-                            var sentTime = RongIMLib.MessageUtil.int64ToTimestamp(message.dataTime);
-                            if (sentTime > time) {
-                                var isSyncMessage = false;
-                                Bridge._client.handler.onReceived(message, undefined, offlineMsg, count, isSyncMessage, isPullFinished);
-                                var arrLen = me.cacheMessageIds.unshift(list[i].msgId);
-                                if (arrLen > 20){
-                                    me.cacheMessageIds.length = 20;
-                                }
-                            }
+                        count-=1;
+                        var message = list[i];
+                        var sentTime = RongIMLib.MessageUtil.int64ToTimestamp(message.dataTime);
+                        var isSender = message.fromUserId == Bridge._client.userId;
+                        var compareTime = isSender ? sentBoxTime : time;
+                        if (sentTime > compareTime) {
+                            var isSyncMessage = false;
+                            Bridge._client.handler.onReceived(message, undefined, offlineMsg, count, isSyncMessage, isPullFinished);
                         }
                     }
                     me.SyncTimeQueue.state = "complete";
                     me.invoke(isPullMsg, target);
-                    RongIMLib.RongIMClient._memoryStore.isPullFinished = isPullFinished;
                 },
                 onError: function(error: ErrorCode) {
                     me.SyncTimeQueue.state = "complete";
@@ -656,7 +652,7 @@ module RongIMLib {
             }
         }
 
-        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean, leftCount?: number, isSync?: boolean, isPullFinished?: boolean): void {
+        onReceived(msg: any, pubAckItem?: any, offlineMsg?: boolean, leftCount?: number, isSync?: boolean): void {
             //实体对象
             var entity: any,
                 //解析完成的消息对象
@@ -688,9 +684,6 @@ module RongIMLib {
                     if (Bridge._client.sdkVer && Bridge._client.sdkVer == "1.0.0") {
                         return;
                     }
-                    if (!RongIMClient._memoryStore.isPullFinished) {
-                        return;
-                    }
                     entity = RongIMClient.Protobuf.UpStreamMessage.decode(msg.getData());
                     var tmpTopic = msg.getTopic();
                     var tmpType = tmpTopic.substr(0, 2);
@@ -714,6 +707,11 @@ module RongIMLib {
                     return;
                 }
             }
+            var isPullFinished = RongIMClient._memoryStore.isPullFinished;
+            // PullMsg 没有拉取完成，抛弃所有消息，抛弃的消息会在 PullMsg 中返回
+            if (!isPullFinished) {
+                return;
+            }
             //解析实体对象为消息对象。
             message = MessageUtil.messageParser(entity, this._onReceived, offlineMsg);
 
@@ -733,10 +731,8 @@ module RongIMLib {
             if (message === null) {
                 return;
             }
-
             var msgTag = RongIMLib.RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag();
-
-            if (msgTag == 3 || msgTag == 2 || msgTag == 1 || msgTag == 0){
+            if (msgTag >= 0){
                 RongIMLib.SyncTimeUtil.set(message);
             }
 
