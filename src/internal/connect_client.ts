@@ -526,7 +526,8 @@ module RongIMLib {
                 onSuccess: function(collection: any) {
                     var sync = MessageUtil.int64ToTimestamp(collection.syncTime), symbol = target;
                     //把返回时间戳存入本地，普通消息key为userid，聊天室消息key为userid＋'CST'；value都为服务器返回的时间戳
-                    if (str == "chrmPull") {
+                    var isChrmPull = str == 'chrmPull';
+                    if (isChrmPull) {
                         symbol += Bridge._client.userId + "CST";
                         RongIMClient._memoryStore.lastReadTime.set(symbol, sync);
                     }else{
@@ -537,7 +538,11 @@ module RongIMLib {
                     }
                     //把拉取到的消息逐条传给消息监听器
                     var list = collection.list;
-                    var isPullFinished = !!collection.finished;
+                    var isPullFinished = collection.finished;
+                    // chrmPull 没有 finished 字段，自动设置为拉取完成
+                    if(isChrmPull){
+                        isPullFinished = true;
+                    }
                     RongIMClient._memoryStore.isPullFinished = isPullFinished;
                     for (let i = 0, len = list.length, count = len; i < len; i++) {
                         count-=1;
@@ -731,22 +736,22 @@ module RongIMLib {
             if (message === null) {
                 return;
             }
-            var msgTag = RongIMLib.RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag();
-            if (msgTag >= 0){
-                RongIMLib.SyncTimeUtil.set(message);
-            }
-
-            var isSend = (message.messageDirection == RongIMLib.MessageDirection.SEND);
-            if (isSend) {
-                var storageProvider = RongIMLib.RongIMClient._storageProvider;
-                var userId = RongIMLib.Bridge._client.userId;
-                var lastSentTime = storageProvider.getItem('last_sentTime_' + userId) || 0;
-                if (message.sentTime <= lastSentTime && !isSync) {
-                    return;
+            var isChatroomMessage = message.conversationType == ConversationType.CHATROOM;
+            if(!isChatroomMessage){
+                var msgTag = RongIMLib.RongIMClient.MessageParams[message.messageType].msgTag.getMessageTag();
+                if (msgTag >= 0){
+                    RongIMLib.SyncTimeUtil.set(message);
                 }
-
+                var isSend = (message.messageDirection == RongIMLib.MessageDirection.SEND);
+                if (isSend) {
+                    var storageProvider = RongIMLib.RongIMClient._storageProvider;
+                    var userId = RongIMLib.Bridge._client.userId;
+                    var lastSentTime = storageProvider.getItem('last_sentTime_' + userId) || 0;
+                    if (message.sentTime <= lastSentTime && !isSync) {
+                        return;
+                    }
+                }
             }
-
             // 设置会话时间戳并且判断是否传递 message  发送消息未处理会话时间戳
             // key：'converST_' + 当前用户 + conversationType + targetId
             // RongIMClient._storageProvider.setItem('converST_' + Bridge._client.userId + message.conversationType + message.targetId, message.sentTime);
