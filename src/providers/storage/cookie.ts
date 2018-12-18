@@ -28,6 +28,19 @@ module RongIMLib {
             }
             return item;
         }
+
+        getItemKeyList(regStr: string): Array<string> {
+            var prefix = this.prefix;
+            var me = this, itemList: Array<string> = [], reg = new RegExp(regStr + "\\w+");
+            for (var key in me._memeoryStore) {
+                var arr = key.match(reg);
+                if (arr) {
+                    key = key.substring(prefix.length);
+                    itemList.push(key);
+                }
+            }
+            return itemList;
+        }
         clearItem(): void {
             var me = this;
             for (var key in me._memeoryStore) {

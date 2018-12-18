@@ -56,6 +56,24 @@ module RongIMLib {
             return item;
         }
 
+        getItemKeyList(composedStr: string): Array<string> {
+            var itemList: Array<string> = [],
+                keyNames: string = this.getItem(this.keyManager),
+                keyNameArray: string[] = keyNames && keyNames.split(',') || [];
+            var prefix = this.prefix;
+            var _key = prefix + composedStr;
+            if (keyNameArray.length) {
+                for (let i = 0, len = keyNameArray.length; i < len; i++) {
+                    if (keyNameArray[i] && keyNameArray[i].indexOf(_key) == 0) {
+                        var keyName = keyNameArray[i];
+                        keyName = keyName.substring(prefix.length);
+                        itemList.push(keyNameArray[i]);
+                    }
+                }
+            }
+            return itemList;
+        }
+
         clearItem(): void {
             var keyNames: string = this.getItem(this.keyManager), keyNameArray: string[] = [], me = this;
             keyNames && (keyNameArray = keyNames.split(','));

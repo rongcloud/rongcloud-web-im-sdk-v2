@@ -5,7 +5,7 @@ module RongIMLib {
         static MessageType: { [s: string]: any } = {};
         static MessageParams: { [s: string]: any };
         static RegisterMessage: { [s: string]: any } = {};
-        static _memoryStore: any = { listenerList: [], isPullFinished: true, syncMsgQueue: []  };
+        static _memoryStore: any = { listenerList: [], isPullFinished: false, syncMsgQueue: []  };
         static isNotPullMsg: boolean = false;
         static _storageProvider: StorageProvider;
         static _dataAccessProvider: DataAccessProvider;
@@ -13,7 +13,7 @@ module RongIMLib {
         private static _instance: RongIMClient;
         static bridge: any;
         static userStatusObserver:RongObserver = null;
-        static sdkver:string = '2.3.4';
+        static sdkver:string = '2.3.5';
         static otherDeviceLoginCount:number = 0;
         static serverStore: any = { index: 0 };
         static getInstance(): RongIMClient {
@@ -1358,6 +1358,23 @@ module RongIMLib {
             });
         }
 
+        clearTotalUnreadCount(callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.clearTotalUnreadCount({
+                onSuccess: function (bool: boolean) {
+                    callback.onSuccess(bool);
+                },
+                onError: function (errorCode: ErrorCode) {
+                    setTimeout(function () {
+                        RongIMClient.logger({
+                            code: errorCode,
+                            funcName: 'clearTotalUnreadCount'
+                        });
+                        callback.onError(errorCode);
+                    });
+                }
+            });
+        }
+
         clearLocalStorage(callback: any): void {
             RongIMClient._storageProvider.clearItem();
             callback();
@@ -1656,6 +1673,8 @@ module RongIMLib {
         createConversation(conversationType: number, targetId: string, converTitle: string): Conversation {
             CheckParam.getInstance().check(["number", "string|number", "string"], "createConversation", false, arguments);
             var conver = new Conversation();
+            // var unreadContent: string = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + conversationType + targetId);
+            // var unreadCount = Number(unreadContent) || 0;
             conver.targetId = targetId;
             conver.conversationType = conversationType;
             conver.conversationTitle = converTitle;

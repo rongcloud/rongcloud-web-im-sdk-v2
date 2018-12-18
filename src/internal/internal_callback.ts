@@ -112,15 +112,16 @@ module RongIMLib {
                 if (_msg) {
                     _msg.setSentStatus = _status;
                 }
-                var userId = Bridge._client.userId;
-                var stroageProvider = RongIMClient._storageProvider;
-                stroageProvider.setItem('last_sentTime_' + userId, timestamp);
-
-                SyncTimeUtil.set({
-                    messageDirection: MessageDirection.SEND,
-                    sentTime: timestamp
-                });
-
+                var isPullFinished = RongIMClient._memoryStore.isPullFinished;
+                if(isPullFinished){
+                    var userId = Bridge._client.userId;
+                    var stroageProvider = RongIMClient._storageProvider;
+                    stroageProvider.setItem('last_sentTime_' + userId, timestamp);
+                    SyncTimeUtil.set({
+                        messageDirection: MessageDirection.SEND,
+                        sentTime: timestamp
+                    });
+                }
                 this._cb({ messageUId: messageUId, timestamp: timestamp, messageId: messageId });
             } else {
                 this._timeout(_status, {

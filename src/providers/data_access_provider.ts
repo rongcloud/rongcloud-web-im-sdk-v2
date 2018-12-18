@@ -93,7 +93,7 @@ module RongIMLib {
 
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>): void;
 
-        getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): void;
+        getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): any;
 
         getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void;
         
@@ -114,6 +114,8 @@ module RongIMLib {
         getUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<number>): void;
 
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
+
+        clearTotalUnreadCount(callback: ResultCallback<boolean>): void;
 
         setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>): void;
 
