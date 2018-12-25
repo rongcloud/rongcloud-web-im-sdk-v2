@@ -515,7 +515,7 @@ module RongIMLib {
             //判断服务器给的时间是否消息本地存储的时间，小于的话不执行拉取操作，进行一下步队列操作
             if (temp.pulltime <= time) {
                 this.SyncTimeQueue.state = "complete";
-                this.invoke(isPullMsg, target);
+                this.invoke(isPullMsg, target, offlineMsg);
                 return;
             }
             if (isPullMsg && 'setIsPullSend' in modules) {
@@ -557,11 +557,11 @@ module RongIMLib {
                         }
                     }
                     me.SyncTimeQueue.state = "complete";
-                    me.invoke(isPullMsg, target);
+                    me.invoke(isPullMsg, target, offlineMsg);
                 },
                 onError: function(error: ErrorCode) {
                     me.SyncTimeQueue.state = "complete";
-                    me.invoke(isPullMsg, target);
+                    me.invoke(isPullMsg, target, offlineMsg);
                 }
             }, "DownStreamMessages");
         }
@@ -714,8 +714,8 @@ module RongIMLib {
                 }
             }
             var isPullFinished = RongIMClient._memoryStore.isPullFinished;
-            // PullMsg 没有拉取完成，抛弃所有消息，抛弃的消息会在 PullMsg 中返回
-            if (!isPullFinished) {
+            // PullMsg 没有拉取完成，抛弃所有直发在线消息，抛弃的消息会在 PullMsg 中返回
+            if (!isPullFinished && !offlineMsg) {
                 return;
             }
             //解析实体对象为消息对象。
