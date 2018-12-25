@@ -95,7 +95,7 @@ module RongIMLib {
                     });
 
                     var timers: any[] = [];
-                    var elements: any[] = [];
+                    var xhrs: any[] = [];
                     var isFinished = false;
 
                     var clearHandler = function(){
@@ -104,12 +104,12 @@ module RongIMLib {
                             clearTimeout(timer);
                         }
 
-                        for(var i = 0; i < elements.length; i++){
-                            var el = elements[i];
-                            document.body.removeChild(el);
+                        for(var i = 0; i < xhrs.length; i++){
+                            var xhr = xhrs[i];
+                            xhr.abort();
                         }
                         timers.length = 0;
-                        elements.length = 0;
+                        xhrs.length = 0;
                     };
 
                     var request = function(config: any, callback: Function){
@@ -120,9 +120,6 @@ module RongIMLib {
                             return;
                         }
                         var timer = setTimeout(function(){
-                            var xss:any = document.createElement("script");
-                            xss.src = url;
-                            document.body.appendChild(xss);
                             var onSuccess = function(){
                                 if (isFinished) {
                                     return;
@@ -130,12 +127,16 @@ module RongIMLib {
                                 clearHandler();
                                 isFinished = true;
                                 totalTimer.pause();
-                                var url = xss.src;
                                 callback(url);
                             };
-                            xss.onload = onSuccess;
-                            xss.onerror = onSuccess;
-                            elements.push(xss);
+                            var xhr = MessageUtil.detectCMP({
+                                url: url,
+                                success: onSuccess,
+                                fail: function(code: number){
+                                    console.log(code);
+                                }
+                            });
+                            xhrs.push(xhr);
                         }, time);
                         timers.push(timer);
                     };
