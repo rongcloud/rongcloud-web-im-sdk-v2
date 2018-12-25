@@ -545,6 +545,7 @@ module RongIMLib {
                         isPullFinished = true;
                     }
                     RongIMClient._memoryStore.isPullFinished = isPullFinished;
+                    var connectAckTime = RongIMClient._memoryStore.connectAckTime;
                     for (let i = 0, len = list.length, count = len; i < len; i++) {
                         count-=1;
                         var message = list[i];
@@ -553,7 +554,8 @@ module RongIMLib {
                         var compareTime = isSender ? sentBoxTime : time;
                         if (sentTime > compareTime) {
                             var isSyncMessage = false;
-                            Bridge._client.handler.onReceived(message, undefined, offlineMsg, count, isSyncMessage, isPullFinished);
+                            var isOffLineMessage = sentTime < connectAckTime;
+                            Bridge._client.handler.onReceived(message, undefined, isOffLineMessage, count, isSyncMessage, isPullFinished);
                         }
                     }
                     me.SyncTimeQueue.state = "complete";
