@@ -56,6 +56,19 @@ module RongIMLib {
             return item;
         }
 
+        getItemKeyList(composedStr: string): Array<string> {
+            var itemList: Array<string> = [];
+            var prefix = this.prefix;
+            var _key: string = prefix + composedStr;
+            for (var key in localStorage) {
+                if (key.indexOf(_key) == 0) {
+                    key = key.substring(prefix.length);
+                    itemList.push(key);
+                }
+            }
+            return itemList;
+        }
+
         removeItem(composedKey: string): void {
             if (composedKey) {
                 composedKey.indexOf(this.prefix) == -1 && (composedKey = this.prefix + composedKey);

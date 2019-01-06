@@ -296,6 +296,9 @@ var Polling = {
             this.setSyncTime = function (b) {
                 a.syncTime = b;
             };
+            this.setFinished = function(b){
+                a.finished = b;
+            };
             this.toArrayBuffer = function () {
                 return a
             };
