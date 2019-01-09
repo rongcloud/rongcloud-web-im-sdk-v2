@@ -1645,5 +1645,116 @@ module RongIMLib {
             }
         }
 
+        getRTCUserData(callback: ResultCallback<any>){
+            var modules = new RongIMClient.Protobuf.rtcQueryListInput();
+            modules.setNothing(1);
+            RongIMClient.bridge.queryMsg(39, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(data: Array<any>) {
+                    callback.onSuccess(data);
+                },
+                onError: function(errorCode: ErrorCode) { 
+                    callback.onError(errorCode);
+                }
+            }, "rtcQueryListOutput");
+        }
+        
+        setRTCUserData(data: any, callback: ResultCallback<boolean>){
+            var Protobuf = RongIMClient.Protobuf;
+            var info = new Protobuf.rtcValueInfo();
+            var modules = new Protobuf.rtcInfoInput();
+            info.setKey(data.key);
+            info.setKey(data.value);
+            modules.setInfo(info);
+            RongIMClient.bridge.queryMsg(40, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function() {
+                    callback.onSuccess(true);
+                },
+                onError: function(errorCode: ErrorCode) { 
+                    callback.onError(errorCode);
+                }
+            });
+        }
+        
+        removeRTCUserData(data: any, callback: ResultCallback<boolean>){
+            var modules = new RongIMClient.Protobuf.rtcDeleteInput();
+            modules.setInfo(data.key);
+            RongIMClient.bridge.queryMsg(41, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function() {
+                    callback.onSuccess(true);
+                },
+                onError: function(errorCode: ErrorCode) { 
+                    callback.onError(errorCode);
+                }
+            });
+        }
+        
+        getRTCRoomData(room: Room, callback: ResultCallback<any>){
+            var modules = new RongIMClient.Protobuf.rtcQueryListInput();
+            modules.setNothing(room.id);
+            RongIMClient.bridge.queryMsg(42, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function(data: Array<any>) {
+                    callback.onSuccess(data);
+                },
+                onError: function(errorCode: ErrorCode) { 
+                    callback.onError(errorCode);
+                }
+            }, "rtcQueryListOutput");
+        }
+        
+        setRTCRoomData(data: any, callback: ResultCallback<boolean>){
+            var Protobuf = RongIMClient.Protobuf;
+            var info = new Protobuf.rtcValueInfo();
+            var modules = new Protobuf.rtcInfoInput();
+            info.setKey(data.key);
+            info.setKey(data.value);
+            modules.setInfo(info);
+            RongIMClient.bridge.queryMsg(43, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function() {
+                    callback.onSuccess(true);
+                },
+                onError: function(errorCode: ErrorCode) { 
+                    callback.onError(errorCode);
+                }
+            });
+        }
+        
+        removeRTCRoomData(data: any, callback: ResultCallback<boolean>){
+            var modules = new RongIMClient.Protobuf.rtcDeleteInput();
+            modules.setInfo(data.key);
+            RongIMClient.bridge.queryMsg(44, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function() {
+                    callback.onSuccess(true);
+                },
+                onError: function(errorCode: ErrorCode) { 
+                    callback.onError(errorCode);
+                }
+            });
+        }
+        
+        joinRTCRoom(room:Room, callback: ResultCallback<boolean>){
+            var modules = new RongIMClient.Protobuf.rtcRoomInput();
+            modules.setNothing(room.id);
+            RongIMClient.bridge.queryMsg(45, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function() {
+                    callback.onSuccess(true);
+                },
+                onError: function(errorCode: ErrorCode) { 
+                    callback.onError(errorCode);
+                }
+            });
+        }
+        
+        quitRTCRoom(room:Room, callback: ResultCallback<boolean>){
+            var modules = new RongIMClient.Protobuf.rtcRoomInput();
+            modules.setNothing(room.id);
+            RongIMClient.bridge.queryMsg(46, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
+                onSuccess: function() {
+                    callback.onSuccess(true);
+                },
+                onError: function(errorCode: ErrorCode) { 
+                    callback.onError(errorCode);
+                }
+            });
+        }
     }
 }

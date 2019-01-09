@@ -185,4 +185,18 @@ export class UserInfo {
         public portraitUri: string) { }
 }
 
+export class User{
+    constructor(
+        public id: string,
+        public token: string
+    ){}
+}
+
+export class Room{
+    constructor(
+        public id: string,
+        public user: User
+    ){}
+}
+
 }

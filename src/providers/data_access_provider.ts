@@ -23,13 +23,13 @@ module RongIMLib {
 
         sendTextMessage(conversationType: ConversationType, targetId: string, content: string, sendMessageCallback: SendMessageCallback): void;
 
-        sendRecallMessage(conent:any, sendMessageCallback: SendMessageCallback, user?:UserInfo): void;
+        sendRecallMessage(conent: any, sendMessageCallback: SendMessageCallback, user?: UserInfo): void;
 
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, config?: any): void;
 
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>): void;
 
-        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void;
+        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number, isGetHiddenConvers?: boolean): void;
 
         removeConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void;
 
@@ -51,9 +51,9 @@ module RongIMLib {
 
         getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>): void;
 
-        setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void;
-        
-        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void;
+        setChatroomHisMessageTimestamp(chatRoomId: string, timestamp: number): void;
+
+        getChatRoomHistoryMessages(chatRoomId: string, count: number, order: number, callback: ResultCallback<Message>): void;
 
         quitChatRoom(chatroomId: string, callback: OperationCallback): void;
 
@@ -69,7 +69,7 @@ module RongIMLib {
 
         getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>): void;
 
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any): void;
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?: any): void;
 
         registerMessageType(messageType: string, objectName: string, messageTag: MessageTag, messageContent: string[], searchProps: string[]): void;
 
@@ -95,17 +95,17 @@ module RongIMLib {
 
         getConversation(conversationType: ConversationType, targetId: string, callback: ResultCallback<Conversation>): any;
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void;
-        
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number, isGetHiddenConvers?: boolean): void;
+
         clearCache(): void;
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>): void;
 
         clearHistoryMessages(params: any, callback: ResultCallback<boolean>): void;
-        
+
         clearRemoteHistoryMessages(params: any, callback: ResultCallback<boolean>): void;
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, directrion?:boolean): void;
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?: string, directrion?: boolean): void;
 
         getTotalUnreadCount(callback: ResultCallback<number>, conversationTypes?: number[]): void;
 
@@ -119,9 +119,9 @@ module RongIMLib {
 
         setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>): void;
 
-        setConversationHidden(conversationType:ConversationType,targetId:string,isHidden:boolean):void;
+        setConversationHidden(conversationType: ConversationType, targetId: string, isHidden: boolean): void;
 
-        setUnreadCount(conversationType: ConversationType, targetId: string, count: number):void;
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number): void;
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>): void;
 
@@ -132,45 +132,62 @@ module RongIMLib {
         searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void;
 
         searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void;
-   
-        getDelaTime():number;
 
-        setServerInfo(info:any):void;
+        getDelaTime(): number;
 
-        getUserStatus(userId: string, callback:ResultCallback<UserStatus>) : void;
+        setServerInfo(info: any): void;
 
-        setUserStatus(status: number, callback:ResultCallback<boolean>) : void;
+        getUserStatus(userId: string, callback: ResultCallback<UserStatus>): void;
 
-        setUserStatusListener(params:any, callback: Function) : void;
+        setUserStatus(status: number, callback: ResultCallback<boolean>): void;
 
-        subscribeUserStatus(userIds:string[], callback?:ResultCallback<boolean> ): void;
+        setUserStatusListener(params: any, callback: Function): void;
+
+        subscribeUserStatus(userIds: string[], callback?: ResultCallback<boolean>): void;
+
+        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp: number, callback: ResultCallback<boolean>): void;
+
+        getUnreadMentionedMessages(conversationType: ConversationType, targetId: string): any;
+
+        setMessageStatus(conersationType: ConversationType, targetId: string, timestamp: number, status: string, callback: ResultCallback<boolean>): void;
+
+        setMessageContent(messageId: number, content: any, objectName: string): void;
+
+        getConversationNotificationStatus(params: any, callback: any): void;
+
+        setConversationNotificationStatus(params: any, callback: any): void;
+
+        getCurrentConnectionStatus(): number;
+
+        setEnvironment(isPrivate: boolean): void;
+
+        getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>): void;
+
+        getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any): void;
+
+        getPublicServiceProfile(publicServiceType: number, publicServiceId: string, callback: any): void;
+
+        setDeviceInfo(device: any): void;
+
+        registerMessageTypes(messages: any): void;
+
+        clearData(): boolean;
+
+        getRTCUserData(callback: ResultCallback<any>): void;
         
-        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void;
-
-        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any;
-
-        setMessageStatus(conersationType:ConversationType, targetId: string, timestamp:number, status: string, callback: ResultCallback<boolean>): void;
-
-        setMessageContent(messageId: number, content: any, objectName: string):void;
-
-        getConversationNotificationStatus(params:any, callback:any):void;
-
-        setConversationNotificationStatus(params:any, callback:any):void;
-
-        getCurrentConnectionStatus():number;
-
-        setEnvironment(isPrivate: boolean):void;
-
-        getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>):void;
-
-        getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any):void;
-
-        getPublicServiceProfile(publicServiceType: number, publicServiceId: string, callback:any): void;
-
-        setDeviceInfo(device: any):void;
-
-        registerMessageTypes(messages: any):void;
-
-        clearData():boolean;
+        setRTCUserData(data: any, callback: ResultCallback<boolean>): void;
+        
+        removeRTCUserData(data: any, callback: ResultCallback<boolean>): void;
+        
+        getRTCRoomData(room:Room, callback: ResultCallback<any>): void;
+        
+        setRTCRoomData(data: any, callback: ResultCallback<boolean>): void;
+        
+        removeRTCRoomData(data: any, callback: ResultCallback<boolean>): void;
+        
+        joinRTCRoom(room:Room, callback: ResultCallback<boolean>): void;
+        
+        quitRTCRoom(room:Room, callback: ResultCallback<boolean>): void;
+        
     }
 }

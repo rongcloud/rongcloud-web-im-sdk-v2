@@ -1095,5 +1095,36 @@ module RongIMLib {
             }
             return conver;
         }
+        getRTCUserData(callback: ResultCallback<any>){
+
+        }
+        
+        setRTCUserData(data: any, callback: ResultCallback<boolean>){
+    
+        }
+        
+        removeRTCUserData(data: any, callback: ResultCallback<boolean>){
+    
+        }
+        
+        getRTCRoomData(room: Room, callback: ResultCallback<any>){
+    
+        }
+        
+        setRTCRoomData(data: any, callback: ResultCallback<boolean>){
+    
+        }
+        
+        removeRTCRoomData(data: any, callback: ResultCallback<boolean>){
+    
+        }
+        
+        joinRTCRoom(room:Room, callback: ResultCallback<boolean>){
+    
+        }
+        
+        quitRTCRoom(room:Room, callback: ResultCallback<boolean>){
+    
+        }
     }
 }
