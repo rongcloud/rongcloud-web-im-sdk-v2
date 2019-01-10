@@ -1095,6 +1095,7 @@ module RongIMLib {
             }
             return conver;
         }
+
         getRTCUserData(callback: ResultCallback<any>){
 
         }
@@ -1111,11 +1112,11 @@ module RongIMLib {
     
         }
         
-        setRTCRoomData(data: any, callback: ResultCallback<boolean>){
+        setRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>){
     
         }
         
-        removeRTCRoomData(data: any, callback: ResultCallback<boolean>){
+        removeRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>){
     
         }
         

@@ -174,20 +174,20 @@ module RongIMLib {
         clearData(): boolean;
 
         getRTCUserData(callback: ResultCallback<any>): void;
-        
+
         setRTCUserData(data: any, callback: ResultCallback<boolean>): void;
-        
+
         removeRTCUserData(data: any, callback: ResultCallback<boolean>): void;
-        
-        getRTCRoomData(room:Room, callback: ResultCallback<any>): void;
-        
-        setRTCRoomData(data: any, callback: ResultCallback<boolean>): void;
-        
-        removeRTCRoomData(data: any, callback: ResultCallback<boolean>): void;
-        
-        joinRTCRoom(room:Room, callback: ResultCallback<boolean>): void;
-        
-        quitRTCRoom(room:Room, callback: ResultCallback<boolean>): void;
-        
+
+        getRTCRoomData(room: Room, callback: ResultCallback<any>): void;
+
+        setRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>): void;
+
+        removeRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>): void;
+
+        joinRTCRoom(room: Room, callback: ResultCallback<boolean>): void;
+
+        quitRTCRoom(room: Room, callback: ResultCallback<boolean>): void;
+
     }
 }

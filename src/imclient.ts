@@ -1,5 +1,6 @@
 module RongIMLib {
     export class RongIMClient {
+        static RTCListener: OnRTCReceiveMessageListener;
         static Protobuf: any;
         static LogFactory: { [s: string]: any } = {};
         static MessageType: { [s: string]: any } = {};
@@ -2212,6 +2213,10 @@ module RongIMLib {
         // UserStaus end
 
         // RTC start
+        setOnRTCReceiveMessageListener(listener: OnRTCReceiveMessageListener){
+            CheckParam.getInstance().check(["object"], "setOnRTCReceiveMessageListener", false, arguments);
+            RongIMClient.RTCListener = listener;
+        }
         /* 
             var data = {
                 key1: 123,
@@ -2219,6 +2224,7 @@ module RongIMLib {
             };
         */
         getRTCUserData(callback: ResultCallback<any>) {
+            CheckParam.getInstance().check(["object"], "getRTCUserData", false, arguments);
             RongIMClient._dataAccessProvider.getRTCUserData(callback);
         }
           /* 
@@ -2228,6 +2234,7 @@ module RongIMLib {
             };
         */
         setRTCUserData(data: any, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object"], "setRTCUserData", false, arguments);
             RongIMClient._dataAccessProvider.setRTCUserData(data, callback);
         }
          /* 
@@ -2237,6 +2244,7 @@ module RongIMLib {
             };
         */
         removeRTCUserData(data: any, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object"], "removeRTCUserData", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCUserData(data, callback);
         }
         /* 
@@ -2246,6 +2254,7 @@ module RongIMLib {
             };
         */
         getRTCRoomData(room: Room, callback: ResultCallback<any>) {
+            CheckParam.getInstance().check(["object", "object"], "getRTCRoomData", false, arguments);
             RongIMClient._dataAccessProvider.getRTCRoomData(room, callback);
         }
         /* 
@@ -2254,8 +2263,9 @@ module RongIMLib {
                 key2: 345
             };
         */
-        setRTCRoomData(data: any, callback: ResultCallback<boolean>) {
-            RongIMClient._dataAccessProvider.setRTCRoomData(data, callback);
+        setRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object"], "setRTCRoomData", false, arguments);
+            RongIMClient._dataAccessProvider.setRTCRoomData(room, data, callback);
         }
         /* 
             var data = {
@@ -2263,8 +2273,9 @@ module RongIMLib {
                 key2: 345
             };
         */
-        removeRTCRoomData(data: any, callback: ResultCallback<boolean>) {
-            RongIMClient._dataAccessProvider.removeRTCRoomData(data, callback);
+        removeRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object"], "removeRTCRoomData", false, arguments);
+            RongIMClient._dataAccessProvider.removeRTCRoomData(room, data, callback);
         }
         /* 
             var room = {
@@ -2276,6 +2287,7 @@ module RongIMLib {
             };
         */
         joinRTCRoom(room:Room, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object"], "joinRTCRoom", false, arguments);
             RongIMClient._dataAccessProvider.joinRTCRoom(room, callback);
         }
         /* 
@@ -2287,6 +2299,7 @@ module RongIMLib {
             };
         */
         quitRTCRoom(room:Room, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object"], "quitRTCRoom", false, arguments);
             RongIMClient._dataAccessProvider.quitRTCRoom(room, callback);
         }
         // RTC end

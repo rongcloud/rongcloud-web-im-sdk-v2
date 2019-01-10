@@ -1701,7 +1701,7 @@ module RongIMLib {
             }, "rtcQueryListOutput");
         }
         
-        setRTCRoomData(data: any, callback: ResultCallback<boolean>){
+        setRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>){
             var Protobuf = RongIMClient.Protobuf;
             var info = new Protobuf.rtcValueInfo();
             var modules = new Protobuf.rtcInfoInput();
@@ -1718,7 +1718,7 @@ module RongIMLib {
             });
         }
         
-        removeRTCRoomData(data: any, callback: ResultCallback<boolean>){
+        removeRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>){
             var modules = new RongIMClient.Protobuf.rtcDeleteInput();
             modules.setInfo(data.key);
             RongIMClient.bridge.queryMsg(44, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
