@@ -2281,8 +2281,7 @@ module RongIMLib {
             var room = {
                 id: 'roomid',
                 user: {
-                    id: 'userid',
-                    token: 'token'
+                    id: 'userid'
                 }
             };
         */
