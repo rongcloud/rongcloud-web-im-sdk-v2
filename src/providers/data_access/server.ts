@@ -19,7 +19,7 @@ module RongIMLib {
             if (Bridge._client && Bridge._client.channel) {
                 isConnecting = (Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTING);
                 isConnected = (Bridge._client.channel.connectionStatus == ConnectionStatus.CONNECTED);
-                
+
             }
             if (isConnected || isConnecting) {
                 return;
@@ -30,7 +30,7 @@ module RongIMLib {
                 return;
             }
             // 清除本地导航缓存
-            if(option.force){
+            if (option.force) {
                 RongIMClient._storageProvider.removeItem('servers');
             }
             //循环设置监听事件，追加之后清空存放事件数据
@@ -39,18 +39,18 @@ module RongIMLib {
             }
             RongIMClient._memoryStore.listenerList.length = 0;
             RongIMClient.bridge.connect(RongIMClient._memoryStore.appKey, token, {
-                onSuccess: function(data: string) {
-                    setTimeout(function() {
+                onSuccess: function (data: string) {
+                    setTimeout(function () {
                         callback.onSuccess(data);
                     });
                 },
-                onError: function(e: ConnectionState) {
+                onError: function (e: ConnectionState) {
                     if (e == ConnectionState.TOKEN_INCORRECT || !e) {
-                        setTimeout(function() {
+                        setTimeout(function () {
                             callback.onTokenIncorrect();
                         });
                     } else {
-                        setTimeout(function() {
+                        setTimeout(function () {
                             callback.onError(e);
                         });
                     }
@@ -71,24 +71,24 @@ module RongIMLib {
             if (Bridge._client && Bridge._client.channel && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTED && Bridge._client.channel.connectionStatus != ConnectionStatus.CONNECTING) {
                 config = config || {};
                 var key = config.auto ? 'auto' : 'custom';
-                var handler:{[key: string]: any} = {
-                    auto: function(){
-                        var repeatConnect = function(options: any){
+                var handler: { [key: string]: any } = {
+                    auto: function () {
+                        var repeatConnect = function (options: any) {
                             var step = options.step();
                             var done = 'done';
                             var url = options.url;
-                            var ping = function(){
+                            var ping = function () {
                                 RongUtil.request({
                                     url: url,
-                                    success: function(){
+                                    success: function () {
                                         options.done();
                                     },
-                                    error: function(){
+                                    error: function () {
                                         repeat();
                                     }
                                 });
                             };
-                            var repeat = function(){
+                            var repeat = function () {
                                 var next = step();
                                 if (next == 'done') {
                                     var error = ConnectionStatus.NETWORK_UNAVAILABLE;
@@ -112,15 +112,15 @@ module RongIMLib {
 
                         var opts = {
                             url: url,
-                            step: function(){
+                            step: function () {
                                 var index = 0;
-                                return function(){
+                                return function () {
                                     var time = rate[index];
                                     index++;
                                     return time;
                                 }
                             },
-                            done: function(error: ConnectionStatus){
+                            done: function (error: ConnectionStatus) {
                                 if (error) {
                                     callback.onError(error);
                                     return;
@@ -130,7 +130,7 @@ module RongIMLib {
                         };
                         repeatConnect(opts);
                     },
-                    custom: function(){
+                    custom: function () {
                         RongIMClient.connect(token, callback);
                     }
                 };
@@ -161,20 +161,20 @@ module RongIMLib {
                         sendCallback.onSuccess();
                         return;
                     }
-                    var interval = setInterval(function() {
+                    var interval = setInterval(function () {
                         if (vals.length == 1) {
                             clearInterval(interval);
                         }
                         var obj = vals.splice(0, 1)[0];
                         var rspMsg = new RongIMLib.ReadReceiptResponseMessage({ receiptMessageDic: obj });
                         me.sendMessage(conversationType, targetId, rspMsg, <SendMessageCallback>{
-                            onSuccess: function(msg) {
+                            onSuccess: function (msg) {
                                 var senderUserId = MessageUtil.getFirstKey(obj);
                                 valObj[senderUserId].isResponse = true;
                                 RongIMClient._storageProvider.setItem(rspkey, JSON.stringify(valObj));
                                 sendCallback.onSuccess(msg);
                             },
-                            onError: function(error: ErrorCode, msg: Message) {
+                            onError: function (error: ErrorCode, msg: Message) {
                                 sendCallback.onError(error, msg);
                             }
                         });
@@ -192,24 +192,24 @@ module RongIMLib {
             var me = this;
             if (messageName in RongIMClient.MessageParams) {
                 me.sendMessage(conversationType, targetId, TypingStatusMessage.obtain(RongIMClient.MessageParams[messageName].objectName, ""), <SendMessageCallback>{
-                    onSuccess: function() {
-                        setTimeout(function() {
+                    onSuccess: function () {
+                        setTimeout(function () {
                             sendCallback.onSuccess();
                         });
                     },
-                    onError: function(errorCode: ErrorCode) {
-                        setTimeout(function() {
+                    onError: function (errorCode: ErrorCode) {
+                        setTimeout(function () {
                             sendCallback.onError(errorCode, null);
                         });
                     },
-                    onBefore: function(){}
+                    onBefore: function () { }
                 });
             }
         }
 
-        sendRecallMessage(content:any, sendMessageCallback: SendMessageCallback): void {
-           var msg = new RecallCommandMessage({conversationType : content.conversationType, targetId : content.targetId, sentTime:content.sentTime, messageUId : content.messageUId, extra : content.extra, user : content.user});
-           this.sendMessage(content.conversationType, content.senderUserId, msg, sendMessageCallback, false, null, null, 2);
+        sendRecallMessage(content: any, sendMessageCallback: SendMessageCallback): void {
+            var msg = new RecallCommandMessage({ conversationType: content.conversationType, targetId: content.targetId, sentTime: content.sentTime, messageUId: content.messageUId, extra: content.extra, user: content.user });
+            this.sendMessage(content.conversationType, content.senderUserId, msg, sendMessageCallback, false, null, null, 2);
         }
 
         sendTextMessage(conversationType: ConversationType, targetId: string, content: string, sendMessageCallback: SendMessageCallback): void {
@@ -218,14 +218,14 @@ module RongIMLib {
         }
 
         getRemoteHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, config?: any): void {
-            if(count <= 1) {
+            if (count <= 1) {
                 throw new Error("the count must be greater than 1.");
             }
             config = config || {};
             var order = config.order || 0;
 
-            var getKey = function(){
-                return [conversationType, targetId,'_', order].join('');
+            var getKey = function () {
+                return [conversationType, targetId, '_', order].join('');
             };
             var key = getKey();
             if (!RongUtil.isNumber(timestamp)) {
@@ -240,14 +240,14 @@ module RongIMLib {
                     hasMore: '是否还有历史消息, bool 值'
                 };
             */
-            var limit:any = historyMessageLimit.get(key) || {};
+            var limit: any = historyMessageLimit.get(key) || {};
             var hasMore = limit.hasMore;
             var isFecth = (hasMore || limit.time != timestamp);
             // 正序获取消息时不做限制，防止有新消息导致无法获取
             if (!isFecth && order == 0) {
                 return callback.onSuccess([], hasMore);
             }
-            
+
             var modules = new RongIMClient.Protobuf.HistoryMsgInput(), self = this;
             modules.setTargetId(targetId);
             modules.setTime(timestamp);
@@ -255,7 +255,7 @@ module RongIMLib {
             modules.setOrder(order);
 
             RongIMClient.bridge.queryMsg(HistoryMsgType[conversationType], MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
-                onSuccess: function(data: any) {
+                onSuccess: function (data: any) {
                     var fetchTime = MessageUtil.int64ToTimestamp(data.syncTime);
                     RongIMClient._memoryStore.lastReadTime.set(key, fetchTime);
                     historyMessageLimit.set(key, {
@@ -278,17 +278,17 @@ module RongIMLib {
                         }
                     } else {
                         for (var i = 0, len = list.length; i < len; i++) {
-                            var tempMsg:Message = MessageUtil.messageParser(list[i]);
+                            var tempMsg: Message = MessageUtil.messageParser(list[i]);
                             tempMsg.sentStatus = read;
                             list[i] = tempMsg;
                         }
                     }
-                    setTimeout(function() {
+                    setTimeout(function () {
                         callback.onSuccess(list, !!data.hasMsg);
                     });
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -297,15 +297,15 @@ module RongIMLib {
 
         hasRemoteUnreadMessages(token: string, callback: ResultCallback<Boolean>): void {
             var xss: any = null;
-            window.RCCallback = function(x: any) {
-                setTimeout(function() { callback.onSuccess(!!+x.status); });
+            window.RCCallback = function (x: any) {
+                setTimeout(function () { callback.onSuccess(!!+x.status); });
                 xss.parentNode.removeChild(xss);
             };
             xss = document.createElement("script");
             xss.src = RongIMClient._memoryStore.depend.api + "/message/exist.js?appKey=" + encodeURIComponent(RongIMClient._memoryStore.appKey) + "&token=" + encodeURIComponent(token) + "&callBack=RCCallback&_=" + RongUtil.getTimestamp();
             document.body.appendChild(xss);
-            xss.onerror = function() {
-                setTimeout(function() { callback.onError(ErrorCode.UNKNOWN); });
+            xss.onerror = function () {
+                setTimeout(function () { callback.onError(ErrorCode.UNKNOWN); });
                 xss.parentNode.removeChild(xss);
             };
         }
@@ -319,7 +319,7 @@ module RongIMLib {
                 modules.setCount(count);
             }
             RongIMClient.bridge.queryMsg(26, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(list: any) {
+                onSuccess: function (list: any) {
                     if (list.info) {
                         list.info = list.info.reverse();
                         for (var i = 0, len = list.info.length; i < len; i++) {
@@ -327,14 +327,14 @@ module RongIMLib {
                         }
                     }
                     var conversations = RongIMClient._memoryStore.conversationList;
-                    setTimeout(function(){
-                        if(conversationTypes){
+                    setTimeout(function () {
+                        if (conversationTypes) {
                             return callback.onSuccess(self.filterConversations(conversationTypes, conversations));
                         }
                         callback.onSuccess(conversations);
                     });
                 },
-                onError: function(error: ErrorCode) {
+                onError: function (error: ErrorCode) {
                     callback.onError(error);
                 }
             }, "RelationsOutput");
@@ -344,13 +344,13 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.ChannelInvitationInput();
             modules.setUsers(userIdList);
             RongIMClient.bridge.queryMsg(0, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
-                onSuccess: function() {
-                    setTimeout(function() {
+                onSuccess: function () {
+                    setTimeout(function () {
                         callback.onSuccess();
                     });
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -361,23 +361,23 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.CreateDiscussionInput(), self = this;
             modules.setName(name);
             RongIMClient.bridge.queryMsg(1, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(discussId: string) {
+                onSuccess: function (discussId: string) {
                     if (userIdList.length > 0) {
                         self.addMemberToDiscussion(discussId, userIdList, <OperationCallback>{
-                            onSuccess: function() { },
-                            onError: function(error) {
-                                setTimeout(function() {
+                            onSuccess: function () { },
+                            onError: function (error) {
+                                setTimeout(function () {
                                     callback.onError(error);
                                 });
                             }
                         });
                     }
-                    setTimeout(function() {
+                    setTimeout(function () {
                         callback.onSuccess(discussId);
                     });
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function() {
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -388,13 +388,13 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.ChannelInfoInput();
             modules.setNothing(1);
             RongIMClient.bridge.queryMsg(4, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
-                onSuccess: function(data: any) {
-                    setTimeout(function() {
+                onSuccess: function (data: any) {
+                    setTimeout(function () {
                         callback.onSuccess(data);
                     });
                 },
-                onError: function(errorCode: ErrorCode) {
-                    setTimeout(function() {
+                onError: function (errorCode: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(errorCode);
                     });
                 }
@@ -405,13 +405,13 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.LeaveChannelInput();
             modules.setNothing(1);
             RongIMClient.bridge.queryMsg(7, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
-                onSuccess: function() {
-                    setTimeout(function() {
+                onSuccess: function () {
+                    setTimeout(function () {
                         callback.onSuccess();
                     });
                 },
-                onError: function(errorCode: ErrorCode) {
-                    setTimeout(function() {
+                onError: function (errorCode: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(errorCode);
                     });
                 }
@@ -422,13 +422,13 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.ChannelEvictionInput();
             modules.setUser(userId);
             RongIMClient.bridge.queryMsg(9, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
-                onSuccess: function() {
-                    setTimeout(function() {
+                onSuccess: function () {
+                    setTimeout(function () {
                         callback.onSuccess();
                     });
                 },
-                onError: function(errorCode: ErrorCode) {
-                    setTimeout(function() {
+                onError: function (errorCode: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(errorCode);
                     });
                 }
@@ -439,12 +439,12 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.ModifyPermissionInput();
             modules.setOpenStatus(status.valueOf());
             RongIMClient.bridge.queryMsg(11, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
-                onSuccess: function(x: any) {
-                    setTimeout(function() {
+                onSuccess: function (x: any) {
+                    setTimeout(function () {
                         callback.onSuccess();
                     });
-                }, onError: function(error: ErrorCode) {
-                    setTimeout(function() {
+                }, onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -455,12 +455,12 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.RenameChannelInput();
             modules.setName(name);
             RongIMClient.bridge.queryMsg(12, MessageUtil.ArrayForm(modules.toArrayBuffer()), discussionId, {
-                onSuccess: function() {
-                    setTimeout(function() {
+                onSuccess: function () {
+                    setTimeout(function () {
                         callback.onSuccess();
                     });
                 },
-                onError: function(errcode: ErrorCode) {
+                onError: function (errcode: ErrorCode) {
                     callback.onError(errcode);
                 }
             });
@@ -471,8 +471,8 @@ module RongIMLib {
             e.setNothing(1);
             Bridge._client.chatroomId = chatroomId;
             RongIMClient.bridge.queryMsg(19, MessageUtil.ArrayForm(e.toArrayBuffer()), chatroomId, {
-                onSuccess: function() {
-                    setTimeout(function(){
+                onSuccess: function () {
+                    setTimeout(function () {
                         callback.onSuccess();
                     });
                     var modules = new RongIMClient.Protobuf.ChrmPullMsg();
@@ -480,13 +480,13 @@ module RongIMLib {
                     modules.setCount(messageCount);
                     modules.setSyncTime(0);
                     Bridge._client.queryMessage("chrmPull", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatroomId, 1, {
-                        onSuccess: function(collection: any) {
+                        onSuccess: function (collection: any) {
                             var list = collection.list;
                             var sync = RongIMLib.MessageUtil.int64ToTimestamp(collection.syncTime);
                             var latestMessage = list[list.length - 1];
                             if (latestMessage) {
                                 latestMessage = RongIMLib.MessageUtil.messageParser(latestMessage);
-                                sync = latestMessage.sentTime;                                
+                                sync = latestMessage.sentTime;
                             }
                             RongIMClient._memoryStore.lastReadTime.set(chatroomId + RongIMLib.Bridge._client.userId + "CST", sync);
                             var _client = RongIMLib.Bridge._client;
@@ -502,25 +502,25 @@ module RongIMLib {
                                     if (RongIMLib.RongIMClient._memoryStore.filterMessages.length > 0) {
                                         for (var j = 0, flen = RongIMLib.RongIMClient._memoryStore.filterMessages.length; j < flen; j++) {
                                             if (RongIMLib.RongIMClient.MessageParams[RongIMLib.RongIMClient._memoryStore.filterMessages[j]].objectName != list[i].classname) {
-                                               _client.handler.onReceived(list[i]);
+                                                _client.handler.onReceived(list[i]);
                                             }
                                         }
                                     }
                                     else {
-                                       _client.handler.onReceived(list[i]);
-                                    }   
+                                        _client.handler.onReceived(list[i]);
+                                    }
                                 }
                             }
                         },
-                        onError: function(x: any) {
-                            setTimeout(function() {
+                        onError: function (x: any) {
+                            setTimeout(function () {
                                 callback.onError(ErrorCode.CHATROOM_HISMESSAGE_ERROR);
                             });
                         }
                     }, "DownStreamMessages");
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function() {
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -532,17 +532,17 @@ module RongIMLib {
             modules.setCount(count);
             modules.setOrder(order);
             RongIMClient.bridge.queryMsg("queryChrmI", MessageUtil.ArrayForm(modules.toArrayBuffer()), chatRoomId, {
-                onSuccess: function(ret: any) {
+                onSuccess: function (ret: any) {
                     var userInfos = ret.userInfos;
-                    userInfos.forEach(function(item:any){
+                    userInfos.forEach(function (item: any) {
                         item.time = RongIMLib.MessageUtil.int64ToTimestamp(item.time)
                     });
-                    setTimeout(function() {
+                    setTimeout(function () {
                         callback.onSuccess(ret);
                     });
                 },
-                onError: function(errcode: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (errcode: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(errcode);
                     });
                 }
@@ -553,24 +553,24 @@ module RongIMLib {
             var e = new RongIMClient.Protobuf.ChrmInput();
             e.setNothing(1);
             RongIMClient.bridge.queryMsg(17, MessageUtil.ArrayForm(e.toArrayBuffer()), chatroomId, {
-                onSuccess: function() {
-                    setTimeout(function() {
+                onSuccess: function () {
+                    setTimeout(function () {
                         callback.onSuccess();
                     });
                 },
-                onError: function(errcode: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (errcode: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(errcode);
                     });
                 }
             }, "ChrmOutput");
         }
 
-        setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void{
+        setChatroomHisMessageTimestamp(chatRoomId: string, timestamp: number): void {
             RongIMClient._memoryStore.lastReadTime.set('chrhis_' + chatRoomId, timestamp);
         }
 
-        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:any):void{
+        getChatRoomHistoryMessages(chatRoomId: string, count: number, order: number, callback: any): void {
             var modules = new RongIMClient.Protobuf.HistoryMsgInput();
             modules.setTargetId(chatRoomId);
             var timestamp = RongIMClient._memoryStore.lastReadTime.get('chrhis_' + chatRoomId) || 0;
@@ -578,26 +578,26 @@ module RongIMLib {
             modules.setCount(count);
             modules.setOrder(order);
             RongIMClient.bridge.queryMsg(34, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(data: any) {
+                onSuccess: function (data: any) {
                     RongIMClient._memoryStore.lastReadTime.set('chrhis_' + chatRoomId, MessageUtil.int64ToTimestamp(data.syncTime))
                     var list = data.list.reverse();
                     for (var i = 0, len = list.length; i < len; i++) {
                         list[i] = MessageUtil.messageParser(list[i]);
                     }
-                    setTimeout(function() {
+                    setTimeout(function () {
                         callback.onSuccess(list, !!data.hasMsg);
                     });
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function() {
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
             }, "HistoryMsgOuput");
         }
 
-        setMessageStatus(conversationType: ConversationType, targetId: string, timestamp:number, status: string, callback:ResultCallback<Boolean>):void{
-            setTimeout(function(){
+        setMessageStatus(conversationType: ConversationType, targetId: string, timestamp: number, status: string, callback: ResultCallback<Boolean>): void {
+            setTimeout(function () {
                 callback.onSuccess(true);
             });
         }
@@ -606,13 +606,13 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.Add2BlackListInput();
             modules.setUserId(userId);
             RongIMClient.bridge.queryMsg(21, MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
-                onSuccess: function() {
-                    setTimeout(function(){
+                onSuccess: function () {
+                    setTimeout(function () {
                         callback.onSuccess();
                     });
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -623,13 +623,13 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.QueryBlackListInput();
             modules.setNothing(1);
             RongIMClient.bridge.queryMsg(23, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(list: any){
-                    setTimeout(function(){
+                onSuccess: function (list: any) {
+                    setTimeout(function () {
                         callback.onSuccess(list);
                     });
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -640,12 +640,12 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.BlackListStatusInput();
             modules.setUserId(userId);
             RongIMClient.bridge.queryMsg(24, MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
-                onSuccess: function(status: number) {
-                    setTimeout(function() {
+                onSuccess: function (status: number) {
+                    setTimeout(function () {
                         callback.onSuccess(BlacklistStatus[status]);
                     });
-                }, onError: function(error: ErrorCode) {
-                    setTimeout(function() {
+                }, onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -656,13 +656,13 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.RemoveFromBlackListInput();
             modules.setUserId(userId);
             RongIMClient.bridge.queryMsg(22, MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
-                onSuccess: function() {
-                    setTimeout(function(){
+                onSuccess: function () {
+                    setTimeout(function () {
                         callback.onSuccess();
                     });
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -671,7 +671,7 @@ module RongIMLib {
 
         getFileToken(fileType: FileType, callback: ResultCallback<string>): void {
             if (!(/(1|2|3|4)/.test(fileType.toString()))) {
-                setTimeout(function() {
+                setTimeout(function () {
                     callback.onError(ErrorCode.QNTKN_FILETYPE_ERROR);
                 })
                 return;
@@ -679,13 +679,13 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.GetQNupTokenInput();
             modules.setType(fileType);
             RongIMClient.bridge.queryMsg(30, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(data: any) {
-                    setTimeout(function() {
+                onSuccess: function (data: any) {
+                    setTimeout(function () {
                         callback.onSuccess(data);
                     });
                 },
-                onError: function(errcode: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (errcode: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(errcode);
                     });
                 }
@@ -694,7 +694,7 @@ module RongIMLib {
 
         getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<string>): void {
             if (!(/(1|2|3|4)/.test(fileType.toString()))) {
-                setTimeout(function() {
+                setTimeout(function () {
                     callback.onError(ErrorCode.QNTKN_FILETYPE_ERROR);
                 });
                 return;
@@ -706,13 +706,13 @@ module RongIMLib {
                 modules.setFileName(oriName);
             }
             RongIMClient.bridge.queryMsg(31, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(data: any) {
-                    setTimeout(function() {
+                onSuccess: function (data: any) {
+                    setTimeout(function () {
                         callback.onSuccess(data);
                     });
                 },
-                onError: function(errcode: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (errcode: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(errcode);
                     });
                 }
@@ -723,15 +723,15 @@ module RongIMLib {
             methodType 1 : 多客服(客服后台使用);   2 : 消息撤回 
             params.userIds : 定向消息接收者
         */
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any): void {
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?: any): void {
             if (!Bridge._client.channel) {
-                setTimeout(function(){
+                setTimeout(function () {
                     sendCallback.onError(RongIMLib.ErrorCode.RC_NET_UNAVAILABLE, null);
                 });
                 return;
             }
             if (!Bridge._client.channel.socket.socket.connected) {
-                setTimeout(function(){
+                setTimeout(function () {
                     sendCallback.onError(ErrorCode.TIMEOUT, null);
                 });
                 throw new Error("connect is timeout! postion:sendMessage");
@@ -788,7 +788,7 @@ module RongIMLib {
                 c.notificationStatus = ConversationNotificationStatus.DO_NOT_DISTURB;
                 c.latestMessage = msg;
                 c.unreadMessageCount = 0;
-                RongIMClient._dataAccessProvider.addConversation(c, <ResultCallback<boolean>>{ onSuccess: function(data) { } });
+                RongIMClient._dataAccessProvider.addConversation(c, <ResultCallback<boolean>>{ onSuccess: function (data) { } });
             }
             RongIMClient._memoryStore.converStore = c;
 
@@ -804,8 +804,8 @@ module RongIMLib {
 
 
             RongIMClient.bridge.pubMsg(conversationType.valueOf(), content, targetId, {
-                onSuccess: function(data: any) {
-                    if(data && data.timestamp) {
+                onSuccess: function (data: any) {
+                    if (data && data.timestamp) {
                         RongIMClient._memoryStore.lastReadTime.set('converST_' + Bridge._client.userId + conversationType + targetId, data.timestamp);
                     }
                     if ((conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP) && messageContent.messageName == RongIMClient.MessageType["ReadReceiptRequestMessage"]) {
@@ -813,14 +813,14 @@ module RongIMLib {
                         var sentkey: string = Bridge._client.userId + reqMsg.messageUId + "SENT";
                         RongIMClient._storageProvider.setItem(sentkey, JSON.stringify({ count: 0, dealtime: data.timestamp, userIds: {} }));
                     }
-                   
+
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
                         var cacheConversation = RongIMClient._memoryStore.converStore;
                         cacheConversation.sentStatus = msg.sentStatus;
                         cacheConversation.latestMessage = msg;
                         me.updateConversation(cacheConversation);
                         RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, {
-                            onSuccess: function(ret: Message) {
+                            onSuccess: function (ret: Message) {
                                 msg = ret;
                                 msg.messageUId = data.messageUId;
                                 msg.sentTime = data.timestamp;
@@ -828,17 +828,17 @@ module RongIMLib {
                                 msg.messageId = data.messageId;
                                 RongIMClient._dataAccessProvider.updateMessage(msg);
                             },
-                            onError: function() { }
+                            onError: function () { }
                         });
                     }
-                    setTimeout(function() {
+                    setTimeout(function () {
                         cacheConversation && me.updateConversation(cacheConversation);
                         msg.sentTime = data.timestamp;
                         msg.messageUId = data.messageUId;
                         sendCallback.onSuccess(msg);
                     });
                 },
-                onError: function(errorCode: ErrorCode, _msg:any) {
+                onError: function (errorCode: ErrorCode, _msg: any) {
                     msg.sentStatus = SentStatus.FAILED;
                     msg.messageUId = _msg.messageUId;
                     msg.sentTime = _msg.sentTime;
@@ -846,13 +846,13 @@ module RongIMLib {
                         RongIMClient._memoryStore.converStore.latestMessage = msg;
                     }
                     RongIMClient._dataAccessProvider.addMessage(conversationType, targetId, msg, {
-                        onSuccess: function(ret: Message) {
+                        onSuccess: function (ret: Message) {
                             msg.messageId = ret.messageId;
                             RongIMClient._dataAccessProvider.updateMessage(msg);
                         },
-                        onError: function() { }
+                        onError: function () { }
                     });
-                    setTimeout(function() {
+                    setTimeout(function () {
                         sendCallback.onError(errorCode, msg);
                     });
                 }
@@ -900,45 +900,45 @@ module RongIMLib {
             registerMessageTypeMapping[objectName] = messageType;
         }
 
-        registerMessageTypes(messages: any):void{
-          var types:any = [];
-  
-          var getProtos = function(proto: any){
-            var protos:any = [];
-            for(var p in proto){
-              protos.push(p);
+        registerMessageTypes(messages: any): void {
+            var types: any = [];
+
+            var getProtos = function (proto: any) {
+                var protos: any = [];
+                for (var p in proto) {
+                    protos.push(p);
+                }
+                return protos;
+            };
+            //转换消息为自定义消息参数格式
+            for (var name in messages) {
+                var message = messages[name];
+
+                var proto = message.proto;
+                var protos = getProtos(proto);
+
+                var flag = message.flag || 3;
+                var tag = MessageTag.getTagByStatus(flag);
+                flag = new RongIMLib.MessageTag(tag.isCounted, tag.isPersited);
+                types.push({
+                    type: name,
+                    name: message.name,
+                    flag: flag,
+                    protos: protos
+                });
             }
-            return protos;
-          };
-          //转换消息为自定义消息参数格式
-          for(var name in messages){
-            var message = messages[name];
-            
-            var proto = message.proto;
-            var protos = getProtos(proto);
 
-            var flag = message.flag || 3;
-            var tag = MessageTag.getTagByStatus(flag);
-            flag = new RongIMLib.MessageTag(tag.isCounted, tag.isPersited);
-            types.push({
-              type: name,
-              name: message.name,
-              flag: flag,
-              protos: protos
-            });
-          }
-
-          var register = function(message:any){
-            var type = message.type;
-            var name = message.name;
-            var flag = message.flag;
-            var protos = message.protos;
-            RongIMClient.registerMessageType(type, name, flag, protos);
-          };
-          for(var i = 0, len = types.length; i < len; i++){
-            var message:any = types[i];
-            register(message);
-          }
+            var register = function (message: any) {
+                var type = message.type;
+                var name = message.name;
+                var flag = message.flag;
+                var protos = message.protos;
+                RongIMClient.registerMessageType(type, name, flag, protos);
+            };
+            for (var i = 0, len = types.length; i < len; i++) {
+                var message: any = types[i];
+                register(message);
+            }
         }
 
         addConversation(conversation: Conversation, callback: ResultCallback<boolean>) {
@@ -977,19 +977,19 @@ module RongIMLib {
             var mod = new RongIMClient.Protobuf.RelationsInput();
             mod.setType(conversationType);
             RongIMClient.bridge.queryMsg(27, MessageUtil.ArrayForm(mod.toArrayBuffer()), targetId, {
-                onSuccess: function() {
+                onSuccess: function () {
                     var conversations = RongIMClient._memoryStore.conversationList
                     var len = conversations.length;
-                    for(var i=0; i<len; i++){
-                        if(conversations[i].conversationType == conversationType && targetId == conversations[i].targetId) {
-                            conversations.splice(i,1);
+                    for (var i = 0; i < len; i++) {
+                        if (conversations[i].conversationType == conversationType && targetId == conversations[i].targetId) {
+                            conversations.splice(i, 1);
                             break;
                         }
                     }
                     callback.onSuccess(true);
-                }, onError: function(error: ErrorCode) {
-                    setTimeout(function() {
-                      callback.onError(error);
+                }, onError: function (error: ErrorCode) {
+                    setTimeout(function () {
+                        callback.onError(error);
                     });
                 }
             });
@@ -1024,7 +1024,7 @@ module RongIMLib {
             var modules = new RongIMClient.Protobuf.CleanHisMsgInput();
             var conversationType = params.conversationType;
 
-            var _topic: {[s: string]: any} = {
+            var _topic: { [s: string]: any } = {
                 1: 'cleanPMsg',
                 2: 'cleanDMsg',
                 3: 'cleanGMsg',
@@ -1043,31 +1043,31 @@ module RongIMLib {
                 return;
             }
             modules.setDataTime(timestamp);
-            
+
             var targetId = params.targetId;
             modules.setTargetId(targetId);
 
             RongIMClient.bridge.queryMsg(topic, MessageUtil.ArrayForm(modules.toArrayBuffer()), targetId, {
-                onSuccess: function(result: any) {
+                onSuccess: function (result: any) {
                     callback.onSuccess(!result);
-                }, onError: function(error: ErrorCode) {
+                }, onError: function (error: ErrorCode) {
                     // error 1 历史消息云存储没有开通、传入时间大于服务器时间 清除失败，1 与其他错误码冲突，所以自定义错误码返回
                     if (error == 1) {
                         error = ErrorCode.CLEAR_HIS_ERROR;
                     }
-                    setTimeout(function() {
-                      callback.onError(error);
+                    setTimeout(function () {
+                        callback.onError(error);
                     });
                 }
             });
         }
 
-        clearHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
-           this.clearRemoteHistoryMessages(params, callback);
+        clearHistoryMessages(params: any, callback: ResultCallback<boolean>): void {
+            this.clearRemoteHistoryMessages(params, callback);
         }
         // 兼容老版本
-        clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>):void{
-           
+        clearMessages(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>): void {
+
         }
 
         updateMessages(conversationType: ConversationType, targetId: string, key: string, value: any, callback: ResultCallback<boolean>) {
@@ -1075,22 +1075,22 @@ module RongIMLib {
             if (key == "readStatus") {
                 if (RongIMClient._memoryStore.conversationList.length > 0) {
                     me.getConversationList(<ResultCallback<Conversation[]>>{
-                        onSuccess: function(list: Conversation[]) {
-                            Array.forEach(list, function(conver: Conversation) {
+                        onSuccess: function (list: Conversation[]) {
+                            Array.forEach(list, function (conver: Conversation) {
                                 if (conver.conversationType == conversationType && conver.targetId == targetId) {
                                     conver.unreadMessageCount = 0;
                                 }
                             });
                         },
-                        onError: function(errorCode: ErrorCode) {
-                            setTimeout(function(){
+                        onError: function (errorCode: ErrorCode) {
+                            setTimeout(function () {
                                 callback.onError(errorCode);
                             });
                         }
                     }, null);
                 }
             }
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess(true);
             });
         }
@@ -1108,17 +1108,17 @@ module RongIMLib {
                     }
                 }
             }
-            setTimeout(function() {
+            setTimeout(function () {
                 callback && callback.onSuccess(conver);
             });
             return conver;
         }
 
-        filterConversations(types: ConversationType[], list: Conversation[]): Conversation[]{
+        filterConversations(types: ConversationType[], list: Conversation[]): Conversation[] {
             var conversaions: Conversation[] = [];
-            RongUtil.forEach(types, function(type: number){
-                RongUtil.forEach(list, function(conversation: Conversation){
-                    if(conversation.conversationType == type){
+            RongUtil.forEach(types, function (type: number) {
+                RongUtil.forEach(list, function (conversation: Conversation) {
+                    if (conversation.conversationType == type) {
                         conversaions.push(conversation);
                     }
                 });
@@ -1126,15 +1126,15 @@ module RongIMLib {
             return conversaions;
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isHidden?:boolean) {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number, isHidden?: boolean) {
             var that = this;
             var isSync = RongIMClient._memoryStore.isSyncRemoteConverList;
             var list = RongIMClient._memoryStore.conversationList;
             var isLocalInclude = list.length > count;
             if (!isSync && isLocalInclude) {
-                setTimeout(function() {
+                setTimeout(function () {
                     var localList = list.slice(0, count);
-                    if(conversationTypes){
+                    if (conversationTypes) {
                         localList = that.filterConversations(conversationTypes, localList);
                     }
                     callback.onSuccess(localList);
@@ -1143,52 +1143,52 @@ module RongIMLib {
             }
 
             RongIMClient.getInstance().getRemoteConversationList(<ResultCallback<Conversation[]>>{
-                    onSuccess: function(list: Conversation[]) {
-                        if (RongUtil.supportLocalStorage()) {
-                            Array.forEach(RongIMClient._memoryStore.conversationList, function(item: Conversation) {
-                                var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + item.conversationType + item.targetId);
-                                if (item.unreadMessageCount == 0) {
-                                    item.unreadMessageCount = Number(count);
-                                }
-                            });
-                        }
-                        RongIMClient._memoryStore.isSyncRemoteConverList = false;
-                        setTimeout(function() {
-                            callback.onSuccess(list);
-                        });
-                    },
-                    onError: function(errorcode: ErrorCode) {
-                        setTimeout(function() {
-                            callback.onError(errorcode);
+                onSuccess: function (list: Conversation[]) {
+                    if (RongUtil.supportLocalStorage()) {
+                        Array.forEach(RongIMClient._memoryStore.conversationList, function (item: Conversation) {
+                            var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + item.conversationType + item.targetId);
+                            if (item.unreadMessageCount == 0) {
+                                item.unreadMessageCount = Number(count);
+                            }
                         });
                     }
-                }, conversationTypes, count,isHidden);
+                    RongIMClient._memoryStore.isSyncRemoteConverList = false;
+                    setTimeout(function () {
+                        callback.onSuccess(list);
+                    });
+                },
+                onError: function (errorcode: ErrorCode) {
+                    setTimeout(function () {
+                        callback.onError(errorcode);
+                    });
+                }
+            }, conversationTypes, count, isHidden);
         }
 
-        clearCache(){
+        clearCache() {
             var memoryStore = RongIMClient._memoryStore || {};
             memoryStore.conversationList = [];
             memoryStore.isSyncRemoteConverList = true;
         }
 
         clearConversations(conversationTypes: ConversationType[], callback: ResultCallback<boolean>) {
-            Array.forEach(conversationTypes, function(conversationType: ConversationType) {
-                Array.forEach(RongIMClient._memoryStore.conversationList, function(conver: Conversation) {
+            Array.forEach(conversationTypes, function (conversationType: ConversationType) {
+                Array.forEach(RongIMClient._memoryStore.conversationList, function (conver: Conversation) {
                     if (conversationType == conver.conversationType) {
-                        RongIMClient.getInstance().removeConversation(conver.conversationType, conver.targetId, { onSuccess: function() { }, onError: function() { } });
+                        RongIMClient.getInstance().removeConversation(conver.conversationType, conver.targetId, { onSuccess: function () { }, onError: function () { } });
                     }
                 });
             });
-            setTimeout(function() {
+            setTimeout(function () {
                 callback.onSuccess(true);
             });
         }
 
-        setMessageContent(messageId: number, content:any, objectname:string):void{
-            
+        setMessageContent(messageId: number, content: any, objectname: string): void {
+
         };
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, order?: boolean) {
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?: string, order?: boolean) {
             var config = {
                 objectname: objectname,
                 order: order
@@ -1200,7 +1200,7 @@ module RongIMLib {
             var count: number = 0;
             var storageProvider = RongIMClient._storageProvider;
             if (conversationTypes) {
-                RongUtil.forEach(conversationTypes, function (type:number) {
+                RongUtil.forEach(conversationTypes, function (type: number) {
                     var unreadKeys = storageProvider.getItemKeyList("cu" + Bridge._client.userId + type);
                     RongUtil.forEach(unreadKeys, function (key: string) {
                         var unread = storageProvider.getItem(key);
@@ -1221,20 +1221,20 @@ module RongIMLib {
 
         getConversationUnreadCount(conversationTypes: ConversationType[], callback: ResultCallback<number>) {
             var count: number = 0;
-            Array.forEach(conversationTypes, function(converType: number) {
-                Array.forEach(RongIMClient._memoryStore.conversationList, function(conver: Conversation) {
+            Array.forEach(conversationTypes, function (converType: number) {
+                Array.forEach(RongIMClient._memoryStore.conversationList, function (conver: Conversation) {
                     if (conver.conversationType == converType) {
                         count += conver.unreadMessageCount;
                     }
                 });
             });
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess(count);
             });
         }
 
         //由于 Web 端未读消息数按会话统计，撤回消息会导致未读数不准确，提供设置未读数接口，桌面版不实现此方法
-        setUnreadCount(conversationType: ConversationType, targetId: string, count: number){
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number) {
             var storageProvider = RongIMClient._storageProvider;
             var key = "cu" + Bridge._client.userId + conversationType + targetId;
             storageProvider.setItem(key, count);
@@ -1267,27 +1267,27 @@ module RongIMLib {
             }
         }
 
-        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{
-            setTimeout(function(){
+        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp: number, callback: ResultCallback<boolean>): void {
+            setTimeout(function () {
                 callback.onSuccess(true);
-            });   
+            });
         }
 
         clearUnreadCount(conversationType: ConversationType, targetId: string, callback: ResultCallback<boolean>) {
             var me = this;
             RongIMClient._storageProvider.removeItem("cu" + Bridge._client.userId + conversationType + targetId);
             this.getConversation(conversationType, targetId, {
-                onSuccess: function(conver: Conversation) {
+                onSuccess: function (conver: Conversation) {
                     if (conver) {
                         conver.unreadMessageCount = 0;
                         me.cleanMentioneds(conver);
                     }
-                    setTimeout(function(){
+                    setTimeout(function () {
                         callback.onSuccess(true);
                     });
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -1309,7 +1309,7 @@ module RongIMLib {
             }
             // 1. 获取所有 key 2. 清除
             var unreadKeys = RongIMClient._storageProvider.getItemKeyList("cu" + Bridge._client.userId);
-            RongUtil.forEach(unreadKeys, function (key:string) {
+            RongUtil.forEach(unreadKeys, function (key: string) {
                 RongIMClient._storageProvider.removeItem(key);
             });
             setTimeout(() => {
@@ -1320,15 +1320,15 @@ module RongIMLib {
         setConversationToTop(conversationType: ConversationType, targetId: string, isTop: boolean, callback: ResultCallback<boolean>) {
             var me = this;
             this.getConversation(conversationType, targetId, {
-                onSuccess: function(conver: Conversation) {
+                onSuccess: function (conver: Conversation) {
                     conver.isTop = isTop;
                     me.addConversation(conver, callback);
-                    setTimeout(function(){
+                    setTimeout(function () {
                         callback.onSuccess(true);
                     });
                 },
-                onError: function(error: ErrorCode) {
-                    setTimeout(function(){
+                onError: function (error: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(error);
                     });
                 }
@@ -1336,14 +1336,14 @@ module RongIMLib {
 
         }
 
-        getConversationNotificationStatus(params:any, callback: any):void{
+        getConversationNotificationStatus(params: any, callback: any): void {
             var targetId = params.targetId;
             var conversationType = params.conversationType;
             var notification = RongIMClient._memoryStore.notification;
-            var getKey = function(){
+            var getKey = function () {
                 return conversationType + '_' + targetId;
             };
-            
+
             var key = getKey();
 
             var status = notification[key];
@@ -1367,23 +1367,23 @@ module RongIMLib {
             }
             var modules = new RongIMClient.Protobuf.BlockPushInput();
             modules.setBlockeeId(targetId);
-            
+
             var userId = RongIMLib.Bridge._client.userId;
 
-            var success = function(status: any){
+            var success = function (status: any) {
                 notification[key] = status;
-                setTimeout(function(){
+                setTimeout(function () {
                     callback.onSuccess(status);
                 });
             };
             RongIMLib.RongIMClient.bridge.queryMsg(topic, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                 onSuccess: function (status: any) {
-                   success(status);
+                    success(status);
                 }, onError: function (e: any) {
                     if (e == 1) {
                         success(e);
-                    }else{
-                        setTimeout(function(){
+                    } else {
+                        setTimeout(function () {
                             callback.onError(e);
                         });
                     }
@@ -1391,16 +1391,16 @@ module RongIMLib {
             });
         }
 
-        setConversationNotificationStatus(params:any, callback: any):void{
+        setConversationNotificationStatus(params: any, callback: any): void {
             var conversationType = params.conversationType;
             var targetId = params.targetId;
             var status = params.status;
 
-            var getKey = function(){
+            var getKey = function () {
                 return conversationType + '_' + status;
             };
 
-            var topics:any = {
+            var topics: any = {
                 '1_1': 'blkPPush',
                 '3_1': 'blkDPush',
                 '1_0': 'unblkPPush',
@@ -1415,7 +1415,7 @@ module RongIMLib {
             var topic = topics[key];
             if (!topic) {
                 var error = 8001;
-                setTimeout(function(){
+                setTimeout(function () {
                     callback.onError(error);
                 });
                 return;
@@ -1423,33 +1423,33 @@ module RongIMLib {
 
             var modules = new RongIMClient.Protobuf.BlockPushInput();
             modules.setBlockeeId(targetId);
-            
+
             var userId = RongIMLib.Bridge._client.userId;
 
             RongIMLib.RongIMClient.bridge.queryMsg(topic, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
-                onSuccess: function (status:any) {
-                    setTimeout(function(){
+                onSuccess: function (status: any) {
+                    setTimeout(function () {
                         callback.onSuccess(status);
                     });
-                }, onError: function (e:any) {
-                    setTimeout(function(){
+                }, onError: function (e: any) {
+                    setTimeout(function () {
                         callback.onError(e);
                     });
                 }
             });
         }
 
-        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
+        getUserStatus(userId: string, callback: ResultCallback<UserStatus>): void {
             var modules = new RongIMClient.Protobuf.GetUserStatusInput();
             userId = RongIMLib.Bridge._client.userId;
             RongIMLib.RongIMClient.bridge.queryMsg(35, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                 onSuccess: function (status: any) {
                     status = RongInnerTools.convertUserStatus(status);
-                    setTimeout(function(){
+                    setTimeout(function () {
                         callback.onSuccess(status);
                     });
                 }, onError: function (e: any) {
-                    setTimeout(function(){
+                    setTimeout(function () {
                         callback.onError(e);
                     });
                 }
@@ -1457,36 +1457,36 @@ module RongIMLib {
             // callback.onSuccess(new UserStatus());
         }
 
-        setUserStatus(status:number, callback:ResultCallback<boolean>) : void{
+        setUserStatus(status: number, callback: ResultCallback<boolean>): void {
             var modules = new RongIMClient.Protobuf.SetUserStatusInput();
-            var userId:string = RongIMLib.Bridge._client.userId;    
+            var userId: string = RongIMLib.Bridge._client.userId;
             if (status) {
-                modules.setStatus(status); 
-            }  
+                modules.setStatus(status);
+            }
             RongIMLib.RongIMClient.bridge.queryMsg(36, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                 onSuccess: function (status: any) {
-                    setTimeout(function(){
+                    setTimeout(function () {
                         callback.onSuccess(true);
                     });
                 }, onError: function (e: any) {
-                    setTimeout(function(){
+                    setTimeout(function () {
                         callback.onError(e);
                     });
                 }
             }, 'SetUserStatusOutput');
         }
 
-        subscribeUserStatus(userIds:string[], callback?:ResultCallback<boolean>) : void{
+        subscribeUserStatus(userIds: string[], callback?: ResultCallback<boolean>): void {
             var modules = new RongIMClient.Protobuf.SubUserStatusInput();
-            var userId = RongIMLib.Bridge._client.userId;       
+            var userId = RongIMLib.Bridge._client.userId;
             modules.setUserid(userIds);
             RongIMLib.RongIMClient.bridge.queryMsg(37, RongIMLib.MessageUtil.ArrayForm(modules.toArrayBuffer()), userId, {
                 onSuccess: function (status: any) {
-                    setTimeout(function(){
+                    setTimeout(function () {
                         callback && callback.onSuccess(true);
                     });
                 }, onError: function (e: any) {
-                    setTimeout(function(){
+                    setTimeout(function () {
                         callback && callback.onError(e);
                     });
                 }
@@ -1494,84 +1494,84 @@ module RongIMLib {
         }
 
 
-        setUserStatusListener(params:any, callback?: Function):void{
+        setUserStatusListener(params: any, callback?: Function): void {
             RongIMClient.userStatusListener = callback;
             var userIds = params.userIds || [];
             if (userIds.length) {
-               RongIMClient._dataAccessProvider.subscribeUserStatus(userIds);
+                RongIMClient._dataAccessProvider.subscribeUserStatus(userIds);
             }
         }
 
-        clearListeners(): void{
+        clearListeners(): void {
 
         }
-        
-        setServerInfo(info:any):void{
-            
+
+        setServerInfo(info: any): void {
+
         }
 
-        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any{
-            return null;       
+        getUnreadMentionedMessages(conversationType: ConversationType, targetId: string): any {
+            return null;
         }
 
-        setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void {
-           
+        setConversationHidden(conversationType: ConversationType, targetId: string, isHidden: boolean): void {
+
         }
 
         setMessageExtra(messageId: string, value: string, callback: ResultCallback<boolean>) {
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess(true);
             });
         }
 
         setMessageReceivedStatus(messageId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>) {
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess(true);
             });
         }
 
         setMessageSentStatus(messageId: string, sentStatus: SentStatus, callback: ResultCallback<boolean>) {
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess(true);
             });
         }
 
         getAllConversations(callback: ResultCallback<Conversation[]>): void {
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess([]);
             });
         }
 
         getConversationByContent(keywords: string, callback: ResultCallback<Conversation[]>): void {
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess([]);
             });
         }
 
         getMessagesFromConversation(conversationType: ConversationType, targetId: string, keywords: string, callback: ResultCallback<Message[]>): void {
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess([]);
             });
         }
 
         searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void {
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess([]);
             });
         }
 
         searchMessageByContent(conversationType: ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: ResultCallback<Message[]>): void {
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess([]);
             });
         }
 
-        getDelaTime():number{
+        getDelaTime(): number {
             return RongIMClient._memoryStore.deltaTime;
         }
-        
-        getCurrentConnectionStatus(): number{
-            var client:any = RongIMLib.Bridge._client || {};
+
+        getCurrentConnectionStatus(): number {
+            var client: any = RongIMLib.Bridge._client || {};
             var channel = client.channel || {};
             var status = RongIMLib.ConnectionStatus.CONNECTION_CLOSED;
             if (typeof channel.connectionStatus == 'number') {
@@ -1579,40 +1579,40 @@ module RongIMLib {
             }
             return status;
         }
-        
+
         getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>) {
             var modules = new RongIMClient.Protobuf.VoipDynamicInput();
             modules.setEngineType(engineType);
             modules.setChannelName(channelName);
             RongIMClient.bridge.queryMsg(32, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(result: any){
-                    setTimeout(function(){
+                onSuccess: function (result: any) {
+                    setTimeout(function () {
                         callback.onSuccess(result);
                     });
                 },
-                onError: function(errorCode: ErrorCode){
-                    setTimeout(function(){
+                onError: function (errorCode: ErrorCode) {
+                    setTimeout(function () {
                         callback.onError(errorCode);
                     });
                 }
             }, "VoipDynamicOutput");
         }
 
-        setDeviceInfo(deviceId: string):void{
-        
+        setDeviceInfo(deviceId: string): void {
+
         }
 
-        setEnvironment(isPrivate: boolean):void{
-        
+        setEnvironment(isPrivate: boolean): void {
+
         }
 
-        clearData():boolean{
+        clearData(): boolean {
             return true;
         }
-        
+
         getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
             var profile: PublicServiceProfile = RongIMClient._memoryStore.publicServiceMap.get(publicServiceType, publicServiceId);
-            setTimeout(function(){
+            setTimeout(function () {
                 callback.onSuccess(profile);
             });
         }
@@ -1627,17 +1627,17 @@ module RongIMLib {
                 }
                 modules.setMpid("");
                 RongIMClient.bridge.queryMsg(28, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                    onSuccess: function(data: Array<PublicServiceProfile>) {
+                    onSuccess: function (data: Array<PublicServiceProfile>) {
                         //TODO 找出最大时间
                         // self.lastReadTime.set(conversationType + targetId, MessageUtil.int64ToTimestamp(data.syncTime));
                         RongIMClient._memoryStore.publicServiceMap.publicServiceList.length = 0;
                         RongIMClient._memoryStore.publicServiceMap.publicServiceList = data;
-                        setTimeout(function(){
+                        setTimeout(function () {
                             callback && callback.onSuccess(data);
                         });
                     },
-                    onError: function(errorCode: ErrorCode) { 
-                        setTimeout(function(){
+                    onError: function (errorCode: ErrorCode) {
+                        setTimeout(function () {
                             callback && callback.onError(errorCode);
                         });
                     }
@@ -1645,20 +1645,19 @@ module RongIMLib {
             }
         }
 
-        getRTCUserData(callback: ResultCallback<any>){
+        getRTCUserData(callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.rtcQueryListInput();
-            modules.setNothing(1);
             RongIMClient.bridge.queryMsg(39, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(data: Array<any>) {
+                onSuccess: function (data: Array<any>) {
                     callback.onSuccess(data);
                 },
-                onError: function(errorCode: ErrorCode) { 
+                onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             }, "rtcQueryListOutput");
         }
-        
-        setRTCUserData(data: any, callback: ResultCallback<boolean>){
+
+        setRTCUserData(data: any, callback: ResultCallback<boolean>) {
             var Protobuf = RongIMClient.Protobuf;
             var info = new Protobuf.rtcValueInfo();
             var modules = new Protobuf.rtcInfoInput();
@@ -1666,92 +1665,92 @@ module RongIMLib {
             info.setKey(data.value);
             modules.setInfo(info);
             RongIMClient.bridge.queryMsg(40, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function() {
+                onSuccess: function () {
                     callback.onSuccess(true);
                 },
-                onError: function(errorCode: ErrorCode) { 
+                onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             });
         }
-        
-        removeRTCUserData(data: any, callback: ResultCallback<boolean>){
+
+        removeRTCUserData(data: any, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.rtcDeleteInput();
             modules.setInfo(data.key);
             RongIMClient.bridge.queryMsg(41, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function() {
+                onSuccess: function () {
                     callback.onSuccess(true);
                 },
-                onError: function(errorCode: ErrorCode) { 
+                onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             });
         }
-        
-        getRTCRoomData(room: Room, callback: ResultCallback<any>){
+
+        getRTCRoomData(room: Room, callback: ResultCallback<any>, data?: any) {
             var modules = new RongIMClient.Protobuf.rtcQueryListInput();
-            modules.setNothing(room.id);
-            RongIMClient.bridge.queryMsg(42, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function(data: Array<any>) {
+            if (data) {
+                modules.setKey(data.key);
+            }
+            RongIMClient.bridge.queryMsg(42, MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
+                onSuccess: function (data: Array<any>) {
                     callback.onSuccess(data);
                 },
-                onError: function(errorCode: ErrorCode) { 
+                onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             }, "rtcQueryListOutput");
         }
-        
-        setRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>){
+
+        setRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>) {
             var Protobuf = RongIMClient.Protobuf;
             var info = new Protobuf.rtcValueInfo();
             var modules = new Protobuf.rtcInfoInput();
             info.setKey(data.key);
             info.setKey(data.value);
             modules.setInfo(info);
-            RongIMClient.bridge.queryMsg(43, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function() {
+            RongIMClient.bridge.queryMsg(43, MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
+                onSuccess: function () {
                     callback.onSuccess(true);
                 },
-                onError: function(errorCode: ErrorCode) { 
+                onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             });
         }
-        
-        removeRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>){
+
+        removeRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.rtcDeleteInput();
             modules.setInfo(data.key);
-            RongIMClient.bridge.queryMsg(44, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function() {
+            RongIMClient.bridge.queryMsg(44, MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
+                onSuccess: function () {
                     callback.onSuccess(true);
                 },
-                onError: function(errorCode: ErrorCode) { 
+                onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             });
         }
-        
-        joinRTCRoom(room:Room, callback: ResultCallback<boolean>){
-            var modules = new RongIMClient.Protobuf.rtcRoomInput();
-            modules.setNothing(room.id);
-            RongIMClient.bridge.queryMsg(45, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function() {
+
+        joinRTCRoom(room: Room, callback: ResultCallback<boolean>) {
+            var modules = new RongIMClient.Protobuf.rtcQueryListInput();
+            RongIMClient.bridge.queryMsg(45, MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
+                onSuccess: function () {
                     callback.onSuccess(true);
                 },
-                onError: function(errorCode: ErrorCode) { 
+                onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             });
         }
-        
-        quitRTCRoom(room:Room, callback: ResultCallback<boolean>){
-            var modules = new RongIMClient.Protobuf.rtcRoomInput();
-            modules.setNothing(room.id);
-            RongIMClient.bridge.queryMsg(46, MessageUtil.ArrayForm(modules.toArrayBuffer()), Bridge._client.userId, {
-                onSuccess: function() {
+
+        quitRTCRoom(room: Room, callback: ResultCallback<boolean>) {
+            var modules = new RongIMClient.Protobuf.rtcQueryListInput();
+            RongIMClient.bridge.queryMsg(46, MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
+                onSuccess: function () {
                     callback.onSuccess(true);
                 },
-                onError: function(errorCode: ErrorCode) { 
+                onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             });
