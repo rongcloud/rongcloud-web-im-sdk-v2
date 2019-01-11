@@ -36,9 +36,9 @@ module RongIMLib {
             return obj;
         }
         static modleCreate(fields: string[], msgType: string): any {
-            if (fields.length < 1) {
-                throw new Error("Array is empty  -> registerMessageType.modleCreate");
-            }
+            // if (fields.length < 1) {
+            //     throw new Error("Array is empty  -> registerMessageType.modleCreate");
+            // }
             var Object = function(message: any) {
                 var me = this;
                 for (var index in fields) {
