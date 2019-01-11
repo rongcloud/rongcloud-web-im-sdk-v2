@@ -1096,36 +1096,38 @@ module RongIMLib {
             return conver;
         }
 
-        getRTCUserData(callback: ResultCallback<any>){
+        
+        getRTCUserInfoList(room: Room, callback: ResultCallback<any>){
+            
+        }
 
+        setRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>){
+            
         }
-        
-        setRTCUserData(data: any, callback: ResultCallback<boolean>){
-    
+
+        removeRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>){
+            
         }
-        
-        removeRTCUserData(data: any, callback: ResultCallback<boolean>){
-    
+
+        getRTCRoomInfo(room: Room, callback: ResultCallback<any>){
+            
         }
-        
-        getRTCRoomData(room: Room, callback: ResultCallback<any>){
-    
+
+        setRTCRoomInfo(room: Room, data: any, callback: ResultCallback<boolean>){
+            
         }
-        
-        setRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>){
-    
+
+        removeRTCRoomInfo(room: Room, data: any, callback: ResultCallback<boolean>){
+            
         }
-        
-        removeRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>){
-    
+
+        joinRTCRoom(room: Room, callback: ResultCallback<boolean>){
+            
         }
-        
-        joinRTCRoom(room:Room, callback: ResultCallback<boolean>){
-    
+
+        quitRTCRoom(room: Room, callback: ResultCallback<boolean>){
+            
         }
-        
-        quitRTCRoom(room:Room, callback: ResultCallback<boolean>){
-    
-        }
+
     }
 }

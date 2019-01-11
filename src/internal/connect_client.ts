@@ -48,8 +48,7 @@ module RongIMLib {
         "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", 
         "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", 
         "qnUrl", "qryVoipK", "delMsg", "qryCHMsg", "getUserStatus", "setUserStatus", 
-        "subUserStatus", "cleanHisMsg",
-        "rtculist", "rtcuput", "rtcudel", "rtcrlist", "rtcrput", "rtcrdel", "rtcrjo", "rtcrext"
+        "subUserStatus", "cleanHisMsg"
     ];
     export class Channel {
         socket: Socket;

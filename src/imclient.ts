@@ -2213,7 +2213,7 @@ module RongIMLib {
         // UserStaus end
 
         // RTC start
-        setOnRTCReceiveMessageListener(listener: OnRTCReceiveMessageListener){
+        setOnRTCReceiveMessageListener(listener: OnRTCReceiveMessageListener) {
             CheckParam.getInstance().check(["object"], "setOnRTCReceiveMessageListener", false, arguments);
             RongIMClient.RTCListener = listener;
         }
@@ -2223,82 +2223,35 @@ module RongIMLib {
                 key2: 345
             };
         */
-        getRTCUserData(callback: ResultCallback<any>) {
-            CheckParam.getInstance().check(["object"], "getRTCUserData", false, arguments);
-            RongIMClient._dataAccessProvider.getRTCUserData(callback);
+        getRTCUserInfoList(room: Room, callback: ResultCallback<any>) {
+            RongIMClient._dataAccessProvider.getRTCUserInfoList(room, callback);
         }
-          /* 
-            var data = {
-                key1: 123,
-                key2: 345
-            };
-        */
-        setRTCUserData(data: any, callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["object", "object"], "setRTCUserData", false, arguments);
-            RongIMClient._dataAccessProvider.setRTCUserData(data, callback);
+
+        setRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.setRTCUserInfo(room, info, callback);
         }
-         /* 
-            var data = {
-                key1: 123,
-                key2: 345
-            };
-        */
-        removeRTCUserData(data: any, callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["object", "object"], "removeRTCUserData", false, arguments);
-            RongIMClient._dataAccessProvider.removeRTCUserData(data, callback);
+
+        removeRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.removeRTCUserInfo(room, info, callback);
         }
-        /* 
-            var room = {
-                key1: 123,
-                key2: 345
-            };
-        */
-        getRTCRoomData(room: Room, callback: ResultCallback<any>) {
-            CheckParam.getInstance().check(["object", "object"], "getRTCRoomData", false, arguments);
-            RongIMClient._dataAccessProvider.getRTCRoomData(room, callback);
+
+        getRTCRoomInfo(room: Room, callback: ResultCallback<any>) {
+            RongIMClient._dataAccessProvider.getRTCRoomInfo(room, callback);
         }
-        /* 
-            var data = {
-                key1: 123,
-                key2: 345
-            };
-        */
-        setRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["object", "object"], "setRTCRoomData", false, arguments);
-            RongIMClient._dataAccessProvider.setRTCRoomData(room, data, callback);
+
+        setRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.setRTCRoomInfo(room, info, callback);
         }
-        /* 
-            var data = {
-                key1: 123,
-                key2: 345
-            };
-        */
-        removeRTCRoomData(room: Room, data: any, callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["object", "object"], "removeRTCRoomData", false, arguments);
-            RongIMClient._dataAccessProvider.removeRTCRoomData(room, data, callback);
+
+        removeRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
+            RongIMClient._dataAccessProvider.removeRTCRoomInfo(room, info, callback);
         }
-        /* 
-            var room = {
-                id: 'roomid',
-                user: {
-                    id: 'userid'
-                }
-            };
-        */
-        joinRTCRoom(room:Room, callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["object", "object"], "joinRTCRoom", false, arguments);
+
+        joinRTCRoom(room: Room, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.joinRTCRoom(room, callback);
         }
-        /* 
-            var room = {
-                id: 'roomid',
-                user: {
-                    id: 'userid'
-                }
-            };
-        */
-        quitRTCRoom(room:Room, callback: ResultCallback<boolean>) {
-            CheckParam.getInstance().check(["object", "object"], "quitRTCRoom", false, arguments);
+
+        quitRTCRoom(room: Room, callback: ResultCallback<boolean>) {
             RongIMClient._dataAccessProvider.quitRTCRoom(room, callback);
         }
         // RTC end
