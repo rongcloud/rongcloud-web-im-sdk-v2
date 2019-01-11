@@ -862,10 +862,18 @@ module RongIMLib {
         }
 
         setConnectionStatusListener(listener: ConnectionStatusListener): void {
+            var watcher = {
+                onChanged: function(status: number){
+                    listener.onChanged(status);
+                    RongUtil.forEach(RongIMClient.statusListeners, function(watch: any){
+                        watch(status);
+                    });
+                }
+            };
             if (RongIMClient.bridge) {
-                RongIMClient.bridge.setListener(listener);
+                RongIMClient.bridge.setListener(watcher);
             } else {
-                RongIMClient._memoryStore.listenerList.push(listener);
+                RongIMClient._memoryStore.listenerList.push(watcher);
             }
         }
 

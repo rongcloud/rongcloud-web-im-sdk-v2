@@ -23,6 +23,7 @@ module RongIMLib {
             }
             return RongIMClient._instance;
         }
+        static statusListeners: any [] = [];
         static showError(errorInfo: any): void {
             var hasConsole = (console && console.error);
             if (hasConsole) {
@@ -849,7 +850,11 @@ module RongIMLib {
                 RongIMClient._memoryStore.listenerList.push(listener);
             }
         }
-
+        static statusWatch(watcher: any){
+            if(typeof watcher == 'function'){
+                RongIMClient.statusListeners.push(watcher);
+            }
+        }
         /**
          * 设置接收消息的监听器。
          *
@@ -2213,9 +2218,8 @@ module RongIMLib {
         // UserStaus end
 
         // RTC start
-        setOnRTCReceiveMessageListener(listener: OnRTCReceiveMessageListener) {
-            CheckParam.getInstance().check(["object"], "setOnRTCReceiveMessageListener", false, arguments);
-            RongIMClient.RTCListener = listener;
+        static messageWatch(watcher: any) {
+            RongIMClient.RTCListener = watcher;
         }
         /* 
             var data = {
