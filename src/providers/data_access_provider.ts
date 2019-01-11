@@ -179,6 +179,8 @@ module RongIMLib {
 
         removeRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>): void;
 
+        getRTCUserList(room: Room, callback: ResultCallback<any>): void;
+
         getRTCRoomInfo(room: Room, callback: ResultCallback<any>): void;
 
         setRTCRoomInfo(room: Room, data: any, callback: ResultCallback<boolean>): void;

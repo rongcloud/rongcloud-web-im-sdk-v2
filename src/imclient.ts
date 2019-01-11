@@ -1,6 +1,6 @@
 module RongIMLib {
     export class RongIMClient {
-        static RTCListener: OnRTCReceiveMessageListener;
+        static RTCListener: any;
         static Protobuf: any;
         static LogFactory: { [s: string]: any } = {};
         static MessageType: { [s: string]: any } = {};
@@ -2228,34 +2228,47 @@ module RongIMLib {
             };
         */
         getRTCUserInfoList(room: Room, callback: ResultCallback<any>) {
+            CheckParam.getInstance().check(["object", "object"], "getRTCUserInfoList", false, arguments);
             RongIMClient._dataAccessProvider.getRTCUserInfoList(room, callback);
         }
 
+        getRTCUserList(room: Room, callback: ResultCallback<any>){
+            CheckParam.getInstance().check(["object", "object"], "getRTCUserList", false, arguments);
+            RongIMClient._dataAccessProvider.getRTCUserList(room, callback);
+        }
+
         setRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object", "object"], "setRTCUserInfo", false, arguments);
             RongIMClient._dataAccessProvider.setRTCUserInfo(room, info, callback);
         }
 
         removeRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object", "object"], "removeRTCUserInfo", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCUserInfo(room, info, callback);
         }
 
         getRTCRoomInfo(room: Room, callback: ResultCallback<any>) {
+            CheckParam.getInstance().check(["object", "object"], "getRTCRoomInfo", false, arguments);
             RongIMClient._dataAccessProvider.getRTCRoomInfo(room, callback);
         }
 
         setRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object", "object"], "setRTCRoomInfo", false, arguments);
             RongIMClient._dataAccessProvider.setRTCRoomInfo(room, info, callback);
         }
 
         removeRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object", "object"], "removeRTCRoomInfo", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCRoomInfo(room, info, callback);
         }
 
         joinRTCRoom(room: Room, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object"], "joinRTCRoom", false, arguments);
             RongIMClient._dataAccessProvider.joinRTCRoom(room, callback);
         }
 
         quitRTCRoom(room: Room, callback: ResultCallback<boolean>) {
+            CheckParam.getInstance().check(["object", "object"], "quitRTCRoom", false, arguments);
             RongIMClient._dataAccessProvider.quitRTCRoom(room, callback);
         }
         // RTC end

@@ -1109,6 +1109,10 @@ module RongIMLib {
             
         }
 
+        getRTCUserList(room: Room, callback: ResultCallback<any>){
+            
+        }
+
         getRTCRoomInfo(room: Room, callback: ResultCallback<any>){
             
         }

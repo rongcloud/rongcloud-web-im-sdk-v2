@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = [
         "invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
-        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN", "prMsgS"], 
+        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN", "", "", "", "prMsgS"], 
         "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm", "createChrm", "exitChrm", "queryChrm", 
         "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", 
         "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", 
@@ -728,7 +728,11 @@ module RongIMLib {
             }
             //解析实体对象为消息对象。
             message = MessageUtil.messageParser(entity, this._onReceived, offlineMsg);
-
+            var isRTCMessage = message.conversationType == 12;
+            console.warn(message)
+            if(isRTCMessage){
+                return RongIMClient.RTCListener(message);
+            }
             var isRecall = (msg.getTopic && msg.getTopic() == "recallMsg");
             if (isRecall) {
                 var content = message.content;
