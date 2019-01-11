@@ -1655,6 +1655,8 @@ module RongIMLib {
        
         getRTCUserInfoList(room: Room, callback: ResultCallback<any>){
             var modules = new RongIMClient.Protobuf.RtcQueryListInput();
+            // 1 是正序,2是倒序
+            modules.setOrder(2);
             RongIMClient.bridge.queryMsg("rtcudatalist", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function (roomInfo: any) {
                     callback.onSuccess(roomInfo);
@@ -1662,16 +1664,14 @@ module RongIMLib {
                 onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
-            }, "RtcRoomInfo");
+            }, "RtcUserListOutput");
         }
 
         setRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>){
             var Protobuf = new RongIMClient.Protobuf;
-            var info = new Protobuf.RtcValueInfo();
-            info.setKey(info.key);
-            info.setKey(info.value);
-            var modules = new Protobuf.RtcInfoInput();
-            modules.setInfo(info);
+            var modules = new Protobuf.RtcValueInfo();
+            modules.setKey(info.key);
+            modules.setKey(info.value);
             RongIMClient.bridge.queryMsg("rtcuput", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
                     callback.onSuccess(true);
@@ -1683,7 +1683,7 @@ module RongIMLib {
         }
 
         removeRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>){
-            var modules = new RongIMClient.Protobuf.RtcDeleteInput();
+            var modules = new RongIMClient.Protobuf.RtcKeyDeleteInput();
             modules.setKey(info.key);
             RongIMClient.bridge.queryMsg("rtcudel", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
@@ -1697,8 +1697,7 @@ module RongIMLib {
 
         getRTCRoomInfo(room: Room, callback: ResultCallback<any>){
             var modules = new RongIMClient.Protobuf.RtcQueryListInput();
-            modules.setOrder(1);
-            modules.setCount(20);
+            modules.setOrder(2);
             RongIMClient.bridge.queryMsg("rtcrinfo", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function (roomInfo: any) {
                     callback.onSuccess(roomInfo);
@@ -1706,16 +1705,14 @@ module RongIMLib {
                 onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
-            }, "RtcRoomInfo");
+            }, "RtcRoomInfoOutput");
         }
 
         setRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>){
             var Protobuf = new RongIMClient.Protobuf;
-            var info = new Protobuf.RtcValueInfo();
-            info.setKey(info.key);
-            info.setKey(info.value);
-            var modules = new Protobuf.RtcInfoInput();
-            modules.setInfo(info);
+            var modules = new Protobuf.RtcValueInfo();
+            modules.setKey(info.key);
+            modules.setKey(info.value);
             RongIMClient.bridge.queryMsg("rtcrput", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
                     callback.onSuccess(true);
@@ -1727,7 +1724,7 @@ module RongIMLib {
         }
 
         removeRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>){
-            var modules = new RongIMClient.Protobuf.RtcDeleteInput();
+            var modules = new RongIMClient.Protobuf.RtcKeyDeleteInput();
             modules.setKey(info.key);
             RongIMClient.bridge.queryMsg("rtcrdel", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
@@ -1740,11 +1737,9 @@ module RongIMLib {
         }
 
         joinRTCRoom(room: Room, callback: ResultCallback<boolean>){
-            var modules = new RongIMClient.Protobuf.RtcInfoInput();
-             var info = new RongIMClient.Protobuf.RtcValueInfo();
-            info.setKey("key");
-            info.setValue("");
-            modules.setInfo(info);
+            var modules = new RongIMClient.Protobuf.RtcValueInfo();
+            modules.setKey("key");
+            modules.setValue("value");
             RongIMClient.bridge.queryMsg("rtcrjoi", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
                     callback.onSuccess(true);
@@ -1756,11 +1751,9 @@ module RongIMLib {
         }
 
         quitRTCRoom(room: Room, callback: ResultCallback<boolean>){
-            var modules = new RongIMClient.Protobuf.RtcInfoInput();
-            var info = new RongIMClient.Protobuf.RtcValueInfo();
-            info.setKey("key");
-            info.setValue("");
-            modules.setInfo(info);
+            var modules = new RongIMClient.Protobuf.RtcValueInfo();
+            modules.setKey("key");
+            modules.setValue("value");
             RongIMClient.bridge.queryMsg("rtcrext", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
                     callback.onSuccess(true);

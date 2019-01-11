@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = [
         "invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
-        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN", "prMsgP"], 
+        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN", "prMsgS"], 
         "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm", "createChrm", "exitChrm", "queryChrm", 
         "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat", 
         "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn", 
