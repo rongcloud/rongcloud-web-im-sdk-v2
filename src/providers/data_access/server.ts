@@ -1741,6 +1741,10 @@ module RongIMLib {
 
         joinRTCRoom(room: Room, callback: ResultCallback<boolean>){
             var modules = new RongIMClient.Protobuf.RtcInfoInput();
+             var info = new RongIMClient.Protobuf.RtcValueInfo();
+            info.setKey("key");
+            info.setValue("");
+            modules.setInfo(info);
             RongIMClient.bridge.queryMsg("rtcrjoi", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
                     callback.onSuccess(true);
@@ -1753,6 +1757,10 @@ module RongIMLib {
 
         quitRTCRoom(room: Room, callback: ResultCallback<boolean>){
             var modules = new RongIMClient.Protobuf.RtcInfoInput();
+            var info = new RongIMClient.Protobuf.RtcValueInfo();
+            info.setKey("key");
+            info.setValue("");
+            modules.setInfo(info);
             RongIMClient.bridge.queryMsg("rtcrext", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
                     callback.onSuccess(true);
