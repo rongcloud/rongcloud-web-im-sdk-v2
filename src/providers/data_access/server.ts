@@ -840,8 +840,10 @@ module RongIMLib {
                 },
                 onError: function (errorCode: ErrorCode, _msg: any) {
                     msg.sentStatus = SentStatus.FAILED;
-                    msg.messageUId = _msg.messageUId;
-                    msg.sentTime = _msg.sentTime;
+                    if (_msg) {
+                        msg.messageUId = _msg.messageUId;
+                        msg.sentTime = _msg.sentTime;
+                    }
                     if (RongIMClient.MessageParams[msg.messageType].msgTag.getMessageTag() == 3) {
                         RongIMClient._memoryStore.converStore.latestMessage = msg;
                     }
@@ -863,9 +865,9 @@ module RongIMLib {
 
         setConnectionStatusListener(listener: ConnectionStatusListener): void {
             var watcher = {
-                onChanged: function(status: number){
+                onChanged: function (status: number) {
                     listener.onChanged(status);
-                    RongUtil.forEach(RongIMClient.statusListeners, function(watch: any){
+                    RongUtil.forEach(RongIMClient.statusListeners, function (watch: any) {
                         watch(status);
                     });
                 }
@@ -1652,14 +1654,26 @@ module RongIMLib {
                 }, "PullMpOutput");
             }
         }
-       
-        getRTCUserInfoList(room: Room, callback: ResultCallback<any>){
+
+        getRTCUserInfoList(room: Room, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcQueryListInput();
             // 1 是正序,2是倒序
             modules.setOrder(2);
             RongIMClient.bridge.queryMsg("rtcUData", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
-                onSuccess: function (userInfo: any) {
-                    callback.onSuccess(userInfo);
+                onSuccess: function (result: any) {
+                    var users: { [s: string]: any } = {};
+                    var list = result.list;
+                    RongUtil.forEach(list, function (item: any) {
+                        var userId = item.userId;
+                        var tmpData: { [s: string]: any } = {};
+                        RongUtil.forEach(item.userData, function (data: any) {
+                            var key = data.key;
+                            var value = data.value;
+                            tmpData[key] = value;
+                        });
+                        users[userId] = tmpData;
+                    });
+                    callback.onSuccess(users);
                 },
                 onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
@@ -1667,12 +1681,14 @@ module RongIMLib {
             }, "RtcUserListOutput");
         }
 
-        getRTCUserList(room: Room, callback: ResultCallback<any>){
+        getRTCUserList(room: Room, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcQueryListInput();
             modules.setOrder(2);
             RongIMClient.bridge.queryMsg("rtcUList", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
-                onSuccess: function (userInfo: any) {
-                    callback.onSuccess(userInfo);
+                onSuccess: function (result: any) {
+                    callback.onSuccess({
+                        users: result.list
+                    });
                 },
                 onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
@@ -1681,7 +1697,7 @@ module RongIMLib {
         }
 
 
-        setRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>){
+        setRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.RtcValueInfo();
             modules.setKey(info.key);
             modules.setValue(info.value);
@@ -1695,10 +1711,10 @@ module RongIMLib {
             });
         }
 
-        removeRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>){
+        removeRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.RtcKeyDeleteInput();
             var keys = info.keys || [];
-            if(!RongUtil.isArray(keys)){
+            if (!RongUtil.isArray(keys)) {
                 keys = [keys];
             }
             modules.setKey(keys);
@@ -1712,12 +1728,18 @@ module RongIMLib {
             });
         }
 
-        getRTCRoomInfo(room: Room, callback: ResultCallback<any>){
+        getRTCRoomInfo(room: Room, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcQueryListInput();
             modules.setOrder(2);
             RongIMClient.bridge.queryMsg("rtcRInfo", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
-                onSuccess: function (roomInfo: any) {
-                    callback.onSuccess(roomInfo);
+                onSuccess: function (result: any) {
+                    var room: { [s: string]: any } = {
+                        id: result.roomId
+                    };
+                    RongUtil.forEach(result.roomData, function(data: any){
+                        room[data.key] = data.value;
+                    });
+                    callback.onSuccess(room);
                 },
                 onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
@@ -1725,7 +1747,7 @@ module RongIMLib {
             }, "RtcRoomInfoOutput");
         }
 
-        setRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>){
+        setRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.RtcValueInfo();
             modules.setKey(info.key);
             modules.setValue(info.value);
@@ -1739,10 +1761,10 @@ module RongIMLib {
             });
         }
 
-        removeRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>){
+        removeRTCRoomInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.RtcKeyDeleteInput();
             var keys = info.keys || [];
-            if(!RongUtil.isArray(keys)){
+            if (!RongUtil.isArray(keys)) {
                 keys = [keys];
             }
             modules.setKey(keys);
@@ -1756,7 +1778,7 @@ module RongIMLib {
             });
         }
 
-        joinRTCRoom(room: Room, callback: ResultCallback<boolean>){
+        joinRTCRoom(room: Room, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.SetUserStatusInput();;
             RongIMClient.bridge.queryMsg("rtcRJoin", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
@@ -1768,7 +1790,7 @@ module RongIMLib {
             });
         }
 
-        quitRTCRoom(room: Room, callback: ResultCallback<boolean>){
+        quitRTCRoom(room: Room, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.SetUserStatusInput();
             RongIMClient.bridge.queryMsg("rtcRExit", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function () {
