@@ -729,7 +729,6 @@ module RongIMLib {
             //解析实体对象为消息对象。
             message = MessageUtil.messageParser(entity, this._onReceived, offlineMsg);
             var isRTCMessage = message.conversationType == 12;
-            console.warn(message)
             if(isRTCMessage){
                 return RongIMClient.RTCListener(message);
             }
