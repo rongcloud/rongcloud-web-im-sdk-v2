@@ -1133,5 +1133,9 @@ module RongIMLib {
             
         }
 
+        RTCPing(room: Room){
+
+        }
+
     }
 }

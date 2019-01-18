@@ -1801,5 +1801,15 @@ module RongIMLib {
                 }
             });
         }
+
+        RTCPing(room: Room){
+            var modules = new RongIMClient.Protobuf.RtcInput();
+            RongIMClient.bridge.queryMsg("rtcRExit", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
+                onSuccess: function () {
+                },
+                onError: function () {
+                }
+            });
+        }
     }
 }
