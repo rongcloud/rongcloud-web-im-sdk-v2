@@ -197,7 +197,7 @@ module RongIMLib {
                         self._client.syncTime(undefined, undefined, undefined, true);
                     }
                 }
-
+                Bridge._client.channel.socket.fire("StatusChanged", 0);
                 if (this._client.reconnectObj.onSuccess) {
                     this._client.reconnectObj.onSuccess(userId);
                     delete this._client.reconnectObj.onSuccess;
@@ -205,7 +205,6 @@ module RongIMLib {
                     var me = this;
                     setTimeout(function() { me._cb(userId); }, 500);
                 }
-                Bridge._client.channel.socket.fire("StatusChanged", 0);
                 RongIMLib.RongIMClient._memoryStore.connectAckTime = timestamp;
                 if (!(new Date().getTime() - timestamp)) {
                     RongIMClient._memoryStore.deltaTime = 0;
