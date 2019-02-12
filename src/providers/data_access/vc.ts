@@ -1133,7 +1133,7 @@ module RongIMLib {
             
         }
 
-        RTCPing(room: Room){
+        RTCPing(room: Room, callback: ResultCallback<boolean>){
 
         }
 

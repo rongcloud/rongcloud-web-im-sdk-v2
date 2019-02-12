@@ -191,7 +191,7 @@ module RongIMLib {
 
         quitRTCRoom(room: Room, callback: ResultCallback<boolean>): void;
 
-        RTCPing(room: Room): void;
+        RTCPing(room: Room, callback: ResultCallback<boolean>): void;
 
     }
 }

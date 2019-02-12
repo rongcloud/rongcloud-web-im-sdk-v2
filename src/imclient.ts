@@ -2271,9 +2271,9 @@ module RongIMLib {
             CheckParam.getInstance().check(["object", "object"], "quitRTCRoom", false, arguments);
             RongIMClient._dataAccessProvider.quitRTCRoom(room, callback);
         }
-        RTCPing(room: Room){
-            CheckParam.getInstance().check(["object"], "RTCPing", false, arguments);
-            RongIMClient._dataAccessProvider.RTCPing(room);
+        RTCPing(room: Room, callback: ResultCallback<boolean>){
+            CheckParam.getInstance().check(["object", "object"], "RTCPing", false, arguments);
+            RongIMClient._dataAccessProvider.RTCPing(room, callback);
         }
         // RTC end
     }

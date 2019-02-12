@@ -1802,14 +1802,9 @@ module RongIMLib {
             });
         }
 
-        RTCPing(room: Room){
+        RTCPing(room: Room, callback: ResultCallback<boolean>){
             var modules = new RongIMClient.Protobuf.RtcInput();
-            RongIMClient.bridge.queryMsg("rtcPing", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
-                onSuccess: function () {
-                },
-                onError: function () {
-                }
-            });
+            RongIMClient.bridge.queryMsg("rtcPing", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, callback);
         }
     }
 }
