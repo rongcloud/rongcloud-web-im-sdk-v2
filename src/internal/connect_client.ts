@@ -556,7 +556,7 @@ module RongIMLib {
                         count-=1;
                         var message = list[i];
                         var sentTime = RongIMLib.MessageUtil.int64ToTimestamp(message.dataTime);
-                        var isSender = message.fromUserId == Bridge._client.userId;
+                        var isSender = message.direction == RongIMLib.MessageDirection.SEND;
                         var compareTime = isSender ? sentBoxTime : time;
                         if (sentTime > compareTime) {
                             var isSyncMessage = false;

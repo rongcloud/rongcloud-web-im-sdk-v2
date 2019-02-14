@@ -239,11 +239,7 @@ module RongIMLib {
                 message.messageDirection = MessageDirection.SEND;
                 message.senderUserId = Bridge._client.userId;
             } else {
-                if (message.senderUserId == Bridge._client.userId) {
-                    message.messageDirection = MessageDirection.SEND;
-                } else {
-                    message.messageDirection = MessageDirection.RECEIVE;
-                }
+                message.messageDirection = MessageDirection.RECEIVE;
             }
             message.messageUId = entity.msgId;
             message.receivedTime = new Date().getTime();
