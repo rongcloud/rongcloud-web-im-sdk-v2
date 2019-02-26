@@ -6,7 +6,7 @@ module RongIMLib {
     }
 
     export enum MethodType {
-        CUSTOMER_SERVICE = 1, 
+        CUSTOMER_SERVICE = 1,
         RECALL = 2
     }
 
@@ -202,14 +202,14 @@ module RongIMLib {
         /**
          * 没有打开聊天室消息存储
          */
-        CHATROOM_NOT_OPEN_HISTORYMSG_STORE  = 23414,
+        CHATROOM_NOT_OPEN_HISTORYMSG_STORE = 23414,
 
         /**
          * 敏感词屏蔽
          */
-        SENSITIVE_SHIELD  = 21501,
+        SENSITIVE_SHIELD = 21501,
 
-        SENSITIVE_REPLACE  = 21502,
+        SENSITIVE_REPLACE = 21502,
 
         TIMEOUT = -1,
         /**
@@ -444,7 +444,7 @@ module RongIMLib {
         CONVER_CLEAR_ERROR = 34007,
 
         CLEAR_HIS_ERROR = 34010,
-        
+
         CLEAR_HIS_TYPE_ERROR = 34008,
 
         CLEAR_HIS_TIME_ERROR = 34011,
@@ -764,20 +764,20 @@ module RongIMLib {
 
         DOWNLOADED = 0x4, // 已下载
 
-        RETRIEVED = 0x8, 
+        RETRIEVED = 0x8,
 
         UNREAD = 0
     }
 
-    export enum ReadStatus{
-        
+    export enum ReadStatus {
+
         READ = 0x1, // 已读
 
         LISTENED = 0x2, // 已听
 
         DOWNLOADED = 0x4, // 已下载
 
-        RETRIEVED = 0x8, 
+        RETRIEVED = 0x8,
 
         UNREAD = 0
     }
@@ -854,5 +854,10 @@ module RongIMLib {
         TOKEN_EXPIRE = 10,
 
         DEVICE_ERROR = 11
+    }
+
+    export enum RTCAPIType {
+        ROOM = 1,
+        PERSON = 2
     }
 }

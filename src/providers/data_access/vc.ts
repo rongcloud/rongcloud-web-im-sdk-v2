@@ -1137,5 +1137,24 @@ module RongIMLib {
 
         }
 
+        setRTCUserData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any){
+
+        }
+        getRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<any>, message?: any){
+
+        }
+        removeRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any){
+
+        }
+        setRTCRoomData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any){
+
+        }
+        getRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<any>, message?: any){
+
+        }
+        removeRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any){
+
+        }
+
     }
 }

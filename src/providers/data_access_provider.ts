@@ -193,5 +193,16 @@ module RongIMLib {
 
         RTCPing(room: Room, callback: ResultCallback<boolean>): void;
 
+        setRTCUserData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any): void;
+
+        getRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<any>, message?: any): void;
+
+        removeRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any): void;
+
+        setRTCRoomData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any): void;
+
+        getRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<any>, message?: any): void;
+
+        removeRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any): void;
     }
 }
