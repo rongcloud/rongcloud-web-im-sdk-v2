@@ -1849,7 +1849,17 @@ module RongIMLib {
             if (content) {
                 modules.setContent(content);
             }
-            RongIMClient.bridge.queryMsg("rtcQryData", MessageUtil.ArrayForm(modules.toArrayBuffer()), roomId, callback, "RtcQryOutput");
+            RongIMClient.bridge.queryMsg("rtcQryData", MessageUtil.ArrayForm(modules.toArrayBuffer()), roomId, {
+                onSuccess: function (result: any) {
+                    var props: { [s: string]: any } = {};
+                    var list = result.outInfo;
+                    RongUtil.forEach(list, function (item: any) {
+                        props[item.key] = item.value;
+                    });
+                    callback.onSuccess(props);
+                },
+                onError: callback.onError
+            }, "RtcQryOutput");
         }
         removeRTCData(roomId: string, keys: string[], isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<boolean>, message?: any) {
             var modules = new RongIMClient.Protobuf.RtcDataInput();

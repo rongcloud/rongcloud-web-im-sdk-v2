@@ -270,7 +270,9 @@ module RongIMLib {
             callback = callback || RongUtil.noop;
             var loopObj = function(){
                 for(var key in obj){
-                    callback(obj[key], key, obj);
+                    if(obj.hasOwnProperty(key)){
+                        callback(obj[key], key, obj);
+                    }
                 }
             };
             var loopArr = function(){

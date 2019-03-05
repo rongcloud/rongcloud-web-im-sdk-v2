@@ -2276,27 +2276,27 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.RTCPing(room, callback);
         }
         setRTCUserData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
-            CheckParam.getInstance().check(["string", "string", "string", "boolean", "object", "global|object|null"], "setRTCUserData", false, arguments);
+            CheckParam.getInstance().check(["string", "string", "string", "boolean", "object", "global|object|null|undefined"], "setRTCUserData", false, arguments);
             RongIMClient._dataAccessProvider.setRTCUserData(roomId, key, value , isInner, callback, message);
         }
-        getRTCUserData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<any>, message?: any) {
-            CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null"], "setRTCUserData", false, arguments);
-            RongIMClient._dataAccessProvider.getRTCUserData(roomId, keys, isInner, callback, message);
+        getRTCUserData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<any>) {
+            CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null"], "getRTCUserData", false, arguments);
+            RongIMClient._dataAccessProvider.getRTCUserData(roomId, keys, isInner, callback);
         }
         removeRTCUserData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
-            CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null"], "removeRTCUserData", false, arguments);
+            CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null|undefined"], "removeRTCUserData", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCUserData(roomId, keys, isInner, callback, message);
         }
         setRTCRoomData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
-            CheckParam.getInstance().check(["string", "string", "string", "boolean", "object", "global|object|null"], "setRTCRoomData", false, arguments);
+            CheckParam.getInstance().check(["string", "string", "string", "boolean", "object", "global|object|null|undefined"], "setRTCRoomData", false, arguments);
             RongIMClient._dataAccessProvider.setRTCRoomData(roomId, key, value, isInner, callback, message);
         }
-        getRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<any>, message?: any) {
-            CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null"], "getRTCRoomData", false, arguments);
-            RongIMClient._dataAccessProvider.getRTCRoomData(roomId, keys, isInner, callback, message);
+        getRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<any>) {
+            CheckParam.getInstance().check(["string", "array", "boolean", "object"], "getRTCRoomData", false, arguments);
+            RongIMClient._dataAccessProvider.getRTCRoomData(roomId, keys, isInner, callback);
         }
         removeRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
-            CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null"], "removeRTCRoomData", false, arguments);
+            CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null|undefined"], "removeRTCRoomData", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCRoomData(roomId, keys, isInner, callback, message);
         }
         // RTC end
