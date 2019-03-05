@@ -1831,24 +1831,18 @@ module RongIMLib {
                 modules.setObjectName(name);
             }
             if (content) {
+                if(!RongUtil.isString(content)){
+                    content = JSON.stringify(content);    
+                }
                 modules.setContent(content);
             }
             RongIMClient.bridge.queryMsg("rtcSetData", MessageUtil.ArrayForm(modules.toArrayBuffer()), roomId, callback, "RtcOutput");
         }
-        getRTCData(roomId: string, keys: string[], isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<any>, message?: any) {
+        getRTCData(roomId: string, keys: string[], isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcDataInput();
             modules.setInterior(isInner);
             modules.setTarget(apiType);
             modules.setKey(keys);
-            message = message || {};
-            var name = message.name;
-            var content = message.content;
-            if (name) {
-                modules.setObjectName(name);
-            }
-            if (content) {
-                modules.setContent(content);
-            }
             RongIMClient.bridge.queryMsg("rtcQryData", MessageUtil.ArrayForm(modules.toArrayBuffer()), roomId, {
                 onSuccess: function (result: any) {
                     var props: { [s: string]: any } = {};
@@ -1873,6 +1867,9 @@ module RongIMLib {
                 modules.setObjectName(name);
             }
             if (content) {
+                if(!RongUtil.isString(content)){
+                    content = JSON.stringify(content);    
+                }
                 modules.setContent(content);
             }
             RongIMClient.bridge.queryMsg("rtcDelData", MessageUtil.ArrayForm(modules.toArrayBuffer()), roomId, callback, "RtcOutput");
@@ -1882,7 +1879,7 @@ module RongIMLib {
             this.setRTCData(roomId, key, value, isInner, RTCAPIType.PERSON, callback, message);
         }
         getRTCUserData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<any>, message?: any) {
-            this.getRTCData(roomId, keys, isInner, RTCAPIType.PERSON, callback, message);
+            this.getRTCData(roomId, keys, isInner, RTCAPIType.PERSON, callback);
         }
         removeRTCUserData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
             this.removeRTCData(roomId, keys, isInner, RTCAPIType.PERSON, callback, message);
@@ -1891,7 +1888,7 @@ module RongIMLib {
             this.setRTCData(roomId, key, value, isInner, RTCAPIType.ROOM, callback, message);
         }
         getRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<any>, message?: any) {
-            this.getRTCData(roomId, keys, isInner, RTCAPIType.ROOM, callback, message);
+            this.getRTCData(roomId, keys, isInner, RTCAPIType.ROOM, callback);
         }
         removeRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
             this.removeRTCData(roomId, keys, isInner, RTCAPIType.ROOM, callback, message);

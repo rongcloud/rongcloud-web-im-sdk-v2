@@ -237,6 +237,9 @@ module RongIMLib {
         static isArray(array: any){
             return Object.prototype.toString.call(array) == '[object Array]';
         }
+        static isString(array: any){
+            return Object.prototype.toString.call(array) == '[object String]';
+        }
         static isFunction(fun: any){
             return Object.prototype.toString.call(fun) == '[object Function]';
         };
