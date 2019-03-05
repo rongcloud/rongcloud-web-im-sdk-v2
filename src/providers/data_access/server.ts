@@ -1778,16 +1778,28 @@ module RongIMLib {
             });
         }
 
-        joinRTCRoom(room: Room, callback: ResultCallback<boolean>) {
-            var modules = new RongIMClient.Protobuf.SetUserStatusInput();;
-            RongIMClient.bridge.queryMsg("rtcRJoin", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
-                onSuccess: function () {
-                    callback.onSuccess(true);
+        joinRTCRoom(room: Room, callback: ResultCallback<any>) {
+            var modules = new RongIMClient.Protobuf.RtcInput();;
+            RongIMClient.bridge.queryMsg("rtcRJoin_data", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
+                onSuccess: function (result: any) {
+                    var users: { [s: string]: any } = {};
+                    var list = result.list;
+                    RongUtil.forEach(list, function (item: any) {
+                        var userId = item.userId;
+                        var tmpData: { [s: string]: any } = {};
+                        RongUtil.forEach(item.userData, function (data: any) {
+                            var key = data.key;
+                            var value = data.value;
+                            tmpData[key] = value;
+                        });
+                        users[userId] = tmpData;
+                    });
+                    callback.onSuccess(users);
                 },
                 onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
-            });
+            }, "RtcUserListOutput");
         }
 
         quitRTCRoom(room: Room, callback: ResultCallback<boolean>) {
