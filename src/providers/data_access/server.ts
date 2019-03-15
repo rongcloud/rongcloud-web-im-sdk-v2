@@ -1831,8 +1831,8 @@ module RongIMLib {
                 modules.setObjectName(name);
             }
             if (content) {
-                if(!RongUtil.isString(content)){
-                    content = JSON.stringify(content);    
+                if (!RongUtil.isString(content)) {
+                    content = JSON.stringify(content);
                 }
                 modules.setContent(content);
             }
@@ -1867,8 +1867,8 @@ module RongIMLib {
                 modules.setObjectName(name);
             }
             if (content) {
-                if(!RongUtil.isString(content)){
-                    content = JSON.stringify(content);    
+                if (!RongUtil.isString(content)) {
+                    content = JSON.stringify(content);
                 }
                 modules.setContent(content);
             }
@@ -1892,6 +1892,10 @@ module RongIMLib {
         }
         removeRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
             this.removeRTCData(roomId, keys, isInner, RTCAPIType.ROOM, callback, message);
+        }
+        getNavi() {
+            var navi = RongIMClient._storageProvider.getItem("fullnavi") || "{}";
+            return JSON.parse(navi);
         }
     }
 }

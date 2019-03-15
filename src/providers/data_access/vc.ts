@@ -1155,6 +1155,8 @@ module RongIMLib {
         removeRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any){
 
         }
-
+        getNavi(){
+            
+        }
     }
 }

@@ -204,5 +204,7 @@ module RongIMLib {
         getRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<any>, message?: any): void;
 
         removeRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any): void;
+
+        getNavi(): void;
     }
 }

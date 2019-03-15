@@ -1,14 +1,16 @@
 module RongIMLib {
     export class Navigation {
         static Endpoint: any = new Object;
-        static clear(){
+        static clear() {
             var storage = RongIMClient._storageProvider;
             storage.removeItem('rc_uid');
             storage.removeItem('serverIndex');
             storage.removeItem('rongSDK');
         }
         constructor() {
-            window.getServerEndpoint = function(result: any) {
+            window.getServerEndpoint = function (result: any) {
+                var storage = RongIMClient._storageProvider;
+                storage.setItem('fullnavi', JSON.stringify(result));
                 var server = result.server;
                 if (server) {
                     server += ','
@@ -16,11 +18,10 @@ module RongIMLib {
                 var backupServer = result.backupServer || '';
 
                 var tpl = '{server}{backupServer}';
-                var servers:any = RongUtil.tplEngine(tpl, {
+                var servers: any = RongUtil.tplEngine(tpl, {
                     server: server,
                     backupServer: backupServer
                 });
-                var storage = RongIMClient._storageProvider;
 
                 servers = servers.split(',');
                 storage.setItem('servers', JSON.stringify(servers));
@@ -58,7 +59,7 @@ module RongIMLib {
             }
             var client = new Client(token, appId);
             var me = this;
-            this.getServerEndpoint(token, appId, function() {
+            this.getServerEndpoint(token, appId, function () {
                 client.connect(callback);
             }, callback.onError, true);
             return client;
@@ -77,7 +78,7 @@ module RongIMLib {
                 var isSameUser = (_old == uId);
                 var servers = storage.getItem('servers');
                 var hasServers = (typeof servers == 'string')
-                
+
                 if (isSameUser && isSameType && hasServers) {
                     RongIMClient._memoryStore.voipStategy = storage.getItem("voipStrategy");
                     var openMp = storage.getItem('openMp' + uId);
@@ -90,12 +91,12 @@ module RongIMLib {
             var StatusEvent = Channel._ConnectionStatusListener;
             StatusEvent.onChanged(ConnectionStatus.REQUEST_NAVI);
             //导航信息，切换Url对象的key进行线上线下测试操作
-            var xss:any = document.createElement("script");
+            var xss: any = document.createElement("script");
             //进行jsonp请求
             var depend = RongIMClient._memoryStore.depend;
             var domain = depend.navi;
             var path = (depend.isPolling ? 'cometnavi' : 'navi');
-                token = encodeURIComponent(token);
+            token = encodeURIComponent(token);
             var sdkver = RongIMClient.sdkver;
             var random = RongUtil.getTimestamp();
 
@@ -110,13 +111,13 @@ module RongIMLib {
             });
             xss.src = url;
             document.body.appendChild(xss);
-            xss.onerror = function() {
+            xss.onerror = function () {
                 _onerror(ConnectionState.TOKEN_INCORRECT);
             };
             if ("onload" in xss) {
                 xss.onload = _onsuccess;
             } else {
-                xss.onreadystatechange = function() {
+                xss.onreadystatechange = function () {
                     xss.readyState == "loaded" && _onsuccess();
                 };
             }

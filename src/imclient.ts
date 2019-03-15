@@ -2299,6 +2299,9 @@ module RongIMLib {
             CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null|undefined"], "removeRTCRoomData", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCRoomData(roomId, keys, isInner, callback, message);
         }
+        getNavi(){
+            return RongIMClient._dataAccessProvider.getNavi();
+        }
         // RTC end
     }
 }
