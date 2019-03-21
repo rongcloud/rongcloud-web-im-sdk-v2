@@ -1897,5 +1897,16 @@ module RongIMLib {
             var navi = RongIMClient._storageProvider.getItem("fullnavi") || "{}";
             return JSON.parse(navi);
         }
+        getRTCToken(room: any, callback: ResultCallback<any>) {
+            var modules = new RongIMClient.Protobuf.RtcInput();
+            RongIMClient.bridge.queryMsg("rtcToken", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
+                onSuccess: function (result: any) {
+                    callback.onSuccess(result);
+                },
+                onError: function (errorCode: ErrorCode) {
+                    callback.onError(errorCode);
+                }
+            }, "RtcTokenOutput");
+        }
     }
 }

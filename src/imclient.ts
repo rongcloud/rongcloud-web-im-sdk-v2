@@ -2303,6 +2303,10 @@ module RongIMLib {
         getNavi(){
             return RongIMClient._dataAccessProvider.getNavi();
         }
+        getRTCToken(room: any, callback: ResultCallback<any>){
+            CheckParam.getInstance().check(["object", "object"], "getRTCToken", false, arguments);
+            return RongIMClient._dataAccessProvider.getRTCToken(room, callback);
+        }
         getAppInfo(){
             var appKey = RongIMClient._memoryStore.appKey;
             return {

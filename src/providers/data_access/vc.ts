@@ -1158,5 +1158,8 @@ module RongIMLib {
         getNavi(){
             
         }
+        getRTCToken(room: any, callback: ResultCallback<any>){
+
+        }
     }
 }
