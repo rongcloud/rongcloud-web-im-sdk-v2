@@ -2303,6 +2303,12 @@ module RongIMLib {
         getNavi(){
             return RongIMClient._dataAccessProvider.getNavi();
         }
+        getAppInfo(){
+            var appKey = RongIMClient._memoryStore.appKey;
+            return {
+                appKey: appKey
+            };
+        }
         // RTC end
     }
 }
