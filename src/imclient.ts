@@ -17,6 +17,7 @@ module RongIMLib {
         static sdkver: string = '2.4.0';
         static otherDeviceLoginCount: number = 0;
         static serverStore: any = { index: 0 };
+        static isFirstConnect: boolean = true;
         static getInstance(): RongIMClient {
             if (!RongIMClient._instance) {
                 throw new Error("RongIMClient is not initialized. Call .init() method first.");
