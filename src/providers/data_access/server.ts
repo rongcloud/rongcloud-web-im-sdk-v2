@@ -1734,7 +1734,8 @@ module RongIMLib {
             RongIMClient.bridge.queryMsg("rtcRInfo", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function (result: any) {
                     var room: { [s: string]: any } = {
-                        id: result.roomId
+                        id: result.roomId,
+                        total: result.userCount
                     };
                     RongUtil.forEach(result.roomData, function (data: any) {
                         room[data.key] = data.value;
