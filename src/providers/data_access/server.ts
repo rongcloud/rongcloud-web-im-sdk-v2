@@ -1784,7 +1784,7 @@ module RongIMLib {
             RongIMClient.bridge.queryMsg("rtcRJoin_data", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function (result: any) {
                     var users: { [s: string]: any } = {};
-                    var list = result.list;
+                    var list = result.list, token = result.token;
                     RongUtil.forEach(list, function (item: any) {
                         var userId = item.userId;
                         var tmpData: { [s: string]: any } = {};
@@ -1795,7 +1795,10 @@ module RongIMLib {
                         });
                         users[userId] = tmpData;
                     });
-                    callback.onSuccess(users);
+                    callback.onSuccess({
+                        users: users,
+                        token: token
+                    });
                 },
                 onError: function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
