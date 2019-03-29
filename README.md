@@ -5,7 +5,7 @@
 ### 初始化开发工具
 
 ```
-npm install -g typescript@1.6.0beta tsd typedoc coffee-script grunt-cli karma-cli
+npm install -g typescript@1.6.2 tsd typedoc coffee-script grunt-cli karma-cli
 ```
 
 如有必要，使用 `sudo npm`
@@ -19,12 +19,6 @@ npm install
 npm install npm-shrinkwrap
 bower install
 tsd install
-```
-
-### 启动测试用例
-
-```
-grunt karma
 ```
 
 ### 编译开发代码
