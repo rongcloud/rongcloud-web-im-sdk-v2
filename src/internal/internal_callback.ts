@@ -223,7 +223,7 @@ module RongIMLib {
                     var newClient = new Client(token, appId);
                     Bridge._client = newClient;
                     newClient.__init(function() {
-                        Transportations._TransportType == "websocket" && _client.keepLive();
+                        Transportations._TransportType == "websocket" && newClient.keepLive();
                     });
                 }, me._timeout, false);
             } else {
