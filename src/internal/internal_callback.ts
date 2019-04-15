@@ -218,7 +218,7 @@ module RongIMLib {
                 var me = this;
                 var _client = me._client;
                 var appId = _client.appId, token = _client.token;
-                new Navigation().getServerEndpoint(token, appId, function() {
+                new Navigation().requestNavi(token, appId, function() {
                     _client.clearHeartbeat();
                     var newClient = new Client(token, appId);
                     Bridge._client = newClient;

@@ -104,7 +104,15 @@ module RongIMLib {
         /* 
             请求导航结束
         */
-        RESPONSE_NAVI = 202
+        RESPONSE_NAVI = 202,
+        /* 
+            请求导航失败
+        */
+       RESPONSE_NAVI_ERROR = 203,
+        /* 
+            请求导航超时
+        */
+       RESPONSE_NAVI_TIMEOUT = 204
     }
 
     export enum ConversationNotificationStatus {

@@ -113,7 +113,7 @@ module RongIMLib {
             });
         }
 
-        check(f: any, position: string, d?: any, c?:any) {
+        check(f: any, position: string, d?: any, c?: any) {
             if (RongIMClient._dataAccessProvider || d) {
                 for (var g = 0, e = c.length; g < e; g++) {
                     if (!new RegExp(this.getType(c[g])).test(f[g])) {
@@ -162,15 +162,15 @@ module RongIMLib {
         }
     }
 
-    export class MemoryCache{
+    export class MemoryCache {
         cache: any = {};
-        set(key:string, value:any){
+        set(key: string, value: any) {
             this.cache[key] = value;
         }
-        get(key: string):any{
+        get(key: string): any {
             return this.cache[key];
         }
-        remove(key: string){
+        remove(key: string) {
             delete this.cache[key];
         }
     }
@@ -194,7 +194,7 @@ module RongIMLib {
         send(callback: any): void {
             var me = this;
             me.options.url || (me.options.url = "http://upload.qiniu.com/putb64/-1");
-            me.xmlhttp.onreadystatechange = function() {
+            me.xmlhttp.onreadystatechange = function () {
                 if (me.xmlhttp.readyState == 4) {
                     if (me.options.type) {
                         callback();
@@ -219,7 +219,7 @@ module RongIMLib {
     }
 
     export class RongUtil {
-        static noop(){}
+        static noop() { }
         static isEmpty(obj: any): boolean {
             var empty: boolean = true;
             for (var key in obj) {
@@ -228,40 +228,43 @@ module RongIMLib {
             }
             return empty;
         }
-        static MD5(str: string, key?:string, raw?:string){
+        static MD5(str: string, key?: string, raw?: string) {
             return md5(str, key, raw);
         }
-        static isObject(obj: any){
+        static isObject(obj: any) {
             return Object.prototype.toString.call(obj) == '[object Object]';
         }
-        static isArray(array: any){
+        static isArray(array: any) {
             return Object.prototype.toString.call(array) == '[object Array]';
         }
-        static isString(array: any){
+        static isString(array: any) {
             return Object.prototype.toString.call(array) == '[object String]';
         }
-        static isFunction(fun: any){
+        static isFunction(fun: any) {
             return Object.prototype.toString.call(fun) == '[object Function]';
         };
-        static stringFormat(tmpl:string, vals:any){
+        static isEqual(a: any, b: any) {
+            return a === b;
+        };
+        static stringFormat(tmpl: string, vals: any) {
             for (var i = 0, len = vals.length; i < len; i++) {
                 var val = vals[i], reg = new RegExp("\\{" + (i) + "\\}", "g");
                 tmpl = tmpl.replace(reg, val);
             }
             return tmpl;
         }
-        static tplEngine(temp:any, data:any, regexp?:any) {
+        static tplEngine(temp: any, data: any, regexp?: any) {
             if (!(Object.prototype.toString.call(data) === "[object Array]")) {
                 data = [data];
             }
-            var ret:any[] = [];
+            var ret: any[] = [];
             for (var i = 0, j = data.length; i < j; i++) {
                 ret.push(replaceAction(data[i]));
             }
             return ret.join("");
 
             function replaceAction(object: any) {
-                return temp.replace(regexp || (/{([^}]+)}/g), function(match:any, name:any) {
+                return temp.replace(regexp || (/{([^}]+)}/g), function (match: any, name: any) {
                     if (match.charAt(0) == '\\') {
                         return match.slice(1);
                     }
@@ -269,17 +272,17 @@ module RongIMLib {
                 });
             }
         };
-        static forEach(obj:any, callback:Function){
+        static forEach(obj: any, callback: Function) {
             callback = callback || RongUtil.noop;
-            var loopObj = function(){
-                for(var key in obj){
-                    if(obj.hasOwnProperty(key)){
+            var loopObj = function () {
+                for (var key in obj) {
+                    if (obj.hasOwnProperty(key)) {
                         callback(obj[key], key, obj);
                     }
                 }
             };
-            var loopArr = function(){
-                for(var i = 0, len = obj.length; i < len; i++){
+            var loopArr = function () {
+                for (var i = 0, len = obj.length; i < len; i++) {
                     callback(obj[i], i);
                 }
             };
@@ -290,27 +293,27 @@ module RongIMLib {
                 loopArr();
             }
         }
-        static extend(source:any, target:any, callback?:any, force?: boolean){
-            RongUtil.forEach(source, function(val:any, key:string){
+        static extend(source: any, target: any, callback?: any, force?: boolean) {
+            RongUtil.forEach(source, function (val: any, key: string) {
                 var hasProto = (key in target);
                 if (force && hasProto) {
                     target[key] = val;
                 }
                 if (!hasProto) {
-                   target[key] = val;
+                    target[key] = val;
                 }
             });
             return target;
         }
-        static createXHR(){
-            var item:{[key: string]: any} = {
-                XMLHttpRequest: function(){
+        static createXHR() {
+            var item: { [key: string]: any } = {
+                XMLHttpRequest: function () {
                     return new XMLHttpRequest();
                 },
-                XDomainRequest: function(){
+                XDomainRequest: function () {
                     return new XDomainRequest();
                 },
-                ActiveXObject: function(){
+                ActiveXObject: function () {
                     return new ActiveXObject('Microsoft.XMLHTTP');
                 }
             };
@@ -319,34 +322,36 @@ module RongIMLib {
             var key = isXHR ? 'XMLHttpRequest' : isXDR ? 'XDomainRequest' : 'ActiveXObject'
             return item[key]();
         }
-        static request(opts: any){
+        static request(opts: any) {
             var url = opts.url;
             var success = opts.success;
             var error = opts.error;
             var method = opts.method || 'GET';
             var xhr = RongUtil.createXHR();
-            xhr.onreadystatechange = function(){
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4) {
+                    var status = xhr.status;
                     if (xhr.status == 200) {
-                        success();
-                    }else{
-                        error();
+                        success(xhr.responseText);
+                    } else {
+                        error(status);
                     }
                 }
             };
             xhr.open(method, url, true);
             xhr.send(null);
+            return xhr;
         }
-        static formatProtoclPath(config: any){
+        static formatProtoclPath(config: any) {
             var path = config.path;
             var protocol = config.protocol;
             var tmpl = config.tmpl || '{0}{1}';
             var sub = config.sub;
-            
+
             var flag = '://';
             var index = path.indexOf(flag);
             var hasProtocol = (index > -1);
-            
+
             if (hasProtocol) {
                 index += flag.length;
                 path = path.substring(index);
@@ -363,18 +368,18 @@ module RongIMLib {
 
         static supportLocalStorage(): boolean {
             var support = false;
-            if(typeof localStorage == 'object'){
+            if (typeof localStorage == 'object') {
                 try {
                     var key = 'RC_TMP_KEY', value = 'RC_TMP_VAL';
                     localStorage.setItem(key, value);
                     var localVal = localStorage.getItem(key);
-                    if(localVal == value){
+                    if (localVal == value) {
                         support = true;
                     }
                 } catch (err) {
                     console.log('localStorage is disabled.');
                 }
-                
+
             }
             return support;
         }
@@ -384,19 +389,19 @@ module RongIMLib {
             rename([{n: 'martin'}, {a: 18}], {n: 'name', a: 'age'});
             => [{name: 'martin'}, {age: 18}]
         */
-        static rename(origin: any, newNames: any): any{
+        static rename(origin: any, newNames: any): any {
             var isObject = RongUtil.isObject(origin);
             if (isObject) {
                 origin = [origin];
             }
             origin = JSON.parse(JSON.stringify(origin));
-            var updateProperty = function(val: any, key: string, obj: any){
+            var updateProperty = function (val: any, key: string, obj: any) {
                 delete obj[key];
                 key = newNames[key];
-                obj[key] = val; 
+                obj[key] = val;
             };
-            RongUtil.forEach(origin, function(item: any){
-                RongUtil.forEach(item, function(val: any, key: string, obj: any){
+            RongUtil.forEach(origin, function (item: any) {
+                RongUtil.forEach(item, function (val: any, key: string, obj: any) {
                     var isRename = (key in newNames);
                     (isRename ? updateProperty : RongUtil.noop)(val, key, obj);
                 });
@@ -404,9 +409,9 @@ module RongIMLib {
             return isObject ? origin[0] : origin;
         }
 
-        static some(arrs: any, callback: Function): boolean{
-            var has:boolean = false;
-            for(var i = 0, len = arrs.length; i < len; i++){
+        static some(arrs: any, callback: Function): boolean {
+            var has: boolean = false;
+            for (var i = 0, len = arrs.length; i < len; i++) {
                 if (callback(arrs[i])) {
                     has = true;
                     break;
@@ -415,23 +420,22 @@ module RongIMLib {
             return has;
         }
 
-        static keys(obj: any): string[]{
-            var props:string[] = [];
-            for(var key in obj){
+        static keys(obj: any): string[] {
+            var props: string[] = [];
+            for (var key in obj) {
                 props.push(key);
             }
             return props;
         }
 
-        static isNumber(num:number): boolean{
+        static isNumber(num: number): boolean {
             return Object.prototype.toString.call(num) == '[object Number]';
         }
 
-        static getTimestamp(): number{
+        static getTimestamp(): number {
             var date = new Date();
             return date.getTime()
         }
-
     }
     /*
         var observer = new RongObserver();
@@ -443,55 +447,81 @@ module RongIMLib {
         });
 
     */
-    export class RongObserver{
-        watchers:{[key: string]: any}  = {};
-        genUId(key: string):string{
+    export class RongObserver {
+        watchers: { [key: string]: any } = {};
+        genUId(key: string): string {
             var time = new Date().getTime();
             return [key, time].join('_');
         }
-        watch(params: any):void{
+        watch(params: any): void {
             var me = this;
             var key = params.key;
             var multiple = params.multiple;
             key = RongUtil.isArray(key) ? key : [key];
             var func = params.func;
-            RongUtil.forEach(key, function(k: any){
+            RongUtil.forEach(key, function (k: any) {
                 k = multiple ? me.genUId(k) : k;
                 me.watchers[k] = func;
             });
         }
-        notify(params: any): void{
+        notify(params: any): void {
             var me = this;
             var key = params.key;
             var entity = params.entity;
-            for(var k in me.watchers){
+            for (var k in me.watchers) {
                 var isNotify = (k.indexOf(key) == 0);
                 if (isNotify) {
                     me.watchers[k](entity);
                 }
             }
         }
-        remove(): void{
+        remove(): void {
 
         }
     }
 
-    export class Timer{
-        timeout:number = 0;
-        timer: any = null;
+    export class Timer {
+        timeout: number = 0;
+        timers: any = [];
         constructor(config: any) {
             this.timeout = config.timeout;
         }
-        resume(callback: Function){
-            this.timer = setTimeout(callback, this.timeout);
+        resume(callback: Function) {
+            var timer = setTimeout(callback, this.timeout);
+            this.timers.push(timer);
         }
-        pause(){
-            clearTimeout(this.timer);
+        pause() {
+            RongUtil.forEach(this.timers, function (timer: number) {
+                clearTimeout(timer);
+            });
         }
     }
 
-    export class InnerUtil{
-        static getUId(token: string){
+    export class IndexTools {
+        items: any = [];
+        index: number = 0;
+        onwheel: Function = function () { };
+        constructor(config: any) {
+            this.items = config.items;
+            this.onwheel = config.onwheel;
+        }
+        get() {
+            var context = this;
+            var items = context.items;
+            var index = context.index;
+            var isWheel = index >= items.length;
+            if (isWheel) {
+                context.onwheel();
+            }
+            return isWheel ? 0 : index;
+        }
+        add() {
+            this.index += 1;
+        }
+    }
+
+    export class InnerUtil {
+        static getUId(token: string) {
             return md5(token).slice(8, 16)
         }
     }
