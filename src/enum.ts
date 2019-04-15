@@ -90,6 +90,10 @@ module RongIMLib {
          */
         DOMAIN_INCORRECT = 12,
         /**
+         * appkey 不正确
+         */
+        APPKEY_IS_FAKE = 20,
+        /**
         *  连接关闭。
         */
         CONNECTION_CLOSED = 4,

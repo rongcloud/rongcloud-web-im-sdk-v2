@@ -2,6 +2,7 @@ module RongIMLib {
     export class RongIMClient {
         static RTCListener: any = function () { };
         static Protobuf: any;
+        static currentServer: string = '';
         static LogFactory: { [s: string]: any } = {};
         static MessageType: { [s: string]: any } = {};
         static MessageParams: { [s: string]: any };

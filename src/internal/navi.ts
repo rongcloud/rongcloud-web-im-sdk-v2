@@ -44,7 +44,6 @@ module RongIMLib {
             var openMp = result.openMp;
             storage.setItem('openMp' + uid, openMp);
             RongIMClient._memoryStore.depend.openMp = openMp;
-            var StatusEvent = Channel._ConnectionStatusListener;
         };
         connect(appId?: string, token?: string, callback?: any) {
             var oldAppId = RongIMClient._storageProvider.getItem("appId");
@@ -116,8 +115,17 @@ module RongIMLib {
                 var success = function (result: any) {
                     timer.pause();
                     StatusEvent.onChanged(ConnectionStatus.RESPONSE_NAVI);
-                    context.getNaviSuccess(result);
-                    _onsuccess();
+                    var code = result.code;
+                    if (RongUtil.isEqual(code, 200)) {
+                        context.getNaviSuccess(result);
+                        _onsuccess();
+                    }
+                    if (RongUtil.isEqual(code, 401)) {
+                        _onerror(ConnectionState.TOKEN_INCORRECT);
+                    }
+                    if (RongUtil.isEqual(code, 403)) {
+                        StatusEvent.onChanged(ConnectionStatus.APPKEY_IS_FAKE);
+                    }
                 };
                 var error = function (status: number) {
                     if (RongUtil.isEqual(status, 0)) {
@@ -158,7 +166,13 @@ module RongIMLib {
                     result = result.replace('null(', '').replace(');', '');
                     success(JSON.parse(result));
                 },
-                error: error
+                error: function (status: number, result: string) {
+                    if (status == 401 || status == 403) {
+                        success(JSON.parse(result));
+                    } else {
+                        error(status);
+                    }
+                }
             });
         }
     }

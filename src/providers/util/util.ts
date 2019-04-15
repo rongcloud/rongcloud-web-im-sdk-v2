@@ -246,6 +246,16 @@ module RongIMLib {
         static isEqual(a: any, b: any) {
             return a === b;
         };
+        static indexOf(arrs: any, item: any) {
+            var index = -1;
+            for (var i = 0; i < arrs.length; i++) {
+                if (item === arrs[i]) {
+                    index = i;
+                    break;
+                }
+            }
+            return index;
+        }
         static stringFormat(tmpl: string, vals: any) {
             for (var i = 0, len = vals.length; i < len; i++) {
                 var val = vals[i], reg = new RegExp("\\{" + (i) + "\\}", "g");
@@ -331,10 +341,10 @@ module RongIMLib {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4) {
                     var status = xhr.status;
-                    if (xhr.status == 200) {
+                    if (status == 200) {
                         success(xhr.responseText);
                     } else {
-                        error(status);
+                        error(status, xhr.responseText);
                     }
                 }
             };
