@@ -1198,6 +1198,10 @@ module RongIMLib {
 
         };
 
+        setMessageSearchField(messageId: number, content: any, searchFiles: string): void {
+
+        };
+
         getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?: string, order?: boolean) {
             var config = {
                 objectname: objectname,

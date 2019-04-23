@@ -1221,6 +1221,10 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.setMessageContent(messageId, content, objectName);
         };
 
+        setMessageSearchField(messageId: number, content: any, searchFiles: string): void {
+            RongIMClient._dataAccessProvider.setMessageContent(messageId, content, searchFiles);
+        };
+
         /**
          * [getHistoryMessages 拉取历史消息记录。]
          * @param  {ConversationType}          conversationType [会话类型]

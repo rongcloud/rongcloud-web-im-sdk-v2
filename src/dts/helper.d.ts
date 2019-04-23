@@ -143,7 +143,7 @@ declare interface Addon {
 
     getFileUrl(fileType: RongIMLib.FileType, fileName: string, oriName: string, callback: RongIMLib.ResultCallback<string>): void;
 
-    sendMessage(conversationType: RongIMLib.ConversationType, targetId: string, objectname: string, messageContent: string, pushText: string, appData: string, progress: Function, success: Function, error: Function, mentiondMsg?: any): string;
+    sendMessage(conversationType: RongIMLib.ConversationType, targetId: string, objectname: string, messageContent: string, pushText: string, appData: string, progress: Function, success: Function, error: Function, users?: any, isMentioned?: Boolean, isCmd?: Boolean): string;
 
     registerMessageType(messageType: string, persistentFlag: number, searchProp?: string[]): void;
 
@@ -224,6 +224,8 @@ declare interface Addon {
     updateMessageReceiptStatus(conversationType: RongIMLib.ConversationType, targetId: string, timesamp: number):void;
 
     setMessageContent(messageId: number, content: any, objectName: string):void;
+
+    setMessageSearchField(messageId: number, content: any, searchFiles: string): void;
 
     getConversationNotificationStatus(conversationType:number, targetId:string, success:Function, error:Function):void;
 
