@@ -121,6 +121,7 @@ module RongIMLib {
             var pathTmpl = '{0}{1}';
 
             var _serverPath: { [key: string]: any } = {
+                navi: 'nav.cn.ronghub.com',
                 api: 'api.cn.ronghub.com'
             };
 
