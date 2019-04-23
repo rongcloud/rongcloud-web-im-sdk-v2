@@ -407,7 +407,7 @@ module RongIMLib {
         resumeTimer() {
             var me = this;
             this.timeout_ = setTimeout(function () {
-                me.channel.disconnect();
+                me.channel.disconnect(ConnectionStatus.NETWORK_UNAVAILABLE);
             }, this.timeoutMillis);
         }
         pauseTimer() {
