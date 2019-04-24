@@ -164,6 +164,12 @@ module RongIMLib {
                 url: url,
                 success: function (result: string) {
                     result = result.replace('null(', '').replace(');', '');
+                    // 兼容私有云无分号
+                    var lastIndex = result.lastIndexOf(')');
+                    var maxIndex = result.length - 1;
+                    if (lastIndex == maxIndex) {
+                        result = result.substr(0, lastIndex);
+                    }
                     success(JSON.parse(result));
                 },
                 error: function (status: number, result: string) {
