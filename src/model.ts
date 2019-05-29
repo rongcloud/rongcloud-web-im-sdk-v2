@@ -195,7 +195,8 @@ module RongIMLib {
     export class Room {
         constructor(
             public id: string,
-            public user: User
+            public user: User,
+            public mode: number
         ) { }
     }
 }
