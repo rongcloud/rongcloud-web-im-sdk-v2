@@ -236,12 +236,24 @@ module RongIMLib {
             } else {
                 message.targetId = (/^[234]$/.test(entity.type || entity.getType()) ? entity.groupId : message.senderUserId);
             }
-            if (entity.direction == 1) {
+
+            var selfUserId = Bridge._client.userId;
+            
+            // 解决多端在线收自己发的消息时, messageDirection 为 2(接收), 导致未读数增加
+            var isSelfSend = entity.direction == 1 || message.senderUserId === selfUserId;
+            if (isSelfSend) {
                 message.messageDirection = MessageDirection.SEND;
                 message.senderUserId = Bridge._client.userId;
             } else {
                 message.messageDirection = MessageDirection.RECEIVE;
             }
+            
+            // 自己给自己发的消息, messageDirection 为 2(接收)
+            var isSelfToSelf = message.senderUserId === selfUserId && message.targetId === selfUserId;
+            if (isSelfToSelf) {
+                message.messageDirection = MessageDirection.RECEIVE;
+            }
+
             message.messageUId = entity.msgId;
             message.receivedTime = new Date().getTime();
             message.messageId = (message.conversationType + "_" + ~~(Math.random() * 0xffffff));
