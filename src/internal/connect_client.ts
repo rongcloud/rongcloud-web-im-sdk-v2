@@ -809,7 +809,7 @@ module RongIMLib {
                 }
 
                 var isReceiver = message.messageDirection == RongIMLib.MessageDirection.RECEIVE;
-                if (isReceiver) {
+                if (isReceiver && message.senderUserId != Bridge._client.userId) {
                     con.unreadMessageCount = con.unreadMessageCount + 1;
                     if (RongUtil.supportLocalStorage()) {
                         var originUnreadCount = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + con.conversationType + con.targetId); // 与本地存储会话合并
