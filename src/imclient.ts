@@ -15,7 +15,7 @@ module RongIMLib {
         private static _instance: RongIMClient;
         static bridge: any;
         static userStatusObserver: RongObserver = null;
-        static sdkver: string = '2.4.0';
+        static sdkver: string = '2.5.0';
         static otherDeviceLoginCount: number = 0;
         static serverStore: any = { index: 0 };
         static isFirstConnect: boolean = true;
