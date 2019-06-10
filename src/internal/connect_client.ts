@@ -565,6 +565,10 @@ module RongIMLib {
                     if (isChrmPull) {
                         isPullFinished = true;
                     }
+                    // 兼容长轮训 finished 为空的造成丢消息情况
+                    if(typeof isPullFinished == 'undefined'){
+                        isPullFinished = true;
+                    }
                     RongIMClient._memoryStore.isPullFinished = isPullFinished;
                     var connectAckTime = RongIMClient._memoryStore.connectAckTime;
                     for (let i = 0, len = list.length, count = len; i < len; i++) {

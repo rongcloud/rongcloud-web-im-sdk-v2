@@ -243,6 +243,9 @@ module RongIMLib {
         static isFunction(fun: any) {
             return Object.prototype.toString.call(fun) == '[object Function]';
         };
+        static isUndefined(str: any) {
+            return Object.prototype.toString.call(str) == '[object Undefined]';
+        };
         static isEqual(a: any, b: any) {
             return a === b;
         };
