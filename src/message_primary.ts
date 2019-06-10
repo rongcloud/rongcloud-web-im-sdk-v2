@@ -356,6 +356,27 @@ module RongIMLib {
         }
     }
 
+    export class HQVoiceMessage implements MessageContent {
+        user: UserInfo;
+        messageName: string = "HQVoiceMessage";
+        type: string;
+        localPath: string;
+        remoteUrl: string;
+        duration: number;
+        extra: string;
+        constructor(message: any) {
+            this.type = message.type || 'aac';
+            message.localPath && (this.localPath = message.localPath);
+            message.remoteUrl && (this.remoteUrl = message.remoteUrl);
+            message.duration && (this.duration = message.duration);
+            message.extra && (this.extra = message.extra);
+            message.user && (this.user = message.user);
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
+
     export class AcceptMessage implements MessageContent {
         messageName: string = "AcceptMessage";
         callId: string;

@@ -1,7 +1,8 @@
 module RongIMLib {
     export class RongIMClient {
-        static RTCListener: any = function(){};
+        static RTCListener: any = function () { };
         static Protobuf: any;
+        static currentServer: string = '';
         static LogFactory: { [s: string]: any } = {};
         static MessageType: { [s: string]: any } = {};
         static MessageParams: { [s: string]: any };
@@ -14,7 +15,7 @@ module RongIMLib {
         private static _instance: RongIMClient;
         static bridge: any;
         static userStatusObserver: RongObserver = null;
-        static sdkver: string = '2.4.0';
+        static sdkver: string = '2.5.0';
         static otherDeviceLoginCount: number = 0;
         static serverStore: any = { index: 0 };
         static isFirstConnect: boolean = true;
@@ -24,7 +25,7 @@ module RongIMLib {
             }
             return RongIMClient._instance;
         }
-        static statusListeners: any [] = [];
+        static statusListeners: any[] = [];
         static showError(errorInfo: any): void {
             var hasConsole = (console && console.error);
             if (hasConsole) {
@@ -120,7 +121,6 @@ module RongIMLib {
             var pathTmpl = '{0}{1}';
 
             var _serverPath: { [key: string]: any } = {
-                navi: 'nav.cn.ronghub.com',
                 api: 'api.cn.ronghub.com'
             };
 
@@ -140,8 +140,26 @@ module RongIMLib {
                 options[key] = path;
             });
 
+            var navigaters = options.navigaters || [];
+            if(options.navi){
+                navigaters = [options.navi];
+            }
+            if(!options.navi && RongUtil.isEqual(navigaters.length, 0)){
+                navigaters = ['nav.cn.ronghub.com', 'nav2-cn.ronghub.com'];
+            }
+            RongUtil.forEach(navigaters, function (navi: string, index: number) {
+                var config = {
+                    path: navi,
+                    tmpl: pathTmpl,
+                    protocol: protocol,
+                    sub: true
+                };
+                navi = RongUtil.formatProtoclPath(config);
+                navigaters[index] = navi;
+            });
+
             var _sourcePath: { [key: string]: any } = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.3.4.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.3.5.min.js'
             };
 
             RongUtil.forEach(_sourcePath, function (path: string, key: string) {
@@ -156,9 +174,13 @@ module RongIMLib {
                 protocol: protocol,
                 showError: true,
                 openMp: true,
-                snifferTime: 2000
+                snifferTime: 2000,
+                naviTimeout: 5000,
+                navigaters: navigaters,
+                maxNaviRetry: 10
             };
 
+            delete options.navigaters;
             RongUtil.extend(_defaultOpts, options);
 
             if (RongUtil.isFunction(options.protobuf)) {
@@ -214,6 +236,7 @@ module RongIMLib {
                 VoiceMessage: { objectName: "RC:VcMsg", msgTag: new MessageTag(true, true) },
                 RichContentMessage: { objectName: "RC:ImgTextMsg", msgTag: new MessageTag(true, true) },
                 FileMessage: { objectName: "RC:FileMsg", msgTag: new MessageTag(true, true) },
+                HQVoiceMessage: { objectName: "RC:HQVCMsg", msgTag: new MessageTag(true, true) },
                 HandshakeMessage: { objectName: "", msgTag: new MessageTag(true, true) },
                 UnknownMessage: { objectName: "", msgTag: new MessageTag(true, true) },
                 LocationMessage: { objectName: "RC:LBSMsg", msgTag: new MessageTag(true, true) },
@@ -283,6 +306,7 @@ module RongIMLib {
                 ReadReceiptRequestMessage: "ReadReceiptRequestMessage",
                 ReadReceiptResponseMessage: "ReadReceiptResponseMessage",
                 FileMessage: 'FileMessage',
+                HQVoiceMessage: 'HQVoiceMessage',
                 AcceptMessage: "AcceptMessage",
                 RingingMessage: "RingingMessage",
                 SummaryMessage: "SummaryMessage",
@@ -851,8 +875,8 @@ module RongIMLib {
                 RongIMClient._memoryStore.listenerList.push(listener);
             }
         }
-        static statusWatch(watcher: any){
-            if(typeof watcher == 'function'){
+        static statusWatch(watcher: any) {
+            if (typeof watcher == 'function') {
                 RongIMClient.statusListeners.push(watcher);
             }
         }
@@ -1203,6 +1227,10 @@ module RongIMLib {
 
         setMessageContent(messageId: number, content: any, objectName: string): void {
             RongIMClient._dataAccessProvider.setMessageContent(messageId, content, objectName);
+        };
+
+        setMessageSearchField(messageId: number, content: any, searchFiles: string): void {
+            RongIMClient._dataAccessProvider.setMessageContent(messageId, content, searchFiles);
         };
 
         /**
@@ -2233,7 +2261,7 @@ module RongIMLib {
             RongIMClient._dataAccessProvider.getRTCUserInfoList(room, callback);
         }
 
-        getRTCUserList(room: Room, callback: ResultCallback<any>){
+        getRTCUserList(room: Room, callback: ResultCallback<any>) {
             CheckParam.getInstance().check(["object", "object"], "getRTCUserList", false, arguments);
             RongIMClient._dataAccessProvider.getRTCUserList(room, callback);
         }
@@ -2272,13 +2300,13 @@ module RongIMLib {
             CheckParam.getInstance().check(["object", "object"], "quitRTCRoom", false, arguments);
             RongIMClient._dataAccessProvider.quitRTCRoom(room, callback);
         }
-        RTCPing(room: Room, callback: ResultCallback<boolean>){
+        RTCPing(room: Room, callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["object", "object"], "RTCPing", false, arguments);
             RongIMClient._dataAccessProvider.RTCPing(room, callback);
         }
         setRTCUserData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
             CheckParam.getInstance().check(["string", "string", "string", "boolean", "object", "global|object|null|undefined"], "setRTCUserData", false, arguments);
-            RongIMClient._dataAccessProvider.setRTCUserData(roomId, key, value , isInner, callback, message);
+            RongIMClient._dataAccessProvider.setRTCUserData(roomId, key, value, isInner, callback, message);
         }
         getRTCUserData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<any>) {
             CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null"], "getRTCUserData", false, arguments);
@@ -2300,14 +2328,14 @@ module RongIMLib {
             CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null|undefined"], "removeRTCRoomData", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCRoomData(roomId, keys, isInner, callback, message);
         }
-        getNavi(){
+        getNavi() {
             return RongIMClient._dataAccessProvider.getNavi();
         }
-        getRTCToken(room: any, callback: ResultCallback<any>){
+        getRTCToken(room: any, callback: ResultCallback<any>) {
             CheckParam.getInstance().check(["object", "object"], "getRTCToken", false, arguments);
             return RongIMClient._dataAccessProvider.getRTCToken(room, callback);
         }
-        getAppInfo(){
+        getAppInfo() {
             var appKey = RongIMClient._memoryStore.appKey;
             return {
                 appKey: appKey

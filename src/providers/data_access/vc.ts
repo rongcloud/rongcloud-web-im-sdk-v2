@@ -416,7 +416,7 @@ module RongIMLib {
                 },
                 function(message: string, code: ErrorCode) {
                     sendCallback.onError(code, me.buildMessage(message));
-                }, users);
+                }, users, mentiondMsg);
             var tempMessage: any = JSON.parse(msg);
             sendCallback.onBefore && sendCallback.onBefore(tempMessage.messageId);
             RongIMLib.MessageIdHandler.messageId = tempMessage.messageId;
@@ -560,6 +560,11 @@ module RongIMLib {
         setMessageContent(messageId:number, content:any, objectName:string):void{
             content = JSON.stringify(content);
             this.addon.setMessageContent(messageId, content, objectName);
+        }
+
+        setMessageSearchField(messageId: number, content: any, searchFiles: string): void {
+            content = JSON.stringify(content);
+            this.addon.setMessageContent(messageId, content, searchFiles);
         }
 
         getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, direction?: boolean): void {

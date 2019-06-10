@@ -5299,7 +5299,7 @@ var RongIMLib;
                     var newClient = new RongIMLib.Client(token, appId);
                     RongIMLib.Bridge._client = newClient;
                     newClient.__init(function () {
-                        RongIMLib.Transportations._TransportType == "websocket" && _client.keepLive();
+                        RongIMLib.Transportations._TransportType == "websocket" && newClient.keepLive();
                     });
                 }, me._timeout, false);
             }
