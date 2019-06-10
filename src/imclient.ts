@@ -121,7 +121,6 @@ module RongIMLib {
             var pathTmpl = '{0}{1}';
 
             var _serverPath: { [key: string]: any } = {
-                navi: 'nav.cn.ronghub.com',
                 api: 'api.cn.ronghub.com'
             };
 
@@ -141,7 +140,13 @@ module RongIMLib {
                 options[key] = path;
             });
 
-            var navigaters = options.navigaters || [options.navi];
+            var navigaters = options.navigaters || [];
+            if(options.navi){
+                navigaters = [options.navi];
+            }
+            if(!options.navi && RongUtil.isEqual(navigaters.length, 0)){
+                navigaters = ['nav.cn.ronghub.com', 'nav2-cn.ronghub.com'];
+            }
             RongUtil.forEach(navigaters, function (navi: string, index: number) {
                 var config = {
                     path: navi,
@@ -154,7 +159,7 @@ module RongIMLib {
             });
 
             var _sourcePath: { [key: string]: any } = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.3.4.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.3.5.min.js'
             };
 
             RongUtil.forEach(_sourcePath, function (path: string, key: string) {
@@ -175,6 +180,7 @@ module RongIMLib {
                 maxNaviRetry: 10
             };
 
+            delete options.navigaters;
             RongUtil.extend(_defaultOpts, options);
 
             if (RongUtil.isFunction(options.protobuf)) {
