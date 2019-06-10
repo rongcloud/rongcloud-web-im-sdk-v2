@@ -4683,6 +4683,10 @@ var RongIMLib;
                     if (isChrmPull) {
                         isPullFinished = true;
                     }
+                    // 兼容长轮训 finished 为空的造成丢消息情况
+                    if (typeof isPullFinished == 'undefined') {
+                        isPullFinished = true;
+                    }
                     RongIMLib.RongIMClient._memoryStore.isPullFinished = isPullFinished;
                     var connectAckTime = RongIMLib.RongIMClient._memoryStore.connectAckTime;
                     for (var i = 0, len = list.length, count = len; i < len; i++) {
@@ -6744,7 +6748,7 @@ var RongIMLib;
             if (multipart) {
                 reqest.multipart = true;
             }
-            reqest.timeout = 60000;
+            // reqest.timeout = 60000;
             reqest.open(method || "GET", RongIMLib.RongIMClient._memoryStore.depend.protocol + url);
             if (method == "POST" && "setRequestHeader" in reqest) {
                 reqest.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
@@ -11782,6 +11786,10 @@ var RongIMLib;
         };
         RongUtil.isFunction = function (fun) {
             return Object.prototype.toString.call(fun) == '[object Function]';
+        };
+        ;
+        RongUtil.isUndefined = function (str) {
+            return Object.prototype.toString.call(str) == '[object Undefined]';
         };
         ;
         RongUtil.isEqual = function (a, b) {
