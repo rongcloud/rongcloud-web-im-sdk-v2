@@ -141,10 +141,10 @@ module RongIMLib {
             });
 
             var navigaters = options.navigaters || [];
-            if(options.navi){
+            if (options.navi) {
                 navigaters = [options.navi];
             }
-            if(!options.navi && RongUtil.isEqual(navigaters.length, 0)){
+            if (!options.navi && RongUtil.isEqual(navigaters.length, 0)) {
                 navigaters = ['nav.cn.ronghub.com', 'nav2-cn.ronghub.com'];
             }
             RongUtil.forEach(navigaters, function (navi: string, index: number) {
@@ -2340,6 +2340,11 @@ module RongIMLib {
             return {
                 appKey: appKey
             };
+        }
+        getSDKInfo() {
+            return {
+                version: RongIMClient.sdkver
+            }
         }
         // RTC end
     }
