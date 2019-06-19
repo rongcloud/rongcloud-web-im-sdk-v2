@@ -208,5 +208,7 @@ module RongIMLib {
         getNavi(): void;
 
         getRTCToken(room: any, callback: ResultCallback<any>): void;
+
+        setRTCState(room: any, content: any, callback: ResultCallback<any>): void;
     }
 }

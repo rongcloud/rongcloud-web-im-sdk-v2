@@ -2335,6 +2335,10 @@ module RongIMLib {
             CheckParam.getInstance().check(["object", "object"], "getRTCToken", false, arguments);
             return RongIMClient._dataAccessProvider.getRTCToken(room, callback);
         }
+        setRTCState(room: any, content: any, callback: ResultCallback<any>) {
+            CheckParam.getInstance().check(["object", "object", "object"], "setRTCState", false, arguments);
+            return RongIMClient._dataAccessProvider.setRTCState(room, content, callback);
+        }
         getAppInfo() {
             var appKey = RongIMClient._memoryStore.appKey;
             return {

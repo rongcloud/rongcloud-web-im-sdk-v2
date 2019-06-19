@@ -1918,5 +1918,19 @@ module RongIMLib {
                 }
             }, "RtcTokenOutput");
         }
+        setRTCState(room: any, content: any, callback: ResultCallback<any>){
+            // MCFollowInput 为 PB 复用，字段：一个必传 string（第一位）
+            var modules = new RongIMClient.Protobuf.MCFollowInput();
+            var report = content.report;
+            modules.setId(report);
+            RongIMClient.bridge.queryMsg("rtcUserState", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
+                onSuccess: function (result: any) {
+                    callback.onSuccess(result);
+                },
+                onError: function (errorCode: ErrorCode) {
+                    callback.onError(errorCode);
+                }
+            }, "RtcOutput");
+        }
     }
 }
