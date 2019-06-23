@@ -220,6 +220,9 @@ module RongIMLib {
 
     export class RongUtil {
         static noop() { }
+        static noopCallback(content: any, callback: any) {
+            callback(content);
+        }
         static isEmpty(obj: any): boolean {
             var empty: boolean = true;
             for (var key in obj) {

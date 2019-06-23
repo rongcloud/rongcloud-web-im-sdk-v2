@@ -188,6 +188,104 @@ module RongIMLib {
             }
             return timestamp;
         }
+        static batchMessageParser(entityList: Array<any>, callback: any): void {
+            if (!entityList.length) {
+                return callback([]);
+            }
+            var encryList: Array<any> = [], messageList: Array<any> = [];
+            for (var i = 0; i < entityList.length; i++) {
+                var entity = entityList[i];
+                var content: any = entity.content, val: any;
+                if (RongIMClient._memoryStore.depend.isPolling) {
+                    val = new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayForm(content.buffer).slice(content.offset, content.limit) : content);
+                } else {
+                    val = new BinaryHelper().readUTF(content.offset ? MessageUtil.ArrayFormInput(content.buffer).subarray(content.offset, content.limit) : content);
+                }
+                encryList.push({
+                    type: entity.conversationType,
+                    id: entity.targetId,
+                    text: val
+                });
+            }
+            var _messageEncryptionListener = RongIMClient._messageEncryptionListener;
+            var batchDecodeFunc = _messageEncryptionListener ? _messageEncryptionListener.batchDecrypt : RongUtil.noopCallback;
+            batchDecodeFunc(encryList, function (list:Array<any>) {
+                for (var i = 0; i < encryList.length; i++) {
+                    var entity = entityList[i], objectName: string = entity.classname, isUseDef = false, message: Message = new Message();
+                    var val = list[i].text, de: any;
+                    try {
+                        de = JSON.parse(val);
+                    } catch(e) {
+                        de = val;
+                    }
+                    //映射为具体消息对象
+                    if (objectName in typeMapping) {
+                        var str = "new RongIMLib." + typeMapping[objectName] + "(de)";
+                        message.content = eval(str);
+                        message.messageType = typeMapping[objectName];
+                    } else if (objectName in registerMessageTypeMapping) {
+                        var str = "new RongIMLib.RongIMClient.RegisterMessage." + registerMessageTypeMapping[objectName] + "(de)";
+                        if (isUseDef) {
+                            message.content = eval(str).decode(de);
+                        } else {
+                            message.content = eval(str);
+                        }
+                        message.messageType = registerMessageTypeMapping[objectName];
+                    } else {
+                        message.content = new UnknownMessage({ content: de, objectName: objectName });
+                        message.messageType = "UnknownMessage";
+                    }
+                    //根据实体对象设置message对象]
+                    var dateTime = MessageUtil.int64ToTimestamp(entity.dataTime);
+                    if (dateTime > 0) {
+                        message.sentTime = dateTime;
+                    } else {
+                        message.sentTime = +new Date;
+                    }
+                    message.senderUserId = entity.fromUserId;
+                    message.conversationType = entity.type;
+                    if (entity.fromUserId == Bridge._client.userId) {
+                        message.targetId = entity.groupId;
+                    } else {
+                        message.targetId = (/^[234]$/.test(entity.type || entity.getType()) ? entity.groupId : message.senderUserId);
+                    }
+
+                    var selfUserId = Bridge._client.userId;
+
+                    // 解决多端在线收自己发的消息时, messageDirection 为 2(接收), 导致未读数增加
+                    var isSelfSend = entity.direction == 1 || message.senderUserId === selfUserId;
+                    if (isSelfSend) {
+                        message.messageDirection = MessageDirection.SEND;
+                        message.senderUserId = Bridge._client.userId;
+                    } else {
+                        message.messageDirection = MessageDirection.RECEIVE;
+                    }
+
+                    // 自己给自己发的消息, messageDirection 为 2(接收)
+                    var isSelfToSelf = message.senderUserId === selfUserId && message.targetId === selfUserId;
+                    if (isSelfToSelf) {
+                        message.messageDirection = MessageDirection.RECEIVE;
+                    }
+
+                    message.messageUId = entity.msgId;
+                    message.receivedTime = new Date().getTime();
+                    message.messageId = (message.conversationType + "_" + ~~(Math.random() * 0xffffff));
+                    message.objectName = objectName;
+                    message.receivedStatus = ReceivedStatus.READ;
+                    if ((entity.status & 2) == 2) {
+                        message.receivedStatus = ReceivedStatus.RETRIEVED;
+                    }
+                    message.offLineMessage = false;
+                    if (!message.offLineMessage) {
+                        if (RongIMLib.RongIMClient._memoryStore.connectAckTime > message.sentTime) {
+                            message.offLineMessage = true;
+                        }
+                    }
+                    messageList.push(message);
+                }
+                callback(messageList);
+            });
+        }
         //消息转换方法
         static messageParser(entity: any, onReceived?: any, offlineMsg?: boolean): any {
             var message: Message = new Message(), content: any = entity.content, de: any, objectName: string = entity.classname, val: any, isUseDef = false;
