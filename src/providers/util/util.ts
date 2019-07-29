@@ -493,6 +493,24 @@ module RongIMLib {
         }
     }
 
+    export class Observer {
+        observers: any[] = [];
+        add(observer: any, force?: any) {
+            if (force) {
+                this.observers = [observer];
+            }
+            this.observers.push(observer);
+        }
+        clear() {
+            this.observers = [];
+        }
+        emit(data: any) {
+            RongUtil.forEach(this.observers, function (observer: any) {
+                observer(data);
+            });
+        }
+    }
+
     export class Timer {
         timeout: number = 0;
         timers: any = [];

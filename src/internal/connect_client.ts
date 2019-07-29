@@ -566,7 +566,7 @@ module RongIMLib {
                         isPullFinished = true;
                     }
                     // 兼容长轮训 finished 为空的造成丢消息情况
-                    if(typeof isPullFinished == 'undefined'){
+                    if (typeof isPullFinished == 'undefined') {
                         isPullFinished = true;
                     }
                     RongIMClient._memoryStore.isPullFinished = isPullFinished;
@@ -749,7 +749,7 @@ module RongIMLib {
             message = MessageUtil.messageParser(entity, this._onReceived, offlineMsg);
             var isRTCMessage = message.conversationType == 12;
             if (isRTCMessage) {
-                return RongIMClient.RTCListener(message);
+                return RongIMClient.RTCListener.emit(message);
             }
             var isRecall = (msg.getTopic && msg.getTopic() == "recallMsg");
             if (isRecall) {
