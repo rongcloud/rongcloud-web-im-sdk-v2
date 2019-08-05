@@ -1133,13 +1133,7 @@ module RongIMLib {
                     var users: { [s: string]: any } = {};
                     RongUtil.forEach(list, function (item: any) {
                         var userId = item.id;
-                        var tmpData: { [s: string]: any } = {};
-                        RongUtil.forEach(item.data, function (data: any) {
-                            var key = data.key;
-                            var value = data.value;
-                            tmpData[key] = value;
-                        });
-                        users[userId] = tmpData;
+                        users[userId] = item.data[0] || {}
                     });
                     callback.onSuccess({
                         users: users,
@@ -1175,10 +1169,10 @@ module RongIMLib {
             var context = this;
             var hanlders: { [s: string]: any } = {
                 room_inner: function (roomId: string, key: string, value: string, name: string, content: string, success: Function, error: Function) {
-
+                    context.addon.setRTCInnerData(roomId, RTCAPIType.ROOM, key, value, name, content, success, error);
                 },
                 room_outer: function (roomId: string, key: string, value: string, name: string, content: string, success: Function, error: Function) {
-
+                    context.addon.setRTCOuterData(roomId, RTCAPIType.ROOM, key, value, name, content, success, error);
                 },
                 user_inner: function (roomId: string, key: string, value: string, name: string, content: string, success: Function, error: Function) {
                     context.addon.setRTCInnerData(roomId, RTCAPIType.PERSON, key, value, name, content, success, error);
@@ -1207,7 +1201,7 @@ module RongIMLib {
             }
         }
         setRTCRoomData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
-            this.setRTCData(roomId, key, value, isInner, RTCAPIType.PERSON, callback, message);
+            this.setRTCData(roomId, key, value, isInner, RTCAPIType.ROOM, callback, message);
         }
         getRTCData(roomId: string, keys: string[], isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<any>) {
             var context = this;
@@ -1229,7 +1223,15 @@ module RongIMLib {
             var handler = hanlders[name];
             if (handler) {
                 handler(roomId, keys, function (result: string) {
-                    callback.onSuccess(JSON.parse(result));
+                    var res = JSON.parse(result);
+                    var props: { [s: string]: any } = {};
+                    var list = res.list;
+                    RongUtil.forEach(list, function (item: any) {
+                        RongUtil.forEach(item, function (value: any, key: string) {
+                            props[key] = value;
+                        });
+                    });
+                    callback.onSuccess(props);
                 }, function (code: any) {
                     callback.onError(code);
                 });
@@ -1242,10 +1244,10 @@ module RongIMLib {
             var context = this;
             var hanlders: { [s: string]: any } = {
                 room_inner: function (roomId: string, keys: string, name: string, content: string, success: Function, error: Function) {
-                    context.addon.deleteRTCInnerData(roomId, RTCAPIType.PERSON, keys, name, content, success, error);
+                    context.addon.deleteRTCInnerData(roomId, RTCAPIType.ROOM, keys, name, content, success, error);
                 },
                 room_outer: function (roomId: string, keys: string, name: string, content: string, success: Function, error: Function) {
-                    context.addon.deleteRTCOuterData(roomId, RTCAPIType.PERSON, keys, name, content, success, error);
+                    context.addon.deleteRTCOuterData(roomId, RTCAPIType.ROOM, keys, name, content, success, error);
                 },
                 user_inner: function (roomId: string, keys: string, name: string, content: string, success: Function, error: Function) {
                     
@@ -1264,8 +1266,8 @@ module RongIMLib {
             var handler = hanlders[name];
             if (handler) {
                 message = message || {};
-                var name: string = message.name;
-                var content = message.content;
+                var name: string = message.name || '';
+                var content = message.content || '';
                 handler(roomId, keys, name, content, function () {
                     callback.onSuccess(true);
                 }, function (code: any) {
@@ -1273,8 +1275,8 @@ module RongIMLib {
                 });
             }
         }
-        removeRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
-
+        removeRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
+            this.removeRTCData(roomId, keys, isInner, RTCAPIType.ROOM, callback);
         }
         getNavi() {
             var nav: any = this.addon.getNav();
@@ -1302,7 +1304,7 @@ module RongIMLib {
         }
 
         setRTCUserData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
-
+            this.setRTCData(roomId, key, value, isInner, RTCAPIType.PERSON, callback, message);
         }
         getRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<any>, message?: any) {
 
