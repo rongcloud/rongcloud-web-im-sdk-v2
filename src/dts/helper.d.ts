@@ -1,4 +1,4 @@
-declare function md5(str: string, key?:string, raw?:string): any;
+declare function md5(str: string, key?: string, raw?: string): any;
 declare var Modules: any;
 declare var require: any;
 declare var module: any;
@@ -8,7 +8,7 @@ declare var dcodeIO: any;
 declare var Polling: any;
 declare var escape: any;
 declare var AMR: any;
-declare var PCMData:any;
+declare var PCMData: any;
 declare var swfobject: any;
 declare var openDatabase: any;
 declare var AgoraRTC: any;
@@ -75,7 +75,7 @@ declare interface Document {
 }
 
 declare interface Addon {
-    initWithAppkey(appKey: string, dbPath?: string, options?:any): any;
+    initWithAppkey(appKey: string, dbPath?: string, options?: any): any;
 
     connectWithToken(token: string, userId: string, servers?: string, openmp?: boolean, openus?: boolean): number;
 
@@ -153,7 +153,7 @@ declare interface Addon {
 
     removeConversation(conversationType: RongIMLib.ConversationType, targetId: string): RongIMLib.Conversation;
 
-    insertMessage(conversationType: number, targetId: string, senderUserId: string, objectName: string, content: string, success: Function, error: Function, diection?:number): string;
+    insertMessage(conversationType: number, targetId: string, senderUserId: string, objectName: string, content: string, success: Function, error: Function, diection?: number): string;
 
     deleteMessages(delMsgs: number[]): void;
 
@@ -173,7 +173,7 @@ declare interface Addon {
 
     clearConversations(conversationType?: number, targetId?: string): void;
 
-    getHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number, objectname:string, direction: boolean): string;
+    getHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number, objectname: string, direction: boolean): string;
 
     getRemoteHistoryMessages(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number, count: number): string;
 
@@ -185,11 +185,11 @@ declare interface Addon {
 
     clearUnreadCount(conversationType: RongIMLib.ConversationType, targetId: string): void;
 
-    clearUnreadCountByTimestamp(conversationType: RongIMLib.ConversationType, targetId: string, timestamp:number) : void;
+    clearUnreadCountByTimestamp(conversationType: RongIMLib.ConversationType, targetId: string, timestamp: number): void;
 
     setConversationToTop(conversationType: RongIMLib.ConversationType, targetId: string, isTop: boolean): void;
 
-    setConversationHidden(conversationType: RongIMLib.ConversationType, targetId: string,isHidden:boolean):void;
+    setConversationHidden(conversationType: RongIMLib.ConversationType, targetId: string, isHidden: boolean): void;
 
     setMessageExtra(messageId: string, value: string, callback: RongIMLib.ResultCallback<boolean>): void;
 
@@ -205,43 +205,56 @@ declare interface Addon {
 
     searchConversationByContent(conversationTypes: RongIMLib.ConversationType[], keyword: string): string;
 
-    getDeltaTime():number;
+    getDeltaTime(): number;
 
     searchMessageByContent(conversationType: RongIMLib.ConversationType, targetId: string, keyword: string, timestamp: number, count: number, total: number, callback: Function): void
 
-    getUserStatus(userId:string, success:Function, error:Function) : void;
+    getUserStatus(userId: string, success: Function, error: Function): void;
 
-    setUserStatus(status:number, success:Function, error:Function) : void;
-    
-    subscribeUserStatus(userId:string[], success:Function, error:Function) : void;
-    
-    setOnReceiveStatusListener(listener?:Function) : void;
+    setUserStatus(status: number, success: Function, error: Function): void;
 
-    setServerInfo(info:any):void;
+    subscribeUserStatus(userId: string[], success: Function, error: Function): void;
 
-    getUnreadMentionedMessages(conversationType:RongIMLib.ConversationType, targetId:string):string;
+    setOnReceiveStatusListener(listener?: Function): void;
 
-    updateMessageReceiptStatus(conversationType: RongIMLib.ConversationType, targetId: string, timesamp: number):void;
+    setServerInfo(info: any): void;
 
-    setMessageContent(messageId: number, content: any, objectName: string):void;
+    getUnreadMentionedMessages(conversationType: RongIMLib.ConversationType, targetId: string): string;
+
+    updateMessageReceiptStatus(conversationType: RongIMLib.ConversationType, targetId: string, timesamp: number): void;
+
+    setMessageContent(messageId: number, content: any, objectName: string): void;
 
     setMessageSearchField(messageId: number, content: any, searchFiles: string): void;
 
-    getConversationNotificationStatus(conversationType:number, targetId:string, success:Function, error:Function):void;
+    getConversationNotificationStatus(conversationType: number, targetId: string, success: Function, error: Function): void;
 
-    setConversationNotificationStatus(conversationType:number, targetId:string, status: boolean, success:Function, error:Function):void;
+    setConversationNotificationStatus(conversationType: number, targetId: string, status: boolean, success: Function, error: Function): void;
 
     getConnectionStatus(): number;
 
-    setDeviceId(deviceId: string):void;
+    setDeviceId(deviceId: string): void;
 
-    setEnvironment(isPrivate: boolean):void;
+    setEnvironment(isPrivate: boolean): void;
 
-    getVoIPKey(engineType: number, channelName: string, extra: string, success: Function, error: Function):void;
+    getVoIPKey(engineType: number, channelName: string, extra: string, success: Function, error: Function): void;
 
     getAccounts(): any;
 
-    clearData():boolean;
+    clearData(): boolean;
 
-    clearRemoteHistoryMessages(conversationType: number, targetId:string, timestamp: number, success: Function, error: Function): any;
+    clearRemoteHistoryMessages(conversationType: number, targetId: string, timestamp: number, success: Function, error: Function): any;
+    
+    getRTCUsers(roomId: string, type: number, success: Function, error: Function): void;
+    getRTCResouce(roomId: string, order: number, success: Function, error: Function): void;
+    joinRTCRoom(roomId: string, type: number, success: Function, error: Function): void;
+    exitRTCRoom(roomId: string, success: Function, error: Function): void;
+    setRTCInnerData(roomId: string, type: number, key: string, value: string, name: string, content: string, success: Function, error: Function): void;
+    setRTCOuterData(roomId: string, type: number, key: string, value: string, name: string, content: string, success: Function, error: Function): void;
+    sendRTCPing(roomId: string, success: Function, error: Function): void;
+    getNav(): string;
+    getRTCInnerData(roomId: string, type: number, keys: any, success: Function, error: Function): void;
+    getRTCOuterData(roomId: string, type: number, keys: any, success: Function, error: Function): void;
+    deleteRTCInnerData(roomId: string, type: number, keys: any, name: string, content: string, success: Function, error: Function): void;
+    deleteRTCOuterData(roomId: string, type: number, keys: any, name: string, content: string, success: Function, error: Function): void;
 }

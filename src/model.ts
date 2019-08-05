@@ -196,7 +196,8 @@ module RongIMLib {
         constructor(
             public id: string,
             public user: User,
-            public mode: number
+            public mode: number,
+            public type: number
         ) { }
     }
 }
