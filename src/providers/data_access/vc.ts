@@ -1128,18 +1128,23 @@ module RongIMLib {
             var type: number = room.type || 0;
             this.addon.joinRTCRoom(id, type,
                 function (result: string, token: string) {
-                    var res: any = JSON.parse(result)
-                    var list = res.list;
+                    var res = JSON.parse(result);
                     var users: { [s: string]: any } = {};
+                    var list = res.list;
                     RongUtil.forEach(list, function (item: any) {
                         var userId = item.id;
-                        users[userId] = item.data[0] || {}
+                        var tmpData: { [s: string]: any } = {};
+                        RongUtil.forEach(item.data, function (data: any) {
+                            var key = data.key;
+                            var value = data.value;
+                            tmpData[key] = value;
+                        });
+                        users[userId] = tmpData;
                     });
                     callback.onSuccess({
                         users: users,
                         token: token
                     });
-
                 },
                 function (error: any) {
                     callback.onError(error);
@@ -1227,9 +1232,7 @@ module RongIMLib {
                     var props: { [s: string]: any } = {};
                     var list = res.list;
                     RongUtil.forEach(list, function (item: any) {
-                        RongUtil.forEach(item, function (value: any, key: string) {
-                            props[key] = value;
-                        });
+                        props[item.key] = item.value;
                     });
                     callback.onSuccess(props);
                 }, function (code: any) {

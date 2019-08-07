@@ -798,7 +798,7 @@ module RongIMLib {
             var handler = function (message: any, uris: any, callback: any) {
                 var userId = message.senderUserId;
                 var _uris = RongIMClient.roomInfo.users[userId].uris || '[]';
-                if(_uris){
+                if(RongUtil.isString(_uris)){
                     _uris = JSON.parse(_uris);
                 }
                 RongUtil.forEach(_uris, function (_uri: any, index: number) {
