@@ -813,7 +813,11 @@ module RongIMLib {
             var RTCMessage: { [s: string]: any } = {
                 RTCPublishResourceMessage: function (message: any, uris: any) {
                     var userId = message.senderUserId;
-                    var user = RongIMClient.roomInfo.users[userId] || {};
+                    var user = RongIMClient.roomInfo.users[userId];
+                    if(!user){
+                        user = {};
+                        RongIMClient.roomInfo.users[userId] = {};
+                    }
                     var _uris = user.uris || '[]';
                     if(RongUtil.isString(_uris)){
                         _uris = JSON.parse(_uris);
