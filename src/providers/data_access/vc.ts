@@ -198,7 +198,8 @@ module RongIMLib {
                     if (isVoIPMsg) {
                         RongIMClient._voipProvider && RongIMClient._voipProvider.onReceived(message);
                     } else if (message.conversationType == 12) {
-                        RongIMClient.RTCListener.emit(message);
+                        RongIMClient.RTCListener(message);
+                        RongIMClient.RTCInnerListener(message);
                     } else {
                         listener.onReceived(message, leftCount, hasMore);
                     }

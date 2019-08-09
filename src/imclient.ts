@@ -1,6 +1,7 @@
 module RongIMLib {
     export class RongIMClient {
-        static RTCListener: Observer = null;
+        static RTCListener: any = function(){};
+        static RTCInnerListener: any = function(){};
         static Protobuf: any;
         static currentServer: string = '';
         static LogFactory: { [s: string]: any } = {};
@@ -173,7 +174,6 @@ module RongIMLib {
 
             RongUtil.extend(_sourcePath, options);
 
-            RongIMClient.RTCListener = new Observer();
             var _defaultOpts: { [key: string]: any } = {
                 isPolling: isPolling,
                 wsScheme: wsScheme,
@@ -801,7 +801,8 @@ module RongIMLib {
                 if(RongUtil.isString(_uris)){
                     _uris = JSON.parse(_uris);
                 }
-                RongUtil.forEach(_uris, function (_uri: any, index: number) {
+                var tUris = JSON.parse(JSON.stringify(_uris));
+                RongUtil.forEach(tUris, function (_uri: any, index: number) {
                     RongUtil.forEach(uris, function (uri: any) {
                         if (uri.uri == _uri.uri) {
                             callback(_uri, uri, _uris, index);
@@ -858,12 +859,12 @@ module RongIMLib {
                     });
                 }
             };
-            RongIMClient.RTCListener.add(function (message: any) {
+            RongIMClient.RTCInnerListener = function (message: any) {
                 var func = RTCMessage[message.messageType] || function () { };
                 var content = message.content;
                 var uris = content.uris;
                 func(message, uris);
-            });
+            };
             return sdkInfo;
         };
 
@@ -2323,7 +2324,7 @@ module RongIMLib {
 
         // RTC start
         static messageWatch(watcher: any) {
-            RongIMClient.RTCListener.add(watcher);
+            RongIMClient.RTCListener = watcher;
         }
         /* 
             var data = {

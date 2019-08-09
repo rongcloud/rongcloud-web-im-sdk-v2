@@ -749,7 +749,9 @@ module RongIMLib {
             message = MessageUtil.messageParser(entity, this._onReceived, offlineMsg);
             var isRTCMessage = message.conversationType == 12;
             if (isRTCMessage) {
-                return RongIMClient.RTCListener.emit(message);
+                RongIMClient.RTCListener(message);
+                RongIMClient.RTCInnerListener(message);
+                return;
             }
             var isRecall = (msg.getTopic && msg.getTopic() == "recallMsg");
             if (isRecall) {
