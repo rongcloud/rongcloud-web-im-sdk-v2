@@ -1903,6 +1903,31 @@ module RongIMLib {
         removeRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
             this.removeRTCData(roomId, keys, isInner, RTCAPIType.ROOM, callback, message);
         }
+        // 信令 SDK 新增
+        setRTCOutData(roomId: string, data: any, type: number, callback: ResultCallback<boolean>, message?: any) {
+            var modules = new RongIMClient.Protobuf.RtcSetOutDataInput();
+            modules.setTarget(type);
+            modules.setRtcValueInfo(data);
+            message = message || {};
+            var name = message.name;
+            var content = message.content;
+            if (name) {
+                modules.setObjectName(name);
+            }
+            if (content) {
+                if (!RongUtil.isString(content)) {
+                    content = JSON.stringify(content);
+                }
+                modules.setContent(content);
+            }
+            RongIMClient.bridge.queryMsg("rtcSetOutData", MessageUtil.ArrayForm(modules.toArrayBuffer()), roomId, callback, "RtcOutput");
+        }
+        // 信令 SDK 新增
+        getRTCOutData(roomId: string, userIds: string[], callback: ResultCallback<any>) {
+            var modules = new RongIMClient.Protobuf.RtcQryUserOutDataInput();
+            modules.setUserId(userIds);
+            RongIMClient.bridge.queryMsg("rtcQryUserOutData", MessageUtil.ArrayForm(modules.toArrayBuffer()), roomId, callback, "RtcUserOutDataOutput");
+        }
         getNavi() {
             var navi = RongIMClient._storageProvider.getItem("fullnavi") || "{}";
             return JSON.parse(navi);
@@ -1918,7 +1943,7 @@ module RongIMLib {
                 }
             }, "RtcTokenOutput");
         }
-        setRTCState(room: any, content: any, callback: ResultCallback<any>){
+        setRTCState(room: any, content: any, callback: ResultCallback<any>) {
             // MCFollowInput 为 PB 复用，字段：一个必传 string（第一位）
             var modules = new RongIMClient.Protobuf.MCFollowInput();
             var report = content.report;

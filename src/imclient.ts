@@ -2424,6 +2424,13 @@ module RongIMLib {
             CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null|undefined"], "removeRTCRoomData", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCRoomData(roomId, keys, isInner, callback, message);
         }
+        setRTCOutData(roomId: string, data: any, type: number, callback: ResultCallback<boolean>, message?: any) {
+            RongIMClient._dataAccessProvider.setRTCOutData(roomId, data, type, callback, message);
+        }
+        // 信令 SDK 新增
+        getRTCOutData(roomId: string, userIds: string[], callback: ResultCallback<any>) {
+            RongIMClient._dataAccessProvider.getRTCOutData(roomId, userIds, callback);
+        }
         getNavi() {
             return RongIMClient._dataAccessProvider.getNavi();
         }
