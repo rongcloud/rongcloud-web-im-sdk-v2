@@ -849,6 +849,156 @@ var Polling = {
             this.toArrayBuffer = function(){
                 return a;
             };
+        },
+        RtcQueryListInput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setOrder = function (b) {
+                a.order = b;
+            };
+        },
+        RtcKeyDeleteInput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setKey = function (b) {
+                a.key = b;
+            };
+        },
+        RtcValueInfo: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setKey = function (b) {
+                a.key = b;
+            };
+            this.setValue = function (b) {
+                a.value = b;
+            };
+        },
+        // RtcUserInfo: function () {
+        //     var a = {};
+        // },
+        RtcUserListOutput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setList = function (b) {
+                a.list = b;
+            };
+            this.setToken = function (b) {
+                a.token = b;
+            };
+        },
+        RtcRoomInfoOutput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setRoomId = function (b) {
+                a.roomId = b;
+            };
+            this.setRoomData = function (b) {
+                a.roomData = b;
+            };
+            this.setUserCount = function (b) {
+                a.userCount = b;
+            };
+            this.setList = function (b) {
+                a.list = b;
+            }
+        },
+        RtcInput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setNothing = function (b) {
+                a.nothing = b;
+            };
+        },
+        // RtcQryInput: function () {
+        //     var a = {};
+        // },
+        RtcQryOutput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setOutInfo = function (b) {
+                a.outInfo = b;
+            };
+        },
+        // RtcDelDataInput: function () {
+        //     var a = {};
+        // },
+        RtcDataInput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setInterior = function (b) {
+                a.interior = b;
+            };
+            this.setTarget = function (b) {
+                a.target = b;
+            };
+            this.setKey = function (b) {
+                a.key = b;
+            };
+            this.setObjectName = function (b) {
+                a.objectName = b;
+            };
+            this.setContent = function (b) {
+                a.content = b;
+            };
+        },
+        RtcSetDataInput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setInterior = function (b) {
+                a.interior = b;
+            };
+            this.setTarget = function (b) {
+                a.target = b;
+            };
+            this.setKey = function (b) {
+                a.key = b;
+            };
+            this.setValue = function (b) {
+                a.value = b;
+            };
+            this.setObjectName = function (b) {
+                a.objectName = b;
+            };
+            this.setContent = function (b) {
+                a.content = b;
+            };
+        },
+        RtcOutput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setNothing = function (b) {
+                a.nothing = b;
+            };
+        },
+        RtcTokenOutput: function () {
+            var a = {};
+            this.toArrayBuffer = function(){
+                return a;
+            };
+            this.setRtcToken = function (b) {
+                a.rtcToken = b;
+            }
         }
     };
     for (var f in Polling) {
