@@ -1786,7 +1786,8 @@ module RongIMLib {
         joinRTCRoom(room: Room, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcInput();
             // 复用 PB
-            modules.setNothing(room.mode);
+            var mode = room.mode || 0;
+            modules.setRoomType(mode);
             RongIMClient.bridge.queryMsg("rtcRJoin_data", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function (result: any) {
                     var users: { [s: string]: any } = {};
@@ -1907,7 +1908,19 @@ module RongIMLib {
         setRTCOutData(roomId: string, data: any, type: number, callback: ResultCallback<boolean>, message?: any) {
             var modules = new RongIMClient.Protobuf.RtcSetOutDataInput();
             modules.setTarget(type);
-            modules.setRtcValueInfo(data);
+            if (!RongUtil.isArray(data)) {
+                data = [data];
+            }
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                if(item.key){
+                    item.key = item.key.toString();
+                }
+                if(item.value){
+                    item.value = item.value.toString();
+                }
+            }
+            modules.setValueInfo(data);
             message = message || {};
             var name = message.name;
             var content = message.content;
