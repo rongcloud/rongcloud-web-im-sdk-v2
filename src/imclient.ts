@@ -2,6 +2,7 @@ module RongIMLib {
     export class RongIMClient {
         static RTCListener: any = function(){};
         static RTCInnerListener: any = function(){};
+        static RTCSignalLisener: any = function(){};
         static Protobuf: any;
         static currentServer: string = '';
         static LogFactory: { [s: string]: any } = {};
@@ -2325,6 +2326,9 @@ module RongIMLib {
         // RTC start
         static messageWatch(watcher: any) {
             RongIMClient.RTCListener = watcher;
+        }
+        static messageSignalWatch(watcher: any){
+            RongIMClient.RTCSignalLisener = watcher;
         }
         /* 
             var data = {

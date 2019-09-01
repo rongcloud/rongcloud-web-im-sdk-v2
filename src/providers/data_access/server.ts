@@ -765,7 +765,7 @@ module RongIMLib {
 
             params = params || {};
             var userIds = params.userIds;
-            if (isGroup && userIds) {
+            if (userIds) {
                 modules.setUserId(userIds);
             }
 

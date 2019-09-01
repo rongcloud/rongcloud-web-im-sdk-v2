@@ -751,6 +751,7 @@ module RongIMLib {
             if (isRTCMessage) {
                 RongIMClient.RTCListener(message);
                 RongIMClient.RTCInnerListener(message);
+                RongIMClient.RTCSignalLisener(message);
                 return;
             }
             var isRecall = (msg.getTopic && msg.getTopic() == "recallMsg");

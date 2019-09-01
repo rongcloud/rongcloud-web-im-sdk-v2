@@ -200,6 +200,7 @@ module RongIMLib {
                     } else if (message.conversationType == 12) {
                         RongIMClient.RTCListener(message);
                         RongIMClient.RTCInnerListener(message);
+                        RongIMClient.RTCSignalLisener(message);
                     } else {
                         listener.onReceived(message, leftCount, hasMore);
                     }
