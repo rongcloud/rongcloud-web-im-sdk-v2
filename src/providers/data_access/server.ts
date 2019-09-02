@@ -1785,7 +1785,6 @@ module RongIMLib {
 
         joinRTCRoom(room: Room, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcInput();
-            // 复用 PB
             var mode = room.mode || 0;
             modules.setRoomType(mode);
             RongIMClient.bridge.queryMsg("rtcRJoin_data", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
@@ -1827,6 +1826,7 @@ module RongIMLib {
 
         RTCPing(room: Room, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.RtcInput();
+            modules.setRoomType(0);
             RongIMClient.bridge.queryMsg("rtcPing", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, callback);
         }
         setRTCData(roomId: string, key: string, value: string, isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<boolean>, message?: any) {
@@ -1947,6 +1947,7 @@ module RongIMLib {
         }
         getRTCToken(room: any, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcInput();
+            modules.setRoomType(0);
             RongIMClient.bridge.queryMsg("rtcToken", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function (result: any) {
                     callback.onSuccess(result);
