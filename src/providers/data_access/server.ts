@@ -1785,8 +1785,10 @@ module RongIMLib {
 
         joinRTCRoom(room: Room, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcInput();
-            // 复用 PB
-            modules.setNothing(room.mode);
+            modules.setRoomType(room.mode);
+            if (room.broadcastType) {
+                modules.setBroadcastType(room.broadcastType);
+            }
             RongIMClient.bridge.queryMsg("rtcRJoin_data", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function (result: any) {
                     var users: { [s: string]: any } = {};
@@ -1826,6 +1828,10 @@ module RongIMLib {
 
         RTCPing(room: Room, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.RtcInput();
+            modules.setRoomType(room.mode);
+            if (room.broadcastType) {
+                modules.setBroadcastType(room.broadcastType);
+            }
             RongIMClient.bridge.queryMsg("rtcPing", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, callback);
         }
         setRTCData(roomId: string, key: string, value: string, isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<boolean>, message?: any) {

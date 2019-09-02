@@ -197,6 +197,7 @@ module RongIMLib {
             public id: string,
             public user: User,
             public mode: number,
+            public broadcastType: number,
             public type: number
         ) { }
     }
