@@ -918,9 +918,12 @@ var Polling = {
             this.toArrayBuffer = function(){
                 return a;
             };
-            this.setNothing = function (b) {
-                a.nothing = b;
+            this.setRoomType = function (b) {
+                a.roomType = b;
             };
+            this.setBroadcastType = function (b) {
+                a.broadcastType = b;
+            }
         },
         // RtcQryInput: function () {
         //     var a = {};

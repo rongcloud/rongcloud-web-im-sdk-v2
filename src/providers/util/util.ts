@@ -449,6 +449,17 @@ module RongIMLib {
             var date = new Date();
             return date.getTime()
         }
+        static isSupportRequestHeaders(): boolean {
+            var userAgent = navigator.userAgent;
+            var isIE = (<any>window).ActiveXObject || 'ActiveXObject' in window;
+            if (isIE) {
+                var reIE = new RegExp('MSIE (\\d+\\.\\d+);');
+                reIE.test(userAgent);
+                var fIEVersion = parseFloat(RegExp['$1']);
+                return fIEVersion > 9;
+            }
+            return true;
+        }
     }
     /*
         var observer = new RongObserver();

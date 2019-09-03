@@ -183,7 +183,8 @@ module RongIMLib {
                 snifferTime: 2000,
                 naviTimeout: 5000,
                 navigaters: navigaters,
-                maxNaviRetry: 10
+                maxNaviRetry: 10,
+                isNaviJSONP: false
             };
 
             delete options.navigaters;
