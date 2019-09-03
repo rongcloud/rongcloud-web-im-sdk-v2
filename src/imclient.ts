@@ -274,7 +274,9 @@ module RongIMLib {
                 SuspendMessage: { objectName: "RC:CsSp", msgTag: new MessageTag(false, false) },//主动发送
                 TerminateMessage: { objectName: "RC:CsEnd", msgTag: new MessageTag(false, false) },
                 CustomerStatusUpdateMessage: { objectName: "RC:CsUpdate", msgTag: new MessageTag(false, false) },
-                ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) }
+                ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) },
+
+                RCCombineMessage: { objectName: "RC:CombineMsg", msgTag: new MessageTag(true, true) }
             };
 
             RongIMClient.MessageParams["AcceptMessage"] = { objectName: "RC:VCAccept", msgTag: new RongIMLib.MessageTag(false, false) };
@@ -328,7 +330,8 @@ module RongIMLib {
                 PublicServiceMultiRichContentMessage: "PublicServiceMultiRichContentMessage",
                 PublicServiceCommandMessage: "PublicServiceCommandMessage",
                 RecallCommandMessage: "RecallCommandMessage",
-                ReadReceiptMessage: "ReadReceiptMessage"
+                ReadReceiptMessage: "ReadReceiptMessage",
+                RCCombineMessage: "RCCombineMessage"
             };
 
             RongIMClient.LogFactory = {
