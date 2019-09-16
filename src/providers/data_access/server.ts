@@ -765,7 +765,7 @@ module RongIMLib {
 
             params = params || {};
             var userIds = params.userIds;
-            if (isGroup && userIds) {
+            if (userIds) {
                 modules.setUserId(userIds);
             }
 
@@ -1785,10 +1785,13 @@ module RongIMLib {
 
         joinRTCRoom(room: Room, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcInput();
-            modules.setRoomType(room.mode);
+            
+            var mode = room.mode || 0;
+            modules.setRoomType(mode);
             if (room.broadcastType) {
                 modules.setBroadcastType(room.broadcastType);
             }
+
             RongIMClient.bridge.queryMsg("rtcRJoin_data", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function (result: any) {
                     var users: { [s: string]: any } = {};
@@ -1828,10 +1831,13 @@ module RongIMLib {
 
         RTCPing(room: Room, callback: ResultCallback<boolean>) {
             var modules = new RongIMClient.Protobuf.RtcInput();
-            modules.setRoomType(room.mode);
+
+            var mode = room.mode || 0;
+            modules.setRoomType(mode);
             if (room.broadcastType) {
                 modules.setBroadcastType(room.broadcastType);
             }
+
             RongIMClient.bridge.queryMsg("rtcPing", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, callback);
         }
         setRTCData(roomId: string, key: string, value: string, isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<boolean>, message?: any) {
@@ -1909,12 +1915,50 @@ module RongIMLib {
         removeRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
             this.removeRTCData(roomId, keys, isInner, RTCAPIType.ROOM, callback, message);
         }
+        // 信令 SDK 新增
+        setRTCOutData(roomId: string, data: any, type: number, callback: ResultCallback<boolean>, message?: any) {
+            var modules = new RongIMClient.Protobuf.RtcSetOutDataInput();
+            modules.setTarget(type);
+            if (!RongUtil.isArray(data)) {
+                data = [data];
+            }
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                if(item.key){
+                    item.key = item.key.toString();
+                }
+                if(item.value){
+                    item.value = item.value.toString();
+                }
+            }
+            modules.setValueInfo(data);
+            message = message || {};
+            var name = message.name;
+            var content = message.content;
+            if (name) {
+                modules.setObjectName(name);
+            }
+            if (content) {
+                if (!RongUtil.isString(content)) {
+                    content = JSON.stringify(content);
+                }
+                modules.setContent(content);
+            }
+            RongIMClient.bridge.queryMsg("rtcSetOutData", MessageUtil.ArrayForm(modules.toArrayBuffer()), roomId, callback, "RtcOutput");
+        }
+        // 信令 SDK 新增
+        getRTCOutData(roomId: string, userIds: string[], callback: ResultCallback<any>) {
+            var modules = new RongIMClient.Protobuf.RtcQryUserOutDataInput();
+            modules.setUserId(userIds);
+            RongIMClient.bridge.queryMsg("rtcQryUserOutData", MessageUtil.ArrayForm(modules.toArrayBuffer()), roomId, callback, "RtcUserOutDataOutput");
+        }
         getNavi() {
             var navi = RongIMClient._storageProvider.getItem("fullnavi") || "{}";
             return JSON.parse(navi);
         }
         getRTCToken(room: any, callback: ResultCallback<any>) {
             var modules = new RongIMClient.Protobuf.RtcInput();
+            modules.setRoomType(0);
             RongIMClient.bridge.queryMsg("rtcToken", MessageUtil.ArrayForm(modules.toArrayBuffer()), room.id, {
                 onSuccess: function (result: any) {
                     callback.onSuccess(result);
@@ -1924,7 +1968,7 @@ module RongIMLib {
                 }
             }, "RtcTokenOutput");
         }
-        setRTCState(room: any, content: any, callback: ResultCallback<any>){
+        setRTCState(room: any, content: any, callback: ResultCallback<any>) {
             // MCFollowInput 为 PB 复用，字段：一个必传 string（第一位）
             var modules = new RongIMClient.Protobuf.MCFollowInput();
             var report = content.report;

@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = [
         "invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
-        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN", "", "", "", "prMsgS"],
+        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN", "", "", "", "prMsgS", "prMsgP"],
         "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm", "createChrm", "exitChrm", "queryChrm",
         "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat",
         "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn",
@@ -754,6 +754,7 @@ module RongIMLib {
             if (isRTCMessage) {
                 RongIMClient.RTCListener(message);
                 RongIMClient.RTCInnerListener(message);
+                RongIMClient.RTCSignalLisener(message);
                 return;
             }
             var isRecall = (msg.getTopic && msg.getTopic() == "recallMsg");

@@ -2,6 +2,7 @@ module RongIMLib {
     export class RongIMClient {
         static RTCListener: any = function(){};
         static RTCInnerListener: any = function(){};
+        static RTCSignalLisener: any = function(){};
         static Protobuf: any;
         static currentServer: string = '';
         static LogFactory: { [s: string]: any } = {};
@@ -2330,6 +2331,9 @@ module RongIMLib {
         static messageWatch(watcher: any) {
             RongIMClient.RTCListener = watcher;
         }
+        static messageSignalWatch(watcher: any){
+            RongIMClient.RTCSignalLisener = watcher;
+        }
         /* 
             var data = {
                 key1: 123,
@@ -2427,6 +2431,13 @@ module RongIMLib {
         removeRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
             CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null|undefined"], "removeRTCRoomData", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCRoomData(roomId, keys, isInner, callback, message);
+        }
+        setRTCOutData(roomId: string, data: any, type: number, callback: ResultCallback<boolean>, message?: any) {
+            RongIMClient._dataAccessProvider.setRTCOutData(roomId, data, type, callback, message);
+        }
+        // 信令 SDK 新增
+        getRTCOutData(roomId: string, userIds: string[], callback: ResultCallback<any>) {
+            RongIMClient._dataAccessProvider.getRTCOutData(roomId, userIds, callback);
         }
         getNavi() {
             return RongIMClient._dataAccessProvider.getNavi();

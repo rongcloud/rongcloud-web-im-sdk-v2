@@ -200,6 +200,7 @@ module RongIMLib {
                     } else if (message.conversationType == 12) {
                         RongIMClient.RTCListener(message);
                         RongIMClient.RTCInnerListener(message);
+                        RongIMClient.RTCSignalLisener(message);
                     } else {
                         listener.onReceived(message, leftCount, hasMore);
                     }
@@ -1286,7 +1287,14 @@ module RongIMLib {
             var nav: any = this.addon.getNav();
             return nav[this.userId];
         }
+        // 信令 SDK 新增
+        setRTCOutData(roomId: string, data: any, type: number, callback: ResultCallback<boolean>, message?: any) {
+            
+        }
+        // 信令 SDK 新增
+        getRTCOutData(roomId: string, userId: string[], callback: ResultCallback<any>) {
 
+        }
         setRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
 
         }
@@ -1316,7 +1324,6 @@ module RongIMLib {
         removeRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
 
         }
-
 
         getRTCToken(room: any, callback: ResultCallback<any>) {
 
