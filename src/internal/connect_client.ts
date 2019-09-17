@@ -192,7 +192,7 @@ module RongIMLib {
             var hasEvent = (typeof StatusEvent == "object");
             var me = this;
             me.socket.on("StatusChanged", function (code: any) {
-                if (me !== RongIMLib.Bridge._client.channel) {
+                if (RongIMLib.Bridge && RongIMLib.Bridge._client && RongIMLib.Bridge._client.channel && me !== RongIMLib.Bridge._client.channel) {
                     return;
                 }
                 if (!hasEvent) {

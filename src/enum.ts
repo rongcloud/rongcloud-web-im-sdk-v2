@@ -651,6 +651,8 @@ module RongIMLib {
         MEDIA_AUDIO = 1,
 
         MEDIA_VEDIO = 2,
+
+        MEDIA_VIDEO = 2,
     }
 
     export enum MediaType {
