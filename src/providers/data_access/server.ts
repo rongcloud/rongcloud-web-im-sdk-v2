@@ -768,6 +768,14 @@ module RongIMLib {
             if (userIds) {
                 modules.setUserId(userIds);
             }
+            var flag = 0;
+            if(params.isPush){
+                flag |= 0x01;
+            }
+            if(params.isFilerWhiteBlacklist){
+                flag |= 0x02;
+            }
+            modules.setConfigFlag(flag);
 
             modules.setClassname(RongIMClient.MessageParams[messageContent.messageName].objectName);
             modules.setContent(messageContent.encode());
