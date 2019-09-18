@@ -246,6 +246,9 @@ module RongIMLib {
         static isFunction(fun: any) {
             return Object.prototype.toString.call(fun) == '[object Function]';
         };
+        static isUndefined(str: any) {
+            return Object.prototype.toString.call(str) == '[object Undefined]';
+        };
         static isEqual(a: any, b: any) {
             return a === b;
         };
@@ -449,6 +452,17 @@ module RongIMLib {
             var date = new Date();
             return date.getTime()
         }
+        static isSupportRequestHeaders(): boolean {
+            var userAgent = navigator.userAgent;
+            var isIE = (<any>window).ActiveXObject || 'ActiveXObject' in window;
+            if (isIE) {
+                var reIE = new RegExp('MSIE (\\d+\\.\\d+);');
+                reIE.test(userAgent);
+                var fIEVersion = parseFloat(RegExp['$1']);
+                return fIEVersion > 9;
+            }
+            return true;
+        }
     }
     /*
         var observer = new RongObserver();
@@ -490,6 +504,24 @@ module RongIMLib {
         }
         remove(): void {
 
+        }
+    }
+
+    export class Observer {
+        observers: any[] = [];
+        add(observer: any, force?: any) {
+            if (force) {
+                this.observers = [observer];
+            }
+            this.observers.push(observer);
+        }
+        clear() {
+            this.observers = [];
+        }
+        emit(data: any) {
+            RongUtil.forEach(this.observers, function (observer: any) {
+                observer(data);
+            });
         }
     }
 

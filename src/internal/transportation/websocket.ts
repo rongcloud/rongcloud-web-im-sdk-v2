@@ -93,6 +93,7 @@ module RongIMLib {
          * @param {any} error [抛出异常]
          */
         onError(error: any): void {
+            this._socket.fire("StatusChanged", RongIMLib.ConnectionStatus.WEBSOCKET_ERROR);
             throw new Error(error);
         }
         /**

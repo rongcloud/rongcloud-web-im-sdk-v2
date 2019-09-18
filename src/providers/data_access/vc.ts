@@ -24,7 +24,7 @@ module RongIMLib {
             this.addon = addon;
         }
 
-        init(appKey: string, config?:any): void {
+        init(appKey: string, config?: any): void {
             this.appKey = appKey;
             this.useConsole && console.log("init");
 
@@ -34,7 +34,7 @@ module RongIMLib {
             if (sdkInfo) {
                 sdkInfo = JSON.parse(sdkInfo);
             }
-              // 0 不存不计数  1 只存不计数 3 存且计数
+            // 0 不存不计数  1 只存不计数 3 存且计数
             this.addon.registerMessageType("RC:VcMsg", 3);
             this.addon.registerMessageType("RC:ImgTextMsg", 3);
             this.addon.registerMessageType("RC:FileMsg", 3);
@@ -82,7 +82,7 @@ module RongIMLib {
                 userId: userId
             };
             serverConf = serverConf || {};
-            var openmp: boolean =  !!serverConf.openMp;
+            var openmp: boolean = !!serverConf.openMp;
             var openus: boolean = !!serverConf.openUS;
             if (serverConf.type) {
                 this.addon.setEnvironment(true);
@@ -90,7 +90,7 @@ module RongIMLib {
             this.addon.connectWithToken(token, userId, serverConf.serverList, openmp, openus);
         }
 
-        setServerInfo(info: any):void {
+        setServerInfo(info: any): void {
             'setServerInfo' in this.addon && this.addon.setServerInfo(info.navi);
         }
 
@@ -104,15 +104,15 @@ module RongIMLib {
             this.addon.disconnect(true);
         }
 
-        clearListeners(): void{
+        clearListeners(): void {
             this.addon.setOnReceiveStatusListener();
             this.addon.setConnectionStatusListener();
             this.addon.setOnReceiveMessageListener();
         }
 
-        clearData():boolean{
-           this.useConsole && console.log("clearData");
-           return this.addon.clearData();
+        clearData(): boolean {
+            this.useConsole && console.log("clearData");
+            return this.addon.clearData();
         }
 
         setConnectionStatusListener(listener: ConnectionStatusListener): void {
@@ -140,15 +140,15 @@ module RongIMLib {
 
             me.connectListener = listener;
             this.useConsole && console.log("setConnectionStatusListener");
-            me.addon && me.addon.setConnectionStatusListener(function(result: any): void {
+            me.addon && me.addon.setConnectionStatusListener(function (result: any): void {
                 switch (result) {
                     case 10:
-                        setTimeout(function(){
+                        setTimeout(function () {
                             listener.onChanged(ConnectionStatus.CONNECTING);
                         });
                         break;
                     case 31004:
-                        setTimeout(function(){
+                        setTimeout(function () {
                             me.connectCallback.onTokenIncorrect();
                         });
                         break;
@@ -160,24 +160,24 @@ module RongIMLib {
                     case 31011:
                     case 30000:
                     case 30002:
-                        setTimeout(function(){
+                        setTimeout(function () {
                             listener.onChanged(ConnectionStatus.DISCONNECTED);
                         });
                         break;
                     case 0:
                     case 33005:
-                        setTimeout(function(){
+                        setTimeout(function () {
                             me.connectCallback.onSuccess(me.userId);
                             listener.onChanged(ConnectionStatus.CONNECTED);
                         });
                         break;
                     case 6:
-                        setTimeout(function(){
+                        setTimeout(function () {
                             listener.onChanged(ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT);
                         });
                         break;
                     default:
-                        setTimeout(function(){
+                        setTimeout(function () {
                             listener.onChanged(result);
                         });
                         break;
@@ -186,18 +186,22 @@ module RongIMLib {
         }
 
         setOnReceiveMessageListener(listener: OnReceiveMessageListener): void {
-            var me = this,localCount = 0;
+            var me = this, localCount = 0;
             me.messageListener = listener;
             this.useConsole && console.log("setOnReceiveMessageListener");
-            me.addon && me.addon.setOnReceiveMessageListener(function(result: string, leftCount: number, offline: boolean, hasMore: boolean): void {
-                var message:Message = me.buildMessage(result);
+            me.addon && me.addon.setOnReceiveMessageListener(function (result: string, leftCount: number, offline: boolean, hasMore: boolean): void {
+                var message: Message = me.buildMessage(result);
                 message.offLineMessage = offline;
-                setTimeout(function(){
+                setTimeout(function () {
                     var voipMsgTypes = ['AcceptMessage', 'RingingMessage', 'HungupMessage', 'InviteMessage', 'MediaModifyMessage', 'MemberModifyMessage'];
-                    var isVoIPMsg = voipMsgTypes.indexOf(message.messageType) > -1;         
+                    var isVoIPMsg = voipMsgTypes.indexOf(message.messageType) > -1;
                     if (isVoIPMsg) {
                         RongIMClient._voipProvider && RongIMClient._voipProvider.onReceived(message);
-                    }else{
+                    } else if (message.conversationType == 12) {
+                        RongIMClient.RTCListener(message);
+                        RongIMClient.RTCInnerListener(message);
+                        RongIMClient.RTCSignalLisener(message);
+                    } else {
                         listener.onReceived(message, leftCount, hasMore);
                     }
                 });
@@ -211,22 +215,22 @@ module RongIMLib {
             this.useConsole && console.log("sendTypingStatusMessage");
             if (messageName in RongIMClient.MessageParams) {
                 me.sendMessage(conversationType, targetId, TypingStatusMessage.obtain(RongIMClient.MessageParams[messageName].objectName, ""), {
-                    onSuccess: function() {
-                        setTimeout(function() {
+                    onSuccess: function () {
+                        setTimeout(function () {
                             sendCallback.onSuccess();
                         });
                     },
-                    onError: function(errorCode: ErrorCode) {
-                        setTimeout(function() {
+                    onError: function (errorCode: ErrorCode) {
+                        setTimeout(function () {
                             sendCallback.onError(errorCode, null);
                         });
                     },
-                    onBefore: function(){}
+                    onBefore: function () { }
                 });
             }
         }
 
-        setMessageStatus(conversationType: ConversationType, targetId: string, timestamp:number, status: string, callback:ResultCallback<Boolean>):void{
+        setMessageStatus(conversationType: ConversationType, targetId: string, timestamp: number, status: string, callback: ResultCallback<Boolean>): void {
             this.addon.updateMessageReceiptStatus(conversationType, targetId, timestamp);
             callback.onSuccess(true);
         }
@@ -241,7 +245,7 @@ module RongIMLib {
             try {
                 var me = this;
                 me.useConsole && console.log("getRemoteHistoryMessages");
-                me.addon.getRemoteHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, function(ret: string, hasMore: number) {
+                me.addon.getRemoteHistoryMessages(conversationType, targetId, timestamp ? timestamp : 0, count, function (ret: string, hasMore: number) {
                     var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [];
                     list.reverse();
                     for (var i = 0, len = list.length; i < len; i++) {
@@ -250,7 +254,7 @@ module RongIMLib {
                         msgs[i] = message;
                     }
                     callback.onSuccess(msgs, hasMore ? true : false);
-                }, function(errorCode: ErrorCode) {
+                }, function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 });
             } catch (e) {
@@ -258,28 +262,28 @@ module RongIMLib {
             }
         }
 
-        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number,isGetHiddenConvers:boolean): void {
+        getRemoteConversationList(callback: ResultCallback<Conversation[]>, conversationTypes: ConversationType[], count: number, isGetHiddenConvers: boolean): void {
             try {
                 this.useConsole && console.log("getRemoteConversationList");
                 var converTypes: number[] = conversationTypes || [1, 2, 3, 4, 5, 6, 7, 8];
                 var result: string = this.addon.getConversationList(converTypes);
-                var list: any[] = JSON.parse(result).list, convers: Conversation[] = [], me = this,index:number = 0;
+                var list: any[] = JSON.parse(result).list, convers: Conversation[] = [], me = this, index: number = 0;
                 list.reverse();
                 isGetHiddenConvers = typeof isGetHiddenConvers === 'boolean' ? isGetHiddenConvers : false;
                 for (let i = 0, len = list.length; i < len; i++) {
-                    var tmpObj = list[i].obj,obj:any = JSON.parse(tmpObj);
+                    var tmpObj = list[i].obj, obj: any = JSON.parse(tmpObj);
                     if (obj != "") {
-                        if(obj.isHidden == 1 && isGetHiddenConvers) {
+                        if (obj.isHidden == 1 && isGetHiddenConvers) {
                             continue;
                         }
                         convers[index] = me.buildConversation(tmpObj);
                         index++;
                     }
                 }
-                convers.reverse(); 
+                convers.reverse();
                 var len = convers.length;
                 count = count || len;
-                if(len > count){
+                if (len > count) {
                     convers.length = count;
                 }
                 callback.onSuccess(convers);
@@ -294,9 +298,9 @@ module RongIMLib {
                 this.addon.removeConversation(conversationType, targetId);
                 var conversations = RongIMClient._memoryStore.conversationList
                 var len = conversations.length;
-                for(var i=0; i<len; i++){
-                    if(conversations[i].conversationType == conversationType && targetId == conversations[i].targetId) {
-                        conversations.splice(i,1);
+                for (var i = 0; i < len; i++) {
+                    if (conversations[i].conversationType == conversationType && targetId == conversations[i].targetId) {
+                        conversations.splice(i, 1);
                         break;
                     }
                 }
@@ -309,10 +313,10 @@ module RongIMLib {
         joinChatRoom(chatRoomId: string, messageCount: number, callback: OperationCallback): void {
             this.useConsole && console.log("joinChatRoom");
             this.addon.joinChatRoom(chatRoomId, messageCount,
-                function() {
+                function () {
                     callback.onSuccess();
                 },
-                function(error: ErrorCode) {
+                function (error: ErrorCode) {
                     callback.onError(error);
                 });
         }
@@ -320,10 +324,10 @@ module RongIMLib {
         quitChatRoom(chatRoomId: string, callback: OperationCallback): void {
             this.useConsole && console.log("quitChatRoom");
             this.addon.quitChatRoom(chatRoomId,
-                function() {
+                function () {
                     callback.onSuccess();
                 },
-                function(error: ErrorCode) {
+                function (error: ErrorCode) {
                     callback.onError(error);
                 });
         }
@@ -331,10 +335,10 @@ module RongIMLib {
         addToBlacklist(userId: string, callback: OperationCallback): void {
             this.useConsole && console.log("addToBlacklist");
             this.addon.addToBlacklist(userId,
-                function() {
+                function () {
                     callback.onSuccess();
                 },
-                function(error: ErrorCode) {
+                function (error: ErrorCode) {
                     callback.onError(error);
                 });
 
@@ -343,10 +347,10 @@ module RongIMLib {
         getBlacklist(callback: GetBlacklistCallback): void {
             this.useConsole && console.log("getBlacklist");
             this.addon.getBlacklist(
-                function(blacklistors: string[]) {
+                function (blacklistors: string[]) {
                     callback.onSuccess(blacklistors);
                 },
-                function(error: ErrorCode) {
+                function (error: ErrorCode) {
                     callback.onError(error);
                 });
         }
@@ -354,35 +358,35 @@ module RongIMLib {
         getBlacklistStatus(userId: string, callback: ResultCallback<string>): void {
             this.useConsole && console.log("getBlacklistStatus");
             this.addon.getBlacklistStatus(userId,
-                function(result: string) {
+                function (result: string) {
                     callback.onSuccess(result);
                 },
-                function(error: ErrorCode) {
+                function (error: ErrorCode) {
                     callback.onError(error);
                 });
         }
- 
+
         removeFromBlacklist(userId: string, callback: OperationCallback): void {
             this.useConsole && console.log("removeFromBlacklist");
             this.addon.removeFromBlacklist(userId,
-                function() {
+                function () {
                     callback.onSuccess();
                 },
-                function(error: ErrorCode) {
+                function (error: ErrorCode) {
                     callback.onError(error);
                 });
         }
 
 
-        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?:any): void {
-            var me = this , users:string[] = [];
+        sendMessage(conversationType: ConversationType, targetId: string, messageContent: MessageContent, sendCallback: SendMessageCallback, mentiondMsg?: boolean, pushText?: string, appData?: string, methodType?: number, params?: any): void {
+            var me = this, users: string[] = [];
             me.useConsole && console.log("sendMessage");
 
             params = params || {};
 
             var isGroup = (conversationType == ConversationType.DISCUSSION || conversationType == ConversationType.GROUP);
 
-             if ( isGroup && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
+            if (isGroup && messageContent.messageName == RongIMClient.MessageType["ReadReceiptResponseMessage"]) {
                 users = [];
                 var rspMsg: ReadReceiptResponseMessage = <ReadReceiptResponseMessage>messageContent;
                 if (rspMsg.receiptMessageDic) {
@@ -394,27 +398,27 @@ module RongIMLib {
                 }
             }
 
-             if (isGroup && messageContent.messageName == RongIMClient.MessageType["SyncReadStatusMessage"]) {
+            if (isGroup && messageContent.messageName == RongIMClient.MessageType["SyncReadStatusMessage"]) {
                 users = [];
                 users.push(me.userId);
             }
 
             var userIds = params.userIds;
             if (isGroup && userIds) {
-                users = userIds;    
+                users = userIds;
             }
             var msg: string = me.addon.sendMessage(conversationType,
-                targetId, RongIMClient.MessageParams[messageContent.messageName].objectName, messageContent.encode(), pushText || "", appData || "", function(progress: any) {
+                targetId, RongIMClient.MessageParams[messageContent.messageName].objectName, messageContent.encode(), pushText || "", appData || "", function (progress: any) {
                 },
-                function(message: string, code: number) {
+                function (message: string, code: number) {
                     var msg = me.buildMessage(message)
                     var errorCode = ErrorCode.SENSITIVE_REPLACE;
-                    if(code == errorCode){
-                        return  sendCallback.onError(errorCode, msg);
+                    if (code == errorCode) {
+                        return sendCallback.onError(errorCode, msg);
                     }
                     sendCallback.onSuccess(msg);
                 },
-                function(message: string, code: ErrorCode) {
+                function (message: string, code: ErrorCode) {
                     sendCallback.onError(code, me.buildMessage(message));
                 }, users, mentiondMsg);
             var tempMessage: any = JSON.parse(msg);
@@ -434,55 +438,55 @@ module RongIMLib {
             typeMapping[objectName] = messageType;
         }
 
-        registerMessageTypes(messages: any):void{
-          var types:any = [];
-  
-          var getProtos = function(proto: any){
-            var protos:any = [];
-            for(var p in proto){
-              protos.push(p);
+        registerMessageTypes(messages: any): void {
+            var types: any = [];
+
+            var getProtos = function (proto: any) {
+                var protos: any = [];
+                for (var p in proto) {
+                    protos.push(p);
+                }
+                return protos;
+            };
+            //转换消息为自定义消息参数格式
+            for (var name in messages) {
+                var message = messages[name];
+
+                var proto = message.proto;
+                var protos = getProtos(proto);
+
+                var flag = message.flag || 3;
+                var tag = MessageTag.getTagByStatus(flag);
+                flag = new RongIMLib.MessageTag(tag.isCounted, tag.isPersited);
+                types.push({
+                    type: name,
+                    name: message.name,
+                    flag: flag,
+                    protos: protos
+                });
             }
-            return protos;
-          };
-          //转换消息为自定义消息参数格式
-          for(var name in messages){
-            var message = messages[name];
-            
-            var proto = message.proto;
-            var protos = getProtos(proto);
 
-            var flag = message.flag || 3;
-            var tag = MessageTag.getTagByStatus(flag);
-            flag = new RongIMLib.MessageTag(tag.isCounted, tag.isPersited);
-            types.push({
-              type: name,
-              name: message.name,
-              flag: flag,
-              protos: protos
-            });
-          }
-
-          var register = function(message:any){
-            var type = message.type;
-            var name = message.name;
-            var flag = message.flag;
-            var protos = message.protos;
-            RongIMClient.registerMessageType(type, name, flag, protos);
-          };
-          for(var i = 0, len = types.length; i < len; i++){
-            var message:any = types[i];
-            register(message);
-          }
+            var register = function (message: any) {
+                var type = message.type;
+                var name = message.name;
+                var flag = message.flag;
+                var protos = message.protos;
+                RongIMClient.registerMessageType(type, name, flag, protos);
+            };
+            for (var i = 0, len = types.length; i < len; i++) {
+                var message: any = types[i];
+                register(message);
+            }
         }
 
         addMessage(conversationType: ConversationType, targetId: string, message: any, callback?: ResultCallback<Message>): void {
             this.useConsole && console.log("addMessage");
             var direction = message.direction;
             var msg: string = this.addon.insertMessage(conversationType, targetId, message.senderUserId, message.objectName, JSON.stringify(message.content),
-                function() {
+                function () {
                     callback.onSuccess(me.buildMessage(msg));
                 },
-                function() {
+                function () {
                     callback.onError(ErrorCode.MSG_INSERT_ERROR);
                 }, direction), me = this;
         }
@@ -522,7 +526,7 @@ module RongIMLib {
         }
 
         // Web 端接口，桌面版无需实现
-        setUnreadCount(conversationType: ConversationType, targetId: string, count: number){
+        setUnreadCount(conversationType: ConversationType, targetId: string, count: number) {
 
         }
 
@@ -536,12 +540,12 @@ module RongIMLib {
             }
         }
 
-        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number,isGetHiddenConvers?:boolean): void {
+        getConversationList(callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[], count?: number, isGetHiddenConvers?: boolean): void {
             this.useConsole && console.log("getConversationList");
-            this.getRemoteConversationList(callback, conversationTypes, count,isGetHiddenConvers);
+            this.getRemoteConversationList(callback, conversationTypes, count, isGetHiddenConvers);
         }
 
-        clearCache(){
+        clearCache() {
             var memoryStore = RongIMClient._memoryStore || {};
             memoryStore.conversationList = [];
             memoryStore.isSyncRemoteConverList;
@@ -557,7 +561,7 @@ module RongIMLib {
             }
         }
 
-        setMessageContent(messageId:number, content:any, objectName:string):void{
+        setMessageContent(messageId: number, content: any, objectName: string): void {
             content = JSON.stringify(content);
             this.addon.setMessageContent(messageId, content, objectName);
         }
@@ -567,7 +571,7 @@ module RongIMLib {
             this.addon.setMessageContent(messageId, content, searchFiles);
         }
 
-        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?:string, direction?: boolean): void {
+        getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?: string, direction?: boolean): void {
             this.useConsole && console.log("getHistoryMessages");
             if (count <= 0) {
                 callback.onError(ErrorCode.TIMEOUT);
@@ -589,11 +593,11 @@ module RongIMLib {
             }
         }
 
-        clearRemoteHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
+        clearRemoteHistoryMessages(params: any, callback: ResultCallback<boolean>): void {
             var conversationType = params.conversationType;
             var targetId = params.targetId;
             var timestamp = params.timestamp;
-            var _topic: {[s: string]: any} = {
+            var _topic: { [s: string]: any } = {
                 1: true,
                 2: true,
                 3: true,
@@ -611,9 +615,9 @@ module RongIMLib {
                 return;
             }
 
-            this.addon.clearRemoteHistoryMessages(+conversationType, targetId, timestamp, function() {
+            this.addon.clearRemoteHistoryMessages(+conversationType, targetId, timestamp, function () {
                 callback.onSuccess(true);
-            }, function(errorCode:any) {
+            }, function (errorCode: any) {
                 if (errorCode == 1) {
                     // 没有开通历史消息云存储
                     errorCode = ErrorCode.CLEAR_HIS_ERROR;
@@ -622,16 +626,16 @@ module RongIMLib {
             });
         }
 
-        clearHistoryMessages(params: any, callback: ResultCallback<boolean>):void{
+        clearHistoryMessages(params: any, callback: ResultCallback<boolean>): void {
             var conversationType = +params.conversationType;
             var targetId = params.targetId;
-            try{
-               this.addon.clearMessages(conversationType, targetId);
-               var isSuccess = true;
-               callback.onSuccess(isSuccess);
-            }catch(e){
-               console.log(e);
-               callback.onError(ErrorCode.CLEAR_HIS_ERROR);
+            try {
+                this.addon.clearMessages(conversationType, targetId);
+                var isSuccess = true;
+                callback.onSuccess(isSuccess);
+            } catch (e) {
+                console.log(e);
+                callback.onError(ErrorCode.CLEAR_HIS_ERROR);
             }
         }
 
@@ -680,10 +684,10 @@ module RongIMLib {
             this.useConsole && console.log("clearTotalUnreadCount");
         }
 
-        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp:number, callback: ResultCallback<boolean>) : void{
+        clearUnreadCountByTimestamp(conversationType: ConversationType, targetId: string, timestamp: number, callback: ResultCallback<boolean>): void {
             try {
                 this.useConsole && console.log("clearUnreadCountByTimestamp");
-                var result = this.addon.clearUnreadCountByTimestamp(conversationType, targetId,timestamp);
+                var result = this.addon.clearUnreadCountByTimestamp(conversationType, targetId, timestamp);
                 callback.onSuccess(true);
             } catch (e) {
                 callback.onError(e);
@@ -700,8 +704,8 @@ module RongIMLib {
             }
         }
 
-        setConversationHidden(conversationType: ConversationType, targetId: string,isHidden:boolean):void {
-            this.addon.setConversationHidden(conversationType,targetId,isHidden);
+        setConversationHidden(conversationType: ConversationType, targetId: string, isHidden: boolean): void {
+            this.addon.setConversationHidden(conversationType, targetId, isHidden);
         }
 
         setMessageReceivedStatus(messageId: string, receivedStatus: ReceivedStatus, callback: ResultCallback<boolean>): void {
@@ -726,10 +730,10 @@ module RongIMLib {
 
         getFileToken(fileType: FileType, callback: ResultCallback<any>): void {
             this.useConsole && console.log("getFileToken");
-            this.addon.getUploadToken(fileType, function(token: string) {
+            this.addon.getUploadToken(fileType, function (token: string) {
                 callback.onSuccess({ token: token });
             },
-                function(errorCode: ErrorCode) {
+                function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             );
@@ -738,10 +742,10 @@ module RongIMLib {
         getFileUrl(fileType: FileType, fileName: string, oriName: string, callback: ResultCallback<any>): void {
             this.useConsole && console.log("getFileUrl");
             this.addon.getDownloadUrl(fileType, fileName, oriName,
-                function(url: string) {
+                function (url: string) {
                     callback.onSuccess({ downloadUrl: url });
                 },
-                function(errorCode: ErrorCode) {
+                function (errorCode: ErrorCode) {
                     callback.onError(errorCode);
                 }
             );
@@ -772,7 +776,7 @@ module RongIMLib {
             var me = this
             try {
                 this.useConsole && console.log("searchMessageByContent");
-                this.addon.searchMessageByContent(conversationType, targetId, keyword, timestamp, count, total, function(ret: string, matched: number) {
+                this.addon.searchMessageByContent(conversationType, targetId, keyword, timestamp, count, total, function (ret: string, matched: number) {
                     var list: any[] = ret ? JSON.parse(ret).list : [], msgs: Message[] = [];
                     list.reverse();
                     for (let i = 0, len = list.length; i < len; i++) {
@@ -789,7 +793,7 @@ module RongIMLib {
 
         getChatRoomInfo(chatRoomId: string, count: number, order: GetChatRoomType, callback: ResultCallback<any>): void {
             this.useConsole && console.log("getChatRoomInfo");
-            this.addon.getChatroomInfo(chatRoomId, count, order, function(ret: string, count: number) {
+            this.addon.getChatroomInfo(chatRoomId, count, order, function (ret: string, count: number) {
                 var list: any[] = ret ? JSON.parse(ret).list : [], chatRoomInfo: any = { userInfos: [], userTotalNums: count };
                 if (list.length > 0) {
                     for (let i = 0, len = list.length; i < len; i++) {
@@ -797,74 +801,74 @@ module RongIMLib {
                     }
                 }
                 callback.onSuccess(chatRoomInfo);
-            }, function(errcode: ErrorCode) {
+            }, function (errcode: ErrorCode) {
                 callback.onError(errcode);
             });
         }
 
-        setChatroomHisMessageTimestamp(chatRoomId:string, timestamp:number):void{
+        setChatroomHisMessageTimestamp(chatRoomId: string, timestamp: number): void {
 
         }
-        
-        getChatRoomHistoryMessages(chatRoomId:string, count:number, order:number, callback:ResultCallback<Message>):void{
-            
+
+        getChatRoomHistoryMessages(chatRoomId: string, count: number, order: number, callback: ResultCallback<Message>): void {
+
         }
 
-        getDelaTime():number{
+        getDelaTime(): number {
             return this.addon.getDeltaTime();
         }
 
-        getUserStatus(userId:string, callback:ResultCallback<UserStatus>) : void{
+        getUserStatus(userId: string, callback: ResultCallback<UserStatus>): void {
             var me = this;
-            this.addon.getUserStatus(userId,function(status:string){
-                var entity = RongInnerTools.convertUserStatus({ 
+            this.addon.getUserStatus(userId, function (status: string) {
+                var entity = RongInnerTools.convertUserStatus({
                     status: status,
                     userId: ''
                 });
                 callback.onSuccess(entity);
-            },function(code:ErrorCode){
+            }, function (code: ErrorCode) {
                 callback.onError(code);
             });
         }
 
-        setUserStatus(status:number, callback:ResultCallback<boolean>) : void{
-            this.addon.setUserStatus(status,function(){
+        setUserStatus(status: number, callback: ResultCallback<boolean>): void {
+            this.addon.setUserStatus(status, function () {
                 callback.onSuccess(true);
-            },function(code:ErrorCode){
+            }, function (code: ErrorCode) {
                 callback.onError(code);
             });
         }
 
-        subscribeUserStatus(userIds:string[], callback:ResultCallback<boolean> ): void{
-            this.addon.subscribeUserStatus(userIds,function() {
+        subscribeUserStatus(userIds: string[], callback: ResultCallback<boolean>): void {
+            this.addon.subscribeUserStatus(userIds, function () {
                 callback && callback.onSuccess(true);
-            }, function(code:ErrorCode) {
+            }, function (code: ErrorCode) {
                 callback && callback.onError(code);
             });
         }
 
-        setUserStatusListener(params: any, callback:Function) : void{
-           var me = this;
-           this.addon.setOnReceiveStatusListener(function(userId:string, status:string){
-               var entity = RongInnerTools.convertUserStatus({
-                   userId: userId,
-                   status: status
-               });
-               RongIMClient.userStatusObserver.notify({
-                   key: userId,
-                   entity: entity
-               });
-           });
-           var userIds = params.userIds || [];
-           if (userIds.length) {
-               RongIMClient._dataAccessProvider.subscribeUserStatus(userIds);
-           }
+        setUserStatusListener(params: any, callback: Function): void {
+            var me = this;
+            this.addon.setOnReceiveStatusListener(function (userId: string, status: string) {
+                var entity = RongInnerTools.convertUserStatus({
+                    userId: userId,
+                    status: status
+                });
+                RongIMClient.userStatusObserver.notify({
+                    key: userId,
+                    entity: entity
+                });
+            });
+            var userIds = params.userIds || [];
+            if (userIds.length) {
+                RongIMClient._dataAccessProvider.subscribeUserStatus(userIds);
+            }
         }
 
-        getUnreadMentionedMessages(conversationType:ConversationType, targetId:string):any{
+        getUnreadMentionedMessages(conversationType: ConversationType, targetId: string): any {
             var me = this;
             var mentions = JSON.parse(me.addon.getUnreadMentionedMessages(conversationType, targetId)).list;
-            for(var i =0,len = mentions.length;i<len;i++){
+            for (var i = 0, len = mentions.length; i < len; i++) {
                 var temp = JSON.parse(mentions[i].obj);
                 temp.content = JSON.parse(temp.content);
                 mentions[i] = temp;
@@ -876,16 +880,16 @@ module RongIMLib {
             callback.onSuccess(false);
         }
 
-        sendRecallMessage(content:any, sendMessageCallback: SendMessageCallback): void {
-           var me = this;
-           me.addon.recallMessage("RC:RcCmd", JSON.stringify(content), content.push || "",
-            function() {
-                content.objectName = 'RC:RcCmd';
-                sendMessageCallback.onSuccess(me.buildMessage(JSON.stringify(content)));
-            },
-            function(errorCode: any) {
-              sendMessageCallback.onError(errorCode);
-           });
+        sendRecallMessage(content: any, sendMessageCallback: SendMessageCallback): void {
+            var me = this;
+            me.addon.recallMessage("RC:RcCmd", JSON.stringify(content), content.push || "",
+                function () {
+                    content.objectName = 'RC:RcCmd';
+                    sendMessageCallback.onSuccess(me.buildMessage(JSON.stringify(content)));
+                },
+                function (errorCode: any) {
+                    sendMessageCallback.onError(errorCode);
+                });
         }
 
         updateMessage(message: Message, callback?: ResultCallback<Message>): void { }
@@ -912,7 +916,7 @@ module RongIMLib {
 
         setDiscussionName(discussionId: string, name: string, callback: OperationCallback): void { }
 
-        setEnvironment(isPrivate: boolean):void{
+        setEnvironment(isPrivate: boolean): void {
             this.addon.setEnvironment(isPrivate);
         }
 
@@ -922,7 +926,7 @@ module RongIMLib {
             return null;
         }
 
-        getConversationNotificationStatus(params:any, callback: any):void{
+        getConversationNotificationStatus(params: any, callback: any): void {
             var conversationType = params.conversationType;
             var targetId = params.targetId;
 
@@ -934,17 +938,17 @@ module RongIMLib {
                 callback.onSuccess(status);
                 return;
             }
-            
-            this.addon.getConversationNotificationStatus(conversationType, targetId, function(status:any) {
+
+            this.addon.getConversationNotificationStatus(conversationType, targetId, function (status: any) {
                 notification[key] = status;
                 callback.onSuccess(status);
             },
-            function(error:any) {
-                callback.onError(error);
-            });
+                function (error: any) {
+                    callback.onError(error);
+                });
         }
 
-        setConversationNotificationStatus(params:any, callback: any):void{
+        setConversationNotificationStatus(params: any, callback: any): void {
             var conversationType = params.conversationType;
             var targetId = params.targetId;
             var status = params.status;
@@ -954,29 +958,29 @@ module RongIMLib {
 
             notification[key] = status;
 
-            var notify:boolean = !!status;
+            var notify: boolean = !!status;
 
-            this.addon.setConversationNotificationStatus(conversationType, targetId, notify, function() {
+            this.addon.setConversationNotificationStatus(conversationType, targetId, notify, function () {
                 callback.onSuccess(status);
             },
-            function(error:any) {
-                callback.onError(error);
-            });
+                function (error: any) {
+                    callback.onError(error);
+                });
         }
 
-        getCurrentConnectionStatus(): number{
+        getCurrentConnectionStatus(): number {
             return this.addon.getConnectionStatus();
         }
 
         getAgoraDynamicKey(engineType: number, channelName: string, callback: ResultCallback<string>) {
-          var extra = "";
-          this.addon.getVoIPKey(engineType, channelName, extra,
-            function(token: string) {
-                callback.onSuccess(token);
-            },
-            function(errorCode: any) {
-                  callback.onError(errorCode);
-            });
+            var extra = "";
+            this.addon.getVoIPKey(engineType, channelName, extra,
+                function (token: string) {
+                    callback.onSuccess(token);
+                },
+                function (errorCode: any) {
+                    callback.onError(errorCode);
+                });
         }
 
         getPublicServiceProfile(publicServiceType: ConversationType, publicServiceId: string, callback: ResultCallback<PublicServiceProfile>) {
@@ -984,26 +988,26 @@ module RongIMLib {
             callback.onSuccess(profile);
         }
 
-        setDeviceInfo(device: any): void{
+        setDeviceInfo(device: any): void {
             var id = device.id || '';
             this.addon.setDeviceId(id);
         }
 
         getRemotePublicServiceList(callback?: ResultCallback<PublicServiceProfile[]>, pullMessageTime?: any) {
-            var publicList:any[] = [];
+            var publicList: any[] = [];
             var ret = this.addon.getAccounts();
-            var transformProto = function(ret: any){
-                var result:{[key: string]: any} = {
+            var transformProto = function (ret: any) {
+                var result: { [key: string]: any } = {
                     hasFollowed: false,
                     isGlobal: false,
                     menu: null
                 };
                 if (!ret.obj) {
-                    var error = {error: ret}
+                    var error = { error: ret }
                     throw new Error('公众账号数据格式错误: ' + JSON.stringify(error));
                 }
                 var obj = JSON.parse(ret.obj);
-                var protoMap:{[key: string]: any} = {
+                var protoMap: { [key: string]: any } = {
                     aType: 'conversationType',
                     aId: 'publicServiceId',
                     aName: 'introduction',
@@ -1011,7 +1015,7 @@ module RongIMLib {
                     follow: 'hasFollowed',
                     isGlobal: 'isGlobal'
                 };
-                for(var key in obj){
+                for (var key in obj) {
                     var val = obj[key];
                     if (key == 'aExtra') {
                         var extra = JSON.parse(val);
@@ -1029,7 +1033,7 @@ module RongIMLib {
             if (ret) {
                 ret = JSON.parse(ret);
                 var list = ret.list;
-                for(var i = 0, len = list.length; i < len; i++){
+                for (var i = 0, len = list.length; i < len; i++) {
                     var item = list[i];
                     item = transformProto(item);
                     publicList.push(item);
@@ -1048,16 +1052,16 @@ module RongIMLib {
             message.targetId = ret.targetId;
             message.messageDirection = ret.direction;
             message.senderUserId = ret.senderUserId;
-            if(ret.direction == MessageDirection.RECEIVE) {
+            if (ret.direction == MessageDirection.RECEIVE) {
                 message.receivedStatus = ret.status;
-            }else if(ret.direction == MessageDirection.SEND){
+            } else if (ret.direction == MessageDirection.SEND) {
                 message.sentStatus = ret.status;
             }
             message.sentTime = ret.sentTime;
             message.objectName = ret.objectName;
             var content = ret.content ? JSON.parse(ret.content) : ret.content;
             var messageType = typeMapping[ret.objectName] || registerMessageTypeMapping[ret.objectName];
-            if(content){
+            if (content) {
                 content.messageName = messageType;
             }
             message.content = content;
@@ -1101,69 +1105,230 @@ module RongIMLib {
             return conver;
         }
 
-        
-        getRTCUserInfoList(room: Room, callback: ResultCallback<any>){
+
+        getRTCUserInfoList(room: Room, callback: ResultCallback<any>) {
+            this.addon.getRTCUsers(room.id, 1,
+                function (result: any) { //第二个参数为空，没有意义
+                    callback.onSuccess(result);
+                },
+                function (error: any) {
+                    callback.onError(error);
+                });
+        }
+        getRTCRoomInfo(room: Room, callback: ResultCallback<any>) {
+            var order = 2;
+            this.addon.getRTCResouce(room.id, order,
+                function (result: any) {
+                    callback.onSuccess(JSON.parse(result));
+                },
+                function (error: any) {
+                    callback.onError(error);
+                });
+        }
+        joinRTCRoom(room: Room, callback: ResultCallback<any>) {
+            var id = room.id;
+            var type: number = room.type || 0;
+            this.addon.joinRTCRoom(id, type,
+                function (result: string, token: string) {
+                    var res = JSON.parse(result);
+                    var users: { [s: string]: any } = {};
+                    var list = res.list;
+                    RongUtil.forEach(list, function (item: any) {
+                        var userId = item.id;
+                        var tmpData: { [s: string]: any } = {};
+                        RongUtil.forEach(item.data, function (data: any) {
+                            var key = data.key;
+                            var value = data.value;
+                            tmpData[key] = value;
+                        });
+                        users[userId] = tmpData;
+                    });
+                    callback.onSuccess({
+                        users: users,
+                        token: token
+                    });
+                },
+                function (error: any) {
+                    callback.onError(error);
+                });
+        }
+
+        quitRTCRoom(room: Room, callback: ResultCallback<boolean>) {
+            this.addon.exitRTCRoom(room.id,
+                function () {
+                    callback.onSuccess(true);
+                },
+                function (error: any) {
+                    callback.onError(error);
+                });
+        }
+
+        RTCPing(room: Room, callback: ResultCallback<boolean>) {
+            this.addon.sendRTCPing(room.id,
+                function () {
+                    callback.onSuccess(true)
+                },
+                function (error: any) {
+                    callback.onError(error);
+                });
+        }
+        setRTCData(roomId: string, key: string, value: string, isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<boolean>, message?: any) {
+            var context = this;
+            var hanlders: { [s: string]: any } = {
+                room_inner: function (roomId: string, key: string, value: string, name: string, content: string, success: Function, error: Function) {
+                    context.addon.setRTCInnerData(roomId, RTCAPIType.ROOM, key, value, name, content, success, error);
+                },
+                room_outer: function (roomId: string, key: string, value: string, name: string, content: string, success: Function, error: Function) {
+                    context.addon.setRTCOuterData(roomId, RTCAPIType.ROOM, key, value, name, content, success, error);
+                },
+                user_inner: function (roomId: string, key: string, value: string, name: string, content: string, success: Function, error: Function) {
+                    context.addon.setRTCInnerData(roomId, RTCAPIType.PERSON, key, value, name, content, success, error);
+                },
+                user_outer: function (roomId: string, key: string, value: string, name: string, content: string, success: Function, error: Function) {
+                    context.addon.setRTCOuterData(roomId, RTCAPIType.PERSON, key, value, name, content, success, error);
+                }
+            };
+            var type = RTCAPIType.PERSON == apiType ? 'user' : 'room';
+            var direction = isInner ? 'inner' : 'outer';
+            var tpl = '{type}_{direction}';
+            var name = RongUtil.tplEngine(tpl, {
+                type: type,
+                direction: direction
+            });
+            var handler = hanlders[name];
+            if (handler) {
+                message = message || {};
+                var name: string = message.name;
+                var content = message.content;
+                handler(roomId, key, value, name, content, function () {
+                    callback.onSuccess(true);
+                }, function (code: any) {
+                    callback.onError(code);
+                });
+            }
+        }
+        setRTCRoomData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
+            this.setRTCData(roomId, key, value, isInner, RTCAPIType.ROOM, callback, message);
+        }
+        getRTCData(roomId: string, keys: string[], isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<any>) {
+            var context = this;
+            var hanlders: { [s: string]: any } = {
+                room_inner: function (roomId: string, keys: any, success: Function, error: Function) {
+                    context.addon.getRTCInnerData(roomId, RTCAPIType.ROOM, keys, success, error);
+                },
+                room_outer: function (roomId: string, keys: any, success: Function, error: Function) {
+                    context.addon.getRTCOuterData(roomId, RTCAPIType.ROOM, keys, success, error);
+                }
+            };
+            var type = RTCAPIType.PERSON == apiType ? 'user' : 'room';
+            var direction = isInner ? 'inner' : 'outer';
+            var tpl = '{type}_{direction}';
+            var name = RongUtil.tplEngine(tpl, {
+                type: type,
+                direction: direction
+            });
+            var handler = hanlders[name];
+            if (handler) {
+                handler(roomId, keys, function (result: string) {
+                    var res = JSON.parse(result);
+                    var props: { [s: string]: any } = {};
+                    var list = res.list;
+                    RongUtil.forEach(list, function (item: any) {
+                        props[item.key] = item.value;
+                    });
+                    callback.onSuccess(props);
+                }, function (code: any) {
+                    callback.onError(code);
+                });
+            }
+        }
+        getRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<any>, message?: any) {
+            this.getRTCData(roomId, keys, isInner, RTCAPIType.ROOM, callback);
+        }
+        removeRTCData(roomId: string, keys: string[], isInner: boolean, apiType: RTCAPIType, callback: ResultCallback<boolean>, message?: any){
+            var context = this;
+            var hanlders: { [s: string]: any } = {
+                room_inner: function (roomId: string, keys: string, name: string, content: string, success: Function, error: Function) {
+                    context.addon.deleteRTCInnerData(roomId, RTCAPIType.ROOM, keys, name, content, success, error);
+                },
+                room_outer: function (roomId: string, keys: string, name: string, content: string, success: Function, error: Function) {
+                    context.addon.deleteRTCOuterData(roomId, RTCAPIType.ROOM, keys, name, content, success, error);
+                },
+                user_inner: function (roomId: string, keys: string, name: string, content: string, success: Function, error: Function) {
+                    
+                },
+                user_outer: function (roomId: string, keys: string, name: string, content: string, success: Function, error: Function) {
+                    
+                }
+            };
+            var type = RTCAPIType.PERSON == apiType ? 'user' : 'room';
+            var direction = isInner ? 'inner' : 'outer';
+            var tpl = '{type}_{direction}';
+            var name = RongUtil.tplEngine(tpl, {
+                type: type,
+                direction: direction
+            });
+            var handler = hanlders[name];
+            if (handler) {
+                message = message || {};
+                var name: string = message.name || '';
+                var content = message.content || '';
+                handler(roomId, keys, name, content, function () {
+                    callback.onSuccess(true);
+                }, function (code: any) {
+                    callback.onError(code);
+                });
+            }
+        }
+        removeRTCRoomData(roomId: string, keys: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
+            this.removeRTCData(roomId, keys, isInner, RTCAPIType.ROOM, callback);
+        }
+        getNavi() {
+            var nav: any = this.addon.getNav();
+            return nav[this.userId];
+        }
+        // 信令 SDK 新增
+        setRTCOutData(roomId: string, data: any, type: number, callback: ResultCallback<boolean>, message?: any) {
             
         }
+        // 信令 SDK 新增
+        getRTCOutData(roomId: string, userId: string[], callback: ResultCallback<any>) {
 
-        setRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>){
-            
         }
-
-        removeRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>){
-            
-        }
-
-        getRTCUserList(room: Room, callback: ResultCallback<any>){
-            
-        }
-
-        getRTCRoomInfo(room: Room, callback: ResultCallback<any>){
-            
-        }
-
-        setRTCRoomInfo(room: Room, data: any, callback: ResultCallback<boolean>){
-            
-        }
-
-        removeRTCRoomInfo(room: Room, data: any, callback: ResultCallback<boolean>){
-            
-        }
-
-        joinRTCRoom(room: Room, callback: ResultCallback<boolean>){
-            
-        }
-
-        quitRTCRoom(room: Room, callback: ResultCallback<boolean>){
-            
-        }
-
-        RTCPing(room: Room, callback: ResultCallback<boolean>){
+        setRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
 
         }
 
-        setRTCUserData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any){
+        removeRTCUserInfo(room: Room, info: any, callback: ResultCallback<boolean>) {
 
         }
-        getRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<any>, message?: any){
+
+        getRTCUserList(room: Room, callback: ResultCallback<any>) {
 
         }
-        removeRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any){
+
+        setRTCRoomInfo(room: Room, data: any, callback: ResultCallback<boolean>) {
 
         }
-        setRTCRoomData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any){
+
+        removeRTCRoomInfo(room: Room, data: any, callback: ResultCallback<boolean>) {
 
         }
-        getRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<any>, message?: any){
+
+        setRTCUserData(roomId: string, key: string, value: string, isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
+            this.setRTCData(roomId, key, value, isInner, RTCAPIType.PERSON, callback, message);
+        }
+        getRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<any>, message?: any) {
 
         }
-        removeRTCRoomData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any){
+        removeRTCUserData(roomId: string, key: string[], isInner: boolean, callback: ResultCallback<boolean>, message?: any) {
 
         }
-        getNavi(){
-            
+
+        getRTCToken(room: any, callback: ResultCallback<any>) {
+
         }
-        getRTCToken(room: any, callback: ResultCallback<any>){
+        setRTCState(room: any, content: any, callback: ResultCallback<any>) {
 
         }
     }

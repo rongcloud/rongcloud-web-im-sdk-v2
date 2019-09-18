@@ -44,7 +44,8 @@ function RongIMClient() {
     ContactNotificationMessage: "ContactNotificationMessage",
     ProfileNotificationMessage:"ProfileNotificationMessage",
     CommandNotificationMessage:  "CommandNotificationMessage",
-    CommandMessage: "CommandNotificationMessage"
+    CommandMessage: "CommandNotificationMessage",
+    RCCombineMessage:"RCCombineMessage"
   };
 }
 /**
@@ -1765,6 +1766,56 @@ LocationMessage.obtain = function(latitude, longitude, poi, imgUri) {
     extra: ""
   });
 };
+
+/**
+ * RCCombineMessage 合并转发消息类
+ * @constructor
+ */
+function RCCombineMessage(message) {
+  this.messageName = "RCCombineMessage";
+  if (arguments.length == 0) {
+    throw new Error(
+      "Can not instantiate with empty parameters, use obtain method instead -> RCCombineMessage."
+    );
+  }
+  /**
+   * 远端 URL。
+   */
+  this.content = message.content;
+  /**
+   * 名称列表。
+   */
+  this.nameList = message.nameList;
+  /**
+   * 消息列表
+   */
+  this.summaryList = message.summaryList;
+  /**
+   * 附加信息。
+   */
+  this.extra = message.extra;
+  /**
+   * 用户信息。
+   */
+  this.userInfo = message.userInfo;
+}
+/**
+ *
+ * 生成RCCombineMessage对象
+ * @param  {stirng} content  远端 URL
+ * @param  {string} nameList  名称列表
+ * @param  {string} summaryList  消息列表
+ * @return {RCCombineMessage}
+ */
+RCCombineMessage.obtain = function (content, nameList, summaryList) {
+  return new RCCombineMessage({
+    content: content,
+    nameList: nameList,
+    summaryList: summaryList,
+    extra: ""
+  });
+};
+
 /**
  * RichContentMessage
  * @constructor

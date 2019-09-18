@@ -43,7 +43,7 @@ module RongIMLib {
     }
     var _topic: any = [
         "invtDiz", "crDiz", "qnUrl", "userInf", "dizInf", "userInf", "joinGrp", "quitDiz", "exitGrp", "evctDiz",
-        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN", "", "", "", "prMsgS"],
+        ["", "ppMsgP", "pdMsgP", "pgMsgP", "chatMsg", "pcMsgP", "", "pmcMsgN", "pmpMsgN", "", "", "", "prMsgS", "prMsgP"],
         "pdOpen", "rename", "uGcmpr", "qnTkn", "destroyChrm", "createChrm", "exitChrm", "queryChrm",
         "joinChrm", "pGrps", "addBlack", "rmBlack", "getBlack", "blackStat",
         "addRelation", "qryRelation", "delRelation", "pullMp", "schMp", "qnTkn",
@@ -192,6 +192,9 @@ module RongIMLib {
             var hasEvent = (typeof StatusEvent == "object");
             var me = this;
             me.socket.on("StatusChanged", function (code: any) {
+                if (RongIMLib.Bridge && RongIMLib.Bridge._client && RongIMLib.Bridge._client.channel && me !== RongIMLib.Bridge._client.channel) {
+                    return;
+                }
                 if (!hasEvent) {
                     throw new Error("setConnectStatusListener:Parameter format is incorrect");
                 }
@@ -565,6 +568,10 @@ module RongIMLib {
                     if (isChrmPull) {
                         isPullFinished = true;
                     }
+                    // 兼容长轮训 finished 为空的造成丢消息情况
+                    if (typeof isPullFinished == 'undefined') {
+                        isPullFinished = true;
+                    }
                     RongIMClient._memoryStore.isPullFinished = isPullFinished;
                     var connectAckTime = RongIMClient._memoryStore.connectAckTime;
                     for (let i = 0, len = list.length, count = len; i < len; i++) {
@@ -745,7 +752,10 @@ module RongIMLib {
             message = MessageUtil.messageParser(entity, this._onReceived, offlineMsg);
             var isRTCMessage = message.conversationType == 12;
             if (isRTCMessage) {
-                return RongIMClient.RTCListener(message);
+                RongIMClient.RTCListener(message);
+                RongIMClient.RTCInnerListener(message);
+                RongIMClient.RTCSignalLisener(message);
+                return;
             }
             var isRecall = (msg.getTopic && msg.getTopic() == "recallMsg");
             if (isRecall) {

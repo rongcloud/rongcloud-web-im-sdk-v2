@@ -529,5 +529,30 @@ module RongIMLib {
             return JSON.stringify(ModelUtil.modelClone(this));
         }
     }
-
+    
+    export class RCCombineMessage implements MessageContent, UserInfoAttachedMessage, ExtraAttachedMessage {
+        extra: string;
+        user: UserInfo;
+        remoteUrl: string;
+        nameList: string;
+        summaryList: string;
+        messageName: string = "RCCombineMessage";
+        constructor(message: any) {
+            if (arguments.length == 0) {
+                throw new Error("Can not instantiate with empty parameters, use obtain method instead -> RCCombineMessage.");
+            }
+            this.nameList = message.nameList;
+            this.remoteUrl = message.remoteUrl;
+            if (message.user) {
+                this.user = message.user;
+            }
+            this.summaryList = message.summaryList;
+        }
+        static obtain(remoteUrl: string, nameList: string, summaryList: string): RCCombineMessage {
+            return new RCCombineMessage({ extra: "", content: remoteUrl, nameList: nameList, summaryList: summaryList });
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
 }

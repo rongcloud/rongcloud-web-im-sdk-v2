@@ -1,6 +1,8 @@
 module RongIMLib {
     export class RongIMClient {
-        static RTCListener: any = function () { };
+        static RTCListener: any = function(){};
+        static RTCInnerListener: any = function(){};
+        static RTCSignalLisener: any = function(){};
         static Protobuf: any;
         static currentServer: string = '';
         static LogFactory: { [s: string]: any } = {};
@@ -16,10 +18,15 @@ module RongIMLib {
         private static _instance: RongIMClient;
         static bridge: any;
         static userStatusObserver: RongObserver = null;
-        static sdkver: string = '2.5.0';
+        static sdkver: string = '2.5.1';
         static otherDeviceLoginCount: number = 0;
         static serverStore: any = { index: 0 };
         static isFirstConnect: boolean = true;
+        static roomInfo: any = {
+            users: {},
+            token: ''
+        };
+        static isJoinedRTCRoom: boolean = false;
         static getInstance(): RongIMClient {
             if (!RongIMClient._instance) {
                 throw new Error("RongIMClient is not initialized. Call .init() method first.");
@@ -142,10 +149,10 @@ module RongIMLib {
             });
 
             var navigaters = options.navigaters || [];
-            if(options.navi){
+            if (options.navi) {
                 navigaters = [options.navi];
             }
-            if(!options.navi && RongUtil.isEqual(navigaters.length, 0)){
+            if (!options.navi && RongUtil.isEqual(navigaters.length, 0)) {
                 navigaters = ['nav.cn.ronghub.com', 'nav2-cn.ronghub.com'];
             }
             RongUtil.forEach(navigaters, function (navi: string, index: number) {
@@ -160,7 +167,7 @@ module RongIMLib {
             });
 
             var _sourcePath: { [key: string]: any } = {
-                protobuf: 'cdn.ronghub.com/protobuf-2.3.5.min.js'
+                protobuf: 'cdn.ronghub.com/protobuf-2.3.6.min.js'
             };
 
             RongUtil.forEach(_sourcePath, function (path: string, key: string) {
@@ -178,7 +185,8 @@ module RongIMLib {
                 snifferTime: 2000,
                 naviTimeout: 5000,
                 navigaters: navigaters,
-                maxNaviRetry: 10
+                maxNaviRetry: 10,
+                isNaviJSONP: false
             };
 
             delete options.navigaters;
@@ -268,7 +276,9 @@ module RongIMLib {
                 SuspendMessage: { objectName: "RC:CsSp", msgTag: new MessageTag(false, false) },//主动发送
                 TerminateMessage: { objectName: "RC:CsEnd", msgTag: new MessageTag(false, false) },
                 CustomerStatusUpdateMessage: { objectName: "RC:CsUpdate", msgTag: new MessageTag(false, false) },
-                ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) }
+                ReadReceiptMessage: { objectName: "RC:ReadNtf", msgTag: new MessageTag(false, false) },
+
+                RCCombineMessage: { objectName: "RC:CombineMsg", msgTag: new MessageTag(true, true) }
             };
 
             RongIMClient.MessageParams["AcceptMessage"] = { objectName: "RC:VCAccept", msgTag: new RongIMLib.MessageTag(false, false) };
@@ -322,7 +332,8 @@ module RongIMLib {
                 PublicServiceMultiRichContentMessage: "PublicServiceMultiRichContentMessage",
                 PublicServiceCommandMessage: "PublicServiceCommandMessage",
                 RecallCommandMessage: "RecallCommandMessage",
-                ReadReceiptMessage: "ReadReceiptMessage"
+                ReadReceiptMessage: "ReadReceiptMessage",
+                RCCombineMessage: "RCCombineMessage"
             };
 
             RongIMClient.LogFactory = {
@@ -790,6 +801,76 @@ module RongIMLib {
                 }
             };
 
+            var handler = function (message: any, uris: any, callback: any) {
+                var userId = message.senderUserId;
+                var _uris = RongIMClient.roomInfo.users[userId].uris || '[]';
+                if(RongUtil.isString(_uris)){
+                    _uris = JSON.parse(_uris);
+                }
+                var tUris = JSON.parse(JSON.stringify(_uris));
+                RongUtil.forEach(tUris, function (_uri: any, index: number) {
+                    RongUtil.forEach(uris, function (uri: any) {
+                        if (uri.uri == _uri.uri) {
+                            callback(_uri, uri, _uris, index);
+                        }
+                    });
+                });
+                RongIMClient.roomInfo.users[userId].uris = JSON.stringify(_uris);
+            };
+            var RTCMessage: { [s: string]: any } = {
+                RTCPublishResourceMessage: function (message: any, uris: any) {
+                    var userId = message.senderUserId;
+                    var user = RongIMClient.roomInfo.users[userId];
+                    if(!user){
+                        user = {};
+                        RongIMClient.roomInfo.users[userId] = {};
+                    }
+                    var _uris = user.uris || '[]';
+                    if(RongUtil.isString(_uris)){
+                        _uris = JSON.parse(_uris);
+                    }
+                    _uris = _uris.concat(uris);
+                    RongIMClient.roomInfo.users[userId].uris = JSON.stringify(_uris);
+                },
+                RTCUnpublishResourceMessage: function (message: any, uris: any) {
+                    handler(message, uris, function (_uri: any, uri: any, _uris: any, index:number) {
+                        _uris.splice(index, 1);
+                    });
+                },
+                RTCModifyResourceMessage: function (message: any, uris: any) {
+                    handler(message, uris, function (_uri: any, uri: any) {
+                        _uri.state = uri.state;
+                    });
+                },
+                RTCUserChangeMessage: function (message: any) {
+                    var content = message.content;
+                    var users = content.users;
+                    var UserState = {
+                        JOINED: 0,
+                        LEFT: 1,
+                        OFFLINE: 2
+                    };
+                    RongUtil.forEach(users, function (user: any) {
+                        var state = user.state;
+                        var userId = user.userId;
+                        switch (+state) {
+                            case UserState.JOINED:
+                                RongIMClient.roomInfo.users[userId] = {};
+                                break;
+                            case UserState.LEFT:
+                            case UserState.OFFLINE:
+                                delete RongIMClient.roomInfo.users[userId];
+                                break;
+                        }
+                    });
+                }
+            };
+            RongIMClient.RTCInnerListener = function (message: any) {
+                var func = RTCMessage[message.messageType] || function () { };
+                var content = message.content;
+                var uris = content.uris;
+                func(message, uris);
+            };
             return sdkInfo;
         };
 
@@ -2318,6 +2399,9 @@ module RongIMLib {
         static messageWatch(watcher: any) {
             RongIMClient.RTCListener = watcher;
         }
+        static messageSignalWatch(watcher: any){
+            RongIMClient.RTCSignalLisener = watcher;
+        }
         /* 
             var data = {
                 key1: 123,
@@ -2361,12 +2445,32 @@ module RongIMLib {
 
         joinRTCRoom(room: Room, callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["object", "object"], "joinRTCRoom", false, arguments);
-            RongIMClient._dataAccessProvider.joinRTCRoom(room, callback);
+            if(RongIMClient.isJoinedRTCRoom){
+                return callback.onSuccess(RongIMClient.roomInfo);
+            }
+            RongIMClient._dataAccessProvider.joinRTCRoom(room, {
+                onSuccess: function (result) {
+                    RongIMClient.roomInfo = result;
+                    RongIMClient.isJoinedRTCRoom = true;
+                    callback.onSuccess(result);
+                },
+                onError: callback.onError
+            });
         }
 
         quitRTCRoom(room: Room, callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["object", "object"], "quitRTCRoom", false, arguments);
-            RongIMClient._dataAccessProvider.quitRTCRoom(room, callback);
+            RongIMClient.isJoinedRTCRoom = false;
+            RongIMClient._dataAccessProvider.quitRTCRoom(room, {
+                onSuccess: function () {
+                    RongIMClient.roomInfo = {
+                        users: {},
+                        token: ''
+                    };
+                    callback.onSuccess(true);
+                },
+                onError: callback.onError
+            });
         }
         RTCPing(room: Room, callback: ResultCallback<boolean>) {
             CheckParam.getInstance().check(["object", "object"], "RTCPing", false, arguments);
@@ -2396,6 +2500,13 @@ module RongIMLib {
             CheckParam.getInstance().check(["string", "array", "boolean", "object", "global|object|null|undefined"], "removeRTCRoomData", false, arguments);
             RongIMClient._dataAccessProvider.removeRTCRoomData(roomId, keys, isInner, callback, message);
         }
+        setRTCOutData(roomId: string, data: any, type: number, callback: ResultCallback<boolean>, message?: any) {
+            RongIMClient._dataAccessProvider.setRTCOutData(roomId, data, type, callback, message);
+        }
+        // 信令 SDK 新增
+        getRTCOutData(roomId: string, userIds: string[], callback: ResultCallback<any>) {
+            RongIMClient._dataAccessProvider.getRTCOutData(roomId, userIds, callback);
+        }
         getNavi() {
             return RongIMClient._dataAccessProvider.getNavi();
         }
@@ -2403,11 +2514,20 @@ module RongIMLib {
             CheckParam.getInstance().check(["object", "object"], "getRTCToken", false, arguments);
             return RongIMClient._dataAccessProvider.getRTCToken(room, callback);
         }
+        setRTCState(room: any, content: any, callback: ResultCallback<any>) {
+            CheckParam.getInstance().check(["object", "object", "object"], "setRTCState", false, arguments);
+            return RongIMClient._dataAccessProvider.setRTCState(room, content, callback);
+        }
         getAppInfo() {
             var appKey = RongIMClient._memoryStore.appKey;
             return {
                 appKey: appKey
             };
+        }
+        getSDKInfo() {
+            return {
+                version: RongIMClient.sdkver
+            }
         }
         // RTC end
     }

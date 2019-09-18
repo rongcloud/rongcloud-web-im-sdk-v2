@@ -81,6 +81,11 @@ module RongIMLib {
         WEBSOCKET_UNAVAILABLE = 7,
 
         /**
+         * websocket 报错
+         */
+        WEBSOCKET_ERROR = 8,
+
+        /**
          * 网络不可用。
          */
         NETWORK_UNAVAILABLE = 3,
@@ -646,6 +651,8 @@ module RongIMLib {
         MEDIA_AUDIO = 1,
 
         MEDIA_VEDIO = 2,
+
+        MEDIA_VIDEO = 2,
     }
 
     export enum MediaType {

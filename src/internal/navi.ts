@@ -82,14 +82,21 @@ module RongIMLib {
                 }
             }
             Navigation.clear();
+
+            var context = this;
+
             var StatusEvent = Channel._ConnectionStatusListener;
 
-            var depend = RongIMClient._memoryStore.depend
+            var depend = RongIMClient._memoryStore.depend;
             var navigaters = depend.navigaters;
             var naviTimeout = depend.naviTimeout;
             var maxNaviRetry = depend.maxNaviRetry;
+            var isNaviJSONP = depend.isNaviJSONP;
 
-            var context = this;
+            var isSupportRequestHeaders = RongIMLib.RongUtil.isSupportRequestHeaders();
+            var isRequestJSONP = !isSupportRequestHeaders || isNaviJSONP;
+            var requestFunc = isRequestJSONP ? context.requestJSONP : context.request;
+
             var timer = new Timer({
                 timeout: naviTimeout
             });
@@ -136,7 +143,7 @@ module RongIMLib {
                     consume();
                 };
                 StatusEvent.onChanged(ConnectionStatus.REQUEST_NAVI);
-                var xhr = context.request(navi, appId, token, success, error);
+                var xhr = requestFunc.call(context, navi, appId, token, success, error);
                 timer.resume(function () {
                     StatusEvent.onChanged(ConnectionStatus.RESPONSE_NAVI_TIMEOUT);
                     xhr.abort();
@@ -145,25 +152,30 @@ module RongIMLib {
             };
             consume();
         }
-        request(navi: string, appId: string, token: string, success: Function, error: Function): any {
+        getPath(navi: string, appId: string, token: string, callbackName: string) {
             var depend = RongIMClient._memoryStore.depend;
             var path = (depend.isPolling ? 'cometnavi' : 'navi');
             token = encodeURIComponent(token);
             var sdkver = RongIMClient.sdkver;
             var random = RongUtil.getTimestamp();
-            var tpl = '{navi}/{path}.js?appId={appId}&token={token}&callBack=null&v={sdkver}&r={random}';
+            var tpl = '{navi}/{path}.js?appId={appId}&token={token}&callBack={callback}&v={sdkver}&r={random}';
             var url = RongUtil.tplEngine(tpl, {
                 navi: navi,
                 path: path,
                 appId: appId,
                 token: token,
                 sdkver: sdkver,
-                random: random
+                random: random,
+                callback: callbackName
             });
+            return url;
+        }
+        request(navi: string, appId: string, token: string, success: Function, error: Function): any {
+            var url = this.getPath(navi, appId, token, 'getServerEndpoint');
             return RongUtil.request({
                 url: url,
                 success: function (result: string) {
-                    result = result.replace('null(', '').replace(');', '');
+                    result = result.replace('getServerEndpoint(', '').replace(');', '');
                     // 兼容私有云无分号
                     var lastIndex = result.lastIndexOf(')');
                     var maxIndex = result.length - 1;
@@ -180,6 +192,25 @@ module RongIMLib {
                     }
                 }
             });
+        }
+        requestJSONP(navi: string, appId: string, token: string, success: Function, error: Function): any {
+            var callbackName = 'getServerEndpoint';
+            window.getServerEndpoint = function (result: any) {
+                var code = result.code;
+                if (code !== 200) {
+                    return error(RongIMLib.ConnectionState.TOKEN_INCORRECT);
+                }
+                success(result);
+            };
+
+            var url = this.getPath(navi, appId, token, callbackName);
+
+            var xss = document.createElement('script');
+            xss.src = url;
+            document.body.appendChild(xss);
+            xss.onerror = function () {
+                error(RongIMLib.ConnectionState.TOKEN_INCORRECT);
+            };
         }
     }
 }

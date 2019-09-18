@@ -31,7 +31,7 @@ module RongIMLib {
         private requestFactory(url: string, method: string, multipart?: boolean) {
             var reqest = this.XmlHttpRequest();
             if (multipart) { reqest.multipart = true; }
-            reqest.timeout = 60000;
+            // reqest.timeout = 60000;
             reqest.open(method || "GET", RongIMClient._memoryStore.depend.protocol + url);
             if (method == "POST" && "setRequestHeader" in reqest) {
                 reqest.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
@@ -41,8 +41,10 @@ module RongIMLib {
         private getRequest(url: string, isconnect?: boolean) {
             var me = this;
             me.xhr = this.requestFactory(url + "&pid=" + encodeURIComponent(me.pid), "GET");
+            var timer = new RongIMLib.Timer({ timeout: 45000 });
             if ("onload" in me.xhr) {
                 me.xhr.onload = function() {
+                    timer.pause();
                     me.xhr.onload = me.empty;
                     if (this.responseText == "lost params") {
                         me.onError();
@@ -51,10 +53,12 @@ module RongIMLib {
                     }
                 };
                 me.xhr.onerror = function() {
+                    timer.pause();
                     me.disconnect();
                 };
             } else {
                 me.xhr.onreadystatechange = function() {
+                    timer.pause();
                     if (me.xhr.readyState == 4) {
                         me.xhr.onreadystatechange = me.empty;
                         if (/^(200|202)$/.test(me.xhr.status)) {
@@ -68,6 +72,9 @@ module RongIMLib {
                     }
                 };
             }
+            timer.resume(function () {
+                me.onError();
+            });
             me.xhr.send();
         }
         /**
@@ -179,7 +186,8 @@ module RongIMLib {
             RongIMLib.RongIMClient._storageProvider.removeItem(Navigation.Endpoint.userId + "msgId");
             this.onClose();
             this.connected = false;
-            this.socket.fire("disconnect");
+            var code = RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE;
+            this.socket.fire("disconnect", code);
         }
 
         close(){
