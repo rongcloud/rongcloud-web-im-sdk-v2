@@ -220,9 +220,6 @@ module RongIMLib {
 
     export class RongUtil {
         static noop() { }
-        static noopCallback(content: any, callback: any) {
-            callback(content);
-        }
         static isEmpty(obj: any): boolean {
             var empty: boolean = true;
             for (var key in obj) {
@@ -334,6 +331,13 @@ module RongIMLib {
                 }
             };
             var isXHR = (typeof XMLHttpRequest == 'function');
+            if(window.navigator) {
+                var browserAgent = window.navigator.userAgent.toLowerCase();
+                var isIPhone = browserAgent.indexOf('iphone') > -1;
+                if (isIPhone && isXHR == false) {
+                    isXHR = (typeof XMLHttpRequest == 'object')
+                }
+            }
             var isXDR = (typeof XDomainRequest == 'function');
             var key = isXHR ? 'XMLHttpRequest' : isXDR ? 'XDomainRequest' : 'ActiveXObject'
             return item[key]();

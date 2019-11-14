@@ -94,7 +94,7 @@ module RongIMLib {
                 };
             };
             var connectMap: { [s: string]: any } = {
-                ws: function () {
+                wsFromGet: function () {
                     // 所有链接计算器，超过 15 秒后认为所有 CMP 地址均不可用
                     var totalTimer = new Timer({
                         timeout: 1 * 1000 * 15
@@ -176,6 +176,68 @@ module RongIMLib {
                         that.socket.fire("StatusChanged", ConnectionStatus.NETWORK_UNAVAILABLE);
                     });
                 },
+                wsFromEl: function () {
+                    var totalTimer = new RongIMLib.Timer({
+                        timeout: 1 * 1000 * 15
+                    });
+                    var timers: Array<any> = [];
+                    var elements: Array<any> = [];
+                    var isFinished = false;
+                    var clearHandler = function () {
+                        for (var i = 0; i < timers.length; i++) {
+                            var timer = timers[i];
+                            clearTimeout(timer);
+                        }
+                        for (var i = 0; i < elements.length; i++) {
+                            var el = elements[i];
+                            document.body.removeChild(el);
+                        }
+                    };
+                    var request = function (config: any, callback: any) {
+                        var url = config.url;
+                        var time = config.time;
+                        if (isFinished) {
+                            return;
+                        }
+                        var timer = setTimeout(function () {
+                            var el = document.createElement('script');
+                            el.src = url;
+                            document.body.appendChild(el);
+                            el.onerror = function () {
+                                if (isFinished) {
+                                    return;
+                                }
+                                clearHandler();
+                                isFinished = true;
+                                totalTimer.pause();
+                                var url = el.src;
+                                callback(url);
+                            }
+                            elements.push(el);
+                        }, time);
+                        timers.push(timer);
+                    };
+                    var snifferCallback = function (url: string) {
+                        var reg = /(http|https):\/\/([^\/]+)/i;
+                        var host = url.match(reg)[2];
+                        startConnect(host);
+                    };
+                    var snifferTpl = '//{server}/{path}';
+                    for (var i = 0; i < servers.length; i++) {
+                        var server = RongUtil.tplEngine(snifferTpl, {
+                            server: servers[i],
+                            path: i
+                        });
+                        request({
+                            url: server,
+                            time: i * 1000
+                        }, snifferCallback);
+                    }
+                    totalTimer.resume(function () {
+                        clearHandler();
+                        that.socket.fire("StatusChanged", ConnectionStatus.NETWORK_UNAVAILABLE);
+                    });
+                },
                 comet: function () {
                     var host = servers[0];
                     startConnect(host);
@@ -183,9 +245,13 @@ module RongIMLib {
             };
 
             var isPolling = depend.isPolling;
-
-            var type = isPolling ? 'comet' : 'ws';
-            connectMap[type]();
+            var isWSPingJSONP = depend.isWSPingJSONP;
+            if (isPolling) {
+                connectMap['comet']();
+            } else {
+                var connectType = isWSPingJSONP ? 'wsFromEl' : 'wsFromGet';
+                connectMap[connectType]();
+            }
 
             //注册状态改变观察者
             var StatusEvent = Channel._ConnectionStatusListener;
@@ -694,7 +760,9 @@ module RongIMLib {
                 //解析完成的消息对象
                 message: any,
                 //会话对象
-                con: Conversation;
+                con: Conversation,
+                // 是否为直发消息
+                isStraightMsg:boolean = false;
             if (msg._name != "PublishMessage") {
                 entity = msg;
                 RongIMClient._storageProvider.setItem(this._client.userId, MessageUtil.int64ToTimestamp(entity.dataTime));
@@ -704,6 +772,7 @@ module RongIMLib {
                     this._client.syncTime(entity.type, MessageUtil.int64ToTimestamp(entity.time), entity.chrmId);
                     return;
                 } else if (msg.getTopic() == "s_msg") {
+                    isStraightMsg = true;
                     entity = RongIMClient.Protobuf.DownStreamMessage.decode(msg.getData());
                     var timestamp = MessageUtil.int64ToTimestamp(entity.dataTime);
                     RongIMClient._storageProvider.setItem(this._client.userId, timestamp);
@@ -745,7 +814,7 @@ module RongIMLib {
             }
             var isPullFinished = RongIMClient._memoryStore.isPullFinished;
             // PullMsg 没有拉取完成，抛弃所有直发在线消息，抛弃的消息会在 PullMsg 中返回
-            if (!isPullFinished && !offlineMsg) {
+            if (!isPullFinished && !offlineMsg && isStraightMsg) {
                 return;
             }
             //解析实体对象为消息对象。

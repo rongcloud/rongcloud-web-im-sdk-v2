@@ -13,7 +13,6 @@ module RongIMLib {
         static isNotPullMsg: boolean = false;
         static _storageProvider: StorageProvider;
         static _dataAccessProvider: DataAccessProvider;
-        static _messageEncryptionListener: OnMessageEncryptionListener;
         static _voipProvider: VoIPProvider;
         private static _instance: RongIMClient;
         static bridge: any;
@@ -186,7 +185,8 @@ module RongIMLib {
                 naviTimeout: 5000,
                 navigaters: navigaters,
                 maxNaviRetry: 10,
-                isNaviJSONP: false
+                isNaviJSONP: false,
+                isWSPingJSONP: false
             };
 
             delete options.navigaters;
@@ -974,12 +974,6 @@ module RongIMLib {
                 RongIMClient._memoryStore.listenerList.push(listener);
             }
         }
-
-        static setMessageEncryptionListener(listener: OnMessageEncryptionListener): void {
-            if (listener && listener.decrypt && listener.encrypt && listener.batchEncrypt && listener.batchDecrypt) {
-                RongIMClient._messageEncryptionListener = listener;
-            }
-        }
         /**
          * 清理所有连接相关的变量
          */
@@ -1674,67 +1668,6 @@ module RongIMLib {
             });
 
         }
-        batchPottingConversation(tempConverList: Array<any>, callback: any): void {
-            var self = this, converList: Array<any> = [], entityList: Array<any> = [];
-            for (var i = 0; i < tempConverList.length; i++) {
-                var tempConver = tempConverList[i], isUseReplace: boolean = false;
-                var conver = RongIMClient._dataAccessProvider.getConversation(tempConver.type, tempConver.userId, { onSuccess: function () {}, onError: function(){} });
-                tempConver.msg.conversationType = tempConver.type;
-                tempConver.msg.targetId = tempConver.userId;
-                if (!conver) {
-                    conver = new Conversation();
-                } else {
-                    isUseReplace = true;
-                }
-                conver.conversationType = tempConver.type;
-                conver.targetId = tempConver.userId;
-                // conver.latestMessage = MessageUtil.messageParser(tempConver.msg);
-                // conver.latestMessageId = conver.latestMessage.messageId;
-                // conver.objectName = conver.latestMessage.objectName;
-                // conver.receivedStatus = conver.latestMessage.receivedStatus;
-                // conver.receivedTime = conver.latestMessage.receiveTime;
-                // conver.sentStatus = conver.latestMessage.sentStatus;
-                // conver.sentTime = conver.latestMessage.sentTime;
-                var mentioneds = RongIMClient._storageProvider.getItem("mentioneds_" + Bridge._client.userId + '_' + conver.conversationType + '_' + conver.targetId);
-                if (mentioneds) {
-                    var info = JSON.parse(mentioneds);
-                    conver.mentionedMsg = info[tempConver.type + "_" + tempConver.userId];
-                }
-                if (!isUseReplace) {
-                    if (RongUtil.supportLocalStorage()) {
-                        var count = RongIMClient._storageProvider.getItem("cu" + Bridge._client.userId + tempConver.type + tempConver.userId);
-                        conver.unreadMessageCount = Number(count);
-                    } else {
-                        conver.unreadMessageCount = 0;
-                    }
-                }
-                if (conver.conversationType == ConversationType.DISCUSSION) {
-                    self.getDiscussion(tempConver.userId, {
-                        onSuccess: function (info: Discussion) {
-                            conver.conversationTitle = info.name;
-                        },
-                        onError: function (error: ErrorCode) { }
-                    });
-                }
-                converList.push(conver);
-                entityList.push(tempConver.msg);
-            }
-            MessageUtil.batchMessageParser(entityList, function (messageList:Array<any>) {
-                for (var i = 0, len = converList.length; i < len; i++) {
-                    var conver = converList[i], message = messageList[i];
-                    conver.latestMessage = message;
-                    conver.latestMessageId = message.messageId;
-                    conver.objectName = message.objectName;
-                    conver.receivedStatus = message.receivedStatus;
-                    conver.receivedTime = message.receiveTime;
-                    conver.sentStatus = message.sentStatus;
-                    conver.sentTime = message.sentTime;
-                    RongIMClient._dataAccessProvider.addConversation(conver, <ResultCallback<boolean>>{ onSuccess: function (data: boolean) { } });
-                }
-                callback(converList);
-            });
-        }
-
         /**
          * [pottingConversation 组装会话列表]
          * @param {any} tempConver [临时会话]

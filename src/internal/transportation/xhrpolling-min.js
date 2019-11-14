@@ -281,6 +281,9 @@ var Polling = {
             this.setUserId = function(b){
                 a.userId = b;
             };
+            this.setConfigFlag = function (b) {
+                a.configFlag = b;
+            };
             this.setAppData = function(b){
                 a.appData = b;
             };
