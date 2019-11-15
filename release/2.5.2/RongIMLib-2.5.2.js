@@ -4418,7 +4418,7 @@ var RongIMLib;
         RongIMClient._memoryStore = { listenerList: [], isPullFinished: false, syncMsgQueue: [] };
         RongIMClient.isNotPullMsg = false;
         RongIMClient.userStatusObserver = null;
-        RongIMClient.sdkver = '2.5.1';
+        RongIMClient.sdkver = '2.5.2';
         RongIMClient.otherDeviceLoginCount = 0;
         RongIMClient.serverStore = { index: 0 };
         RongIMClient.isFirstConnect = true;
