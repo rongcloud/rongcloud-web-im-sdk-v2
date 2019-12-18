@@ -1,6 +1,8 @@
 module RongIMLib {
     export interface DataAccessProvider {
 
+        Conversation: RCConversation;
+
         init(appKey: string, config?: any): void;
 
         connect(token: string, callback: ConnectCallback, userId?: string, serverConf?: any): void;
@@ -16,6 +18,10 @@ module RongIMLib {
         setOnReceiveMessageListener(listener: OnReceiveMessageListener): void;
 
         clearListeners(): void;
+
+        getPullSetting(callback: ResultCallback<any>): void;
+
+        setOfflineMessageDuration(duration: number, callback: ResultCallback<boolean>): void;
 
         sendReceiptResponse(conversationType: ConversationType, targetId: string, sendCallback: SendMessageCallback): void;
 
@@ -57,6 +63,25 @@ module RongIMLib {
 
         quitChatRoom(chatroomId: string, callback: OperationCallback): void;
 
+        // 设置聊天室自定义属性
+        setChatroomEntry(chatroomId: string, chatroomEntry: ChatroomEntry, callback: ResultCallback<any>): void;
+
+        forceSetChatroomEntry(chatroomId: string, chatroomEntry: ChatroomEntry, callback: ResultCallback<any>): void;
+
+        // 获取聊天室自定义属性
+        getChatroomEntry(chatroomId: string, key: string, callback: ResultCallback<any>): void;
+
+        // 获取聊天室所有自定义属性
+        getAllChatroomEntries(chatroomId: string, callback: ResultCallback<any>): void;
+
+        // 获取聊天室自定义属性
+        removeChatroomEntry(chatroomId: string, chatroomEntry: ChatroomEntry, callback: ResultCallback<any>): void;
+
+        forceRemoveChatroomEntry(chatroomId: string, chatroomEntry: ChatroomEntry, callback: ResultCallback<any>): void;
+
+        // 获取聊天室自定义属性
+        pullChatroomEntry(chatroomId: string, time: number, callback: ResultCallback<any>): void;
+
         addToBlacklist(userId: string, callback: OperationCallback): void;
 
         getBlacklist(callback: GetBlacklistCallback): void;
@@ -81,7 +106,7 @@ module RongIMLib {
 
         addMessage(conversationType: ConversationType, targetId: string, message: Message, callback?: ResultCallback<Message>): void;
 
-        removeMessage(conversationType: ConversationType, targetId: string, delMsgs: DeleteMessage[], callback: ResultCallback<boolean>): void;
+        removeMessage(conversationType: ConversationType, targetId: string, messages: Array<Message>, callback: ResultCallback<boolean>): void;
 
         removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>): void;
 
@@ -104,6 +129,8 @@ module RongIMLib {
         clearHistoryMessages(params: any, callback: ResultCallback<boolean>): void;
 
         clearRemoteHistoryMessages(params: any, callback: ResultCallback<boolean>): void;
+
+        deleteRemoteMessages(conversationType: ConversationType, targetId: string, messages: Array<Message>, callback: ResultCallback<boolean>): void;
 
         getHistoryMessages(conversationType: ConversationType, targetId: string, timestamp: number, count: number, callback: GetHistoryMessagesCallback, objectname?: string, directrion?: boolean): void;
 

@@ -1,9 +1,13 @@
 module RongIMLib {
     export class SocketTransportation implements Transportation {
+        // 最短链接时长(若 5000ms 内, ws 自动断开, 此 ws 地址置为不可用)
+        static MinConnectTime: number = 5000;
         //连接URL
         url: string;
         //连接状态 true:已连接 false:未连接
         connected: boolean = false;
+        //链接成功时间戳
+        connectedTime: number;
         //是否关闭： true:已关闭 false：未关闭
         isClose: boolean = false;
         //WebSocketd对象
@@ -82,6 +86,11 @@ module RongIMLib {
 
             RongIMLib.Bridge._client.clearHeartbeat();
             if (ev.code == 1006 && !this._status) {
+                var currentTime = new Date().getTime();
+                if (currentTime - me.connectedTime <= SocketTransportation.MinConnectTime) {
+                    var host = RongUtil.getUrlHost(me.url);
+                    RongIMClient.invalidWsUrls.push(host);
+                }
                 me._socket.fire("StatusChanged", RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE);
             }
             else {
@@ -107,6 +116,7 @@ module RongIMLib {
                 //通道可以用后，调用发送队列方法，把所有等得发送的消息发出
                 self.doQueue();
                 self._socket.fire("connect");
+                self.connectedTime = new Date().getTime();
             };
             self.socket.onmessage = function(ev) {
                 //判断数据是不是字符串，如果是字符串那么就是flash传过来的。

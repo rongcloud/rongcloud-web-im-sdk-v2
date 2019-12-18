@@ -1,6 +1,16 @@
 module RongIMLib {
     export class VCDataProvider implements DataAccessProvider {
 
+        Conversation: RCConversation = {
+            watcher: new Observer(),
+            watch: function (_watcher: any) {
+            },
+            unwatch: function (_watcher: any) {
+            },
+            _notify: function (conversationList: Array<any>) {
+            }
+        };
+
         // C++ 需要的 SDK 版本号
         version: string = '2.8.27';
 
@@ -332,6 +342,24 @@ module RongIMLib {
                 });
         }
 
+        setChatroomEntry(chatroomId: string, chatroomEntry: ChatroomEntry, callback: ResultCallback<any>): void {
+        }
+        forceSetChatroomEntry(chatroomId: string, chatroomEntry: ChatroomEntry, callback: ResultCallback<any>): void {
+        }
+
+        getChatroomEntry(chatroomId: string, key: string, callback: ResultCallback<any>): void {
+        }
+
+        getAllChatroomEntries(chatroomId: string, callback: ResultCallback<any>): void {
+        }
+
+        removeChatroomEntry(chatroomId: string, chatroomEntry: ChatroomEntry, callback: ResultCallback<any>): void {
+        }
+        forceRemoveChatroomEntry(chatroomId: string, chatroomEntry: ChatroomEntry, callback: ResultCallback<any>): void {
+        }
+        pullChatroomEntry(chatroomId: string, time: number, callback: ResultCallback<any>) {
+        }
+
         addToBlacklist(userId: string, callback: OperationCallback): void {
             this.useConsole && console.log("addToBlacklist");
             this.addon.addToBlacklist(userId,
@@ -491,8 +519,12 @@ module RongIMLib {
                 }, direction), me = this;
         }
 
-        removeMessage(conversationType: ConversationType, targetId: string, delMsgs: DeleteMessage[], callback: ResultCallback<boolean>): void {
+        removeMessage(conversationType: ConversationType, targetId: string, messages: Array<Message>, callback: ResultCallback<boolean>): void {
 
+        }
+
+        deleteRemoteMessages(conversationType: ConversationType, targetId: string, messages: Array<Message>, callback: ResultCallback<boolean>) {
+            
         }
 
         removeLocalMessage(conversationType: ConversationType, targetId: string, timestamps: number[], callback: ResultCallback<boolean>): void {
@@ -749,6 +781,14 @@ module RongIMLib {
                     callback.onError(errorCode);
                 }
             );
+        }
+
+        getPullSetting(callback: ResultCallback<any>) {
+            this.useConsole && console.log("getPullSetting");
+        }
+
+        setOfflineMessageDuration(duration: number, callback: ResultCallback<boolean>): void {
+            this.useConsole && console.log("setOfflineMessageDuration");
         }
 
         searchConversationByContent(keyword: string, callback: ResultCallback<Conversation[]>, conversationTypes?: ConversationType[]): void {

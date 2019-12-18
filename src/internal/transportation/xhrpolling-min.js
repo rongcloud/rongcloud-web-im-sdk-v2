@@ -1005,6 +1005,106 @@ var Polling = {
             this.setRtcToken = function (b) {
                 a.rtcToken = b;
             }
+        },
+        /**
+         * 聊天室 KV 存储
+         */
+
+        ChrmNotifyMsg: function () {
+            var a = {};
+            this.toArrayBuffer = function () {
+                return a;
+            };
+            this.setType = function (b) {
+                a.type = b;
+            };
+            this.setTime = function (b) {
+                a.time = b;
+            };
+            this.setChrmId = function (b) {
+                a.chrmId = b;
+            };
+        },
+        ChrmKVEntity: function () {
+            var a = {};
+            this.toArrayBuffer = function () {
+                return a;
+            };
+            this.setKey = function (key) {
+                a.key = key;
+            };
+            this.setValue = function (value) {
+                a.value = value;
+            };
+            this.setStatus = function (b) {
+                a.status = b;
+            };
+            this.setTimestamp = function (b) {
+                a.timestamp = b;
+            };
+            this.setUid = function (b) {
+                a.uid = b;
+            };
+        },
+        SetChrmKV: function () {
+            var a = {};
+            this.toArrayBuffer = function () {
+                return a;
+            };
+            this.setEntry = function (b) {
+                a.entry = b;
+            };
+            this.setNotification = function (b) {
+                a.notification = b.toArrayBuffer();
+            };
+            this.setBNotify = function (b) {
+                a.bNotify = b;
+            };
+            this.setType = function (b) {
+                a.type = b;
+            };
+        },
+        ChrmKVOutput: function () {
+            var a = {};
+            this.toArrayBuffer = function () {
+                return a;
+            };
+            this.setEntries = function (b) {
+                this.entries = b;
+            };
+            this.setBFullUpdate = function (b) {
+                this.bFullUpdate = b;
+            };
+            this.setSyncTime = function (b) {
+                this.syncTime = b;
+            };
+        },
+        QueryChrmKV: function () {
+            var a = {};
+            this.toArrayBuffer = function () {
+                return a;
+            };
+            this.setTimestamp = function (b) {
+                a.timestamp = b;
+            };
+        },
+        DeleteChrmKV: function () {
+            var a = {};
+            this.toArrayBuffer = function () {
+                return a;
+            };
+            this.setEntry = function (b) {
+                a.entry = b;
+            };
+            this.setBNotify = function (b) {
+                a.bNotify = b;
+            };
+            this.setNotification = function (b) {
+                a.notification = b;
+            };
+            this.setType = function (b) {
+                a.type = b;
+            };
         }
     };
     for (var f in Polling) {

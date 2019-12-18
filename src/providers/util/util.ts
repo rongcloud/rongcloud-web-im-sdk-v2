@@ -218,15 +218,53 @@ module RongIMLib {
         }
     }
 
+    function Prosumer() {
+        let data: Array<any> = [], isConsuming: boolean = false;
+        this.produce = (res: any) => {
+            data.push(res);
+        };
+        this.consume = (callback: any, finished: any) => {
+            if (isConsuming) {
+                return;
+            }
+            isConsuming = true;
+            let next = () => {
+                let res = data.shift();
+                if (RongUtil.isUndefined(res)) {
+                    isConsuming = false;
+                    finished && finished();
+                    return;
+                }
+                callback(res, next);
+            };
+            next();
+        };
+        this.isExeuting = function () {
+            return isConsuming;
+        };
+    }
+
     export class RongUtil {
         static noop() { }
         static isEmpty(obj: any): boolean {
-            var empty: boolean = true;
-            for (var key in obj) {
-                empty = false;
-                break;
+            var result = true;
+            if (RongUtil.isObject(obj)) {
+                RongUtil.forEach(obj, () => {
+                    result = false;
+                });
             }
-            return empty;
+            if (RongUtil.isString(obj) || RongUtil.isArray(obj)) {
+                return obj.length === 0;
+            }
+            if (RongUtil.isNumber(obj)) {
+                return obj === 0;
+            }
+            return result;
+        }
+        static isLengthLimit(str: string, maxLen: number, minLen?: number) {
+            minLen = minLen || 0;
+            var strLen = str.length;
+            return strLen <= maxLen && strLen >= minLen;
         }
         static MD5(str: string, key?: string, raw?: string) {
             return md5(str, key, raw);
@@ -386,6 +424,11 @@ module RongIMLib {
             return RongUtil.stringFormat(tmpl, [protocol, path]);
         };
 
+        static getUrlHost(url: any): any {
+            let index = RongUtil.indexOf(url, '/');
+            return url.substring(0, index);
+        }
+
         static supportLocalStorage(): boolean {
             var support = false;
             if (typeof localStorage == 'object') {
@@ -467,6 +510,26 @@ module RongIMLib {
             }
             return true;
         }
+        static Prosumer: any = Prosumer;
+        static hasValidWsUrl(urls: any): boolean {
+            try {
+                urls = JSON.parse(urls);
+            } catch(e) {
+                return false;
+            }
+            let validUrlList = RongUtil.getValidWsUrlList(urls);
+            return validUrlList.length > 0;
+        }
+        static getValidWsUrlList(urls: Array<string>) {
+            const invalidWsUrls = RongIMClient.invalidWsUrls;
+            let validUrlList: any = [];
+            RongUtil.forEach(urls, function (url:string) {
+                if (RongUtil.indexOf(invalidWsUrls, url) === -1) {
+                    validUrlList.push(url);
+                }
+            });
+            return validUrlList;
+        }
     }
     /*
         var observer = new RongObserver();
@@ -517,15 +580,43 @@ module RongIMLib {
             if (force) {
                 this.observers = [observer];
             }
-            this.observers.push(observer);
-        }
-        clear() {
-            this.observers = [];
+            if (RongUtil.isFunction(observer)) {
+                this.observers.push(observer);
+            }
         }
         emit(data: any) {
             RongUtil.forEach(this.observers, function (observer: any) {
                 observer(data);
             });
+        }
+        clear() {
+            this.observers = [];
+        }
+        checkIndexOutBound(index: number, bound: number) {
+            let isOutBound = (index > -1 && index < bound);
+            return isOutBound;
+        }
+        removeAt(index: number) {
+            let isOutBound = this.checkIndexOutBound(index, this.observers.length);
+            if (isOutBound) {
+                this.observers.splice(index, 1);
+            }
+        }
+        remove(observer: any) {
+            let me = this;
+            if (!observer) {
+                me.clear();
+                return;
+            }
+            if (!RongUtil.isFunction(observer)) {
+                return;
+            }
+            let observerList = me.observers;
+            for (let i = observerList.length - 1; i >= 0; i--) {
+                if (observer === observerList[i]) {
+                    me.removeAt(i);
+                }
+            }
         }
     }
 

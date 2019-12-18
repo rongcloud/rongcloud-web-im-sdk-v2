@@ -22,3 +22,4 @@
         global.RongIMClient = tempClient;
     }
 })(window, function(){
+// {WebStart} WebSDK 内容开始的标识, 方便小程序 SDK 定位

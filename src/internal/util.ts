@@ -39,7 +39,8 @@ var typeMapping: { [s: string]: any } = {
     "RC:RRRspMsg": "ReadReceiptResponseMessage",
     "RCJrmf:RpMsg": "JrmfRedPacketMessage",
     "RCJrmf:RpOpendMsg": "JrmfRedPacketOpenedMessage",
-    "RC:CombineMsg":"RCCombineMessage"
+    "RC:CombineMsg":"RCCombineMessage",
+    "RC:chrmKVNotiMsg": "ChrmKVNotificationMessage"
 },
     //自定义消息类型
     registerMessageTypeMapping: { [s: string]: any } = {},
@@ -206,17 +207,19 @@ module RongIMLib {
                 isUseDef = true;
             }
 
+            var IMLib: any = RongIMLib;
             //映射为具体消息对象
             if (objectName in typeMapping) {
-                var str = "new RongIMLib." + typeMapping[objectName] + "(de)";
-                message.content = eval(str);
+                var typeName = typeMapping[objectName];
+                message.content = new IMLib[typeName](de);
                 message.messageType = typeMapping[objectName];
             } else if (objectName in registerMessageTypeMapping) {
-                var str = "new RongIMLib.RongIMClient.RegisterMessage." + registerMessageTypeMapping[objectName] + "(de)";
+                var typeName = registerMessageTypeMapping[objectName];
+                var regMsg = new IMLib.RongIMClient.RegisterMessage[typeName](de);
                 if (isUseDef) {
-                    message.content = eval(str).decode(de);
+                    message.content = regMsg.decode(de);
                 } else {
-                    message.content = eval(str);
+                    message.content = regMsg;
                 }
                 message.messageType = registerMessageTypeMapping[objectName];
             } else {
@@ -325,6 +328,187 @@ module RongIMLib {
         }
     }
 
+    class ChrmKVCaches {
+        time: number = 0;
+        cache: any = {};
+        setTime(time: number) {
+            this.time = time;
+        }
+        getTime(): number {
+            return this.time;
+        }
+        setValue(kvContent: ChrmKVCacheContent) {
+            var key = kvContent.key, timestamp = kvContent.timestamp;
+            this.cache[key] = this.cache[key] || {};
+            this.cache[key] = {
+                value: kvContent.value,
+                userId: kvContent.userId,
+                isDeleted: false,
+                timestamp: timestamp
+            };
+        }
+        removeValue(kvContent: ChrmKVCacheContent) {
+            var key = kvContent.key, timestamp = kvContent.timestamp;
+            this.cache[key] = this.cache[key] || {};
+            var cache = this.cache[key];
+            this.cache[key] = RongUtil.extend(cache, {
+                isDeleted: true,
+                userId: kvContent.userId,
+                timestamp: timestamp
+            });
+        }
+        getValue(key: string): string {
+            this.cache[key] = this.cache[key] || {};
+            var cache = this.cache[key];
+            return cache.isDeleted ? null : cache.value;
+        }
+        getAllKV() {
+            var kv: any = {};
+            RongUtil.forEach(this.cache, function (item: any, key: string) {
+                if (!item.isDeleted) {
+                    kv[key] = item.value;
+                }
+            });
+            return kv;
+        }
+        getSetUserId(key: string): string {
+            this.cache[key] = this.cache[key] || {};
+            return this.cache[key].userId;
+        }
+        isKeyExisted(key: string) {
+            this.cache[key] = this.cache[key] || {};
+            var cache = this.cache[key];
+            var hasValue = !RongUtil.isEmpty(cache.value);
+            return hasValue && !cache.isDeleted;
+        }
+        clear() {
+            this.cache = {};
+        }
+    }
+
+    var chrmKVCaches: any = {};
+    var chrmKVProsumerCaches: any = {};
+    var getKVCache = (chrmId: string) => {
+        var chrmKVCache = chrmKVCaches[chrmId];
+        if (!chrmKVCache) {
+            chrmKVCache = chrmKVCaches[chrmId] = new ChrmKVCaches();
+        }
+        return chrmKVCache;
+    };
+    var getKVProsumer = (chrmId: string) => {
+        var kvProsumer = chrmKVProsumerCaches[chrmId];
+        if (!kvProsumer) {
+            kvProsumer = chrmKVProsumerCaches[chrmId] = new RongUtil.Prosumer();
+        }
+        return kvProsumer;
+    };
+
+    export class ChrmKVHandler {
+        static pull(chrmId: string, time: number) {
+            var prosumer = getKVProsumer(chrmId);
+            var event = RongIMClient._dataAccessProvider.pullChatroomEntry;
+            prosumer.produce({ event, chrmId, time });
+            prosumer.consume(function (params: any, next: any) {
+                var { event, chrmId, time } = params;
+                var kvCache = getKVCache(chrmId);
+                var currentTime = kvCache.getTime();
+                var isKVNeedUpdated = currentTime < time;
+                if (isKVNeedUpdated) {
+                    event(chrmId, currentTime, {
+                        onSuccess: function (result: any) {
+                            ChrmKVHandler.setEntries(chrmId, result);
+                            next();
+                        },
+                        onError: next
+                    });
+                } else {
+                    next();
+                }
+            });
+        }
+        static setEntries(chrmId: string, entity: any) {
+            var entries: Array<any> = entity.entries, isFullUpdate: boolean = entity.bFullUpdate, syncTime = entity.syncTime;
+            var event = isFullUpdate ? ChrmKVHandler.setFullEntries : ChrmKVHandler.setIncreEntries;
+            var kvCache = getKVCache(chrmId);
+            syncTime = MessageUtil.int64ToTimestamp(syncTime);
+            if (RongUtil.isArray(entries)) {
+                RongUtil.forEach(entries, (item: any) => {
+                    var setTime = item.timestamp;
+                    if (!RongUtil.isNumber(setTime)) {
+                        item.timestamp = MessageUtil.int64ToTimestamp(setTime);
+                    }
+                });
+            }
+            kvCache.setTime(syncTime); // 更新拉取时间
+            event(chrmId, entries); // 更新 kv 值
+        }
+        static setEntry(chrmId: string, chatroomEntry: ChatroomEntry, status: number, userId: string) {
+            var kvCache = getKVCache(chrmId);
+            var timestamp = chatroomEntry.timestamp || +new Date();
+            var isDelete = RongInnerTools.getChrmEntityByStatus(status).isDelete;
+            var eventName = isDelete ? 'removeValue' : 'setValue';
+            kvCache[eventName]({
+                key: chatroomEntry.key,
+                value: chatroomEntry.value,
+                userId: userId,
+                timestamp: timestamp
+            });
+        }
+        static setFullEntries(chrmId: string, entries: Array<any>) { // 全量更新
+            var kvCache = getKVCache(chrmId);
+            kvCache.clear();
+            RongUtil.forEach(entries, function (entity:any) {
+                entity.timestamp = MessageUtil.int64ToTimestamp(entity.timestamp);
+                kvCache.setValue({
+                    key: entity.key,
+                    value: entity.value,
+                    userId: entity.uid,
+                    timestamp: entity.timestamp
+                });
+            });
+        }
+        static setIncreEntries(chrmId: string, entries: Array<any>) {
+            var kvCache = getKVCache(chrmId);
+            var currentUserId = RongIMClient.getInstance().getCurrentUserId();
+            var optEvent = function (entity:any, isOverwrite: boolean, eventName: string) {
+                var key = entity.key, value = entity.value;
+                var isLatestedKeySetBySelf = kvCache.getSetUserId(key) === currentUserId;
+                var isKeyNotExist = !kvCache.isKeyExisted(key);
+                /*
+                    1. 需覆盖时, 不管 key 是否已存在, 都直接设置
+                    2. 不覆盖时, 必须最后一次 key 为自己设置的或此 key 还未设置过, 才能继续
+                 */
+                if (isOverwrite || isLatestedKeySetBySelf || isKeyNotExist) {
+                    kvCache[eventName]({
+                        key: key,
+                        value: value,
+                        userId: entity.uid,
+                        timestamp: entity.timestamp
+                    });
+                }
+            };
+            RongUtil.forEach(entries, function (entity: any) {
+                var entityContent = RongInnerTools.getChrmEntityByStatus(entity.status);
+                var eventName = entityContent.isDelete ? 'removeValue' : 'setValue';
+                optEvent(entity, entityContent.isOverwrite, eventName);
+            });
+        }
+        static getEntityValue(chrmId: string, key: string) {
+            var kvCache = getKVCache(chrmId);
+            return kvCache.getValue(key);
+        }
+        static getAllEntityValue(chrmId: string) {
+            var kvCache = getKVCache(chrmId);
+            return kvCache.getAllKV();
+        }
+        static isKeyValid(key: string) {
+            return /^[A-Za-z0-9_=+-]+$/.test(key);
+        }
+    }
+
+    var AutoDeleteCode = 0x0001;
+    var OverwriteCode = 0x0002;
+    var DeleteOperationCode = 0x0004;
     export class RongInnerTools {
         static convertUserStatus(entity: any): any{
             entity = RongUtil.rename(entity, {subUserId: 'userId'});
@@ -335,6 +519,124 @@ module RongIMLib {
             }
             entity.status = RongUtil.rename(us, {o: 'online', 'p': 'platform', s: 'status'});
             return entity;
+        }
+        static getChrmEntityStatus(entity: ChatroomEntry, chatroomOpt: ChatroomEntityOpt): number {
+            var status = 0;
+            // 是否自动清理
+            if (entity.isAutoDelete) {
+                status = status | AutoDeleteCode;
+            }
+            // 是否覆盖
+            if (entity.isOverwrite) {
+                status = status | OverwriteCode;
+            }
+            // 操作类型
+            switch (chatroomOpt) {
+                case ChatroomEntityOpt.DELETE:
+                    status = status | DeleteOperationCode;
+                    break;
+                default:
+                    break;
+            }
+            return status;
+        }
+        static getChrmEntityByStatus(status: number): any {
+            var isDelete = !!(status & DeleteOperationCode);
+            var entityOpt = isDelete ? ChatroomEntityOpt.DELETE : ChatroomEntityOpt.UPDATE;
+            return {
+                isAutoDelete: !!(status & AutoDeleteCode),
+                isOverwrite: !!(status & OverwriteCode),
+                entityOpt: entityOpt,
+                isDelete: isDelete
+            };
+        }
+    }
+
+    export class UnreadCountHandler {
+        static KeyTemp: string = 'cu{selfId}{type}{targetId}';
+        static ValueTemp: string = '{count}_{sentTime}';
+        static getKey(type: ConversationType|string, targetId: string): string {
+            var selfId = RongIMClient.getInstance().getCurrentUserId();
+            return RongUtil.tplEngine(UnreadCountHandler.KeyTemp, {
+                selfId,
+                type,
+                targetId
+            });
+        }
+        static getDetailByKey(key: string): any {
+            var detail = { count: 0, sentTime: 0 };
+            var value = RongIMClient._storageProvider.getItem(key) + '';
+            if (!value) {
+                return detail;
+            }
+            var unreadItems = value.split('_');
+            var hasUnderline = unreadItems.length > 1;
+            detail.count = Number(unreadItems[0]);
+            if (hasUnderline) {
+                detail.sentTime = Number(unreadItems[1]);
+            }
+            return detail;
+        }
+        static getDetail(type: ConversationType, targetId: string): any {
+            var key = UnreadCountHandler.getKey(type, targetId);
+            var detail = UnreadCountHandler.getDetailByKey(key);
+            return detail;
+        }
+        static set(type: ConversationType, id: string, count: number, sentTime?: number) {
+            var key = UnreadCountHandler.getKey(type, id);
+            var value = sentTime ? RongUtil.tplEngine(UnreadCountHandler.ValueTemp, {
+                count,
+                sentTime
+            }) : count;
+            RongIMClient._storageProvider.setItem(key, value);
+            return count;
+        }
+        static add(type: ConversationType, id: string, plusCount: number, sentTime?: number) {
+            var detail = UnreadCountHandler.getDetail(type, id),
+                count = detail.count,
+                oldSentTime = detail.sentTime;
+            if (sentTime && sentTime > oldSentTime) {
+                count = count + plusCount;
+                UnreadCountHandler.set(type, id, count, sentTime);
+            }
+            return count;
+        }
+        static get(type: ConversationType, id: string): number {
+            var detail = UnreadCountHandler.getDetail(type, id);
+            return detail.count;
+        }
+        static getAll(types?: Array<ConversationType>) {
+            var total = 0;
+            var selfId = RongIMClient.getInstance().getCurrentUserId();
+            var setTotal = (keyList: Array<string>) => {
+                RongUtil.forEach(keyList, (key: string) => {
+                    var detail = UnreadCountHandler.getDetailByKey(key);
+                    total += detail.count;
+                });
+            };
+            if (types) {
+                RongUtil.forEach(types, (type: number) => {
+                    var key = UnreadCountHandler.getKey(type, '');
+                    var unreadKeys = RongIMClient._storageProvider.getItemKeyList(key);
+                    setTotal(unreadKeys);
+                });
+            } else {
+                var key = UnreadCountHandler.getKey('', '');
+                var unreadKeys = RongIMClient._storageProvider.getItemKeyList(key);
+                setTotal(unreadKeys);
+            }
+            return total;
+        }
+        static remove(type: ConversationType, targetId: string) {
+            var key = UnreadCountHandler.getKey(type, targetId);
+            RongIMClient._storageProvider.removeItem(key);
+        }
+        static clear() {
+            var key = UnreadCountHandler.getKey('', '');
+            var keyList = RongIMClient._storageProvider.getItemKeyList(key);
+            RongUtil.forEach(keyList, (key: string) => {
+                RongIMClient._storageProvider.removeItem(key);
+            });
         }
     }
 }

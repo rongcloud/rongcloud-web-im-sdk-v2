@@ -185,9 +185,11 @@ module RongIMLib {
             RongIMClient._storageProvider.removeItem("sId" + Navigation.Endpoint.userId);
             RongIMLib.RongIMClient._storageProvider.removeItem(Navigation.Endpoint.userId + "msgId");
             this.onClose();
-            this.connected = false;
-            var code = RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE;
-            this.socket.fire("disconnect", code);
+            if (this.connected) {
+                this.connected = false;
+                var code = RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE;
+                this.socket.fire("disconnect", code);
+            }
         }
 
         close(){

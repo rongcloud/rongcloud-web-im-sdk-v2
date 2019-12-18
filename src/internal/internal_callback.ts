@@ -203,7 +203,21 @@ module RongIMLib {
                     delete this._client.reconnectObj.onSuccess;
                 } else {
                     var me = this;
-                    setTimeout(function() { me._cb(userId); }, 500);
+                    me._cb(userId);
+                    // setTimeout(function() { me._cb(userId); }, 500);
+                    var depend = RongIMClient._memoryStore.depend;
+                    var maxConversationCount = depend.maxConversationCount;
+                    var isNotifyConversationList = depend.isNotifyConversationList;
+                    isNotifyConversationList && RongIMClient._dataAccessProvider.getRemoteConversationList({
+                        onSuccess: function (conversationList) {
+                            var Conversation = RongIMClient._dataAccessProvider.Conversation;
+                            Conversation._notify(conversationList);
+                        },
+                        onError: function (code) {
+                            console.log('内部获取列表失败: %d', code);
+                        }
+                    }, null, maxConversationCount);
+
                 }
                 RongIMLib.RongIMClient._memoryStore.connectAckTime = timestamp;
                 if (!(new Date().getTime() - timestamp)) {

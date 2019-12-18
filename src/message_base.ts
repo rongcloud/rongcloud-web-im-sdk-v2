@@ -13,6 +13,7 @@ module RongIMLib {
         abstract encode(): string;
 
     }
+
     export abstract class NotificationMessage extends MessageContent { }
 
     export abstract class StatusMessage extends MessageContent { }
@@ -23,6 +24,24 @@ module RongIMLib {
 
     export interface ExtraAttachedMessage {
         extra: string;
+    }
+
+    export interface ChatroomEntry {
+        key: string;
+        value?: string;
+        isSendNotification?: boolean; // 是否发送通知
+        notificationExtra?: string; // 通知自定义字段
+        isOverwrite?: boolean; // 是否覆盖设置 key 之前的值
+        isAutoDelete?: boolean; // 用户退出聊天室时是否清理
+        timestamp?: number; // 设置时间
+    }
+
+    export interface ChrmKVCacheContent {
+        key: string;
+        value?: string;
+        userId: string;
+        timestamp: number;
+        isDeleted?: boolean;
     }
 
     export class ModelUtil {

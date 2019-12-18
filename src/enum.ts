@@ -164,6 +164,16 @@ module RongIMLib {
 
     export enum ErrorCode {
 
+        /* 超时 */
+        TIMEOUT = -1,
+        /**
+         * 未知原因失败。
+         */
+        UNKNOWN = -2,
+
+        /* 参数错误 */
+        PARAMETER_ERROR = -3,
+
         RECALL_MESSAGE = 25101,
 
         /**
@@ -222,17 +232,31 @@ module RongIMLib {
         CHATROOM_NOT_OPEN_HISTORYMSG_STORE = 23414,
 
         /**
+         * 聊天室 KV 设置超出最大值(已满, 默认最多设置 100 个)
+         */
+        CHATROOM_KV_EXCEED = 23423,
+        
+        /**
+         * 聊天室 KV 设置失败(kv 已存在, 需覆盖设置)
+         */
+        CHATROOM_KV_OVERWRITE_INVALID = 23424,
+        /**
+         * 聊天室 KV 存储功能没有开通
+         */
+        CHATROOM_KV_STORE_NOT_OPEN = 23426,
+
+        /**
+         * 聊天室Key不存在
+         */
+        CHATROOM_KEY_NOT_EXIST = 23427,
+
+        /**
          * 敏感词屏蔽
          */
         SENSITIVE_SHIELD = 21501,
 
         SENSITIVE_REPLACE = 21502,
 
-        TIMEOUT = -1,
-        /**
-         * 未知原因失败。
-         */
-        UNKNOWN = -2,
 
         /**
          * 加入讨论失败
@@ -493,6 +517,11 @@ module RongIMLib {
          * 拉取聊天室历史消息失败
          */
         CHATROOM_HISMESSAGE_ERROR = 36003,
+
+        /**
+         * 聊天室 kv 未找到
+         * */
+        CHATROOM_KV_NOT_FOUND = 36004,
         //黑名单异常
         /**
          * 加入黑名单异常
@@ -878,5 +907,15 @@ module RongIMLib {
     export enum RTCAPIType {
         ROOM = 1,
         PERSON = 2
+    }
+
+    export enum ChatroomEntityOpt {
+        UPDATE = 1,
+        DELETE = 2
+    }
+
+    export enum ChatroomEntityLimit {
+        KEY = 128,
+        VALUE = 4096
     }
 }

@@ -555,4 +555,23 @@ module RongIMLib {
             return JSON.stringify(ModelUtil.modelClone(this));
         }
     }
+
+    export class ChrmKVNotificationMessage implements MessageContent {
+        user: UserInfo;
+        messageName: string = "ChrmKVNotificationMessage";
+        key: string;
+        value: string;
+        type: number;
+        extra: string;
+        constructor(message: any) {
+            message.key && (this.key = message.key);
+            message.value && (this.value = message.value);
+            message.type && (this.type = message.type);
+            message.extra && (this.extra = message.extra);
+            message.user && (this.user = message.user);
+        }
+        encode(): string {
+            return JSON.stringify(ModelUtil.modelClone(this));
+        }
+    }
 }

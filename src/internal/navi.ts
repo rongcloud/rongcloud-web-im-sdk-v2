@@ -73,7 +73,7 @@ module RongIMLib {
                 var isSameUser = (_old == uId);
                 var servers = storage.getItem('servers');
                 var hasServers = (typeof servers == 'string')
-                if (isSameUser && isSameType && hasServers) {
+                if (isSameUser && isSameType && hasServers && RongUtil.hasValidWsUrl(servers)) {
                     RongIMClient._memoryStore.voipStategy = storage.getItem("voipStrategy");
                     var openMp = storage.getItem('openMp' + uId);
                     RongIMClient._memoryStore.depend.openMp = openMp;
@@ -82,6 +82,7 @@ module RongIMLib {
                 }
             }
             Navigation.clear();
+            RongIMClient.invalidWsUrls = [];
 
             var context = this;
 
